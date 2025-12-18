@@ -5,4 +5,4 @@ Simple Database for personal information processing systems.
 ``` zsh/bash
 git clone https://github.com/kyooni18/Foundation.git
 cd ~/Foundation
-docker compose up -d --build```
+docker compose up -d --build
