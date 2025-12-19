@@ -7,7 +7,7 @@ class Embed:
 		from sentence_transformers import SentenceTransformer
 		import numpy as np
 		if self.model == None:
-			self.model = SentenceTransformer("BAAI/bge-m3")
+			self.model = SentenceTransformer("ibm-granite/granite-embedding-278m-multilingual")
 	
 	def embed(self, text):
 		if self.model == None:

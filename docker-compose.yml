@@ -1,19 +1,21 @@
 services:
   db:
-    image: pgvector/pgvector:0.8.1-pg18-trixie
+    image: pgvector/pgvector:pg17
     env_file: .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - dbdata:/var/lib/postgresql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - dbdata:/var/lib/foundation/dbdata
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 30
+    ports:
+      - "5432:5432"
 
   main:
     build: ./main
@@ -26,6 +28,8 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
+    command: ["uvicorn", "main:app", "--host=0.0.0.0", "--port=8000"]
+    restart: unless-stopped
 
 volumes:
   dbdata:

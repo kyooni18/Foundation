@@ -1,1 +1,0 @@
-docker run --name foundation_postgres -e POSTGRES_PASSWORD=host -d pgvector/pgvector:0.8.1-pg18-trixie
