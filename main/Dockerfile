@@ -4,5 +4,5 @@ WORKDIR /main
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY Embeddings.py /main/Embeddings.py
-COPY asd.py /main/asd.py
+COPY DBManager.py /main/DBManager.py
 COPY main.py /main/main.py

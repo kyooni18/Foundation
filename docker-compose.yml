@@ -14,8 +14,9 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
-    ports:
-      - "5432:5432"
+
+    restart: unless-stopped
+
 
   main:
     build: ./main

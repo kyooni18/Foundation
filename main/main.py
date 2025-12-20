@@ -1,36 +1,29 @@
 import os
-
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field
 import psycopg
 from psycopg_pool import ConnectionPool
 from pgvector.psycopg import register_vector
-import Embeddings
+import embed_manager
+import DBManager
 
-# 컨테이너/로컬 어디서든 동일하게 동작하도록 환경변수 우선, 없으면 로컬 기본값을 사용합니다.
-DSN = os.getenv("DATABASE_URL") or "postgresql://foundation:host@localhost:5432/foundation_db1"
+# ----------------------------- ENVS -------------------------------
 
-# 새 커넥션이 만들어질 때 pgvector 타입을 등록 (user snippet 방식)
+TABLE_NAME = os.getenv("embed_manager_TABLE", "primary_db")
+EMBEDDING_DIM = os.getenv("EMBEDDING_DIM", "768")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "host")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "foundation")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "foundation_db1")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+
+# ----------------------------- Database Connection -------------------------------
+
+DSN = os.getenv("DATABASE_URL", f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:{POSTGRES_PORT}/{POSTGRES_DB}")
+
 def _configure_conn(conn: psycopg.Connection) -> None:
     register_vector(conn)
-
-# NOTE: 아래 테이블은 DB에 미리 만들어 두셔야 합니다.
-# 예시:
-#   CREATE TABLE IF NOT EXISTS embeddings_store (
-#     id BIGSERIAL PRIMARY KEY,
-#     text TEXT NOT NULL,
-#     embedding VECTOR(<EMBEDDING_DIM>) NOT NULL,
-#     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-#   );
-# <EMBEDDING_DIM>은 embeddings.embed()가 반환하는 벡터 차원으로 바꾸세요.
-TABLE_NAME = os.getenv("EMBEDDINGS_TABLE", "primary_db")
-EMBEDDING_DIM = os.getenv("EMBEDDING_DIM", "1024")
-INSERT_SQL = f"INSERT INTO {TABLE_NAME} (text, embedding, metadata) VALUES (%s, %s, %s)"
-
-
-class ShootRequest_Payload(BaseModel):
-    text: str = Field(..., min_length=1)
 
 pool = ConnectionPool(
     conninfo=DSN,
@@ -39,52 +32,88 @@ pool = ConnectionPool(
     kwargs={"connect_timeout": 5},
     configure=_configure_conn,
 )
-embeddings = Embeddings.Embed()
+# ----------------------------- Managers Initialization -------------------------------
+
+db_manager = DBManager.DBManager(pool=pool)
+key_manager = DBManager.KeyManager(pool=pool)
+embed_manager = embed_manager.EmbedManager()
+
+# ----------------------------- FastAPI Lifespan -------------------------------
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global embeddings
-    print("Loading embedding model...")
-    embeddings.load()
-    print("Embedding model loaded.")
+    global embed_manager
+    embed_manager.load()
+    with pool.connection() as conn:
+            key_manager.master_key_hash = conn.execute("SELECT hashed_key FROM auth_keys ORDER BY created_at DESC LIMIT 1").fetchone()[0]
+
+    
     yield
-    embeddings = None
+    embed_manager = None
 
 app = FastAPI(lifespan=lifespan)
 
-@app.on_event
+# ----------------------------- POST Payload Models -------------------------------
+
+class ShootRequest_Payload(BaseModel):
+    text: str = Field(..., min_length=1)
+
+class KeyCreation_Payload(BaseModel):
+    api_key: str = Field(..., min_length=1)
+
+# ----------------------------- API Keys Management Endpoints -------------------------------
+
+@app.get("/keys/list")
+def list_keys():
+    return {"ok": True, "result": key_manager.list_keys()}
+@app.post("/keys/create")
+def create_key(body: KeyCreation_Payload):
+    return key_manager.create(body.api_key)
+@app.post("/keys/delete")
+def delete_key(body: KeyCreation_Payload):
+    key_manager.delete(body.api_key)
+    return {"ok": True, "result": "Key deleted"}
+@app.post("/keys/verify")
+def verify_key(body: KeyCreation_Payload):
+    is_valid = key_manager.verify(body.api_key)
+    return {"ok": True, "valid": is_valid}
+
+# ----------------------------- Health Check Endpoints -------------------------------
 
 @app.get("/health")
 def health():
     return {"ok": True}
-
-
 @app.get("/health/db")
 def health_db():
-    try:
-        with pool.connection() as conn:
-            v = conn.execute("SELECT tablename\nFROM pg_catalog.pg_tables\nWHERE schemaname = 'public'\nORDER BY tablename;").fetchone()[0]
-        return {"ok": True, "db": v}
-    except psycopg.OperationalError as e:
-        raise HTTPException(status_code=503, detail=f"db connection failed: {e}")
-
+   return db_manager.health_check()
 @app.get("/health/embed")
 def health_embed():
     try:
-        test_text = "test"
-        vec = embeddings.embed(test_text)
+        vec = embed_manager.embed("test")
         return {"ok": True, "embed_dim": len(vec)}
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"embedding failed: {e}")
     
-@app.post("/shoot")
-def shoot(body: ShootRequest_Payload):
+# ----------------------------- Foundation Endpoints -------------------------------
+
+@app.post("/embed/text")
+def embed(body: ShootRequest_Payload):
     text = body.text
-    vec = embeddings.embed(text)
+    try:
+        vec = embed_manager.embed(text)
+        return {"ok": True, "embedding": vec.tolist()}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"embedding failed: {e}")
+
+@app.post("/add")
+def add(body: ShootRequest_Payload):
+    text = body.text
+    vec = embed_manager.embed(text)
     apiresult = ""
     try:
         with pool.connection() as conn:
             conn.execute(f"INSERT INTO {TABLE_NAME} (text, embedding) VALUES (%s, %s::vector)", (text, vec))
-            apiresult = f"text: {text}, embeddings vectors: {vec}"
+            apiresult = f"text: {text}, embed_manager vectors: {vec}"
         return {"ok": True, "result": apiresult}
     except Exception as e:
         return {"ok": False, "error": str(e)}
@@ -92,7 +121,7 @@ def shoot(body: ShootRequest_Payload):
 @app.post("/find")
 def find(body: ShootRequest_Payload):
     text = body.text
-    vec = embeddings.embed(text)
+    vec = embed_manager.embed(text)
     results = []
     try:
         with pool.connection() as conn:
@@ -107,3 +136,5 @@ def find(body: ShootRequest_Payload):
         return {"ok": True, "results": results}
     except Exception as e:
         return {"ok": False, "error": str(e)}
+
+# ----------------------------- END -------------------------------

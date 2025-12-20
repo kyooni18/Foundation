@@ -1,11 +1,11 @@
-class Embed:
+class EmbedManager:
 	def __init__(self):
 		self.model = None
 		self.dim = 1024
 	
 	def load(self):
 		from sentence_transformers import SentenceTransformer
-		import numpy as np
+		
 		if self.model == None:
 			self.model = SentenceTransformer("ibm-granite/granite-embedding-278m-multilingual")
 	

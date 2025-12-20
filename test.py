@@ -1,12 +1,9 @@
-import requests
+from argon2 import PasswordHasher
 
-url = "http://localhost:8000/shoot"
-payload = {
-	"text": "This is a test sentence for insertion."
-}
-headers = {
-	"Content-Type": "application/json"
-}
-
-response = requests.post(url, json=payload, headers=headers)
-print(response)
+ph = PasswordHasher(
+	time_cost=3,        # 반복 횟수(느릴수록 강함
+	memory_cost=64_000, # KiB 단위 (64_000 KiB ≈ 64MB)
+	parallelism=1,
+	hash_len=64,
+	salt_len=16
+)
