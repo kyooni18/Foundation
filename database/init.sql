@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE IF NOT EXISTS primary_db ( 
   id BIGSERIAL PRIMARY KEY, 
   text TEXT NOT NULL, 
-  embedding VECTOR(768) NOT NULL, 
+  embedding VECTOR(1024) NOT NULL, 
   metadata jsonb, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
 

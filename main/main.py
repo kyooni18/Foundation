@@ -116,6 +116,8 @@ def add(body: ShootRequest_Payload, Authorization: str = Header(None)):
     apiresult = ""
     try:
         with pool.connection() as conn:
+            if conn.execute(f"SELECT id FROM {TABLE_NAME} WHERE text = %s", (text,)).fetchone() is not None:
+                return {"ok": False, "error": "Text already exists"}
             conn.execute(f"INSERT INTO {TABLE_NAME} (text, embedding) VALUES (%s, %s::vector)", (text, vec))
             apiresult = f"text: {text}, embed_manager vectors: {vec}"
         return {"ok": True, "result": apiresult}

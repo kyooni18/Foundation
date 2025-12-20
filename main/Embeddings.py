@@ -7,7 +7,7 @@ class EmbedManager:
 		from sentence_transformers import SentenceTransformer
 		
 		if self.model == None:
-			self.model = SentenceTransformer("ibm-granite/granite-embedding-278m-multilingual")
+			self.model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
 	
 	def embed(self, text):
 		if self.model == None:

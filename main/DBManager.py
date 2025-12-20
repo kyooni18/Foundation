@@ -38,13 +38,11 @@ class KeyManager:
 		with self.pool.connection() as conn:
 			row = conn.execute("SELECT hashed_key FROM auth_keys").fetchall()
 			for r in row:
-				print(r[0])
 				try:
 					self.ph.verify(r[0], api_key)
 					print("verified")
 					return True
-				except VerifyMismatchError as v:
-					print(v)
+				except VerifyMismatchError:
 					continue
 			return False
 		
