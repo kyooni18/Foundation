@@ -1,5 +1,4 @@
 import os
-import uvicorn
 from fastapi import FastAPI, HTTPException, Header
 from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field
