@@ -1,12 +1,12 @@
 import os
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field
 import psycopg
 from psycopg_pool import ConnectionPool
 from pgvector.psycopg import register_vector
-import embed_manager
+import Embeddings
 import DBManager
 
 # ----------------------------- ENVS -------------------------------
@@ -36,7 +36,7 @@ pool = ConnectionPool(
 
 db_manager = DBManager.DBManager(pool=pool)
 key_manager = DBManager.KeyManager(pool=pool)
-embed_manager = embed_manager.EmbedManager()
+embed_manager = Embeddings.EmbedManager()
 
 # ----------------------------- FastAPI Lifespan -------------------------------
 
@@ -97,7 +97,9 @@ def health_embed():
 # ----------------------------- Foundation Endpoints -------------------------------
 
 @app.post("/embed/text")
-def embed(body: ShootRequest_Payload):
+def embed(body: ShootRequest_Payload, Authorization: str = Header(None)):
+    if key_manager.verify(Authorization.replace("Bearer ", "")) is False:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
     text = body.text
     try:
         vec = embed_manager.embed(text)
@@ -106,7 +108,9 @@ def embed(body: ShootRequest_Payload):
         raise HTTPException(status_code=503, detail=f"embedding failed: {e}")
 
 @app.post("/add")
-def add(body: ShootRequest_Payload):
+def add(body: ShootRequest_Payload, Authorization: str = Header(None)):
+    if key_manager.verify(Authorization.replace("Bearer ", "")) is False:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
     text = body.text
     vec = embed_manager.embed(text)
     apiresult = ""
@@ -117,9 +121,23 @@ def add(body: ShootRequest_Payload):
         return {"ok": True, "result": apiresult}
     except Exception as e:
         return {"ok": False, "error": str(e)}
-    
+
+@app.post("/delete")
+def delete(body: ShootRequest_Payload , Authorization: str = Header(None)):
+    if key_manager.verify(Authorization.replace("Bearer ", "")) is False:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
+    text = body.text
+    try:
+        with pool.connection() as conn:
+            conn.execute(f"DELETE FROM {TABLE_NAME} WHERE text = %s", (text,))
+        return {"ok": True, "result": f"Deleted text: {text}"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @app.post("/find")
-def find(body: ShootRequest_Payload):
+def find(body: ShootRequest_Payload , Authorization: str = Header(None)):
+    if key_manager.verify(Authorization.replace("Bearer ", "")) is False:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
     text = body.text
     vec = embed_manager.embed(text)
     results = []
