@@ -43,8 +43,6 @@ embed_manager = Embeddings.EmbedManager()
 async def lifespan(app: FastAPI):
     global embed_manager
     embed_manager.load()
-    with pool.connection() as conn:
-            key_manager.master_key_hash = conn.execute("SELECT hashed_key FROM auth_keys ORDER BY created_at DESC LIMIT 1").fetchone()[0]
 
     
     yield
@@ -64,6 +62,9 @@ class KeyCreation_Payload(BaseModel):
 
 @app.get("/keys/list")
 def list_keys():
+    if key_manager.list_keys() == "":
+        with pool.connection() as conn:
+            conn.execute("INSERT INTO auth_keys (hashed_key, mask) VALUES('$argon2id$v=19$m=64000,t=3,p=1$VHSUQ7l58UdHbrBltQfFKA$fMiRFZcgw8ri8W6bczyW8kODs6F+bOKROWqAcTDgqjyv8W7aPNKZyCebvkBtYVBomwb63B2bAXLQwE2Wz+AfSw', 'master_key')")
     return {"ok": True, "result": key_manager.list_keys()}
 @app.post("/keys/create")
 def create_key(body: KeyCreation_Payload):

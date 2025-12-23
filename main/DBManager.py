@@ -34,7 +34,6 @@ class KeyManager:
 		)
 
 	def verify(self, api_key: str) -> bool:
-
 		with self.pool.connection() as conn:
 			row = conn.execute("SELECT hashed_key FROM auth_keys").fetchall()
 			for r in row:

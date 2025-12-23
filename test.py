@@ -7,3 +7,5 @@ ph = PasswordHasher(
 	hash_len=64,
 	salt_len=16
 )
+
+print(ph.hash("host"))

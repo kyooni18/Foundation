@@ -18,4 +18,15 @@ CREATE TABLE IF NOT EXISTS auth_keys (
 );
 
 INSERT INTO auth_keys (hashed_key, mask) VALUES
-('$argon2id$v=19$m=64000,t=3,p=1$93OfDVtUjhIp3V+SVgnzDQ$l1sSI/jSOAX9fXSW1qkNh4uabKCPyEw7vaLlYbmPrPXJUcTNKv80v0zwY9glLCv+CBtIzHVHpfV251g89Kv2UQ', 'master_key')
+('$argon2id$v=19$m=64000,t=3,p=1$VHSUQ7l58UdHbrBltQfFKA$fMiRFZcgw8ri8W6bczyW8kODs6F+bOKROWqAcTDgqjyv8W7aPNKZyCebvkBtYVBomwb63B2bAXLQwE2Wz+AfSw', 'master_key')
+
+CREATE TABLE IF NOT EXISTS archive (
+  id BIGSERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  embedding VECTOR(1024) NOT NULL,
+  atoms [BIGSERIAL] DEFAULT [],
+  metadata jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)
+
