@@ -10,7 +10,7 @@ import DBManager
 
 # ----------------------------- ENVS -------------------------------
 
-TABLE_NAME = os.getenv("embed_manager_TABLE", "primary_db")
+TABLE_NAME = os.getenv("EMBEDDINGS_TABLE", "atoms_db")
 EMBEDDING_DIM = os.getenv("EMBEDDING_DIM", "768")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "host")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "foundation")

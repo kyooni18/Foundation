@@ -1,14 +1,15 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
-CREATE TABLE IF NOT EXISTS primary_db ( 
+CREATE TABLE IF NOT EXISTS atoms_db ( 
   id BIGSERIAL PRIMARY KEY, 
   text TEXT NOT NULL, 
   embedding VECTOR(1024) NOT NULL, 
+  parent TEXT DEFAULT NULL,
   metadata jsonb, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );
 
-CREATE INDEX IF NOT EXISTS primary_db_emb_hnsw
-ON primary_db USING hnsw (embedding vector_cosine_ops);
+CREATE INDEX IF NOT EXISTS atoms_db_emb_hnsw
+ON atoms_db USING hnsw (embedding vector_cosine_ops);
 
 CREATE TABLE IF NOT EXISTS auth_keys (
   id BIGSERIAL PRIMARY KEY,
