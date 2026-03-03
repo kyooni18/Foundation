@@ -6,8 +6,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
       - dbdata:/var/lib/foundation/dbdata
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
@@ -16,29 +14,22 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
+
     restart: unless-stopped
 
+
   main:
-    build: ./swift
+    build: ./main
     env_file: .env
     environment:
-      DATABASE_HOST: db
-      DATABASE_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       EMBEDDING_DIM: ${EMBEDDING_DIM}
-      EMBEDDINGS_TABLE: ${EMBEDDINGS_TABLE:-atoms_db}
-      INIT_MASTER_KEY: ${INIT_MASTER_KEY}
-      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-qwen3}
-      QWEN_MODEL: ${QWEN_MODEL:-Qwen/Qwen3-Embedding-0.6B}
-      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "8000:8000"
+    command: ["uvicorn", "main:app", "--host=0.0.0.0", "--port=8000"]
     restart: unless-stopped
 
 volumes:
