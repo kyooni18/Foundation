@@ -10,6 +10,10 @@ docker compose up -d --build
 The API is exposed on `http://localhost:8000`.
 Settings UI is available at `http://localhost:8000/settings`.
 
+## API documentation
+- English: [API_EN.md](./docs/API_EN.md)
+- Korean: [API_KO.md](./docs/API_KO.md)
+
 ## Local / Xcode run
 If you run the Swift app directly from Xcode (outside Docker), start only PostgreSQL first:
 
