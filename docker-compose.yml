@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
 
   main:
-    build: ./swift
+    image: kyooni18/foundation-main
     env_file: .env
     environment:
       DATABASE_HOST: db
