@@ -13,6 +13,18 @@ cd ~/Foundation
 docker compose -f main/docker-compose.yml up -d --build
 ```
 
+This repo is configured to store PostgreSQL data in a Docker named volume (`db_data`),
+so a fresh clone starts cleanly without shipping prebuilt DB files.
+
+If your local environment was previously using bind-mounted `main/database/dbdata`, reset once:
+
+```zsh
+cd ~/Foundation
+docker compose -f main/docker-compose.yml down -v
+rm -rf main/database/dbdata
+docker compose -f main/docker-compose.yml up -d --build
+```
+
 The API is exposed on `http://localhost:8000`.
 Settings UI is available at `http://localhost:8000/settings`.
 

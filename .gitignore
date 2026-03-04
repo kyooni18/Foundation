@@ -4,5 +4,5 @@ __pycache__/
 .vscode/
 main/__pycache__/
 main/vault_storage
-main/database
+main/database/dbdata/
 v/
