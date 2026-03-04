@@ -1,6 +1,6 @@
 # Foundation API Documentation (English)
 
-Last updated: 2026-03-03
+Last updated: 2026-03-04
 
 ## 1. Base information
 
@@ -37,6 +37,7 @@ Authorization: Bearer <api_key>
 - `POST /delete`
 - `POST /find`
 - All `/sources/*` endpoints
+- All `/vaults/*` endpoints
 
 ### 2.4 Master key bootstrap
 
@@ -70,6 +71,11 @@ Authorization: Bearer <api_key>
 | POST | `/sources/find-similar` | Yes | Compute nearest sources by centroid |
 | POST | `/sources/link-similar` | Yes | Persist nearest source links |
 | GET | `/sources/links/:source_uid` | Yes | Read persisted outgoing links |
+| POST | `/vaults/sync/push` | Yes | Push changed files + changelog to server vault state |
+| POST | `/vaults/sync/pull` | Yes | Pull full snapshot or delta by timestamp |
+| POST | `/vaults/sync/status` | Yes | Read vault latest timestamp, file timestamps, and changelog |
+| POST | `/vaults/sync/full-push` | Yes | Upload whole vault directory snapshot in one request |
+| POST | `/vaults/sync/full-pull` | Yes | Download whole vault directory snapshot in one request |
 
 ---
 
@@ -516,4 +522,251 @@ Returns persisted outgoing links only.
 | `QWEN_MODEL` | `Qwen/Qwen3-Embedding-0.6B` | Label shown in settings for Qwen mode |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | Default OpenAI model |
 | `OPENAI_API_KEY` | (empty) | OpenAI API key (can also be managed via `/settings`) |
+| `MAX_REQUEST_BODY_MB` | `128` | Global max HTTP request body size in MB (helps avoid 413 on large vault sync payloads) |
 
+---
+
+## 12. Vault sync endpoints
+
+All endpoints in this section require `Authorization: Bearer <api_key>`.
+
+Vault sync uses a separated DB domain:
+
+- `vaults`: vault identity (`vault_uid`)
+- `vault_files`: current server-side full snapshot per file path
+- `vault_changes`: append-only changelog for delta sync
+
+`vault_files` and `vault_changes` are linked by `vault_id` (foreign key to `vaults.id`), isolated from atom/source tables.
+In addition, pushed files are mirrored on disk under the server workdir:
+`./vault_storage/<vault_uid>/...`
+
+Notes:
+- `vault_uid` is used as the actual directory name under `vault_storage` (must not include `/` or `\`).
+- Integrity verification is not enforced. `content_sha256` is optional metadata only.
+
+### 12.1 `POST /vaults/sync/push`
+
+- Purpose: upload changed files + changelog entries from a client/device.
+- Request:
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "device_id": "iphone-15",
+  "changes": [
+    {
+      "file_path": "Daily/2026-03-04.md",
+      "action": "modified",
+      "changed_at_unix_ms": 1772595300123,
+      "content_base64": "IyBEYWlseSBub3RlLi4u"
+    },
+    {
+      "file_path": "Drafts/old.md",
+      "action": "deleted",
+      "changed_at_unix_ms": 1772595315000
+    }
+  ]
+}
+```
+
+- Notes:
+  - `action` accepts `added`, `modified`, `deleted` (also tolerant aliases like `changed`/`updated`).
+  - For `added`/`modified`, `content_base64` is required.
+  - `file_path` must be relative (no absolute path, no `..`).
+
+- Response:
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "applied_changes": 2,
+  "latest_change_id": 189,
+  "latest_change_unix_ms": 1772595315000
+}
+```
+
+### 12.2 `POST /vaults/sync/pull`
+
+- Purpose:
+  - Full snapshot pull: omit `since_unix_ms`.
+  - Delta pull: provide `since_unix_ms`.
+- Request (full snapshot):
+
+```json
+{ "vault_uid": "my-obsidian-vault", "limit": 5000 }
+```
+
+- Request (delta):
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "since_unix_ms": 1772595000000,
+  "limit": 5000
+}
+```
+
+- Response (full mode):
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "mode": "full",
+  "latest_change_id": 189,
+  "latest_change_unix_ms": 1772595315000,
+  "snapshot_files": [
+    {
+      "file_path": "Daily/2026-03-04.md",
+      "content_base64": "IyBEYWlseSBub3RlLi4u",
+      "content_sha256": "",
+      "size_bytes": 128,
+      "updated_unix_ms": 1772595300123
+    }
+  ]
+}
+```
+
+- Response (delta mode):
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "mode": "delta",
+  "since_unix_ms": 1772595000000,
+  "latest_change_id": 189,
+  "latest_change_unix_ms": 1772595315000,
+  "changed_files": [
+    {
+      "file_path": "Daily/2026-03-04.md",
+      "action": "modified",
+      "changed_at_unix_ms": 1772595300123,
+      "content_base64": "IyBEYWlseSBub3RlLi4u",
+      "content_sha256": "",
+      "size_bytes": 128
+    },
+    {
+      "file_path": "Drafts/old.md",
+      "action": "deleted",
+      "changed_at_unix_ms": 1772595315000
+    }
+  ],
+  "change_log": [
+    {
+      "change_id": 188,
+      "file_path": "Daily/2026-03-04.md",
+      "action": "modified",
+      "changed_at_unix_ms": 1772595300123,
+      "device_id": "iphone-15"
+    },
+    {
+      "change_id": 189,
+      "file_path": "Drafts/old.md",
+      "action": "deleted",
+      "changed_at_unix_ms": 1772595315000,
+      "device_id": "iphone-15"
+    }
+  ]
+}
+```
+
+### 12.3 `POST /vaults/sync/full-push`
+
+- Purpose: upload the whole vault directory in one request (snapshot replace).
+- Behavior:
+  - Files included in `files` become the latest full server snapshot.
+  - Existing server files not included are treated as deleted.
+  - On-disk mirror at `./vault_storage/<vault_uid>/...` is rewritten to match exactly.
+
+- Request:
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "device_id": "macbook",
+  "uploaded_at_unix_ms": 1772595400000,
+  "files": [
+    { "file_path": "Daily/2026-03-04.md", "content_base64": "IyBEYWlseSBub3RlLi4u" },
+    { "file_path": "Projects/plan.md", "content_base64": "IyBQbGFuLi4u" }
+  ]
+}
+```
+
+- Response: same shape as `POST /vaults/sync/push`.
+
+### 12.4 `POST /vaults/sync/full-pull`
+
+- Purpose: download the whole vault directory in one request.
+- Request:
+
+```json
+{ "vault_uid": "my-obsidian-vault", "limit": 5000 }
+```
+
+- Response: same shape as `POST /vaults/sync/pull` full mode (`mode: "full"` with `snapshot_files`).
+
+### 12.5 `POST /vaults/sync/status`
+
+- Purpose:
+  - Inspect current vault sync timestamp (`latest_change_unix_ms`).
+  - Read per-file server timestamps (`file_timestamps`) for delta push planning.
+  - Read changelog entries (`change_log`) with optional `since_unix_ms`.
+- Request:
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "since_unix_ms": 1772595000000,
+  "limit": 5000
+}
+```
+
+- Notes:
+  - `since_unix_ms` is optional. If omitted, latest `limit` changelog rows are returned.
+  - `file_timestamps` always reflects the current vault file index (`is_deleted` included).
+
+- Response:
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "since_unix_ms": 1772595000000,
+  "latest_change_id": 189,
+  "latest_change_unix_ms": 1772595315000,
+  "file_timestamps": [
+    {
+      "file_path": "Daily/2026-03-04.md",
+      "updated_unix_ms": 1772595300123,
+      "size_bytes": 128,
+      "is_deleted": false,
+      "last_change_id": 188
+    },
+    {
+      "file_path": "Drafts/old.md",
+      "updated_unix_ms": 1772595315000,
+      "size_bytes": 0,
+      "is_deleted": true,
+      "last_change_id": 189
+    }
+  ],
+  "change_log": [
+    {
+      "change_id": 188,
+      "file_path": "Daily/2026-03-04.md",
+      "action": "modified",
+      "changed_at_unix_ms": 1772595300123,
+      "device_id": "iphone-15"
+    },
+    {
+      "change_id": 189,
+      "file_path": "Drafts/old.md",
+      "action": "deleted",
+      "changed_at_unix_ms": 1772595315000,
+      "device_id": "iphone-15"
+    }
+  ]
+}
+```

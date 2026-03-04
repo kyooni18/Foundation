@@ -1,6 +1,6 @@
 # Foundation API 문서 (한국어)
 
-최종 업데이트: 2026-03-03
+최종 업데이트: 2026-03-04
 
 ## 1. 기본 정보
 
@@ -38,6 +38,7 @@ Authorization: Bearer <api_key>
 - `POST /delete`
 - `POST /find`
 - 모든 `/sources/*` 엔드포인트
+- 모든 `/vaults/*` 엔드포인트
 
 ### 2.4 마스터 키 초기화
 
@@ -71,6 +72,11 @@ Authorization: Bearer <api_key>
 | POST | `/sources/find-similar` | 필요 | source 간 거리 계산 |
 | POST | `/sources/link-similar` | 필요 | source 유사도 링크 영속화 |
 | GET | `/sources/links/:source_uid` | 필요 | 저장된 outgoing 링크 조회 |
+| POST | `/vaults/sync/push` | 필요 | 변경 파일 + 변경 로그 업로드 |
+| POST | `/vaults/sync/pull` | 필요 | 전체 스냅샷 또는 timestamp 기준 델타 조회 |
+| POST | `/vaults/sync/status` | 필요 | 최신 timestamp, 파일별 timestamp, 변경 로그 조회 |
+| POST | `/vaults/sync/full-push` | 필요 | 볼트 디렉토리 전체를 1회 업로드 |
+| POST | `/vaults/sync/full-pull` | 필요 | 볼트 디렉토리 전체를 1회 다운로드 |
 
 ---
 
@@ -519,4 +525,251 @@ Vapor Abort 실패 형태:
 | `QWEN_MODEL` | `Qwen/Qwen3-Embedding-0.6B` | Qwen 모드 UI 표시 모델명 |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | 기본 OpenAI 모델 |
 | `OPENAI_API_KEY` | (빈값) | OpenAI API 키 (`/settings`에서도 관리 가능) |
+| `MAX_REQUEST_BODY_MB` | `128` | 전역 HTTP 요청 본문 최대 크기(MB). 큰 볼트 동기화의 413 대응에 사용 |
 
+---
+
+## 12. Vault 동기화 엔드포인트
+
+이 섹션의 모든 엔드포인트는 `Authorization: Bearer <api_key>`가 필요합니다.
+
+Vault 동기화는 기존 atom/source 도메인과 분리된 전용 테이블을 사용합니다.
+
+- `vaults`: vault 식별자(`vault_uid`)
+- `vault_files`: 서버가 보관하는 현재 전체 스냅샷
+- `vault_changes`: 델타 동기화를 위한 append-only 변경 로그
+
+`vault_files`, `vault_changes`는 `vault_id`(=`vaults.id` FK)로 연결됩니다.
+추가로 push된 원본 파일 바이트는 서버 workdir의
+`./vault_storage/<vault_uid>/...` 경로에도 미러링됩니다.
+
+참고:
+- `vault_uid`는 `vault_storage` 하위 실제 폴더명으로 사용됩니다 (`/`, `\` 포함 불가).
+- 무결성 검증은 강제하지 않습니다. `content_sha256`는 선택 메타데이터입니다.
+
+### 12.1 `POST /vaults/sync/push`
+
+- 목적: 클라이언트/디바이스에서 변경 파일 + 변경 로그를 업로드
+- 요청:
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "device_id": "iphone-15",
+  "changes": [
+    {
+      "file_path": "Daily/2026-03-04.md",
+      "action": "modified",
+      "changed_at_unix_ms": 1772595300123,
+      "content_base64": "IyBEYWlseSBub3RlLi4u"
+    },
+    {
+      "file_path": "Drafts/old.md",
+      "action": "deleted",
+      "changed_at_unix_ms": 1772595315000
+    }
+  ]
+}
+```
+
+- 동작:
+  - `action`: `added`, `modified`, `deleted` (별칭 `changed`, `updated`도 허용)
+  - `added`/`modified`는 `content_base64` 필수
+  - `file_path`는 상대 경로만 허용 (`..`, 절대경로 금지)
+
+- 응답:
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "applied_changes": 2,
+  "latest_change_id": 189,
+  "latest_change_unix_ms": 1772595315000
+}
+```
+
+### 12.2 `POST /vaults/sync/pull`
+
+- 목적:
+  - `since_unix_ms` 미포함: 전체 스냅샷
+  - `since_unix_ms` 포함: 델타 변경 + 변경 로그
+- 요청 (전체):
+
+```json
+{ "vault_uid": "my-obsidian-vault", "limit": 5000 }
+```
+
+- 요청 (델타):
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "since_unix_ms": 1772595000000,
+  "limit": 5000
+}
+```
+
+- 응답 (full 모드):
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "mode": "full",
+  "latest_change_id": 189,
+  "latest_change_unix_ms": 1772595315000,
+  "snapshot_files": [
+    {
+      "file_path": "Daily/2026-03-04.md",
+      "content_base64": "IyBEYWlseSBub3RlLi4u",
+      "content_sha256": "",
+      "size_bytes": 128,
+      "updated_unix_ms": 1772595300123
+    }
+  ]
+}
+```
+
+- 응답 (delta 모드):
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "mode": "delta",
+  "since_unix_ms": 1772595000000,
+  "latest_change_id": 189,
+  "latest_change_unix_ms": 1772595315000,
+  "changed_files": [
+    {
+      "file_path": "Daily/2026-03-04.md",
+      "action": "modified",
+      "changed_at_unix_ms": 1772595300123,
+      "content_base64": "IyBEYWlseSBub3RlLi4u",
+      "content_sha256": "",
+      "size_bytes": 128
+    },
+    {
+      "file_path": "Drafts/old.md",
+      "action": "deleted",
+      "changed_at_unix_ms": 1772595315000
+    }
+  ],
+  "change_log": [
+    {
+      "change_id": 188,
+      "file_path": "Daily/2026-03-04.md",
+      "action": "modified",
+      "changed_at_unix_ms": 1772595300123,
+      "device_id": "iphone-15"
+    },
+    {
+      "change_id": 189,
+      "file_path": "Drafts/old.md",
+      "action": "deleted",
+      "changed_at_unix_ms": 1772595315000,
+      "device_id": "iphone-15"
+    }
+  ]
+}
+```
+
+### 12.3 `POST /vaults/sync/full-push`
+
+- 목적: 볼트 디렉토리 전체를 한 번에 업로드(스냅샷 교체)
+- 동작:
+  - `files`에 포함된 파일 집합이 서버 최신 전체 스냅샷이 됩니다.
+  - 기존 서버 파일 중 `files`에 없는 항목은 삭제 처리됩니다.
+  - `./vault_storage/<vault_uid>/...` 미러 디렉토리를 전체 재작성합니다.
+
+- 요청:
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "device_id": "macbook",
+  "uploaded_at_unix_ms": 1772595400000,
+  "files": [
+    { "file_path": "Daily/2026-03-04.md", "content_base64": "IyBEYWlseSBub3RlLi4u" },
+    { "file_path": "Projects/plan.md", "content_base64": "IyBQbGFuLi4u" }
+  ]
+}
+```
+
+- 응답: `POST /vaults/sync/push`와 동일한 형태
+
+### 12.4 `POST /vaults/sync/full-pull`
+
+- 목적: 볼트 디렉토리 전체를 한 번에 다운로드
+- 요청:
+
+```json
+{ "vault_uid": "my-obsidian-vault", "limit": 5000 }
+```
+
+- 응답: `POST /vaults/sync/pull`의 full 모드(`mode: "full"`, `snapshot_files`)와 동일
+
+### 12.5 `POST /vaults/sync/status`
+
+- 목적:
+  - 현재 vault 최신 sync timestamp(`latest_change_unix_ms`) 확인
+  - 파일별 서버 timestamp(`file_timestamps`) 조회로 델타 push 대상 탐색
+  - `since_unix_ms` 기준 변경 로그(`change_log`) 조회
+- 요청:
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "since_unix_ms": 1772595000000,
+  "limit": 5000
+}
+```
+
+- 참고:
+  - `since_unix_ms`는 선택입니다. 생략하면 최신 `limit`개 변경 로그를 반환합니다.
+  - `file_timestamps`는 현재 vault 파일 인덱스를 항상 반환하며 `is_deleted` 상태를 포함합니다.
+
+- 응답:
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "since_unix_ms": 1772595000000,
+  "latest_change_id": 189,
+  "latest_change_unix_ms": 1772595315000,
+  "file_timestamps": [
+    {
+      "file_path": "Daily/2026-03-04.md",
+      "updated_unix_ms": 1772595300123,
+      "size_bytes": 128,
+      "is_deleted": false,
+      "last_change_id": 188
+    },
+    {
+      "file_path": "Drafts/old.md",
+      "updated_unix_ms": 1772595315000,
+      "size_bytes": 0,
+      "is_deleted": true,
+      "last_change_id": 189
+    }
+  ],
+  "change_log": [
+    {
+      "change_id": 188,
+      "file_path": "Daily/2026-03-04.md",
+      "action": "modified",
+      "changed_at_unix_ms": 1772595300123,
+      "device_id": "iphone-15"
+    },
+    {
+      "change_id": 189,
+      "file_path": "Drafts/old.md",
+      "action": "deleted",
+      "changed_at_unix_ms": 1772595315000,
+      "device_id": "iphone-15"
+    }
+  ]
+}
+```
