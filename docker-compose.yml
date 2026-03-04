@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - dbdata:/var/lib/foundation/dbdata
+      - ./database/dbdata:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -40,6 +40,3 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
-
-volumes:
-  dbdata:
