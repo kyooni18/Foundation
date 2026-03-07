@@ -1,3 +1,4 @@
+import Crypto
 import Fluent
 import FluentSQL
 import Foundation
@@ -30,16 +31,19 @@ private func prepareSchema(app: Application) throws {
         """
         CREATE TABLE IF NOT EXISTS \(ident: table) (
           id BIGSERIAL PRIMARY KEY,
-          text TEXT NOT NULL,
-          embedding VECTOR(\(literal: config.embeddingDimension)) NOT NULL,
+          content TEXT NOT NULL,
+          vector VECTOR(\(literal: config.embeddingDimension)) NOT NULL,
+          type TEXT NOT NULL DEFAULT 'usercreated',
           parent TEXT DEFAULT NULL,
           metadata jsonb,
-          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          CHECK (type IN ('usercreated', 'aicreated', 'imported'))
         );
         """
     ).run().wait()
+    try sql.raw("\(unsafeRaw: legacyAtomsMigrationSQL(table: table))").run().wait()
 
-    try sql.raw("CREATE INDEX IF NOT EXISTS \(ident: index) ON \(ident: table) USING hnsw (embedding vector_cosine_ops);").run().wait()
+    try sql.raw("CREATE INDEX IF NOT EXISTS \(ident: index) ON \(ident: table) USING hnsw (vector vector_cosine_ops);").run().wait()
 
     try sql.raw(
         """
@@ -51,6 +55,19 @@ private func prepareSchema(app: Application) throws {
         );
         """
     ).run().wait()
+
+    try sql.raw(
+        """
+        CREATE TABLE IF NOT EXISTS settings_sessions (
+          id BIGSERIAL PRIMARY KEY,
+          token_hash TEXT NOT NULL UNIQUE,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          expires_at TIMESTAMPTZ NOT NULL
+        );
+        """
+    ).run().wait()
+    try sql.raw("CREATE INDEX IF NOT EXISTS settings_sessions_expires_idx ON settings_sessions (expires_at);").run().wait()
 
     try sql.raw(
         """
@@ -145,11 +162,12 @@ private func prepareSchema(app: Application) throws {
         CREATE TABLE IF NOT EXISTS vault_changes (
           id BIGSERIAL PRIMARY KEY,
           vault_id BIGINT NOT NULL REFERENCES vaults(id) ON DELETE CASCADE,
+          file_id BIGINT,
           device_id TEXT,
           file_path TEXT NOT NULL,
           action TEXT NOT NULL,
           changed_at_unix_ms BIGINT NOT NULL,
-          content BYTEA,
+          content_base64 TEXT,
           content_sha256 TEXT,
           size_bytes BIGINT,
           received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -157,6 +175,7 @@ private func prepareSchema(app: Application) throws {
         );
         """
     ).run().wait()
+    try sql.raw("\(unsafeRaw: legacyVaultChangesMigrationSQL())").run().wait()
     try sql.raw("CREATE INDEX IF NOT EXISTS vault_changes_vault_time_idx ON vault_changes (vault_id, changed_at_unix_ms, id);").run().wait()
     try sql.raw("CREATE INDEX IF NOT EXISTS vault_changes_vault_id_idx ON vault_changes (vault_id, id);").run().wait()
 
@@ -166,19 +185,102 @@ private func prepareSchema(app: Application) throws {
           id BIGSERIAL PRIMARY KEY,
           vault_id BIGINT NOT NULL REFERENCES vaults(id) ON DELETE CASCADE,
           file_path TEXT NOT NULL,
-          content BYTEA,
+          name TEXT NOT NULL,
+          base64 TEXT NOT NULL DEFAULT '',
+          content TEXT,
+          interpreted TEXT,
+          subject TEXT,
+          vector_subject VECTOR(\(literal: config.embeddingDimension)),
+          vector_content VECTOR(\(literal: config.embeddingDimension)),
           content_sha256 TEXT NOT NULL DEFAULT '',
           size_bytes BIGINT NOT NULL DEFAULT 0,
           is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
           updated_unix_ms BIGINT NOT NULL,
+          content_version BIGINT NOT NULL DEFAULT 1,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          modified_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           last_change_id BIGINT REFERENCES vault_changes(id) ON DELETE SET NULL,
           UNIQUE (vault_id, file_path)
         );
         """
     ).run().wait()
+    try sql.raw("\(unsafeRaw: legacyVaultFilesMigrationSQL(dimension: config.embeddingDimension))").run().wait()
     try sql.raw("CREATE INDEX IF NOT EXISTS vault_files_vault_updated_idx ON vault_files (vault_id, updated_unix_ms DESC);").run().wait()
     try sql.raw("CREATE INDEX IF NOT EXISTS vault_files_vault_live_idx ON vault_files (vault_id, is_deleted, file_path);").run().wait()
+    try sql.raw(
+        """
+        DO $$
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1
+            FROM pg_constraint
+            WHERE conname = 'vault_changes_file_id_fkey'
+          ) THEN
+            ALTER TABLE vault_changes
+            ADD CONSTRAINT vault_changes_file_id_fkey
+            FOREIGN KEY (file_id) REFERENCES vault_files(id) ON DELETE SET NULL;
+          END IF;
+        END $$;
+        """
+    ).run().wait()
+
+    try sql.raw(
+        """
+        CREATE TABLE IF NOT EXISTS file_atoms (
+          file_id BIGINT NOT NULL REFERENCES vault_files(id) ON DELETE CASCADE,
+          atom_id BIGINT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          PRIMARY KEY (file_id, atom_id)
+        );
+        """
+    ).run().wait()
+    try sql.raw("CREATE INDEX IF NOT EXISTS file_atoms_atom_idx ON file_atoms (atom_id);").run().wait()
+
+    try sql.raw(
+        """
+        CREATE TABLE IF NOT EXISTS file_links (
+          id BIGSERIAL PRIMARY KEY,
+          file_a_id BIGINT NOT NULL REFERENCES vault_files(id) ON DELETE CASCADE,
+          file_b_id BIGINT NOT NULL REFERENCES vault_files(id) ON DELETE CASCADE,
+          subject TEXT,
+          absolute DOUBLE PRECISION,
+          atoms BIGINT[] DEFAULT ARRAY[]::BIGINT[],
+          content TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          UNIQUE (file_a_id, file_b_id),
+          CHECK (file_a_id <> file_b_id)
+        );
+        """
+    ).run().wait()
+    try sql.raw("CREATE INDEX IF NOT EXISTS file_links_a_idx ON file_links (file_a_id);").run().wait()
+    try sql.raw("CREATE INDEX IF NOT EXISTS file_links_b_idx ON file_links (file_b_id);").run().wait()
+
+    try sql.raw(
+        """
+        CREATE TABLE IF NOT EXISTS file_processing_jobs (
+          id BIGSERIAL PRIMARY KEY,
+          vault_id BIGINT NOT NULL REFERENCES vaults(id) ON DELETE CASCADE,
+          file_id BIGINT NOT NULL REFERENCES vault_files(id) ON DELETE CASCADE,
+          job_type TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending',
+          file_version BIGINT NOT NULL,
+          attempts INTEGER NOT NULL DEFAULT 0,
+          locked_by TEXT,
+          available_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          started_at TIMESTAMPTZ,
+          finished_at TIMESTAMPTZ,
+          last_error TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          CHECK (job_type IN ('file_enrichment', 'atomize')),
+          CHECK (status IN ('pending', 'running', 'completed', 'failed', 'superseded')),
+          UNIQUE (file_id, job_type, file_version)
+        );
+        """
+    ).run().wait()
+    try sql.raw("CREATE INDEX IF NOT EXISTS file_processing_jobs_pending_idx ON file_processing_jobs (status, job_type, available_at, id);").run().wait()
 }
 
 private func routes(_ app: Application) throws {
@@ -518,11 +620,13 @@ private func routes(_ app: Application) throws {
 
         let nowUnixMS = unixMillisecondsNow()
         let normalizedChanges = try payload.changes.map { try normalizeVaultChange($0, defaultTimestamp: nowUnixMS) }
+        let atomsTable = req.application.context.config.embeddingsTable
 
         let latestChange = try await req.db.transaction { tx async throws -> VaultInsertedChangeRow in
             let txSQL = try sqlDatabase(from: tx)
             let vaultID = try await ensureVaultID(vaultUID: vaultUID, sql: txSQL)
             var latestInTx: VaultInsertedChangeRow?
+            var shouldPruneGeneratedAtoms = false
 
             for change in normalizedChanges {
                 let inserted = try await txSQL
@@ -534,7 +638,7 @@ private func routes(_ app: Application) throws {
                             file_path,
                             action,
                             changed_at_unix_ms,
-                            content,
+                            content_base64,
                             content_sha256,
                             size_bytes
                         ) VALUES (
@@ -543,7 +647,7 @@ private func routes(_ app: Application) throws {
                             \(bind: change.file_path),
                             \(bind: change.action.rawValue),
                             \(bind: change.changed_at_unix_ms),
-                            \(bind: change.content_data),
+                            \(bind: change.content_base64),
                             NULLIF(\(bind: change.content_sha256 ?? ""), ''),
                             \(bind: change.size_bytes)
                         )
@@ -557,82 +661,36 @@ private func routes(_ app: Application) throws {
                 }
 
                 latestInTx = changeRow
+                let fileState = try await upsertVaultFile(
+                    vaultID: vaultID,
+                    filePath: change.file_path,
+                    contentBase64: change.content_base64,
+                    contentData: change.content_data,
+                    contentSHA256: change.content_sha256,
+                    sizeBytes: change.size_bytes ?? Int64(0),
+                    isDeleted: change.action == .deleted,
+                    updatedUnixMS: change.changed_at_unix_ms,
+                    changeID: changeRow.id,
+                    sql: txSQL
+                )
+                try await linkVaultChangeToFile(changeID: changeRow.id, fileID: fileState.id, sql: txSQL)
+                try await clearFileAtomLinks(fileID: fileState.id, sql: txSQL)
+                shouldPruneGeneratedAtoms = true
 
                 if change.action == .deleted {
-                    try await txSQL
-                        .raw(
-                            """
-                            INSERT INTO vault_files (
-                                vault_id,
-                                file_path,
-                                content,
-                                content_sha256,
-                                size_bytes,
-                                is_deleted,
-                                updated_unix_ms,
-                                updated_at,
-                                last_change_id
-                            ) VALUES (
-                                \(bind: vaultID),
-                                \(bind: change.file_path),
-                                NULL,
-                                \(bind: ""),
-                                \(bind: Int64(0)),
-                                TRUE,
-                                \(bind: change.changed_at_unix_ms),
-                                NOW(),
-                                \(bind: changeRow.id)
-                            )
-                            ON CONFLICT (vault_id, file_path)
-                            DO UPDATE SET
-                                content = NULL,
-                                content_sha256 = '',
-                                size_bytes = 0,
-                                is_deleted = TRUE,
-                                updated_unix_ms = EXCLUDED.updated_unix_ms,
-                                updated_at = NOW(),
-                                last_change_id = EXCLUDED.last_change_id
-                            """
-                        )
-                        .run()
+                    try await supersedeVaultFileJobs(fileID: fileState.id, sql: txSQL)
                 } else {
-                    try await txSQL
-                        .raw(
-                            """
-                            INSERT INTO vault_files (
-                                vault_id,
-                                file_path,
-                                content,
-                                content_sha256,
-                                size_bytes,
-                                is_deleted,
-                                updated_unix_ms,
-                                updated_at,
-                                last_change_id
-                            ) VALUES (
-                                \(bind: vaultID),
-                                \(bind: change.file_path),
-                                \(bind: change.content_data),
-                                \(bind: change.content_sha256 ?? ""),
-                                \(bind: change.size_bytes ?? Int64(0)),
-                                FALSE,
-                                \(bind: change.changed_at_unix_ms),
-                                NOW(),
-                                \(bind: changeRow.id)
-                            )
-                            ON CONFLICT (vault_id, file_path)
-                            DO UPDATE SET
-                                content = EXCLUDED.content,
-                                content_sha256 = EXCLUDED.content_sha256,
-                                size_bytes = EXCLUDED.size_bytes,
-                                is_deleted = FALSE,
-                                updated_unix_ms = EXCLUDED.updated_unix_ms,
-                                updated_at = NOW(),
-                                last_change_id = EXCLUDED.last_change_id
-                            """
-                        )
-                        .run()
+                    try await enqueueVaultFileJobs(
+                        fileID: fileState.id,
+                        vaultID: vaultID,
+                        fileVersion: fileState.content_version,
+                        sql: txSQL
+                    )
                 }
+            }
+
+            if shouldPruneGeneratedAtoms {
+                try await pruneOrphanedGeneratedAtoms(sql: txSQL, atomsTable: atomsTable)
             }
 
             guard let latestInTx else {
@@ -704,7 +762,7 @@ private func routes(_ app: Application) throws {
                         action,
                         changed_at_unix_ms,
                         device_id,
-                        encode(content, 'base64') AS content_base64,
+                        content_base64,
                         content_sha256,
                         size_bytes
                     FROM vault_changes
@@ -771,7 +829,7 @@ private func routes(_ app: Application) throws {
                 """
                 SELECT
                     file_path,
-                    encode(content, 'base64') AS content_base64,
+                    base64 AS content_base64,
                     content_sha256,
                     size_bytes,
                     updated_unix_ms
@@ -934,6 +992,7 @@ private func routes(_ app: Application) throws {
         }
 
         let normalizedFiles = try normalizeFullVaultFiles(payload.files)
+        let atomsTable = req.application.context.config.embeddingsTable
 
         let txResult = try await req.db.transaction { tx async throws -> VaultFullPushTxResult in
             let txSQL = try sqlDatabase(from: tx)
@@ -955,6 +1014,7 @@ private func routes(_ app: Application) throws {
 
             var appliedChanges = 0
             var latestInTx: VaultInsertedChangeRow?
+            var shouldPruneGeneratedAtoms = false
 
             for file in normalizedFiles {
                 let action: VaultChangeAction = existingPaths.contains(file.file_path) ? .modified : .added
@@ -967,7 +1027,7 @@ private func routes(_ app: Application) throws {
                             file_path,
                             action,
                             changed_at_unix_ms,
-                            content,
+                            content_base64,
                             content_sha256,
                             size_bytes
                         ) VALUES (
@@ -976,7 +1036,7 @@ private func routes(_ app: Application) throws {
                             \(bind: file.file_path),
                             \(bind: action.rawValue),
                             \(bind: uploadedAtUnixMS),
-                            \(bind: file.content_data),
+                            \(bind: file.content_base64),
                             NULL,
                             \(bind: file.size_bytes)
                         )
@@ -991,43 +1051,27 @@ private func routes(_ app: Application) throws {
 
                 latestInTx = changeRow
                 appliedChanges += 1
-
-                try await txSQL
-                    .raw(
-                        """
-                        INSERT INTO vault_files (
-                            vault_id,
-                            file_path,
-                            content,
-                            content_sha256,
-                            size_bytes,
-                            is_deleted,
-                            updated_unix_ms,
-                            updated_at,
-                            last_change_id
-                        ) VALUES (
-                            \(bind: vaultID),
-                            \(bind: file.file_path),
-                            \(bind: file.content_data),
-                            \(bind: ""),
-                            \(bind: file.size_bytes),
-                            FALSE,
-                            \(bind: uploadedAtUnixMS),
-                            NOW(),
-                            \(bind: changeRow.id)
-                        )
-                        ON CONFLICT (vault_id, file_path)
-                        DO UPDATE SET
-                            content = EXCLUDED.content,
-                            content_sha256 = EXCLUDED.content_sha256,
-                            size_bytes = EXCLUDED.size_bytes,
-                            is_deleted = FALSE,
-                            updated_unix_ms = EXCLUDED.updated_unix_ms,
-                            updated_at = NOW(),
-                            last_change_id = EXCLUDED.last_change_id
-                        """
-                    )
-                    .run()
+                let fileState = try await upsertVaultFile(
+                    vaultID: vaultID,
+                    filePath: file.file_path,
+                    contentBase64: file.content_base64,
+                    contentData: file.content_data,
+                    contentSHA256: nil,
+                    sizeBytes: file.size_bytes,
+                    isDeleted: false,
+                    updatedUnixMS: uploadedAtUnixMS,
+                    changeID: changeRow.id,
+                    sql: txSQL
+                )
+                try await linkVaultChangeToFile(changeID: changeRow.id, fileID: fileState.id, sql: txSQL)
+                try await clearFileAtomLinks(fileID: fileState.id, sql: txSQL)
+                shouldPruneGeneratedAtoms = true
+                try await enqueueVaultFileJobs(
+                    fileID: fileState.id,
+                    vaultID: vaultID,
+                    fileVersion: fileState.content_version,
+                    sql: txSQL
+                )
             }
 
             for filePath in deletedPaths {
@@ -1040,7 +1084,7 @@ private func routes(_ app: Application) throws {
                             file_path,
                             action,
                             changed_at_unix_ms,
-                            content,
+                            content_base64,
                             content_sha256,
                             size_bytes
                         ) VALUES (
@@ -1064,43 +1108,26 @@ private func routes(_ app: Application) throws {
 
                 latestInTx = changeRow
                 appliedChanges += 1
+                let fileState = try await upsertVaultFile(
+                    vaultID: vaultID,
+                    filePath: filePath,
+                    contentBase64: nil,
+                    contentData: nil,
+                    contentSHA256: nil,
+                    sizeBytes: Int64(0),
+                    isDeleted: true,
+                    updatedUnixMS: uploadedAtUnixMS,
+                    changeID: changeRow.id,
+                    sql: txSQL
+                )
+                try await linkVaultChangeToFile(changeID: changeRow.id, fileID: fileState.id, sql: txSQL)
+                try await clearFileAtomLinks(fileID: fileState.id, sql: txSQL)
+                shouldPruneGeneratedAtoms = true
+                try await supersedeVaultFileJobs(fileID: fileState.id, sql: txSQL)
+            }
 
-                try await txSQL
-                    .raw(
-                        """
-                        INSERT INTO vault_files (
-                            vault_id,
-                            file_path,
-                            content,
-                            content_sha256,
-                            size_bytes,
-                            is_deleted,
-                            updated_unix_ms,
-                            updated_at,
-                            last_change_id
-                        ) VALUES (
-                            \(bind: vaultID),
-                            \(bind: filePath),
-                            NULL,
-                            \(bind: ""),
-                            \(bind: Int64(0)),
-                            TRUE,
-                            \(bind: uploadedAtUnixMS),
-                            NOW(),
-                            \(bind: changeRow.id)
-                        )
-                        ON CONFLICT (vault_id, file_path)
-                        DO UPDATE SET
-                            content = NULL,
-                            content_sha256 = '',
-                            size_bytes = 0,
-                            is_deleted = TRUE,
-                            updated_unix_ms = EXCLUDED.updated_unix_ms,
-                            updated_at = NOW(),
-                            last_change_id = EXCLUDED.last_change_id
-                        """
-                    )
-                    .run()
+            if shouldPruneGeneratedAtoms {
+                try await pruneOrphanedGeneratedAtoms(sql: txSQL, atomsTable: atomsTable)
             }
 
             return VaultFullPushTxResult(applied_changes: appliedChanges, latest_change: latestInTx)
@@ -1159,7 +1186,7 @@ private func routes(_ app: Application) throws {
                 """
                 SELECT
                     file_path,
-                    encode(content, 'base64') AS content_base64,
+                    base64 AS content_base64,
                     content_sha256,
                     size_bytes,
                     updated_unix_ms
@@ -1195,18 +1222,146 @@ private func routes(_ app: Application) throws {
         )
     }
 
-    app.get("settings") { req async throws -> Response in
-        let settings = try await currentEmbeddingSettings(req: req)
-        let saved = req.query[String.self, at: "saved"] == "1"
-        let body = renderSettingsHTML(settings: settings, saved: saved)
+    app.get("settings", "login") { req async throws -> Response in
+        let sql = try sqlDatabase(from: req.db)
 
-        var headers = HTTPHeaders()
-        headers.contentType = .html
-        return Response(status: .ok, headers: headers, body: .init(string: body))
+        if let queryAPIKey = nonEmpty(req.query[String.self, at: "api_key"]) {
+            do {
+                let sessionToken = try await createSettingsSession(
+                    apiKey: queryAPIKey,
+                    sql: sql,
+                    keyService: req.application.context.keyService,
+                    secret: req.application.context.config.initialMasterKey
+                )
+                return redirectHTMLResponse(
+                    location: "/settings",
+                    setCookie: settingsSessionCookieHeader(token: sessionToken)
+                )
+            } catch {
+                let body = renderSettingsLoginHTML(
+                    errorMessage: "Invalid API key. Use a master key or a generated Foundation API key.",
+                    signedOut: false,
+                    config: req.application.context.config
+                )
+                return htmlResponse(body, status: .unauthorized, setCookie: clearSettingsSessionCookieHeader())
+            }
+        }
+
+        if let authorization = try await resolveSettingsAuthorization(req: req, sql: sql) {
+            if case .browserSession(let sessionToken) = authorization.mode {
+                return redirectHTMLResponse(
+                    location: "/settings",
+                    setCookie: settingsSessionCookieHeader(token: sessionToken)
+                )
+            }
+            return redirectHTMLResponse(location: "/settings")
+        }
+
+        let signedOut = req.query[String.self, at: "signed_out"] == "1"
+        let body = renderSettingsLoginHTML(
+            errorMessage: nil,
+            signedOut: signedOut,
+            config: req.application.context.config
+        )
+        return htmlResponse(body)
+    }
+
+    app.post("settings", "login") { req async throws -> Response in
+        let form = try req.content.decode(SettingsLoginForm.self)
+        let sql = try sqlDatabase(from: req.db)
+
+        do {
+            let sessionToken = try await createSettingsSession(
+                apiKey: form.api_key,
+                sql: sql,
+                keyService: req.application.context.keyService,
+                secret: req.application.context.config.initialMasterKey
+            )
+            return redirectHTMLResponse(
+                location: "/settings",
+                setCookie: settingsSessionCookieHeader(token: sessionToken)
+            )
+        } catch {
+            let body = renderSettingsLoginHTML(
+                errorMessage: "Invalid API key. Use a master key or a generated Foundation API key.",
+                signedOut: false,
+                config: req.application.context.config
+            )
+            return htmlResponse(body, status: .unauthorized)
+        }
+    }
+
+    app.post("settings", "logout") { req async throws -> Response in
+        if let token = settingsSessionToken(from: req) {
+            let sql = try sqlDatabase(from: req.db)
+            try await deleteSettingsSession(
+                token: token,
+                sql: sql,
+                secret: req.application.context.config.initialMasterKey
+            )
+        }
+
+        return redirectHTMLResponse(
+            location: "/settings/login?signed_out=1",
+            setCookie: clearSettingsSessionCookieHeader()
+        )
+    }
+
+    app.get("settings") { req async throws -> Response in
+        let sql = try sqlDatabase(from: req.db)
+
+        if let queryAPIKey = nonEmpty(req.query[String.self, at: "api_key"]) {
+            do {
+                let sessionToken = try await createSettingsSession(
+                    apiKey: queryAPIKey,
+                    sql: sql,
+                    keyService: req.application.context.keyService,
+                    secret: req.application.context.config.initialMasterKey
+                )
+                return redirectHTMLResponse(
+                    location: "/settings",
+                    setCookie: settingsSessionCookieHeader(token: sessionToken)
+                )
+            } catch {
+                let body = renderSettingsLoginHTML(
+                    errorMessage: "Invalid API key. Use a master key or a generated Foundation API key.",
+                    signedOut: false,
+                    config: req.application.context.config
+                )
+                return htmlResponse(body, status: .unauthorized, setCookie: clearSettingsSessionCookieHeader())
+            }
+        }
+
+        guard let authorization = try await resolveSettingsAuthorization(req: req, sql: sql) else {
+            return redirectHTMLResponse(
+                location: "/settings/login",
+                setCookie: clearSettingsSessionCookieHeader()
+            )
+        }
+
+        let settings = try await currentEmbeddingSettings(req: req)
+        let body = renderSettingsHTML(
+            settings: settings,
+            saved: false,
+            authorization: authorization,
+            config: req.application.context.config
+        )
+        return htmlResponse(body)
     }
 
     app.post("settings") { req async throws -> Response in
         let form = try req.content.decode(SettingsForm.self)
+
+        let authorization: SettingsAuthorization
+        do {
+            authorization = try await authorizeSettingsWrite(req, formAPIKey: form.api_key)
+        } catch {
+            return redirectHTMLResponse(
+                location: "/settings/login",
+                setCookie: clearSettingsSessionCookieHeader()
+            )
+        }
+
         let sql = try sqlDatabase(from: req.db)
         let existing = try await loadEmbeddingSettings(sql: sql, defaults: req.application.context.config.defaultEmbeddingSettings)
 
@@ -1231,7 +1386,13 @@ private func routes(_ app: Application) throws {
         )
 
         try await saveEmbeddingSettings(sql: sql, settings: updatedSettings)
-        return req.redirect(to: "/settings?saved=1")
+        let body = renderSettingsHTML(
+            settings: updatedSettings,
+            saved: true,
+            authorization: authorization,
+            config: req.application.context.config
+        )
+        return htmlResponse(body)
     }
 
     app.post("embed", "text") { req async throws -> EmbedTextResponse in
@@ -1256,7 +1417,7 @@ private func routes(_ app: Application) throws {
 
         do {
             let existing = try await sql
-                .raw("SELECT id FROM \(ident: table) WHERE text = \(bind: text) LIMIT 1")
+                .raw("SELECT id FROM \(ident: table) WHERE content = \(bind: text) LIMIT 1")
                 .all()
 
             if !existing.isEmpty {
@@ -1264,7 +1425,12 @@ private func routes(_ app: Application) throws {
             }
 
             try await sql
-                .raw("INSERT INTO \(ident: table) (text, embedding) VALUES (\(bind: text), (\(bind: vectorLiteral))::vector)")
+                .raw(
+                    """
+                    INSERT INTO \(ident: table) (content, vector, type)
+                    VALUES (\(bind: text), (\(bind: vectorLiteral))::vector, \(bind: "usercreated"))
+                    """
+                )
                 .run()
 
             let apiResult = "text: \(text), embed vectors: \(embedding.count)"
@@ -1283,7 +1449,7 @@ private func routes(_ app: Application) throws {
 
         do {
             try await sql
-                .raw("DELETE FROM \(ident: table) WHERE text = \(bind: text)")
+                .raw("DELETE FROM \(ident: table) WHERE content = \(bind: text)")
                 .run()
             return StandardResultResponse(ok: true, result: "Deleted text: \(text)", error: nil)
         } catch {
@@ -1308,11 +1474,11 @@ private func routes(_ app: Application) throws {
                     """
                     SELECT
                         id,
-                        text,
+                        content AS text,
                         metadata::text AS metadata,
-                        (embedding <-> (\(bind: vectorLiteral))::vector)::double precision AS distance
+                        (vector <-> (\(bind: vectorLiteral))::vector)::double precision AS distance
                     FROM \(ident: table)
-                    ORDER BY embedding <-> (\(bind: vectorLiteral))::vector
+                    ORDER BY vector <-> (\(bind: vectorLiteral))::vector
                     LIMIT 5
                     """
                 )
@@ -1337,6 +1503,392 @@ private func authorize(_ req: Request) async throws {
     guard valid else {
         throw Abort(.unauthorized, reason: "Invalid API Key")
     }
+}
+
+private func legacyAtomsMigrationSQL(table: String) -> String {
+    """
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = '\(table)' AND column_name = 'text'
+      ) AND NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = '\(table)' AND column_name = 'content'
+      ) THEN
+        EXECUTE 'ALTER TABLE public.\(table) RENAME COLUMN text TO content';
+      END IF;
+
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = '\(table)' AND column_name = 'embedding'
+      ) AND NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = '\(table)' AND column_name = 'vector'
+      ) THEN
+        EXECUTE 'ALTER TABLE public.\(table) RENAME COLUMN embedding TO vector';
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = '\(table)' AND column_name = 'type'
+      ) THEN
+        EXECUTE 'ALTER TABLE public.\(table) ADD COLUMN type TEXT NOT NULL DEFAULT ''usercreated''';
+      END IF;
+    END $$;
+    """
+}
+
+private func legacyVaultChangesMigrationSQL() -> String {
+    """
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_changes' AND column_name = 'file_id'
+      ) THEN
+        ALTER TABLE vault_changes ADD COLUMN file_id BIGINT;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_changes' AND column_name = 'content_base64'
+      ) THEN
+        ALTER TABLE vault_changes ADD COLUMN content_base64 TEXT;
+      END IF;
+
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_changes' AND column_name = 'content'
+      ) THEN
+        UPDATE vault_changes
+        SET content_base64 = encode(content, 'base64')
+        WHERE content IS NOT NULL
+          AND COALESCE(content_base64, '') = '';
+      END IF;
+    END $$;
+    """
+}
+
+private func legacyVaultFilesMigrationSQL(dimension: Int) -> String {
+    """
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'content' AND udt_name = 'bytea'
+      ) THEN
+        ALTER TABLE vault_files RENAME COLUMN content TO content_bytes;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'name'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN name TEXT;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'base64'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN base64 TEXT NOT NULL DEFAULT '';
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'content'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN content TEXT;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'interpreted'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN interpreted TEXT;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'subject'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN subject TEXT;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'vector_subject'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN vector_subject VECTOR(\(dimension));
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'vector_content'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN vector_content VECTOR(\(dimension));
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'content_version'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN content_version BIGINT NOT NULL DEFAULT 1;
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'created_at'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'modified_at'
+      ) THEN
+        ALTER TABLE vault_files ADD COLUMN modified_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+      END IF;
+
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'vault_files' AND column_name = 'content_bytes'
+      ) THEN
+        UPDATE vault_files
+        SET base64 = encode(content_bytes, 'base64')
+        WHERE content_bytes IS NOT NULL
+          AND COALESCE(base64, '') = '';
+      END IF;
+
+      UPDATE vault_files
+      SET name = file_path
+      WHERE name IS NULL OR name = '';
+
+      ALTER TABLE vault_files ALTER COLUMN name SET NOT NULL;
+    END $$;
+    """
+}
+
+private let settingsSessionCookieName = "foundation_settings_session"
+private let settingsSessionLifetimeSeconds = 60 * 60 * 24 * 7
+
+private enum SettingsAuthorizationMode {
+    case apiKey
+    case browserSession(token: String)
+}
+
+private struct SettingsAuthorization {
+    let mode: SettingsAuthorizationMode
+
+    var authLabel: String {
+        switch mode {
+        case .apiKey:
+            return "Bearer API key"
+        case .browserSession:
+            return "Browser session"
+        }
+    }
+
+    var authDescription: String {
+        switch mode {
+        case .apiKey:
+            return "Authenticated directly from the request header. Useful for scripts and local API clients."
+        case .browserSession:
+            return "Authenticated through a secure browser session cookie backed by the server database."
+        }
+    }
+
+    var showsLogout: Bool {
+        if case .browserSession = mode {
+            return true
+        }
+        return false
+    }
+}
+
+private func authorizeSettingsWrite(_ req: Request, formAPIKey: String?) async throws -> SettingsAuthorization {
+    let sql = try sqlDatabase(from: req.db)
+
+    if let authorization = try await resolveSettingsAuthorization(req: req, sql: sql) {
+        return authorization
+    }
+
+    if let formAPIKey = nonEmpty(formAPIKey) {
+        let valid = try await req.application.context.keyService.verify(apiKey: formAPIKey, db: sql)
+        guard valid else {
+            throw Abort(.unauthorized, reason: "Invalid API Key")
+        }
+        return SettingsAuthorization(mode: .apiKey)
+    }
+
+    throw Abort(.unauthorized, reason: "Invalid API Key")
+}
+
+private func resolveSettingsAuthorization(req: Request, sql: any SQLDatabase) async throws -> SettingsAuthorization? {
+    if let bearerToken = req.headers.bearerAuthorization?.token {
+        let valid = try await req.application.context.keyService.verify(apiKey: bearerToken, db: sql)
+        if valid {
+            return SettingsAuthorization(mode: .apiKey)
+        }
+    }
+
+    if let sessionToken = settingsSessionToken(from: req) {
+        let valid = try await validateSettingsSession(
+            token: sessionToken,
+            sql: sql,
+            secret: req.application.context.config.initialMasterKey
+        )
+        if valid {
+            return SettingsAuthorization(mode: .browserSession(token: sessionToken))
+        }
+    }
+
+    return nil
+}
+
+private func createSettingsSession(
+    apiKey: String,
+    sql: any SQLDatabase,
+    keyService: KeyService,
+    secret: String
+) async throws -> String {
+    try await cleanupExpiredSettingsSessions(sql: sql)
+
+    let normalizedAPIKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !normalizedAPIKey.isEmpty else {
+        throw Abort(.unauthorized, reason: "Invalid API Key")
+    }
+
+    let valid = try await keyService.verify(apiKey: normalizedAPIKey, db: sql)
+    guard valid else {
+        throw Abort(.unauthorized, reason: "Invalid API Key")
+    }
+
+    let token = "fst_" + randomSettingsSessionToken(length: 48)
+    let tokenHash = settingsSessionTokenHash(token: token, secret: secret)
+
+    try await sql
+        .raw(
+            """
+            INSERT INTO settings_sessions (token_hash, expires_at)
+            VALUES (
+              \(bind: tokenHash),
+              NOW() + make_interval(secs => \(literal: settingsSessionLifetimeSeconds))
+            )
+            """
+        )
+        .run()
+
+    return token
+}
+
+private func validateSettingsSession(token: String, sql: any SQLDatabase, secret: String) async throws -> Bool {
+    try await cleanupExpiredSettingsSessions(sql: sql)
+
+    let tokenHash = settingsSessionTokenHash(token: token, secret: secret)
+    let rows = try await sql
+        .raw(
+            """
+            SELECT id
+            FROM settings_sessions
+            WHERE token_hash = \(bind: tokenHash)
+              AND expires_at > NOW()
+            LIMIT 1
+            """
+        )
+        .all(decoding: SessionIdentityRow.self)
+
+    guard !rows.isEmpty else {
+        return false
+    }
+
+    try await sql
+        .raw(
+            """
+            UPDATE settings_sessions
+            SET last_seen_at = NOW()
+            WHERE token_hash = \(bind: tokenHash)
+            """
+        )
+        .run()
+
+    return true
+}
+
+private func deleteSettingsSession(token: String, sql: any SQLDatabase, secret: String) async throws {
+    try await cleanupExpiredSettingsSessions(sql: sql)
+    let tokenHash = settingsSessionTokenHash(token: token, secret: secret)
+    try await sql
+        .raw("DELETE FROM settings_sessions WHERE token_hash = \(bind: tokenHash)")
+        .run()
+}
+
+private func cleanupExpiredSettingsSessions(sql: any SQLDatabase) async throws {
+    try await sql
+        .raw("DELETE FROM settings_sessions WHERE expires_at <= NOW()")
+        .run()
+}
+
+private func settingsSessionToken(from req: Request) -> String? {
+    nonEmpty(req.cookies[settingsSessionCookieName]?.string)
+}
+
+private func settingsSessionTokenHash(token: String, secret: String) -> String {
+    let digest = SHA256.hash(data: Data((secret + ":" + token).utf8))
+    return digest.map { String(format: "%02x", $0) }.joined()
+}
+
+private func randomSettingsSessionToken(length: Int) -> String {
+    let charset = Array("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+    var generator = SystemRandomNumberGenerator()
+    return String((0..<length).map { _ in charset.randomElement(using: &generator)! })
+}
+
+private func settingsSessionCookieHeader(token: String) -> String {
+    "\(settingsSessionCookieName)=\(token); Max-Age=\(settingsSessionLifetimeSeconds); Path=/settings; HttpOnly; SameSite=Lax"
+}
+
+private func clearSettingsSessionCookieHeader() -> String {
+    "\(settingsSessionCookieName)=; Max-Age=0; Path=/settings; HttpOnly; SameSite=Lax"
+}
+
+private func htmlResponse(_ body: String, status: HTTPResponseStatus = .ok, setCookie: String? = nil) -> Response {
+    var headers = HTTPHeaders()
+    headers.contentType = .html
+    if let setCookie {
+        headers.add(name: .setCookie, value: setCookie)
+    }
+    return Response(status: status, headers: headers, body: .init(string: body))
+}
+
+private func redirectHTMLResponse(location: String, setCookie: String? = nil) -> Response {
+    var headers = HTTPHeaders()
+    headers.replaceOrAdd(name: .location, value: location)
+    if let setCookie {
+        headers.add(name: .setCookie, value: setCookie)
+    }
+    return Response(status: .seeOther, headers: headers)
 }
 
 private func sqlDatabase(from database: any Database) throws -> any SQLDatabase {
@@ -1377,7 +1929,7 @@ private func resolveAtomID(payload: SourceLinkAtomPayload, sql: any SQLDatabase,
 
     let atomText = try requireNonEmpty(payload.atom_text, field: "atom_text or atom_id")
     let rows = try await sql
-        .raw("SELECT id FROM \(ident: atomsTable) WHERE text = \(bind: atomText) LIMIT 1")
+        .raw("SELECT id FROM \(ident: atomsTable) WHERE content = \(bind: atomText) LIMIT 1")
         .all(decoding: AtomIDRow.self)
 
     guard let atom = rows.first else {
@@ -1404,7 +1956,7 @@ private func refreshSourceIndex(sourceID: Int64, sql: any SQLDatabase, atomsTabl
             INSERT INTO source_indexes (source_id, embedding, atom_count, updated_at)
             SELECT
                 \(bind: sourceID) AS source_id,
-                AVG(a.embedding) AS embedding,
+                AVG(a.vector) AS embedding,
                 COUNT(*)::integer AS atom_count,
                 NOW() AS updated_at
             FROM source_atoms sa
@@ -1465,10 +2017,16 @@ private enum VaultChangeAction: String {
     }
 }
 
+private enum FileProcessingJobType: String, CaseIterable {
+    case fileEnrichment = "file_enrichment"
+    case atomize
+}
+
 private struct NormalizedVaultChange {
     let file_path: String
     let action: VaultChangeAction
     let changed_at_unix_ms: Int64
+    let content_base64: String?
     let content_data: Data?
     let content_sha256: String?
     let size_bytes: Int64?
@@ -1476,6 +2034,7 @@ private struct NormalizedVaultChange {
 
 private struct NormalizedVaultFullFile {
     let file_path: String
+    let content_base64: String
     let content_data: Data
     let size_bytes: Int64
 }
@@ -1483,6 +2042,11 @@ private struct NormalizedVaultFullFile {
 private struct VaultFullPushTxResult {
     let applied_changes: Int
     let latest_change: VaultInsertedChangeRow?
+}
+
+private struct VaultFileStateRow: Decodable {
+    let id: Int64
+    let content_version: Int64
 }
 
 private func unixMillisecondsNow() -> Int64 {
@@ -1510,6 +2074,7 @@ private func normalizeVaultChange(_ payload: VaultSyncChangePayload, defaultTime
             file_path: filePath,
             action: action,
             changed_at_unix_ms: changedAtUnixMS,
+            content_base64: nil,
             content_data: nil,
             content_sha256: nil,
             size_bytes: nil
@@ -1526,6 +2091,7 @@ private func normalizeVaultChange(_ payload: VaultSyncChangePayload, defaultTime
         file_path: filePath,
         action: action,
         changed_at_unix_ms: changedAtUnixMS,
+        content_base64: contentData.base64EncodedString(),
         content_data: contentData,
         content_sha256: nonEmpty(payload.content_sha256),
         size_bytes: Int64(contentData.count)
@@ -1554,6 +2120,7 @@ private func normalizeFullVaultFiles(_ files: [VaultSyncFullFilePayload]) throws
         normalized.append(
             NormalizedVaultFullFile(
                 file_path: filePath,
+                content_base64: contentData.base64EncodedString(),
                 content_data: contentData,
                 size_bytes: Int64(contentData.count)
             )
@@ -1647,6 +2214,188 @@ private func latestVaultChange(vaultID: Int64, sql: any SQLDatabase) async throw
         .all(decoding: VaultLatestChangeRow.self)
 
     return rows.first
+}
+
+private func decodeTextContent(from data: Data) -> String? {
+    if data.isEmpty {
+        return ""
+    }
+    guard let text = String(data: data, encoding: .utf8) else {
+        return nil
+    }
+
+    let scalars = Array(text.unicodeScalars)
+    guard !scalars.isEmpty else {
+        return ""
+    }
+
+    let disallowedControlCount = scalars.reduce(into: 0) { count, scalar in
+        if CharacterSet.controlCharacters.contains(scalar),
+           scalar.value != 9,
+           scalar.value != 10,
+           scalar.value != 13 {
+            count += 1
+        }
+    }
+
+    let ratio = Double(disallowedControlCount) / Double(scalars.count)
+    return ratio <= 0.05 ? text : nil
+}
+
+private func upsertVaultFile(
+    vaultID: Int64,
+    filePath: String,
+    contentBase64: String?,
+    contentData: Data?,
+    contentSHA256: String?,
+    sizeBytes: Int64,
+    isDeleted: Bool,
+    updatedUnixMS: Int64,
+    changeID: Int64,
+    sql: any SQLDatabase
+) async throws -> VaultFileStateRow {
+    let contentText = contentData.flatMap { decodeTextContent(from: $0) }
+    let storedContent: String? = isDeleted ? nil : contentText
+    let base64 = isDeleted ? "" : (contentBase64 ?? "")
+    let checksum = isDeleted ? "" : (contentSHA256 ?? "")
+
+    let rows = try await sql
+        .raw(
+            """
+            INSERT INTO vault_files (
+                vault_id,
+                file_path,
+                name,
+                base64,
+                content,
+                interpreted,
+                subject,
+                vector_subject,
+                vector_content,
+                content_sha256,
+                size_bytes,
+                is_deleted,
+                updated_unix_ms,
+                content_version,
+                created_at,
+                modified_at,
+                updated_at,
+                last_change_id
+            ) VALUES (
+                \(bind: vaultID),
+                \(bind: filePath),
+                \(bind: filePath),
+                \(bind: base64),
+                \(bind: storedContent),
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+                \(bind: checksum),
+                \(bind: sizeBytes),
+                \(bind: isDeleted),
+                \(bind: updatedUnixMS),
+                1,
+                NOW(),
+                NOW(),
+                NOW(),
+                \(bind: changeID)
+            )
+            ON CONFLICT (vault_id, file_path)
+            DO UPDATE SET
+                name = EXCLUDED.name,
+                base64 = EXCLUDED.base64,
+                content = EXCLUDED.content,
+                interpreted = NULL,
+                subject = NULL,
+                vector_subject = NULL,
+                vector_content = NULL,
+                content_sha256 = EXCLUDED.content_sha256,
+                size_bytes = EXCLUDED.size_bytes,
+                is_deleted = EXCLUDED.is_deleted,
+                updated_unix_ms = EXCLUDED.updated_unix_ms,
+                content_version = vault_files.content_version + 1,
+                modified_at = NOW(),
+                updated_at = NOW(),
+                last_change_id = EXCLUDED.last_change_id
+            RETURNING id, content_version
+            """
+        )
+        .all(decoding: VaultFileStateRow.self)
+
+    guard let row = rows.first else {
+        throw Abort(.internalServerError, reason: "failed to upsert vault file")
+    }
+    return row
+}
+
+private func linkVaultChangeToFile(changeID: Int64, fileID: Int64, sql: any SQLDatabase) async throws {
+    try await sql
+        .raw(
+            """
+            UPDATE vault_changes
+            SET file_id = \(bind: fileID)
+            WHERE id = \(bind: changeID)
+            """
+        )
+        .run()
+}
+
+private func supersedeVaultFileJobs(fileID: Int64, sql: any SQLDatabase) async throws {
+    try await sql
+        .raw(
+            """
+            UPDATE file_processing_jobs
+            SET status = 'superseded',
+                finished_at = COALESCE(finished_at, NOW()),
+                updated_at = NOW()
+            WHERE file_id = \(bind: fileID)
+              AND status IN ('pending', 'running')
+            """
+        )
+        .run()
+}
+
+private func enqueueVaultFileJobs(fileID: Int64, vaultID: Int64, fileVersion: Int64, sql: any SQLDatabase) async throws {
+    try await supersedeVaultFileJobs(fileID: fileID, sql: sql)
+    try await sql
+        .raw(
+            """
+            INSERT INTO file_processing_jobs (vault_id, file_id, job_type, status, file_version)
+            VALUES
+                (\(bind: vaultID), \(bind: fileID), \(bind: FileProcessingJobType.fileEnrichment.rawValue), 'pending', \(bind: fileVersion)),
+                (\(bind: vaultID), \(bind: fileID), \(bind: FileProcessingJobType.atomize.rawValue), 'pending', \(bind: fileVersion))
+            ON CONFLICT (file_id, job_type, file_version) DO NOTHING
+            """
+        )
+        .run()
+}
+
+private func clearFileAtomLinks(fileID: Int64, sql: any SQLDatabase) async throws {
+    try await sql
+        .raw("DELETE FROM file_atoms WHERE file_id = \(bind: fileID)")
+        .run()
+}
+
+private func pruneOrphanedGeneratedAtoms(sql: any SQLDatabase, atomsTable: String) async throws {
+    try await sql
+        .raw(
+            """
+            DELETE FROM \(ident: atomsTable) a
+            WHERE a.type IN ('aicreated', 'imported')
+              AND NOT EXISTS (
+                SELECT 1
+                FROM file_atoms fa
+                WHERE fa.atom_id = a.id
+              )
+              AND NOT EXISTS (
+                SELECT 1
+                FROM source_atoms sa
+                WHERE sa.atom_id = a.id
+              )
+            """
+        )
+        .run()
 }
 
 private func persistVaultChangesToWorkspace(vaultUID: String, changes: [NormalizedVaultChange]) throws {
@@ -1801,21 +2550,293 @@ private func upsertSetting(sql: any SQLDatabase, key: String, value: String) asy
         .run()
 }
 
-private func renderSettingsHTML(settings: EmbeddingSettings, saved: Bool) -> String {
+private func renderSettingsLoginHTML(errorMessage: String?, signedOut: Bool, config: AppConfig) -> String {
+    let errorBanner = errorMessage.map {
+        "<div class=\"flash flash-error\">" + escapeHTML($0) + "</div>"
+    } ?? ""
+    let signedOutBanner = signedOut ? "<div class=\"flash flash-success\">Signed out. Your browser session has been cleared.</div>" : ""
+
+    let content = """
+    <div class="site-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark">F</div>
+          <div>
+            <div class="brand-title">Foundation Settings</div>
+            <div class="brand-subtitle">Secure browser access for embedding configuration</div>
+          </div>
+        </div>
+        <div class="topbar-note">Local admin console</div>
+      </header>
+
+      <section class="hero-panel">
+        <div>
+          <div class="eyebrow">Admin login</div>
+          <h1>Sign in before changing server embedding behavior.</h1>
+          <p class="hero-copy">This screen protects the provider, model, and OpenAI key used by <code>/embed/text</code>, <code>/add</code>, and <code>/find</code>.</p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span class="stat-label">Embedding dimension</span>
+            <strong>\(config.embeddingDimension)</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Vector table</span>
+            <strong>\(escapeHTML(config.embeddingsTable))</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Default provider</span>
+            <strong>\(escapeHTML(config.defaultEmbeddingProvider.displayName))</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="layout-grid login-grid">
+        <div class="panel">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Authentication</div>
+              <h2>Browser login</h2>
+            </div>
+          </div>
+          \(errorBanner)
+          \(signedOutBanner)
+          <form method="post" action="/settings/login" class="stack-form">
+            <label for="api_key">Foundation API key</label>
+            <input id="api_key" name="api_key" type="password" placeholder="foundation_..." autocomplete="current-password" autofocus />
+            <p class="field-note">Use the master key or any generated Foundation API key.</p>
+            <button class="primary-button" type="submit">Continue to settings</button>
+          </form>
+        </div>
+
+        <aside class="panel muted-panel">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">What changes here</div>
+              <h2>Control surface</h2>
+            </div>
+          </div>
+          <div class="info-list">
+            <div class="info-item">
+              <strong>Provider selection</strong>
+              <span>Switch between local deterministic Qwen mode and OpenAI embeddings.</span>
+            </div>
+            <div class="info-item">
+              <strong>Model defaults</strong>
+              <span>Update the model labels stored in <code>app_settings</code>.</span>
+            </div>
+            <div class="info-item">
+              <strong>Secret management</strong>
+              <span>Store or clear the OpenAI API key without exposing it back to the browser.</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </div>
+    """
+
+    return renderSettingsDocument(pageTitle: "Foundation Settings Login", content: content, script: "")
+}
+
+private func renderSettingsHTML(
+    settings: EmbeddingSettings,
+    saved: Bool,
+    authorization: SettingsAuthorization,
+    config: AppConfig
+) -> String {
     var modelOptions = EmbeddingSettings.availableOpenAIModels
     if !modelOptions.contains(settings.openAIModel) {
         modelOptions.append(settings.openAIModel)
     }
 
-    let optionsHTML: String = modelOptions.map { model in
+    var optionFragments: [String] = []
+    optionFragments.reserveCapacity(modelOptions.count)
+    for model in modelOptions {
         let selected = model == settings.openAIModel ? " selected" : ""
-        return "<option value=\"" + escapeHTML(model) + "\"" + selected + ">" + escapeHTML(model) + "</option>"
-    }.joined(separator: "")
+        let fragment = "<option value=\"" + escapeHTML(model) + "\"" + selected + ">" + escapeHTML(model) + "</option>"
+        optionFragments.append(fragment)
+    }
+    let optionsHTML = optionFragments.joined(separator: "")
 
-    let providerQwenSelected = settings.provider == .qwen3 ? " selected" : ""
-    let providerOpenAISelected = settings.provider == .openai ? " selected" : ""
+    let qwenChecked = settings.provider == .qwen3 ? " checked" : ""
+    let openAIChecked = settings.provider == .openai ? " checked" : ""
+    let savedBanner = saved ? "<div class=\"flash flash-success\">Settings saved. New embedding requests will use the updated configuration.</div>" : ""
+    let isAPIKeyAuthorization: Bool
+    switch authorization.mode {
+    case .apiKey:
+        isAPIKeyAuthorization = true
+    case .browserSession:
+        isAPIKeyAuthorization = false
+    }
+    let authBanner = isAPIKeyAuthorization
+        ? "<div class=\"flash flash-info\">This page was opened with Bearer auth. For a persistent browser session, use <code>/settings/login</code>.</div>"
+        : ""
+    let openAIKeyState = settings.openAIAPIKey == nil ? "Not stored" : "Stored"
 
-    let savedBanner = saved ? "<div class=\"ok\">Settings saved.</div>" : ""
+    let logoutAction = authorization.showsLogout
+        ? """
+          <form method="post" action="/settings/logout">
+            <button class="ghost-button" type="submit">Log out</button>
+          </form>
+          """
+        : ""
+
+    let content = """
+    <div class="site-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark">F</div>
+          <div>
+            <div class="brand-title">Foundation Settings</div>
+            <div class="brand-subtitle">Embedding provider and secret management</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="status-chip">\(escapeHTML(authorization.authLabel))</span>
+          \(logoutAction)
+        </div>
+      </header>
+
+      <section class="hero-panel">
+        <div>
+          <div class="eyebrow">Settings dashboard</div>
+          <h1>Configure how the server builds embeddings.</h1>
+          <p class="hero-copy">Changes here affect text embedding generation, similarity search, and any asynchronous enrichment jobs that rely on the current embedding backend.</p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span class="stat-label">Current provider</span>
+            <strong data-provider-summary>\(escapeHTML(settings.provider.displayName))</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">OpenAI key</span>
+            <strong>\(escapeHTML(openAIKeyState))</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Embedding dimension</span>
+            <strong>\(config.embeddingDimension)</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="layout-grid">
+        <aside class="panel muted-panel">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Session</div>
+              <h2>Runtime status</h2>
+            </div>
+          </div>
+          <dl class="meta-grid">
+            <div>
+              <dt>Authentication</dt>
+              <dd>\(escapeHTML(authorization.authLabel))</dd>
+            </div>
+            <div>
+              <dt>Access mode</dt>
+              <dd>\(escapeHTML(authorization.authDescription))</dd>
+            </div>
+            <div>
+              <dt>Atom table</dt>
+              <dd>\(escapeHTML(config.embeddingsTable))</dd>
+            </div>
+            <div>
+              <dt>OpenAI key</dt>
+              <dd>\(escapeHTML(maskAPIKey(settings.openAIAPIKey)))</dd>
+            </div>
+          </dl>
+          <div class="helper-note">OpenAI vectors are resized to the server dimension for compatibility. Qwen mode stays local and deterministic.</div>
+        </aside>
+
+        <div class="panel">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Configuration</div>
+              <h2>Embedding settings</h2>
+            </div>
+          </div>
+          \(savedBanner)
+          \(authBanner)
+          <form method="post" action="/settings" class="stack-form">
+            <div class="provider-grid">
+              <label class="provider-card" data-provider-card="qwen3">
+                <input type="radio" name="provider" value="qwen3"\(qwenChecked) />
+                <span class="provider-kicker">Local mode</span>
+                <strong>\(escapeHTML(EmbeddingProvider.qwen3.displayName))</strong>
+                <span>Fast deterministic embeddings with no remote API dependency.</span>
+              </label>
+              <label class="provider-card" data-provider-card="openai">
+                <input type="radio" name="provider" value="openai"\(openAIChecked) />
+                <span class="provider-kicker">Remote mode</span>
+                <strong>\(escapeHTML(EmbeddingProvider.openai.displayName))</strong>
+                <span>Uses OpenAI embeddings and keeps the API key stored server-side.</span>
+              </label>
+            </div>
+
+            <div class="form-section" data-provider-group="qwen3">
+              <label for="qwen_model">Qwen model label</label>
+              <input id="qwen_model" name="qwen_model" value="\(escapeHTML(settings.qwenModel))" />
+              <p class="field-note">This label is informational. Qwen mode still uses the local deterministic embedding backend.</p>
+            </div>
+
+            <div class="form-section" data-provider-group="openai">
+              <label for="openai_model">OpenAI embedding model</label>
+              <select id="openai_model" name="openai_model">\(optionsHTML)</select>
+
+              <label for="openai_api_key">OpenAI API key</label>
+              <input id="openai_api_key" name="openai_api_key" type="password" placeholder="\(escapeHTML(maskAPIKey(settings.openAIAPIKey)))" autocomplete="off" />
+              <p class="field-note">Leave this empty to keep the stored key. Use the checkbox below to remove it completely.</p>
+
+              <label class="checkbox-row">
+                <input type="checkbox" name="clear_openai_key" value="1" />
+                <span>Clear the stored OpenAI API key</span>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button class="primary-button" type="submit">Save settings</button>
+              <span class="helper-note">Applies to future embedding requests immediately.</span>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+    """
+
+    let script = """
+    const providerInputs = document.querySelectorAll('input[name="provider"]');
+    const providerCards = document.querySelectorAll('[data-provider-card]');
+    const providerGroups = document.querySelectorAll('[data-provider-group]');
+    const providerSummary = document.querySelector('[data-provider-summary]');
+    const labels = {
+      qwen3: "\(escapeHTML(EmbeddingProvider.qwen3.displayName))",
+      openai: "\(escapeHTML(EmbeddingProvider.openai.displayName))"
+    };
+
+    function syncProviderUI() {
+      const selected = document.querySelector('input[name="provider"]:checked')?.value || "qwen3";
+      providerCards.forEach((card) => {
+        card.dataset.active = card.dataset.providerCard === selected ? "true" : "false";
+      });
+      providerGroups.forEach((group) => {
+        group.hidden = group.dataset.providerGroup !== selected;
+      });
+      if (providerSummary) {
+        providerSummary.textContent = labels[selected] || selected;
+      }
+    }
+
+    providerInputs.forEach((input) => {
+      input.addEventListener("change", syncProviderUI);
+    });
+    syncProviderUI();
+    """
+
+    return renderSettingsDocument(pageTitle: "Foundation Settings", content: content, script: script)
+}
+
+private func renderSettingsDocument(pageTitle: String, content: String, script: String) -> String {
+    let scriptBlock = script.isEmpty ? "" : "<script>" + script + "</script>"
 
     return """
     <!doctype html>
@@ -1823,64 +2844,393 @@ private func renderSettingsHTML(settings: EmbeddingSettings, saved: Bool) -> Str
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Foundation Settings</title>
+        <title>\(escapeHTML(pageTitle))</title>
         <style>
-          :root { --bg:#f4f6fb; --card:#ffffff; --ink:#1f2a44; --line:#dce3f1; --accent:#0e6ac7; }
+          :root {
+            --canvas: #08111f;
+            --canvas-top: #143056;
+            --panel: rgba(8, 17, 31, 0.78);
+            --panel-soft: rgba(255, 255, 255, 0.08);
+            --line: rgba(203, 221, 247, 0.18);
+            --ink: #f2f5fb;
+            --muted: #a8b6ce;
+            --accent: #f38b4a;
+            --accent-strong: #ff6b35;
+            --success: #5ad1a6;
+            --danger: #ff8d8d;
+            --info: #7cc8ff;
+          }
           * { box-sizing: border-box; }
-          body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); }
-          .wrap { max-width: 740px; margin: 32px auto; padding: 0 16px; }
-          .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; }
-          h1 { margin:0 0 12px; font-size: 1.5rem; }
-          p { margin:0 0 16px; color:#4a5879; }
-          .ok { margin:0 0 14px; padding:10px 12px; border-radius:10px; background:#eaf6ec; color:#1c6e2f; border:1px solid #b4e0bc; }
-          label { display:block; margin:14px 0 6px; font-weight:600; }
-          input, select { width:100%; padding:10px; border:1px solid var(--line); border-radius:10px; font-size:0.95rem; }
-          .hint { margin-top:6px; font-size:0.85rem; color:#607093; }
-          .row { display:grid; grid-template-columns: 1fr; gap: 12px; }
-          .submit { margin-top:16px; width:auto; border:0; background:var(--accent); color:#fff; padding:10px 16px; border-radius:10px; cursor:pointer; }
-          .subtle { margin-top:16px; font-size:0.9rem; }
-          @media (min-width: 720px) { .row { grid-template-columns: 1fr 1fr; } }
+          [hidden] { display: none !important; }
+          body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Avenir Next", "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+              radial-gradient(circle at top left, rgba(243, 139, 74, 0.22), transparent 26%),
+              radial-gradient(circle at top right, rgba(124, 200, 255, 0.16), transparent 24%),
+              linear-gradient(160deg, var(--canvas-top) 0%, var(--canvas) 48%, #050a13 100%);
+          }
+          body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+          }
+          code {
+            padding: 0.1rem 0.35rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            font-family: "SFMono-Regular", "SF Mono", Menlo, monospace;
+            font-size: 0.92em;
+          }
+          .site-shell {
+            position: relative;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 28px 18px 42px;
+          }
+          .topbar,
+          .topbar-actions,
+          .brand-lockup,
+          .hero-stats,
+          .section-head,
+          .form-actions,
+          .checkbox-row {
+            display: flex;
+            align-items: center;
+          }
+          .topbar {
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 20px;
+          }
+          .brand-lockup {
+            gap: 14px;
+          }
+          .brand-mark {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+            color: #09111d;
+            font-weight: 800;
+            font-size: 1.15rem;
+            box-shadow: 0 18px 40px rgba(243, 139, 74, 0.22);
+          }
+          .brand-title {
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 0.01em;
+          }
+          .brand-subtitle,
+          .topbar-note,
+          .hero-copy,
+          .field-note,
+          .helper-note,
+          .info-item span {
+            color: var(--muted);
+          }
+          .topbar-actions {
+            gap: 10px;
+          }
+          .status-chip,
+          .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 0.45rem 0.8rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+          }
+          .eyebrow {
+            width: fit-content;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            letter-spacing: 0.15em;
+            color: #d4deef;
+          }
+          h1, h2 {
+            margin: 0;
+            line-height: 1.05;
+          }
+          h1 {
+            font-size: clamp(2.1rem, 4vw, 3.5rem);
+            max-width: 12ch;
+          }
+          h2 {
+            font-size: 1.4rem;
+          }
+          .hero-panel,
+          .panel {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.24);
+          }
+          .hero-panel {
+            border-radius: 28px;
+            padding: 28px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+            gap: 20px;
+            margin-bottom: 18px;
+          }
+          .hero-stats {
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+          }
+          .stat-card,
+          .panel {
+            border-radius: 22px;
+          }
+          .stat-card {
+            min-width: 150px;
+            padding: 16px 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+          }
+          .stat-label,
+          dt,
+          .provider-kicker {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+          }
+          .layout-grid {
+            display: grid;
+            grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+            gap: 18px;
+          }
+          .login-grid {
+            grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+          }
+          .panel {
+            padding: 24px;
+          }
+          .muted-panel {
+            background: rgba(255, 255, 255, 0.06);
+          }
+          .section-head {
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+          }
+          .flash {
+            margin-bottom: 14px;
+            padding: 13px 14px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+            font-weight: 600;
+          }
+          .flash-success {
+            color: #ddffef;
+            background: rgba(90, 209, 166, 0.12);
+            border-color: rgba(90, 209, 166, 0.32);
+          }
+          .flash-error {
+            color: #ffe3e3;
+            background: rgba(255, 141, 141, 0.14);
+            border-color: rgba(255, 141, 141, 0.34);
+          }
+          .flash-info {
+            color: #dff2ff;
+            background: rgba(124, 200, 255, 0.12);
+            border-color: rgba(124, 200, 255, 0.3);
+          }
+          .stack-form {
+            display: grid;
+            gap: 14px;
+          }
+          label {
+            font-size: 0.92rem;
+            font-weight: 700;
+          }
+          input,
+          select,
+          button {
+            font: inherit;
+          }
+          input,
+          select {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--ink);
+            padding: 0.95rem 1rem;
+            outline: none;
+          }
+          input::placeholder {
+            color: rgba(242, 245, 251, 0.42);
+          }
+          input:focus,
+          select:focus {
+            border-color: rgba(243, 139, 74, 0.7);
+            box-shadow: 0 0 0 4px rgba(243, 139, 74, 0.16);
+          }
+          .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+          }
+          .provider-card {
+            display: block;
+            padding: 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+          }
+          .provider-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(243, 139, 74, 0.46);
+          }
+          .provider-card[data-active="true"] {
+            border-color: rgba(243, 139, 74, 0.9);
+            background: rgba(243, 139, 74, 0.14);
+            box-shadow: inset 0 0 0 1px rgba(243, 139, 74, 0.16);
+          }
+          .provider-card input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+          }
+          .provider-card strong,
+          .info-item strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1rem;
+          }
+          .provider-card span {
+            display: block;
+            line-height: 1.45;
+            color: var(--muted);
+          }
+          .form-section {
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+          }
+          .checkbox-row {
+            gap: 10px;
+            margin-top: 8px;
+            font-weight: 600;
+          }
+          .checkbox-row input {
+            width: 18px;
+            height: 18px;
+            padding: 0;
+          }
+          .form-actions {
+            justify-content: space-between;
+            gap: 14px;
+            padding-top: 6px;
+            flex-wrap: wrap;
+          }
+          .primary-button,
+          .ghost-button {
+            border: 0;
+            border-radius: 999px;
+            padding: 0.95rem 1.35rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 140ms ease, filter 140ms ease;
+          }
+          .primary-button {
+            color: #09111d;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+            box-shadow: 0 18px 40px rgba(243, 139, 74, 0.22);
+          }
+          .ghost-button {
+            color: var(--ink);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          }
+          .primary-button:hover,
+          .ghost-button:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.04);
+          }
+          .meta-grid {
+            display: grid;
+            gap: 14px;
+            margin: 0;
+          }
+          .meta-grid div {
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          }
+          .meta-grid div:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+          }
+          dt {
+            margin: 0 0 4px;
+          }
+          dd {
+            margin: 0;
+            line-height: 1.5;
+          }
+          .info-list {
+            display: grid;
+            gap: 14px;
+          }
+          .info-item {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+          }
+          @media (max-width: 960px) {
+            .hero-panel,
+            .layout-grid,
+            .login-grid {
+              grid-template-columns: 1fr;
+            }
+            .topbar {
+              flex-direction: column;
+              align-items: flex-start;
+            }
+          }
+          @media (max-width: 680px) {
+            .site-shell {
+              padding: 18px 12px 28px;
+            }
+            .hero-panel,
+            .panel {
+              padding: 18px;
+              border-radius: 20px;
+            }
+            .provider-grid {
+              grid-template-columns: 1fr;
+            }
+            .hero-stats {
+              justify-content: stretch;
+            }
+            .stat-card {
+              width: 100%;
+            }
+          }
         </style>
       </head>
       <body>
-        <div class="wrap">
-          <div class="card">
-            <h1>Foundation Settings</h1>
-            <p>Configure embedding provider and model selection for <code>/embed/text</code>, <code>/add</code>, and <code>/find</code>.</p>
-            \(savedBanner)
-            <form method="post" action="/settings">
-              <label for="provider">Embedding provider</label>
-              <select id="provider" name="provider">
-                <option value="qwen3"\(providerQwenSelected)>\(EmbeddingProvider.qwen3.displayName)</option>
-                <option value="openai"\(providerOpenAISelected)>\(EmbeddingProvider.openai.displayName)</option>
-              </select>
-
-              <div class="row">
-                <div>
-                  <label for="qwen_model">Qwen model label</label>
-                  <input id="qwen_model" name="qwen_model" value="\(escapeHTML(settings.qwenModel))" />
-                  <div class="hint">Label only. Local deterministic embedding backend remains active for Qwen mode.</div>
-                </div>
-                <div>
-                  <label for="openai_model">OpenAI embedding model</label>
-                  <select id="openai_model" name="openai_model">\(optionsHTML)</select>
-                </div>
-              </div>
-
-              <label for="openai_api_key">OpenAI API key</label>
-              <input id="openai_api_key" name="openai_api_key" placeholder="\(escapeHTML(maskAPIKey(settings.openAIAPIKey)))" />
-              <div class="hint">Leave empty to keep existing key. Check box below to clear saved key.</div>
-
-              <label>
-                <input type="checkbox" name="clear_openai_key" value="1" style="width:auto; margin-right:8px;" />
-                Clear stored OpenAI API key
-              </label>
-
-              <button class="submit" type="submit">Save settings</button>
-            </form>
-            <div class="subtle">OpenAI vectors are resized to your configured DB dimension for compatibility.</div>
-          </div>
-        </div>
+        \(content)
+        \(scriptBlock)
       </body>
     </html>
     """
@@ -2028,7 +3378,16 @@ private struct SettingRow: Decodable {
     let setting_value: String
 }
 
+private struct SessionIdentityRow: Decodable {
+    let id: Int64
+}
+
+private struct SettingsLoginForm: Content {
+    let api_key: String
+}
+
 private struct SettingsForm: Content {
+    let api_key: String?
     let provider: String
     let qwen_model: String?
     let openai_model: String?

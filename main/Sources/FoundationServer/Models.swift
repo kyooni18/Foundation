@@ -148,6 +148,33 @@ struct VaultSyncPushPayload: Content {
     let vault_uid: String
     let device_id: String?
     let changes: [VaultSyncChangePayload]
+
+    init(vault_uid: String, device_id: String?, changes: [VaultSyncChangePayload]) {
+        self.vault_uid = vault_uid
+        self.device_id = device_id
+        self.changes = changes
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case device_id
+        case changes
+    }
+
+    private enum DecodingKeys: String, CodingKey {
+        case vault_uid
+        case vaultUid
+        case device_id
+        case deviceId
+        case changes
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DecodingKeys.self)
+        vault_uid = try container.decodeAlias(String.self, primary: .vault_uid, alternate: .vaultUid)
+        device_id = try container.decodeAliasIfPresent(String.self, primary: .device_id, alternate: .deviceId)
+        changes = try container.decode([VaultSyncChangePayload].self, forKey: .changes)
+    }
 }
 
 struct VaultSyncChangePayload: Content {
@@ -156,18 +183,115 @@ struct VaultSyncChangePayload: Content {
     let changed_at_unix_ms: Int64?
     let content_base64: String?
     let content_sha256: String?
+
+    init(
+        file_path: String,
+        action: String,
+        changed_at_unix_ms: Int64?,
+        content_base64: String?,
+        content_sha256: String?
+    ) {
+        self.file_path = file_path
+        self.action = action
+        self.changed_at_unix_ms = changed_at_unix_ms
+        self.content_base64 = content_base64
+        self.content_sha256 = content_sha256
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case file_path
+        case action
+        case changed_at_unix_ms
+        case content_base64
+        case content_sha256
+    }
+
+    private enum DecodingKeys: String, CodingKey {
+        case file_path
+        case filePath
+        case action
+        case changed_at_unix_ms
+        case changedAtUnixMS
+        case content_base64
+        case contentBase64
+        case content_sha256
+        case contentSha256
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DecodingKeys.self)
+        file_path = try container.decodeAlias(String.self, primary: .file_path, alternate: .filePath)
+        action = try container.decode(String.self, forKey: .action)
+        changed_at_unix_ms = try container.decodeAliasIfPresent(Int64.self, primary: .changed_at_unix_ms, alternate: .changedAtUnixMS)
+        content_base64 = try container.decodeAliasIfPresent(String.self, primary: .content_base64, alternate: .contentBase64)
+        content_sha256 = try container.decodeAliasIfPresent(String.self, primary: .content_sha256, alternate: .contentSha256)
+    }
 }
 
 struct VaultSyncPullPayload: Content {
     let vault_uid: String
     let since_unix_ms: Int64?
     let limit: Int?
+
+    init(vault_uid: String, since_unix_ms: Int64?, limit: Int?) {
+        self.vault_uid = vault_uid
+        self.since_unix_ms = since_unix_ms
+        self.limit = limit
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case since_unix_ms
+        case limit
+    }
+
+    private enum DecodingKeys: String, CodingKey {
+        case vault_uid
+        case vaultUid
+        case since_unix_ms
+        case sinceUnixMS
+        case limit
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DecodingKeys.self)
+        vault_uid = try container.decodeAlias(String.self, primary: .vault_uid, alternate: .vaultUid)
+        since_unix_ms = try container.decodeAliasIfPresent(Int64.self, primary: .since_unix_ms, alternate: .sinceUnixMS)
+        limit = try container.decodeIfPresent(Int.self, forKey: .limit)
+    }
 }
 
 struct VaultSyncStatusPayload: Content {
     let vault_uid: String
     let since_unix_ms: Int64?
     let limit: Int?
+
+    init(vault_uid: String, since_unix_ms: Int64?, limit: Int?) {
+        self.vault_uid = vault_uid
+        self.since_unix_ms = since_unix_ms
+        self.limit = limit
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case since_unix_ms
+        case limit
+    }
+
+    private enum DecodingKeys: String, CodingKey {
+        case vault_uid
+        case vaultUid
+        case since_unix_ms
+        case sinceUnixMS
+        case limit
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DecodingKeys.self)
+        vault_uid = try container.decodeAlias(String.self, primary: .vault_uid, alternate: .vaultUid)
+        since_unix_ms = try container.decodeAliasIfPresent(Int64.self, primary: .since_unix_ms, alternate: .sinceUnixMS)
+        limit = try container.decodeIfPresent(Int.self, forKey: .limit)
+    }
 }
 
 struct VaultSyncFullPushPayload: Content {
@@ -175,16 +299,93 @@ struct VaultSyncFullPushPayload: Content {
     let device_id: String?
     let uploaded_at_unix_ms: Int64?
     let files: [VaultSyncFullFilePayload]
+
+    init(vault_uid: String, device_id: String?, uploaded_at_unix_ms: Int64?, files: [VaultSyncFullFilePayload]) {
+        self.vault_uid = vault_uid
+        self.device_id = device_id
+        self.uploaded_at_unix_ms = uploaded_at_unix_ms
+        self.files = files
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case device_id
+        case uploaded_at_unix_ms
+        case files
+    }
+
+    private enum DecodingKeys: String, CodingKey {
+        case vault_uid
+        case vaultUid
+        case device_id
+        case deviceId
+        case uploaded_at_unix_ms
+        case uploadedAtUnixMS
+        case files
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DecodingKeys.self)
+        vault_uid = try container.decodeAlias(String.self, primary: .vault_uid, alternate: .vaultUid)
+        device_id = try container.decodeAliasIfPresent(String.self, primary: .device_id, alternate: .deviceId)
+        uploaded_at_unix_ms = try container.decodeAliasIfPresent(Int64.self, primary: .uploaded_at_unix_ms, alternate: .uploadedAtUnixMS)
+        files = try container.decode([VaultSyncFullFilePayload].self, forKey: .files)
+    }
 }
 
 struct VaultSyncFullFilePayload: Content {
     let file_path: String
     let content_base64: String
+
+    init(file_path: String, content_base64: String) {
+        self.file_path = file_path
+        self.content_base64 = content_base64
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case file_path
+        case content_base64
+    }
+
+    private enum DecodingKeys: String, CodingKey {
+        case file_path
+        case filePath
+        case content_base64
+        case contentBase64
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DecodingKeys.self)
+        file_path = try container.decodeAlias(String.self, primary: .file_path, alternate: .filePath)
+        content_base64 = try container.decodeAlias(String.self, primary: .content_base64, alternate: .contentBase64)
+    }
 }
 
 struct VaultSyncFullPullPayload: Content {
     let vault_uid: String
     let limit: Int?
+
+    init(vault_uid: String, limit: Int?) {
+        self.vault_uid = vault_uid
+        self.limit = limit
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case limit
+    }
+
+    private enum DecodingKeys: String, CodingKey {
+        case vault_uid
+        case vaultUid
+        case limit
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DecodingKeys.self)
+        vault_uid = try container.decodeAlias(String.self, primary: .vault_uid, alternate: .vaultUid)
+        limit = try container.decodeIfPresent(Int.self, forKey: .limit)
+    }
 }
 
 struct VaultSnapshotFileItem: Content {
@@ -251,4 +452,27 @@ struct VaultSyncStatusResponse: Content {
     let file_timestamps: [VaultFileTimestampItem]
     let change_log: [VaultChangeLogItem]
     let error: String?
+}
+
+private extension KeyedDecodingContainer {
+    func decodeAlias<T: Decodable>(_ type: T.Type, primary: Key, alternate: Key) throws -> T {
+        if let value = try decodeIfPresent(type, forKey: primary) {
+            return value
+        }
+        if let value = try decodeIfPresent(type, forKey: alternate) {
+            return value
+        }
+
+        throw DecodingError.keyNotFound(
+            primary,
+            .init(codingPath: codingPath, debugDescription: "Missing value for keys \(primary.stringValue) / \(alternate.stringValue)")
+        )
+    }
+
+    func decodeAliasIfPresent<T: Decodable>(_ type: T.Type, primary: Key, alternate: Key) throws -> T? {
+        if let value = try decodeIfPresent(type, forKey: primary) {
+            return value
+        }
+        return try decodeIfPresent(type, forKey: alternate)
+    }
 }

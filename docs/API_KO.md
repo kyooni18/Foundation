@@ -1,12 +1,12 @@
 # Foundation API 문서 (한국어)
 
-최종 업데이트: 2026-03-04
+최종 업데이트: 2026-03-08
 
 ## 1. 기본 정보
 
 - Base URL: `http://localhost:8000`
 - 기본 API 포맷: JSON
-- 예외: `GET /settings`, `POST /settings`는 HTML/Form 엔드포인트
+- 예외: `/settings` 브라우저 엔드포인트는 HTML/Form 응답을 반환함
 - 현재 서버 구현: Swift (Vapor)
 
 ## 2. 인증
@@ -28,8 +28,8 @@ Authorization: Bearer <api_key>
 - `POST /keys/create`
 - `POST /keys/delete`
 - `POST /keys/verify`
-- `GET /settings`
-- `POST /settings`
+- `GET /settings/login`
+- `POST /settings/login`
 
 ### 2.3 인증이 필요한 엔드포인트
 
@@ -37,6 +37,9 @@ Authorization: Bearer <api_key>
 - `POST /add`
 - `POST /delete`
 - `POST /find`
+- `GET /settings`
+- `POST /settings`
+- `POST /settings/logout`
 - 모든 `/sources/*` 엔드포인트
 - 모든 `/vaults/*` 엔드포인트
 
@@ -58,8 +61,11 @@ Authorization: Bearer <api_key>
 | POST | `/keys/create` | 없음 | 새 API 키 발급(바디에 마스터 키 필요) |
 | POST | `/keys/delete` | 없음 | 평문 API 키로 삭제 |
 | POST | `/keys/verify` | 없음 | API 키 유효성 확인 |
-| GET | `/settings` | 없음 | 설정 HTML 페이지 |
-| POST | `/settings` | 없음 | 설정 저장(Form, redirect) |
+| GET | `/settings/login` | 없음 | 설정용 브라우저 로그인 페이지 |
+| POST | `/settings/login` | 없음 | API 키로 설정 브라우저 세션 생성 |
+| GET | `/settings` | 필요 | 설정 HTML 페이지 |
+| POST | `/settings` | 필요 | 설정 저장(Form post) |
+| POST | `/settings/logout` | 필요 | 설정 브라우저 세션 종료 |
 | POST | `/embed/text` | 필요 | 텍스트 임베딩 반환 |
 | POST | `/add` | 필요 | atom/keypoint 저장 |
 | POST | `/delete` | 필요 | 텍스트 기준 atom 삭제 |
@@ -231,15 +237,33 @@ Vapor Abort 실패 형태:
 
 ## 7. 설정 엔드포인트
 
-## 7.1 `GET /settings`
+## 7.1 `GET /settings/login`
 
 - 인증: 없음
 - 응답 content-type: `text/html`
+- 목적: 설정 페이지 접근을 위한 브라우저 로그인 UI
+
+## 7.2 `POST /settings/login`
+
+- 인증: Bearer 불필요
+- 요청 content-type: HTML form (`application/x-www-form-urlencoded`)
+- 필드:
+  - `api_key`: 필수
+- 응답: 성공 시 `/settings`로 `303 See Other` 리다이렉트하고 브라우저 세션 쿠키를 설정
+
+## 7.3 `GET /settings`
+
+- 인증: 필요
+- 응답 content-type: `text/html`
 - 목적: 임베딩 provider/model/API key를 UI에서 관리
+- 인증 방식:
+  - `Authorization: Bearer <api_key>`
+  - `/settings/login`에서 발급된 브라우저 세션 쿠키
+  - 1회성 브라우저 로그인용 `GET /settings?api_key=<api_key>`
 
-## 7.2 `POST /settings`
+## 7.4 `POST /settings`
 
-- 인증: 없음
+- 인증: 필요
 - 요청 content-type: HTML form (`application/x-www-form-urlencoded`)
 - 필드:
   - `provider`: `qwen3` 또는 `openai`
@@ -247,7 +271,14 @@ Vapor Abort 실패 형태:
   - `openai_model`: 선택
   - `openai_api_key`: 선택 (비워두면 기존 키 유지)
   - `clear_openai_key`: `"1"`이면 저장된 OpenAI 키 삭제
-- 응답: `/settings?saved=1`로 redirect
+- 응답 content-type: `text/html`
+- 동작: 저장 후 성공 배너가 포함된 설정 페이지를 바로 반환
+
+## 7.5 `POST /settings/logout`
+
+- 인증: 브라우저 세션 쿠키
+- 응답: `/settings/login?signed_out=1`로 `303 See Other`
+- 동작: 서버에 저장된 브라우저 세션을 삭제하고 쿠키를 비움
 
 ---
 
@@ -333,6 +364,7 @@ Vapor Abort 실패 형태:
 ## 9.1 데이터 모델
 
 - `sources`: 원본 자료(노트/URL/파일/미디어 등) 엔티티, `source_uid` 유니크
+- `atoms_db`: atom 저장소. `content`, `vector`, `type`(`usercreated`, `aicreated`, `imported`) 컬럼을 사용
 - `source_atoms`: source와 atom(`atoms_db.id`) 사이 N:M 연결
 - `source_indexes`: source별 centroid 임베딩(연결된 atom 임베딩 평균)
 - `source_links`: source 간 거리 링크(`distance`, `method`) 영속화
@@ -524,7 +556,7 @@ Vapor Abort 실패 형태:
 | `EMBEDDING_PROVIDER` | `qwen3` | 기본 provider (`qwen3` 또는 `openai`) |
 | `QWEN_MODEL` | `Qwen/Qwen3-Embedding-0.6B` | Qwen 모드 UI 표시 모델명 |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | 기본 OpenAI 모델 |
-| `OPENAI_API_KEY` | (빈값) | OpenAI API 키 (`/settings`에서도 관리 가능) |
+| `OPENAI_API_KEY` | (빈값) | OpenAI API 키 (인증된 `/settings`에서도 관리 가능) |
 | `MAX_REQUEST_BODY_MB` | `128` | 전역 HTTP 요청 본문 최대 크기(MB). 큰 볼트 동기화의 413 대응에 사용 |
 
 ---
@@ -536,8 +568,11 @@ Vapor Abort 실패 형태:
 Vault 동기화는 기존 atom/source 도메인과 분리된 전용 테이블을 사용합니다.
 
 - `vaults`: vault 식별자(`vault_uid`)
-- `vault_files`: 서버가 보관하는 현재 전체 스냅샷
+- `vault_files`: 서버가 보관하는 현재 전체 스냅샷 + 파일 메타데이터(`name`, `base64`, 선택적 텍스트 `content`, 비동기 enrichment 필드)
 - `vault_changes`: 델타 동기화를 위한 append-only 변경 로그
+- `file_atoms`: 생성된 atom과 업로드 파일의 연결
+- `file_links`: 파일 간 관계 엣지
+- `file_processing_jobs`: `file_enrichment`, `atomize` 비동기 작업 큐
 
 `vault_files`, `vault_changes`는 `vault_id`(=`vaults.id` FK)로 연결됩니다.
 추가로 push된 원본 파일 바이트는 서버 workdir의
@@ -546,6 +581,7 @@ Vault 동기화는 기존 atom/source 도메인과 분리된 전용 테이블을
 참고:
 - `vault_uid`는 `vault_storage` 하위 실제 폴더명으로 사용됩니다 (`/`, `\` 포함 불가).
 - 무결성 검증은 강제하지 않습니다. `content_sha256`는 선택 메타데이터입니다.
+- push/full-push 시 기존 파생 필드는 비워지고, enrichment/atom 생성용 비동기 작업이 자동 적재됩니다.
 
 ### 12.1 `POST /vaults/sync/push`
 

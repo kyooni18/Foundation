@@ -123,7 +123,7 @@ public final class FoundationAPIClient {
     // MARK: - Settings (HTML/Form)
 
     public func getSettingsPageHTML() async throws -> String {
-        var request = try makeRequest(path: "/settings", method: .get, requiresAuth: false)
+        var request = try makeRequest(path: "/settings", method: .get, requiresAuth: true)
         request.setValue("text/html", forHTTPHeaderField: "Accept")
 
         let (data, _) = try await performRaw(request: request)
@@ -134,7 +134,7 @@ public final class FoundationAPIClient {
     }
 
     public func updateSettings(_ form: SettingsUpdateForm) async throws {
-        var request = try makeRequest(path: "/settings", method: .post, requiresAuth: false)
+        var request = try makeRequest(path: "/settings", method: .post, requiresAuth: true)
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 
         var items: [URLQueryItem] = [
@@ -475,6 +475,14 @@ public struct VaultSyncChangeRequest: Encodable {
         self.content_base64 = content_base64
         self.content_sha256 = content_sha256
     }
+
+    enum CodingKeys: String, CodingKey {
+        case file_path
+        case action
+        case changed_at_unix_ms
+        case content_base64
+        case content_sha256
+    }
 }
 
 public struct VaultSyncPushRequest: Encodable {
@@ -486,6 +494,12 @@ public struct VaultSyncPushRequest: Encodable {
         self.vault_uid = vault_uid
         self.device_id = device_id
         self.changes = changes
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case device_id
+        case changes
     }
 }
 
@@ -499,6 +513,12 @@ public struct VaultSyncPullRequest: Encodable {
         self.since_unix_ms = since_unix_ms
         self.limit = limit
     }
+
+    enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case since_unix_ms
+        case limit
+    }
 }
 
 public struct VaultSyncFullFileRequest: Encodable {
@@ -508,6 +528,11 @@ public struct VaultSyncFullFileRequest: Encodable {
     public init(file_path: String, content_base64: String) {
         self.file_path = file_path
         self.content_base64 = content_base64
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case file_path
+        case content_base64
     }
 }
 
@@ -527,6 +552,13 @@ public struct VaultSyncFullPushRequest: Encodable {
         self.device_id = device_id
         self.uploaded_at_unix_ms = uploaded_at_unix_ms
         self.files = files
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case device_id
+        case uploaded_at_unix_ms
+        case files
     }
 }
 

@@ -27,6 +27,7 @@ docker compose -f main/docker-compose.yml up -d --build
 
 The API is exposed on `http://localhost:8000`.
 Settings UI is available at `http://localhost:8000/settings`.
+In a browser, unauthenticated access redirects to `http://localhost:8000/settings/login`, where you can sign in with a Foundation API key.
 
 ## API documentation
 - English: [API_EN.md](./docs/API_EN.md)
@@ -50,10 +51,11 @@ The server loads `.env` from the repository root automatically.
 ## Embedding providers
 - `qwen3`: local deterministic embedding backend (Qwen3-compatible mode).
 - `openai`: OpenAI Embeddings API (`text-embedding-3-small`, `text-embedding-3-large`, `text-embedding-ada-002`).
-- Configure provider/model/API key at `/settings` or via `.env`.
+- Configure provider/model/API key at `/settings` through the browser login UI, with `Authorization: Bearer <api_key>`, or via `.env`.
 
 ## Source indexing (provenance graph)
 - Use `sources` to represent original materials (notes, URLs, media references) with unique `source_uid`.
+- Atoms are stored in `atoms_db(content, vector, type)` where `type` is `usercreated`, `aicreated`, or `imported`.
 - Link uploaded atoms/keypoints to a source via `/sources/link-atom`.
 - Build source-level embeddings (centroid of linked atoms) via `/sources/reindex`.
 - Measure source-to-source distance via `/sources/find-similar`.
@@ -82,7 +84,9 @@ curl -X POST http://localhost:8000/sources/find-similar \
 
 ## Vault sync (Obsidian vault)
 - Auth required: all `/vaults/*` endpoints require `Authorization: Bearer <api_key>`.
-- Storage is separated into dedicated tables: `vaults`, `vault_files`, `vault_changes`.
+- Storage is separated into dedicated tables: `vaults`, `vault_files`, `vault_changes`, `file_atoms`, `file_links`, `file_processing_jobs`.
+- `vault_files` stores the file-level object (`name`, `base64`, optional text `content`, async `subject` / `interpreted`, and vector fields).
+- Uploads clear stale derived fields and enqueue async jobs: `file_enrichment` and `atomize`.
 - Original file bytes are mirrored in workdir: `./vault_storage/<vault_uid>/...`.
 - `POST /vaults/sync/push`: upload changed files + changelog entries.
 - `POST /vaults/sync/pull`: fetch full snapshot (no timestamp) or delta (`since_unix_ms`).

@@ -1,3 +1,4 @@
+name: foundation
 services:
   db:
     image: pgvector/pgvector:pg17

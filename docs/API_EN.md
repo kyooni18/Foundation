@@ -1,11 +1,11 @@
 # Foundation API Documentation (English)
 
-Last updated: 2026-03-04
+Last updated: 2026-03-08
 
 ## 1. Base information
 
 - Base URL: `http://localhost:8000`
-- API format: JSON (except `GET /settings` and `POST /settings`, which are HTML/form endpoints)
+- API format: JSON (except `/settings` browser endpoints, which return HTML/form responses)
 - Current server implementation: Swift (Vapor)
 
 ## 2. Authentication
@@ -27,8 +27,8 @@ Authorization: Bearer <api_key>
 - `POST /keys/create`
 - `POST /keys/delete`
 - `POST /keys/verify`
-- `GET /settings`
-- `POST /settings`
+- `GET /settings/login`
+- `POST /settings/login`
 
 ### 2.3 Auth-protected endpoints
 
@@ -36,6 +36,9 @@ Authorization: Bearer <api_key>
 - `POST /add`
 - `POST /delete`
 - `POST /find`
+- `GET /settings`
+- `POST /settings`
+- `POST /settings/logout`
 - All `/sources/*` endpoints
 - All `/vaults/*` endpoints
 
@@ -57,8 +60,11 @@ Authorization: Bearer <api_key>
 | POST | `/keys/create` | No | Create a new API key (requires master key in body) |
 | POST | `/keys/delete` | No | Delete an API key by plaintext key |
 | POST | `/keys/verify` | No | Verify an API key |
-| GET | `/settings` | No | Settings HTML page |
-| POST | `/settings` | No | Save settings (form post, redirect) |
+| GET | `/settings/login` | No | Browser login page for settings |
+| POST | `/settings/login` | No | Create browser settings session from API key |
+| GET | `/settings` | Yes | Settings HTML page |
+| POST | `/settings` | Yes | Save settings (form post) |
+| POST | `/settings/logout` | Yes | Clear browser settings session |
 | POST | `/embed/text` | Yes | Embed input text |
 | POST | `/add` | Yes | Insert atom/keypoint |
 | POST | `/delete` | Yes | Delete atom by text |
@@ -230,15 +236,33 @@ or
 
 ## 7. Settings endpoints
 
-## 7.1 `GET /settings`
+## 7.1 `GET /settings/login`
 
 - Auth: No
 - Response content-type: `text/html`
+- Purpose: browser login UI for settings access.
+
+## 7.2 `POST /settings/login`
+
+- Auth: No Bearer required
+- Request content-type: HTML form (`application/x-www-form-urlencoded`)
+- Fields:
+  - `api_key`: required
+- Response: `303 See Other` redirect to `/settings` and sets a browser session cookie on success
+
+## 7.3 `GET /settings`
+
+- Auth: Yes
+- Response content-type: `text/html`
 - Purpose: UI for embedding provider/model/API key settings.
+- Auth options:
+  - `Authorization: Bearer <api_key>`
+  - Existing browser session cookie from `/settings/login`
+  - `GET /settings?api_key=<api_key>` for one-step browser login
 
-## 7.2 `POST /settings`
+## 7.4 `POST /settings`
 
-- Auth: No
+- Auth: Yes
 - Request content-type: HTML form (`application/x-www-form-urlencoded` from the settings page)
 - Fields:
   - `provider`: `qwen3` or `openai`
@@ -246,7 +270,14 @@ or
   - `openai_model`: optional text
   - `openai_api_key`: optional text (leave empty to keep existing key)
   - `clear_openai_key`: `"1"` to clear stored OpenAI key
-- Response: redirect to `/settings?saved=1`
+- Response content-type: `text/html`
+- Behavior: saves settings and returns the settings page with a success banner
+
+## 7.5 `POST /settings/logout`
+
+- Auth: browser session cookie
+- Response: `303 See Other` redirect to `/settings/login?signed_out=1`
+- Behavior: deletes the server-backed browser session and clears the cookie
 
 ---
 
@@ -332,6 +363,7 @@ All endpoints in this section require `Authorization: Bearer <api_key>`.
 ## 9.1 Data model
 
 - `sources`: one source object (`source_uid` unique), for notes, URLs, files, media, etc.
+- `atoms_db`: atom storage with `content`, `vector`, `type` (`usercreated`, `aicreated`, `imported`).
 - `source_atoms`: many-to-many link between `sources` and atoms (`atoms_db.id`).
 - `source_indexes`: one centroid embedding per source (average of linked atom embeddings).
 - `source_links`: persisted nearest-neighbor edges between sources (`distance`, `method`).
@@ -521,7 +553,7 @@ Returns persisted outgoing links only.
 | `EMBEDDING_PROVIDER` | `qwen3` | Default provider (`qwen3` or `openai`) |
 | `QWEN_MODEL` | `Qwen/Qwen3-Embedding-0.6B` | Label shown in settings for Qwen mode |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | Default OpenAI model |
-| `OPENAI_API_KEY` | (empty) | OpenAI API key (can also be managed via `/settings`) |
+| `OPENAI_API_KEY` | (empty) | OpenAI API key (can also be managed via authenticated `/settings`) |
 | `MAX_REQUEST_BODY_MB` | `128` | Global max HTTP request body size in MB (helps avoid 413 on large vault sync payloads) |
 
 ---
@@ -533,8 +565,11 @@ All endpoints in this section require `Authorization: Bearer <api_key>`.
 Vault sync uses a separated DB domain:
 
 - `vaults`: vault identity (`vault_uid`)
-- `vault_files`: current server-side full snapshot per file path
+- `vault_files`: current server-side full snapshot plus file metadata (`name`, `base64`, optional text `content`, async enrichment fields)
 - `vault_changes`: append-only changelog for delta sync
+- `file_atoms`: links generated atoms back to uploaded files
+- `file_links`: file-to-file relation edges
+- `file_processing_jobs`: async queue for `file_enrichment` and `atomize`
 
 `vault_files` and `vault_changes` are linked by `vault_id` (foreign key to `vaults.id`), isolated from atom/source tables.
 In addition, pushed files are mirrored on disk under the server workdir:
@@ -543,6 +578,7 @@ In addition, pushed files are mirrored on disk under the server workdir:
 Notes:
 - `vault_uid` is used as the actual directory name under `vault_storage` (must not include `/` or `\`).
 - Integrity verification is not enforced. `content_sha256` is optional metadata only.
+- On upload/full-push, stale file-derived fields are cleared and async jobs are enqueued for enrichment and atom generation.
 
 ### 12.1 `POST /vaults/sync/push`
 

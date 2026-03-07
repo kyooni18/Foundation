@@ -167,29 +167,60 @@ private struct DeltaChangePayload: Encodable {
     let changed_at_unix_ms: Int64?
     let content_base64: String?
     let content_sha256: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case file_path
+        case action
+        case changed_at_unix_ms
+        case content_base64
+        case content_sha256
+    }
 }
 
 private struct DeltaPushPayload: Encodable {
     let vault_uid: String
     let device_id: String?
     let changes: [DeltaChangePayload]
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case device_id
+        case changes
+    }
 }
 
 private struct DeltaPullPayload: Encodable {
     let vault_uid: String
     let since_unix_ms: Int64?
     let limit: Int?
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case since_unix_ms
+        case limit
+    }
 }
 
 private struct StatusPayload: Encodable {
     let vault_uid: String
     let since_unix_ms: Int64?
     let limit: Int?
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case since_unix_ms
+        case limit
+    }
 }
 
 private struct FullPushFilePayload: Encodable {
     let file_path: String
     let content_base64: String
+
+    private enum CodingKeys: String, CodingKey {
+        case file_path
+        case content_base64
+    }
 }
 
 private struct FullPushPayload: Encodable {
@@ -197,11 +228,23 @@ private struct FullPushPayload: Encodable {
     let device_id: String?
     let uploaded_at_unix_ms: Int64?
     let files: [FullPushFilePayload]
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case device_id
+        case uploaded_at_unix_ms
+        case files
+    }
 }
 
 private struct FullPullPayload: Encodable {
     let vault_uid: String
     let limit: Int?
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case limit
+    }
 }
 
 private struct PushResponse: Decodable, APIStatusResponse {
@@ -577,6 +620,8 @@ private func pushDeltaChangesInBatches(
         )
     }
 
+    try validateDeltaChangesForUpload(changes)
+
     var batches: [[DeltaChangePayload]] = []
     var currentBatch: [DeltaChangePayload] = []
 
@@ -689,6 +734,22 @@ private func buildDeltaChanges(
     }
 
     return changes
+}
+
+private func validateDeltaChangesForUpload(_ changes: [DeltaChangePayload]) throws {
+    let invalidPaths = changes.compactMap { change -> String? in
+        let action = change.action.lowercased()
+        guard action == "added" || action == "modified" else {
+            return nil
+        }
+        return trimmedNonEmpty(change.content_base64) == nil ? change.file_path : nil
+    }
+
+    guard invalidPaths.isEmpty else {
+        throw SyncScriptError.invalidArgument(
+            "Missing content_base64 for added/modified changes: " + invalidPaths.joined(separator: ", ")
+        )
+    }
 }
 
 private func buildDeltaChangesUsingRemoteStatus(
