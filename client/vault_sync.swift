@@ -119,7 +119,10 @@ private struct CLIOptions {
             throw SyncScriptError.invalidArgument("Invalid --base-url: \(baseURLRaw)")
         }
 
-        let localPath = URL(fileURLWithPath: localPathRaw, isDirectory: true).standardizedFileURL
+        let localPath = URL(
+            fileURLWithPath: expandPath(localPathRaw),
+            isDirectory: true
+        ).standardizedFileURL
         let derivedVaultUID = trimmedNonEmpty(vaultUID) ?? localPath.lastPathComponent
         guard let resolvedVaultUID = trimmedNonEmpty(derivedVaultUID) else {
             throw SyncScriptError.invalidArgument("Missing --vault-uid (and could not derive from --local-path)")
@@ -135,7 +138,10 @@ private struct CLIOptions {
 
         let stateFile: URL
         if let stateFileRaw {
-            stateFile = URL(fileURLWithPath: stateFileRaw, isDirectory: false).standardizedFileURL
+            stateFile = URL(
+                fileURLWithPath: expandPath(stateFileRaw),
+                isDirectory: false
+            ).standardizedFileURL
         } else {
             stateFile = localPath
                 .appendingPathComponent(".foundation-sync", isDirectory: true)
@@ -315,6 +321,7 @@ private struct StatusResponse: Decodable, APIStatusResponse {
 private struct LocalFileMeta: Codable {
     let size_bytes: Int64
     let modified_unix_ms: Int64
+    let content_fingerprint: String?
 }
 
 private struct SyncState: Codable {
@@ -398,7 +405,7 @@ private func runScript() async throws {
     }
 
     try validateVaultUID(options.vaultUID)
-    try ensureDirectoryExists(options.localPath)
+    try prepareLocalVaultDirectory(options.localPath, for: options.command)
 
     let api = VaultAPIClient(baseURL: options.baseURL, apiKey: options.apiKey)
     var state = loadState(stateFile: options.stateFile, vaultUID: options.vaultUID)
@@ -432,6 +439,9 @@ dispatchMain()
 
 private func runFullPush(options: CLIOptions, api: VaultAPIClient, state: SyncState) async throws -> SyncState {
     let snapshot = try scanLocalVault(root: options.localPath)
+    if snapshot.isEmpty {
+        warn("Local vault is empty at \(options.localPath.path). If this vault is in iCloud Drive, verify the real path and that files are downloaded locally.")
+    }
     let payloadFiles = try snapshot.keys.sorted().map { path -> FullPushFilePayload in
         let data = try readLocalFile(root: options.localPath, relativePath: path)
         return FullPushFilePayload(file_path: path, content_base64: data.base64EncodedString())
@@ -465,9 +475,11 @@ private func runFullPush(options: CLIOptions, api: VaultAPIClient, state: SyncSt
     let status: StatusResponse = try await api.post(path: "/vaults/sync/status", body: statusPayload)
     let fallbackChanges = try buildDeltaChangesUsingRemoteStatus(
         localSnapshot: snapshot,
+        previousLocalSnapshot: state.local_snapshot,
         remoteFileTimestamps: status.file_timestamps,
         localRoot: options.localPath,
-        forceFullMirror: true
+        forceFullMirror: true,
+        preferFingerprintFallback: isLikelyICloudDrivePath(options.localPath)
     )
 
     if fallbackChanges.isEmpty {
@@ -514,6 +526,9 @@ private func runFullPull(options: CLIOptions, api: VaultAPIClient, state: SyncSt
 
 private func runDeltaPush(options: CLIOptions, api: VaultAPIClient, state: SyncState) async throws -> SyncState {
     let currentSnapshot = try scanLocalVault(root: options.localPath)
+    if currentSnapshot.isEmpty {
+        warn("Local vault is empty at \(options.localPath.path). If this vault is in iCloud Drive, verify the real path and that files are downloaded locally.")
+    }
     var latestChangeIDFromStatus: Int64?
     var latestChangeUnixMSFromStatus: Int64?
 
@@ -526,9 +541,11 @@ private func runDeltaPush(options: CLIOptions, api: VaultAPIClient, state: SyncS
 
         changes = try buildDeltaChangesUsingRemoteStatus(
             localSnapshot: currentSnapshot,
+            previousLocalSnapshot: state.local_snapshot,
             remoteFileTimestamps: status.file_timestamps,
             localRoot: options.localPath,
-            forceFullMirror: false
+            forceFullMirror: false,
+            preferFingerprintFallback: isLikelyICloudDrivePath(options.localPath)
         )
         info("Remote status loaded: file_index=\(status.file_timestamps.count), changelog=\(status.change_log.count).")
     } catch {
@@ -536,7 +553,8 @@ private func runDeltaPush(options: CLIOptions, api: VaultAPIClient, state: SyncS
         changes = try buildDeltaChanges(
             previous: state.local_snapshot,
             current: currentSnapshot,
-            localRoot: options.localPath
+            localRoot: options.localPath,
+            preferFingerprintFallback: isLikelyICloudDrivePath(options.localPath)
         )
     }
 
@@ -682,7 +700,8 @@ private func pushDeltaChangesInBatches(
 private func buildDeltaChanges(
     previous: [String: LocalFileMeta],
     current: [String: LocalFileMeta],
-    localRoot: URL
+    localRoot: URL,
+    preferFingerprintFallback: Bool
 ) throws -> [DeltaChangePayload] {
     var changes: [DeltaChangePayload] = []
 
@@ -704,15 +723,19 @@ private func buildDeltaChanges(
             continue
         }
 
-        if previousMeta?.size_bytes != currentMeta?.size_bytes ||
-            previousMeta?.modified_unix_ms != currentMeta?.modified_unix_ms
+        if let currentMeta,
+           classifyLocalChange(
+               previous: previousMeta,
+               current: currentMeta,
+               preferFingerprintFallback: preferFingerprintFallback
+           ) != .unchanged
         {
             let data = try readLocalFile(root: localRoot, relativePath: path)
             changes.append(
                 DeltaChangePayload(
                     file_path: path,
                     action: "modified",
-                    changed_at_unix_ms: currentMeta?.modified_unix_ms,
+                    changed_at_unix_ms: currentMeta.modified_unix_ms,
                     content_base64: data.base64EncodedString(),
                     content_sha256: nil
                 )
@@ -754,9 +777,11 @@ private func validateDeltaChangesForUpload(_ changes: [DeltaChangePayload]) thro
 
 private func buildDeltaChangesUsingRemoteStatus(
     localSnapshot: [String: LocalFileMeta],
+    previousLocalSnapshot: [String: LocalFileMeta],
     remoteFileTimestamps: [StatusFileTimestampItem],
     localRoot: URL,
-    forceFullMirror: Bool
+    forceFullMirror: Bool,
+    preferFingerprintFallback: Bool
 ) throws -> [DeltaChangePayload] {
     var remoteByPath: [String: StatusFileTimestampItem] = [:]
     for remote in remoteFileTimestamps {
@@ -775,6 +800,12 @@ private func buildDeltaChangesUsingRemoteStatus(
             continue
         }
 
+        let localChange = classifyLocalChange(
+            previous: previousLocalSnapshot[path],
+            current: localMeta,
+            preferFingerprintFallback: preferFingerprintFallback
+        )
+
         guard let remoteMeta = remoteByPath[path] else {
             let data = try readLocalFile(root: localRoot, relativePath: path)
             changes.append(
@@ -790,7 +821,7 @@ private func buildDeltaChangesUsingRemoteStatus(
         }
 
         if remoteMeta.is_deleted {
-            if forceFullMirror || localMeta.modified_unix_ms > remoteMeta.updated_unix_ms {
+            if forceFullMirror || localChange == .changed {
                 let data = try readLocalFile(root: localRoot, relativePath: path)
                 changes.append(
                     DeltaChangePayload(
@@ -807,12 +838,20 @@ private func buildDeltaChangesUsingRemoteStatus(
             continue
         }
 
-        if !forceFullMirror && localMeta.modified_unix_ms < remoteMeta.updated_unix_ms {
+        if !forceFullMirror &&
+            localMeta.modified_unix_ms < remoteMeta.updated_unix_ms &&
+            localChange == .unchanged
+        {
             skippedAsStale += 1
             continue
         }
 
-        if localMeta.modified_unix_ms > remoteMeta.updated_unix_ms ||
+        let shouldUploadForFingerprintFallback =
+            (localChange == .changed) ||
+            (localChange == .uncertain && localMeta.modified_unix_ms >= remoteMeta.updated_unix_ms)
+
+        if shouldUploadForFingerprintFallback ||
+            localMeta.modified_unix_ms > remoteMeta.updated_unix_ms ||
             localMeta.size_bytes != remoteMeta.size_bytes ||
             (forceFullMirror && localMeta.modified_unix_ms != remoteMeta.updated_unix_ms)
         {
@@ -934,8 +973,13 @@ private func scanLocalVault(root: URL) throws -> [String: LocalFileMeta] {
     }
 
     for case let fileURL as URL in enumerator {
-        let values = try fileURL.resourceValues(forKeys: Set(keys))
-        guard values.isRegularFile == true else {
+        let values = try? fileURL.resourceValues(forKeys: Set(keys))
+        let attributes = try? fileManager.attributesOfItem(atPath: fileURL.path)
+
+        let isRegularFile =
+            values?.isRegularFile == true ||
+            (attributes?[.type] as? FileAttributeType) == .typeRegular
+        guard isRegularFile else {
             continue
         }
 
@@ -944,12 +988,116 @@ private func scanLocalVault(root: URL) throws -> [String: LocalFileMeta] {
             continue
         }
 
-        let size = Int64(values.fileSize ?? 0)
-        let modifiedUnixMS = Int64((values.contentModificationDate?.timeIntervalSince1970 ?? 0) * 1000.0)
-        snapshot[relativePath] = LocalFileMeta(size_bytes: size, modified_unix_ms: modifiedUnixMS)
+        let size = Int64(
+            values?.fileSize ??
+            (attributes?[.size] as? NSNumber)?.intValue ??
+            0
+        )
+        let modifiedDate =
+            values?.contentModificationDate ??
+            (attributes?[.modificationDate] as? Date)
+        let modifiedUnixMS = Int64((modifiedDate?.timeIntervalSince1970 ?? 0) * 1000.0)
+        let fingerprint = scanFingerprint(fileURL: fileURL, relativePath: relativePath)
+        snapshot[relativePath] = LocalFileMeta(
+            size_bytes: size,
+            modified_unix_ms: modifiedUnixMS,
+            content_fingerprint: fingerprint
+        )
     }
 
     return snapshot
+}
+
+private enum LocalChangeClassification {
+    case unchanged
+    case changed
+    case uncertain
+}
+
+private func classifyLocalChange(
+    previous: LocalFileMeta?,
+    current: LocalFileMeta,
+    preferFingerprintFallback: Bool
+) -> LocalChangeClassification {
+    guard let previous else {
+        return .changed
+    }
+
+    if previous.size_bytes != current.size_bytes || previous.modified_unix_ms != current.modified_unix_ms {
+        return .changed
+    }
+
+    if let previousFingerprint = previous.content_fingerprint,
+       let currentFingerprint = current.content_fingerprint
+    {
+        return previousFingerprint == currentFingerprint ? .unchanged : .changed
+    }
+
+    if preferFingerprintFallback && previous.content_fingerprint != current.content_fingerprint {
+        return .uncertain
+    }
+
+    return .unchanged
+}
+
+private func scanFingerprint(fileURL: URL, relativePath: String) -> String? {
+    do {
+        return try fileFingerprint(url: fileURL)
+    } catch {
+        warn("Failed to fingerprint \(relativePath); change detection will fall back to timestamp/size.")
+        return nil
+    }
+}
+
+private func fileFingerprint(url: URL) throws -> String {
+    guard let stream = InputStream(url: url) else {
+        throw SyncScriptError.io("Failed to open file for fingerprinting: \(url.path)")
+    }
+
+    var hasher = FNV1a64()
+    let bufferSize = 64 * 1024
+    let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+    defer { buffer.deallocate() }
+
+    stream.open()
+    defer { stream.close() }
+
+    while true {
+        let readCount = stream.read(buffer, maxLength: bufferSize)
+        if readCount < 0 {
+            throw stream.streamError ?? SyncScriptError.io("Failed to read file for fingerprinting: \(url.path)")
+        }
+        if readCount == 0 {
+            break
+        }
+
+        let view = UnsafeBufferPointer(start: buffer, count: readCount)
+        hasher.update(bytes: view)
+    }
+
+    return hasher.hexDigest
+}
+
+private struct FNV1a64 {
+    private static let offsetBasis: UInt64 = 0xcbf29ce484222325
+    private static let prime: UInt64 = 0x100000001b3
+
+    private var value: UInt64 = Self.offsetBasis
+
+    mutating func update(bytes: UnsafeBufferPointer<UInt8>) {
+        for byte in bytes {
+            value ^= UInt64(byte)
+            value &*= Self.prime
+        }
+    }
+
+    var hexDigest: String {
+        let raw = String(value, radix: 16, uppercase: false)
+        if raw.count >= 16 {
+            return raw
+        }
+        return String(repeating: "0", count: 16 - raw.count) + raw
+    }
 }
 
 private func readLocalFile(root: URL, relativePath: String) throws -> Data {
@@ -1036,8 +1184,31 @@ private func shouldIgnorePath(_ relativePath: String) -> Bool {
     relativePath == ".foundation-sync/state.json" || relativePath.hasPrefix(".foundation-sync/")
 }
 
+private func isLikelyICloudDrivePath(_ url: URL) -> Bool {
+    let path = url.standardizedFileURL.path
+    return path.contains("/Library/Mobile Documents/") || path.contains("/com~apple~CloudDocs/")
+}
+
 private func ensureDirectoryExists(_ directory: URL) throws {
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+}
+
+private func prepareLocalVaultDirectory(_ directory: URL, for command: VaultSyncCommand) throws {
+    switch command {
+    case .fullPush, .deltaPush:
+        try ensureExistingDirectory(directory)
+    case .fullPull, .deltaPull:
+        try ensureDirectoryExists(directory)
+    }
+}
+
+private func ensureExistingDirectory(_ directory: URL) throws {
+    var isDirectory: ObjCBool = false
+    guard FileManager.default.fileExists(atPath: directory.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+        throw SyncScriptError.invalidArgument(
+            "Local vault path does not exist or is not a directory: \(directory.path). If this is iCloud Drive, use the real path under ~/Library/Mobile Documents/com~apple~CloudDocs/..."
+        )
+    }
 }
 
 private func loadState(stateFile: URL, vaultUID: String) -> SyncState {
@@ -1087,6 +1258,10 @@ private func trimmedNonEmpty(_ raw: String?) -> String? {
     }
     let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? nil : trimmed
+}
+
+private func expandPath(_ raw: String) -> String {
+    (raw as NSString).expandingTildeInPath
 }
 
 private func parseInt(_ raw: String?, defaultValue: Int) -> Int {

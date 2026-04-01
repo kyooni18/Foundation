@@ -96,6 +96,7 @@ curl -X POST http://localhost:8000/sources/find-similar \
 - Integrity verification is not enforced (`content_sha256` is optional metadata).
 - If you see `payload too large` (HTTP 413), increase `.env` `MAX_REQUEST_BODY_MB` (default: 128) and rebuild.
 - `client/vault_sync.swift` also supports request batching via `--max-upload-bytes`.
+- `client/vaultctl.swift` provides a higher-level CLI with saved profiles for endpoint, vault path, API key, and sync defaults.
 
 ### Quick vault sync flow
 ```zsh
@@ -134,6 +135,30 @@ curl -X POST http://localhost:8000/vaults/sync/full-pull \
   -H "Authorization: Bearer $API_KEY" -H 'Content-Type: application/json' \
   -d '{"vault_uid":"my-vault"}'
 ```
+
+### Vault CLI
+```zsh
+./client/vaultctl.swift profile save archive \
+  --base-url https://foundation.kyooni.kr \
+  --api-key host \
+  --vault-uid archive \
+  --local-path ~/Documents/archive \
+  --set-default
+
+./client/vaultctl.swift profile list
+./client/vaultctl.swift profile show archive
+./client/vaultctl.swift full-push
+./client/vaultctl.swift delta-pull
+
+./client/vaultctl.swift
+vaultctl> profile list
+vaultctl> delta-push
+vaultctl> quit
+```
+
+Saved profiles are stored at `~/.foundation/vaultctl/config.json`.
+You can override that location with `FOUNDATION_VAULTCTL_CONFIG=/path/to/config.json`.
+Running `./client/vaultctl.swift` with no arguments starts an interactive shell so you can issue multiple sync commands without restarting the program.
 
 ## Legacy Python code
 The old Python implementation was preserved in:
