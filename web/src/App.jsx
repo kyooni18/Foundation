@@ -13,6 +13,7 @@ const EMPTY_SOURCE_FORM = {
 };
 
 const NAV_ITEMS = [
+  { id: "search", label: "Search", eyebrow: "Vault and memory lookup" },
   { id: "overview", label: "Overview", eyebrow: "Health and routing" },
   { id: "keys", label: "Keys", eyebrow: "Bootstrap and verify" },
   { id: "atoms", label: "Atoms", eyebrow: "Add, delete, and search" },
@@ -20,6 +21,17 @@ const NAV_ITEMS = [
   { id: "vaults", label: "Vaults", eyebrow: "Status, search, and upload" },
   { id: "editor", label: "Editor", eyebrow: "Browse and edit vault notes" }
 ];
+
+const DEFAULT_TAB = "search";
+
+function tabFromHash(hashValue) {
+  const normalized = (hashValue || "").replace(/^#/, "").trim().toLowerCase();
+  if (!normalized) {
+    return DEFAULT_TAB;
+  }
+
+  return NAV_ITEMS.some((item) => item.id === normalized) ? normalized : DEFAULT_TAB;
+}
 
 function readStoredState() {
   if (typeof window === "undefined") {
@@ -142,10 +154,21 @@ async function foundationFetch(path, { method = "GET", apiKey, payload, headers 
   return data;
 }
 
-function AppShell({ activeTab, onTabChange, apiKeyPresent, children }) {
+function AppShell({ activeTab, onTabChange, apiKeyPresent, children, isSidebarOpen, onSidebarToggle, isNarrowScreen }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
+        <div className="sidebar-top-row">
+          <button
+            type="button"
+            className="sidebar-toggle"
+            aria-expanded={isSidebarOpen}
+            aria-controls="foundation-nav-list"
+            onClick={onSidebarToggle}
+          >
+            {isSidebarOpen ? "Hide sections" : "Show sections"}
+          </button>
+        </div>
         <div className="brand-block">
           <div className="brand-mark">F</div>
           <div>
@@ -164,13 +187,18 @@ function AppShell({ activeTab, onTabChange, apiKeyPresent, children }) {
           <span>{apiKeyPresent ? "API key loaded" : "No API key yet"}</span>
         </div>
 
-        <nav className="nav-list" aria-label="Foundation sections">
+        <nav
+          id="foundation-nav-list"
+          className={`nav-list ${!isSidebarOpen && isNarrowScreen ? "collapsed" : ""}`}
+          aria-label="Foundation sections"
+        >
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
               type="button"
               className={`nav-item ${activeTab === item.id ? "active" : ""}`}
               onClick={() => onTabChange(item.id)}
+              aria-current={activeTab === item.id ? "page" : undefined}
             >
               <span className="nav-eyebrow">{item.eyebrow}</span>
               <span className="nav-label">{item.label}</span>
@@ -325,7 +353,9 @@ function ResultTable({ columns, rows, emptyText = "No rows yet." }) {
 
 function App() {
   const stored = readStoredState();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() => tabFromHash(window.location.hash));
+  const [isNarrowScreen, setIsNarrowScreen] = useState(() => window.matchMedia("(max-width: 900px)").matches);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => !window.matchMedia("(max-width: 900px)").matches);
   const [apiKey, setApiKey] = useState(stored.apiKey);
   const [vaultUID, setVaultUID] = useState(stored.vaultUID);
   const [healthState, setHealthState] = useState({
@@ -378,6 +408,40 @@ function App() {
       })
     );
   }, [apiKey, vaultUID]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 900px)");
+    const handleMediaChange = (event) => {
+      setIsNarrowScreen(event.matches);
+      setIsSidebarOpen(!event.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleMediaChange);
+    return () => mediaQuery.removeEventListener("change", handleMediaChange);
+  }, []);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveTab(tabFromHash(window.location.hash));
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  useEffect(() => {
+    const nextHash = `#${activeTab}`;
+    if (window.location.hash !== nextHash) {
+      window.history.replaceState(null, "", nextHash);
+    }
+  }, [activeTab]);
+
+  function handleTabChange(nextTab) {
+    setActiveTab(nextTab);
+    if (isNarrowScreen) {
+      setIsSidebarOpen(false);
+    }
+  }
 
   const filteredSources = sourceList.filter((source) => {
     const query = deferredSourceFilter.trim().toLowerCase();
@@ -889,7 +953,14 @@ function App() {
   const selectedSource = sourceList.find((item) => item.source_uid === selectedSourceUID);
 
   return (
-    <AppShell activeTab={activeTab} onTabChange={setActiveTab} apiKeyPresent={Boolean(apiKey)}>
+    <AppShell
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      apiKeyPresent={Boolean(apiKey)}
+      isSidebarOpen={isSidebarOpen}
+      onSidebarToggle={() => setIsSidebarOpen((current) => !current)}
+      isNarrowScreen={isNarrowScreen}
+    >
       <Hero
         apiKey={apiKey}
         onApiKeyChange={setApiKey}
@@ -900,8 +971,68 @@ function App() {
 
       <div className="content-grid">
         <div className="primary-column">
+          {activeTab === "search" ? (
+            <section id="search">
+              <Panel title="Search workspace" eyebrow="Priority workflow" detail="Search vault notes and memory atoms from one place.">
+                <div className="inline-form">
+                  <label className="field grow">
+                    <span>Vault query</span>
+                    <input type="text" value={vaultQuery} onChange={(event) => setVaultQuery(event.target.value)} />
+                  </label>
+                  <button type="button" className="button primary" onClick={searchVault}>
+                    Search vault
+                  </button>
+                </div>
+
+                <label className="field">
+                  <span>Find nearby atoms</span>
+                  <textarea value={findText} onChange={(event) => setFindText(event.target.value)} rows={3} />
+                </label>
+                <div className="button-row">
+                  <button type="button" className="button ghost" onClick={findAtoms}>
+                    Search memory
+                  </button>
+                </div>
+              </Panel>
+
+              <Panel title="Vault search results" eyebrow="Semantic matches">
+                <ResultTable
+                  rows={vaultSearchResults}
+                  columns={[
+                    { key: "file_path", label: "File" },
+                    { key: "title", label: "Title" },
+                    { key: "keypoint", label: "Keypoint" },
+                    { key: "distance", label: "Distance", render: (value) => formatNumber(value, 5) },
+                    { key: "obsidian_link", label: "Obsidian link" }
+                  ]}
+                  emptyText="Run a vault search to see semantic matches."
+                />
+              </Panel>
+
+              <Panel title="Nearest atoms" eyebrow="Memory results">
+                <ResultTable
+                  rows={atomResults}
+                  columns={[
+                    { key: "id", label: "ID" },
+                    { key: "text", label: "Text" },
+                    { key: "distance", label: "Distance", render: (value) => formatNumber(value, 5) },
+                    {
+                      key: "metadata",
+                      label: "Metadata",
+                      render: (value) => {
+                        const decoded = decodeJsonIfPossible(value);
+                        return typeof decoded === "string" ? decoded : JSON.stringify(decoded);
+                      }
+                    }
+                  ]}
+                  emptyText="Run a memory search to see nearest atoms here."
+                />
+              </Panel>
+            </section>
+          ) : null}
+
           {activeTab === "overview" ? (
-            <>
+            <section id="overview">
               <Panel
                 title="Runtime sweep"
                 eyebrow="Foundation stack"
@@ -922,11 +1053,11 @@ function App() {
               >
                 <JsonView value={lastResponse} />
               </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "keys" ? (
-            <>
+            <section id="keys">
               <Panel
                 title="Key lifecycle"
                 eyebrow="Public endpoints"
@@ -971,11 +1102,11 @@ function App() {
 
                 <JsonView title="Masked key list" value={listKeysResult ? { result: listKeysResult } : createdKeyResult} />
               </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "atoms" ? (
-            <>
+            <section id="atoms">
               <Panel title="Memory controls" eyebrow="Protected endpoints" detail="Add atoms, run nearest-neighbor search, and delete exact text matches.">
                 <div className="action-cluster">
                   <div className="form-panel">
@@ -1031,30 +1162,11 @@ function App() {
                 />
               </Panel>
 
-              <Panel title="Nearest atoms" eyebrow="Search results">
-                <ResultTable
-                  rows={atomResults}
-                  columns={[
-                    { key: "id", label: "ID" },
-                    { key: "text", label: "Text" },
-                    { key: "distance", label: "Distance", render: (value) => formatNumber(value, 5) },
-                    {
-                      key: "metadata",
-                      label: "Metadata",
-                      render: (value) => {
-                        const decoded = decodeJsonIfPossible(value);
-                        return typeof decoded === "string" ? decoded : JSON.stringify(decoded);
-                      }
-                    }
-                  ]}
-                  emptyText="Run a memory search to see nearest atoms here."
-                />
-              </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "sources" ? (
-            <>
+            <section id="sources">
               <Panel
                 title="Source graph"
                 eyebrow="Create and inspect"
@@ -1206,11 +1318,11 @@ function App() {
                   emptyText="Run find similar or persist links to populate this table."
                 />
               </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "vaults" ? (
-            <>
+            <section id="vaults">
               <Panel title="Vault operations" eyebrow="Search and status" detail="Use the stored vault UID for server status, semantic search, and whole-vault upload/pull workflows.">
                 <div className="inline-form">
                   <label className="field grow">
@@ -1259,20 +1371,6 @@ function App() {
                 {uploadSummary ? <JsonView value={uploadSummary} /> : null}
               </Panel>
 
-              <Panel title="Vault search results" eyebrow="Semantic matches">
-                <ResultTable
-                  rows={vaultSearchResults}
-                  columns={[
-                    { key: "file_path", label: "File" },
-                    { key: "title", label: "Title" },
-                    { key: "keypoint", label: "Keypoint" },
-                    { key: "distance", label: "Distance", render: (value) => formatNumber(value, 5) },
-                    { key: "obsidian_link", label: "Obsidian link" }
-                  ]}
-                  emptyText="Run a vault search to see semantic matches."
-                />
-              </Panel>
-
               <Panel title="Snapshot files" eyebrow="Full pull output" detail="A browser-side view of the most recent full-pull response.">
                 <ResultTable
                   rows={vaultSnapshot}
@@ -1284,11 +1382,11 @@ function App() {
                   emptyText="Run full pull to inspect snapshot files."
                 />
               </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "editor" ? (
-            <>
+            <section id="editor">
               <Panel
                 title="Vault note editor"
                 eyebrow="Browse and edit markdown"
@@ -1379,7 +1477,7 @@ function App() {
                   </div>
                 </div>
               </Panel>
-            </>
+            </section>
           ) : null}
         </div>
 

@@ -36,6 +36,7 @@ body,
 
 body {
   margin: 0;
+  overflow-x: hidden;
 }
 
 button,
@@ -75,6 +76,18 @@ a {
   border-right: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(255, 247, 238, 0.96), rgba(246, 238, 226, 0.82));
   backdrop-filter: blur(20px);
+}
+
+.sidebar-top-row {
+  display: none;
+}
+
+.sidebar-toggle {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
 }
 
 .brand-block {
@@ -174,6 +187,11 @@ a {
   background: rgba(255, 255, 255, 0.52);
 }
 
+.nav-item[aria-current="page"] {
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.68);
+}
+
 .nav-eyebrow {
   color: var(--muted);
   font-size: 0.78rem;
@@ -186,6 +204,8 @@ a {
 
 .workspace {
   padding: 2rem;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .hero {
@@ -282,6 +302,15 @@ a {
 .button:hover {
   transform: translateY(-1px);
   border-color: rgba(53, 40, 31, 0.24);
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 55%, white);
+  outline-offset: 2px;
 }
 
 .button.primary {
@@ -473,6 +502,39 @@ th {
     min-height: auto;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .sidebar-top-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .sidebar-copy {
+    margin: 0;
+  }
+
+  .nav-list {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scroll-snap-type: x proximity;
+  }
+
+  .nav-list.collapsed {
+    display: none;
+  }
+
+  .nav-item {
+    min-width: 190px;
+    scroll-snap-align: start;
+  }
+
+  .nav-item:hover,
+  .nav-item.active {
+    transform: none;
   }
 
   .workspace {
