@@ -1,6 +1,6 @@
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import { startTransition, useDeferredValue, useEffect, useState, useTransition } from "react";
+import { startTransition, useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 
 const API_BASE = (import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, "");
 const STORAGE_KEY = "foundation-web-state-v1";
@@ -13,6 +13,7 @@ const EMPTY_SOURCE_FORM = {
 };
 
 const NAV_ITEMS = [
+  { id: "search", label: "Search", eyebrow: "Vault and memory lookup" },
   { id: "overview", label: "Overview", eyebrow: "Health and routing" },
   { id: "keys", label: "Keys", eyebrow: "Bootstrap and verify" },
   { id: "search", label: "Search", eyebrow: "Vault + memory relevance" },
@@ -22,24 +23,36 @@ const NAV_ITEMS = [
   { id: "editor", label: "Editor", eyebrow: "Browse and edit vault notes" }
 ];
 
+const DEFAULT_TAB = "search";
+
+function tabFromHash(hashValue) {
+  const normalized = (hashValue || "").replace(/^#/, "").trim().toLowerCase();
+  if (!normalized) {
+    return DEFAULT_TAB;
+  }
+
+  return NAV_ITEMS.some((item) => item.id === normalized) ? normalized : DEFAULT_TAB;
+}
+
 function readStoredState() {
   if (typeof window === "undefined") {
-    return { apiKey: "", vaultUID: "" };
+    return { apiKey: "", vaultUID: "", hideLanding: false };
   }
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return { apiKey: "", vaultUID: "" };
+      return { apiKey: "", vaultUID: "", hideLanding: false };
     }
 
     const parsed = JSON.parse(raw);
     return {
       apiKey: typeof parsed.apiKey === "string" ? parsed.apiKey : "",
-      vaultUID: typeof parsed.vaultUID === "string" ? parsed.vaultUID : ""
+      vaultUID: typeof parsed.vaultUID === "string" ? parsed.vaultUID : "",
+      hideLanding: Boolean(parsed.hideLanding)
     };
   } catch {
-    return { apiKey: "", vaultUID: "" };
+    return { apiKey: "", vaultUID: "", hideLanding: false };
   }
 }
 
@@ -179,10 +192,58 @@ async function foundationFetch(path, { method = "GET", apiKey, payload, headers 
   return data;
 }
 
+function AppShell({ activeTab, onTabChange, apiKeyPresent, children, isSidebarOpen, onSidebarToggle, isNarrowScreen }) {
+function LandingScreen({ onConnectApiKey, onSearchVault, onContinue, suppressLanding, onSuppressLandingChange }) {
+  return (
+    <div className="landing-shell">
+      <section className="landing-card" aria-label="Foundation landing screen">
+        <p className="eyebrow">Foundation Web</p>
+        <h1>Search vault memory, inspect sources, and run operations from one secure console.</h1>
+        <p className="landing-detail">
+          Start with your API key and vault, then move into the full advanced control room when you are ready.
+        </p>
+
+        <div className="landing-actions">
+          <button type="button" className="button primary landing-button" onClick={onConnectApiKey}>
+            Connect API Key
+          </button>
+          <button type="button" className="button ghost landing-button" onClick={onSearchVault}>
+            Search Vault
+          </button>
+        </div>
+
+        <button type="button" className="landing-link" onClick={onContinue}>
+          Continue to Advanced Console
+        </button>
+
+        <label className="landing-toggle">
+          <input
+            type="checkbox"
+            checked={suppressLanding}
+            onChange={(event) => onSuppressLandingChange(event.target.checked)}
+          />
+          Don’t show this landing screen again.
+        </label>
+      </section>
+    </div>
+  );
+}
+
 function AppShell({ activeTab, onTabChange, apiKeyPresent, children }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
+        <div className="sidebar-top-row">
+          <button
+            type="button"
+            className="sidebar-toggle"
+            aria-expanded={isSidebarOpen}
+            aria-controls="foundation-nav-list"
+            onClick={onSidebarToggle}
+          >
+            {isSidebarOpen ? "Hide sections" : "Show sections"}
+          </button>
+        </div>
         <div className="brand-block">
           <div className="brand-mark">F</div>
           <div>
@@ -201,13 +262,18 @@ function AppShell({ activeTab, onTabChange, apiKeyPresent, children }) {
           <span>{apiKeyPresent ? "API key loaded" : "No API key yet"}</span>
         </div>
 
-        <nav className="nav-list" aria-label="Foundation sections">
+        <nav
+          id="foundation-nav-list"
+          className={`nav-list ${!isSidebarOpen && isNarrowScreen ? "collapsed" : ""}`}
+          aria-label="Foundation sections"
+        >
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
               type="button"
               className={`nav-item ${activeTab === item.id ? "active" : ""}`}
               onClick={() => onTabChange(item.id)}
+              aria-current={activeTab === item.id ? "page" : undefined}
             >
               <span className="nav-eyebrow">{item.eyebrow}</span>
               <span className="nav-label">{item.label}</span>
@@ -221,7 +287,7 @@ function AppShell({ activeTab, onTabChange, apiKeyPresent, children }) {
   );
 }
 
-function Hero({ apiKey, onApiKeyChange, vaultUID, onVaultUIDChange, onRunHealthChecks }) {
+function Hero({ apiKey, onApiKeyChange, vaultUID, onVaultUIDChange, onRunHealthChecks, apiKeyInputRef }) {
   return (
     <section className="hero">
       <div className="hero-copy">
@@ -242,6 +308,7 @@ function Hero({ apiKey, onApiKeyChange, vaultUID, onVaultUIDChange, onRunHealthC
             onChange={(event) => onApiKeyChange(event.target.value)}
             placeholder="foundation_..."
             autoComplete="off"
+            ref={apiKeyInputRef}
           />
         </label>
 
@@ -362,9 +429,13 @@ function ResultTable({ columns, rows, emptyText = "No rows yet." }) {
 
 function App() {
   const stored = readStoredState();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(() => tabFromHash(window.location.hash));
+  const [isNarrowScreen, setIsNarrowScreen] = useState(() => window.matchMedia("(max-width: 900px)").matches);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => !window.matchMedia("(max-width: 900px)").matches);
   const [apiKey, setApiKey] = useState(stored.apiKey);
   const [vaultUID, setVaultUID] = useState(stored.vaultUID);
+  const [suppressLanding, setSuppressLanding] = useState(stored.hideLanding);
+  const [showLanding, setShowLanding] = useState(!stored.hideLanding && !(stored.apiKey && stored.vaultUID));
   const [healthState, setHealthState] = useState({
     service: null,
     database: null,
@@ -411,6 +482,8 @@ function App() {
   const [editorPreviewMode, setEditorPreviewMode] = useState(false);
   const [editorSaving, setEditorSaving] = useState(false);
   const [isPending, startUiTransition] = useTransition();
+  const apiKeyInputRef = useRef(null);
+  const vaultQueryInputRef = useRef(null);
   const deferredSourceFilter = useDeferredValue(sourceFilter);
 
   useEffect(() => {
@@ -418,9 +491,18 @@ function App() {
       STORAGE_KEY,
       JSON.stringify({
         apiKey,
-        vaultUID
+        vaultUID,
+        hideLanding: suppressLanding
       })
     );
+  }, [apiKey, vaultUID, suppressLanding]);
+
+
+  useEffect(() => {
+    if (apiKey.trim() && vaultUID.trim()) {
+      setSuppressLanding(true);
+      setShowLanding(false);
+    }
   }, [apiKey, vaultUID]);
 
   useEffect(() => {
@@ -430,6 +512,55 @@ function App() {
 
     return () => window.clearTimeout(timer);
   }, [searchQuery]);
+    const mediaQuery = window.matchMedia("(max-width: 900px)");
+    const handleMediaChange = (event) => {
+      setIsNarrowScreen(event.matches);
+      setIsSidebarOpen(!event.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleMediaChange);
+    return () => mediaQuery.removeEventListener("change", handleMediaChange);
+  }, []);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveTab(tabFromHash(window.location.hash));
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  useEffect(() => {
+    const nextHash = `#${activeTab}`;
+    if (window.location.hash !== nextHash) {
+      window.history.replaceState(null, "", nextHash);
+    }
+  }, [activeTab]);
+
+  function handleTabChange(nextTab) {
+    setActiveTab(nextTab);
+    if (isNarrowScreen) {
+      setIsSidebarOpen(false);
+    }
+  function focusAfterPaint(targetRef) {
+    requestAnimationFrame(() => {
+      targetRef.current?.focus();
+      targetRef.current?.select?.();
+    });
+  }
+
+  function openApiKeyFlow() {
+    setShowLanding(false);
+    setActiveTab("overview");
+    focusAfterPaint(apiKeyInputRef);
+  }
+
+  function openVaultSearchFlow() {
+    setShowLanding(false);
+    setActiveTab("vaults");
+    focusAfterPaint(vaultQueryInputRef);
+  }
 
   const filteredSources = sourceList.filter((source) => {
     const query = deferredSourceFilter.trim().toLowerCase();
@@ -1008,20 +1139,100 @@ function App() {
     pushFeed("Open vault match", `Opened ${match.file_path} in Editor tab.`, "success");
   }
 
+  if (showLanding) {
+    return (
+      <LandingScreen
+        onConnectApiKey={openApiKeyFlow}
+        onSearchVault={openVaultSearchFlow}
+        onContinue={() => setShowLanding(false)}
+        suppressLanding={suppressLanding}
+        onSuppressLandingChange={setSuppressLanding}
+      />
+    );
+  }
+
   return (
-    <AppShell activeTab={activeTab} onTabChange={setActiveTab} apiKeyPresent={Boolean(apiKey)}>
+    <AppShell
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      apiKeyPresent={Boolean(apiKey)}
+      isSidebarOpen={isSidebarOpen}
+      onSidebarToggle={() => setIsSidebarOpen((current) => !current)}
+      isNarrowScreen={isNarrowScreen}
+    >
       <Hero
         apiKey={apiKey}
         onApiKeyChange={setApiKey}
         vaultUID={vaultUID}
         onVaultUIDChange={setVaultUID}
         onRunHealthChecks={runHealthChecks}
+        apiKeyInputRef={apiKeyInputRef}
       />
 
       <div className="content-grid">
         <div className="primary-column">
+          {activeTab === "search" ? (
+            <section id="search">
+              <Panel title="Search workspace" eyebrow="Priority workflow" detail="Search vault notes and memory atoms from one place.">
+                <div className="inline-form">
+                  <label className="field grow">
+                    <span>Vault query</span>
+                    <input type="text" value={vaultQuery} onChange={(event) => setVaultQuery(event.target.value)} />
+                  </label>
+                  <button type="button" className="button primary" onClick={searchVault}>
+                    Search vault
+                  </button>
+                </div>
+
+                <label className="field">
+                  <span>Find nearby atoms</span>
+                  <textarea value={findText} onChange={(event) => setFindText(event.target.value)} rows={3} />
+                </label>
+                <div className="button-row">
+                  <button type="button" className="button ghost" onClick={findAtoms}>
+                    Search memory
+                  </button>
+                </div>
+              </Panel>
+
+              <Panel title="Vault search results" eyebrow="Semantic matches">
+                <ResultTable
+                  rows={vaultSearchResults}
+                  columns={[
+                    { key: "file_path", label: "File" },
+                    { key: "title", label: "Title" },
+                    { key: "keypoint", label: "Keypoint" },
+                    { key: "distance", label: "Distance", render: (value) => formatNumber(value, 5) },
+                    { key: "obsidian_link", label: "Obsidian link" }
+                  ]}
+                  emptyText="Run a vault search to see semantic matches."
+                />
+              </Panel>
+
+              <Panel title="Nearest atoms" eyebrow="Memory results">
+                <ResultTable
+                  rows={atomResults}
+                  columns={[
+                    { key: "id", label: "ID" },
+                    { key: "text", label: "Text" },
+                    { key: "distance", label: "Distance", render: (value) => formatNumber(value, 5) },
+                    {
+                      key: "metadata",
+                      label: "Metadata",
+                      render: (value) => {
+                        const decoded = decodeJsonIfPossible(value);
+                        return typeof decoded === "string" ? decoded : JSON.stringify(decoded);
+                      }
+                    }
+                  ]}
+                  emptyText="Run a memory search to see nearest atoms here."
+                />
+              </Panel>
+            </section>
+          ) : null}
+
           {activeTab === "overview" ? (
-            <>
+            <section id="overview">
               <Panel
                 title="Runtime sweep"
                 eyebrow="Foundation stack"
@@ -1042,11 +1253,11 @@ function App() {
               >
                 <JsonView value={lastResponse} />
               </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "keys" ? (
-            <>
+            <section id="keys">
               <Panel
                 title="Key lifecycle"
                 eyebrow="Public endpoints"
@@ -1091,7 +1302,7 @@ function App() {
 
                 <JsonView title="Masked key list" value={listKeysResult ? { result: listKeysResult } : createdKeyResult} />
               </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "search" ? (
@@ -1193,7 +1404,7 @@ function App() {
           ) : null}
 
           {activeTab === "atoms" ? (
-            <>
+            <section id="atoms">
               <Panel title="Memory controls" eyebrow="Protected endpoints" detail="Add atoms, run nearest-neighbor search, and delete exact text matches.">
                 <div className="action-cluster">
                   <div className="form-panel">
@@ -1249,30 +1460,11 @@ function App() {
                 />
               </Panel>
 
-              <Panel title="Nearest atoms" eyebrow="Search results">
-                <ResultTable
-                  rows={atomResults}
-                  columns={[
-                    { key: "id", label: "ID" },
-                    { key: "text", label: "Text" },
-                    { key: "distance", label: "Distance", render: (value) => formatNumber(value, 5) },
-                    {
-                      key: "metadata",
-                      label: "Metadata",
-                      render: (value) => {
-                        const decoded = decodeJsonIfPossible(value);
-                        return typeof decoded === "string" ? decoded : JSON.stringify(decoded);
-                      }
-                    }
-                  ]}
-                  emptyText="Run a memory search to see nearest atoms here."
-                />
-              </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "sources" ? (
-            <>
+            <section id="sources">
               <Panel
                 title="Source graph"
                 eyebrow="Create and inspect"
@@ -1424,16 +1616,16 @@ function App() {
                   emptyText="Run find similar or persist links to populate this table."
                 />
               </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "vaults" ? (
-            <>
+            <section id="vaults">
               <Panel title="Vault operations" eyebrow="Search and status" detail="Use the stored vault UID for server status, semantic search, and whole-vault upload/pull workflows.">
                 <div className="inline-form">
                   <label className="field grow">
                     <span>Vault query</span>
-                    <input type="text" value={vaultQuery} onChange={(event) => setVaultQuery(event.target.value)} />
+                    <input ref={vaultQueryInputRef} type="text" value={vaultQuery} onChange={(event) => setVaultQuery(event.target.value)} />
                   </label>
                   <button type="button" className="button primary" onClick={searchVault}>
                     Search vault
@@ -1477,20 +1669,6 @@ function App() {
                 {uploadSummary ? <JsonView value={uploadSummary} /> : null}
               </Panel>
 
-              <Panel title="Vault search results" eyebrow="Semantic matches">
-                <ResultTable
-                  rows={vaultSearchResults}
-                  columns={[
-                    { key: "file_path", label: "File" },
-                    { key: "title", label: "Title" },
-                    { key: "keypoint", label: "Keypoint" },
-                    { key: "distance", label: "Distance", render: (value) => formatNumber(value, 5) },
-                    { key: "obsidian_link", label: "Obsidian link" }
-                  ]}
-                  emptyText="Run a vault search to see semantic matches."
-                />
-              </Panel>
-
               <Panel title="Snapshot files" eyebrow="Full pull output" detail="A browser-side view of the most recent full-pull response.">
                 <ResultTable
                   rows={vaultSnapshot}
@@ -1502,11 +1680,11 @@ function App() {
                   emptyText="Run full pull to inspect snapshot files."
                 />
               </Panel>
-            </>
+            </section>
           ) : null}
 
           {activeTab === "editor" ? (
-            <>
+            <section id="editor">
               <Panel
                 title="Vault note editor"
                 eyebrow="Browse and edit markdown"
@@ -1597,7 +1775,7 @@ function App() {
                   </div>
                 </div>
               </Panel>
-            </>
+            </section>
           ) : null}
         </div>
 
