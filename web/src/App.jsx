@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { id: "search", label: "Search", eyebrow: "Vault and memory lookup" },
   { id: "overview", label: "Overview", eyebrow: "Health and routing" },
   { id: "keys", label: "Keys", eyebrow: "Bootstrap and verify" },
+  { id: "search", label: "Search", eyebrow: "Vault + memory relevance" },
   { id: "atoms", label: "Atoms", eyebrow: "Add, delete, and search" },
   { id: "sources", label: "Sources", eyebrow: "Index provenance graph" },
   { id: "vaults", label: "Vaults", eyebrow: "Status, search, and upload" },
@@ -86,6 +87,42 @@ function decodeJsonIfPossible(value) {
   } catch {
     return value;
   }
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function splitQueryTerms(query) {
+  return query
+    .trim()
+    .split(/\s+/)
+    .map((term) => term.toLowerCase())
+    .filter((term) => term.length >= 2);
+}
+
+function highlightText(text, terms) {
+  if (!text) return "";
+  if (!terms.length) return text;
+  const pattern = terms.map(escapeRegExp).join("|");
+  const regex = new RegExp(`(${pattern})`, "ig");
+  const pieces = text.split(regex);
+  return pieces.map((piece, index) =>
+    terms.includes(piece.toLowerCase()) ? <mark key={`${piece}-${index}`}>{piece}</mark> : <span key={`${piece}-${index}`}>{piece}</span>
+  );
+}
+
+function confidenceFromDistance(distance) {
+  if (typeof distance !== "number" || Number.isNaN(distance)) {
+    return { label: "Unknown", tone: "unknown" };
+  }
+  if (distance <= 0.2) {
+    return { label: "High", tone: "high" };
+  }
+  if (distance <= 0.45) {
+    return { label: "Medium", tone: "medium" };
+  }
+  return { label: "Low", tone: "low" };
 }
 
 function bytesToBase64(bytes) {
@@ -416,6 +453,13 @@ function App() {
   const [atomText, setAtomText] = useState("");
   const [findText, setFindText] = useState("");
   const [deleteText, setDeleteText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [includeMemoryMatches, setIncludeMemoryMatches] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [lastSearchedAt, setLastSearchedAt] = useState(null);
+  const [searchResults, setSearchResults] = useState({ vault: [], memory: [] });
   const [embedInput, setEmbedInput] = useState("");
   const [atomResults, setAtomResults] = useState([]);
   const [embedResult, setEmbedResult] = useState(null);
@@ -462,6 +506,12 @@ function App() {
   }, [apiKey, vaultUID]);
 
   useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
     const mediaQuery = window.matchMedia("(max-width: 900px)");
     const handleMediaChange = (event) => {
       setIsNarrowScreen(event.matches);
@@ -789,18 +839,22 @@ function App() {
     });
   }
 
-  async function findAtoms() {
-    await runAction({
+  async function findAtoms(queryOverride) {
+    const text = (queryOverride ?? findText).trim();
+    const data = await runAction({
       title: "Find atoms",
       path: "/find",
       method: "POST",
-      payload: { text: findText },
+      payload: { text },
       auth: true,
       onSuccess: (data) => {
-        setAtomResults(data.results || []);
+        if (queryOverride === undefined) {
+          setAtomResults(data.results || []);
+        }
       },
       successMessage: "Nearest atoms loaded."
     });
+    return data?.results || [];
   }
 
   async function generateEmbedding() {
@@ -842,27 +896,65 @@ function App() {
     });
   }
 
-  async function searchVault() {
+  async function searchVault(queryOverride) {
     if (!vaultUID.trim()) {
       pushFeed("Search vault", "Enter a vault UID first.", "error");
-      return;
+      return [];
     }
 
-    await runAction({
+    const query = queryOverride ?? vaultQuery;
+    const data = await runAction({
       title: "Search vault",
       path: "/vaults/search",
       method: "POST",
       auth: true,
       payload: {
         vault_uid: vaultUID,
-        query: vaultQuery,
+        query,
         limit: 8
       },
       onSuccess: (data) => {
-        setVaultSearchResults(data.results || []);
+        if (queryOverride === undefined) {
+          setVaultSearchResults(data.results || []);
+        }
       },
       successMessage: `Ran semantic vault search for ${vaultUID}.`
     });
+    return data?.results || [];
+  }
+
+  async function runUnifiedSearch(manualQuery) {
+    const query = (manualQuery ?? debouncedSearchQuery).trim();
+    if (!vaultUID.trim()) {
+      setSearchError("Set a vault UID before searching.");
+      setSearchResults({ vault: [], memory: [] });
+      return;
+    }
+    if (query.length < 2) {
+      setSearchError("");
+      setSearchResults({ vault: [], memory: [] });
+      return;
+    }
+
+    setSearchLoading(true);
+    setSearchError("");
+
+    try {
+      const [vaultMatches, memoryMatches] = await Promise.all([
+        searchVault(query),
+        includeMemoryMatches ? findAtoms(query) : Promise.resolve([])
+      ]);
+
+      setSearchResults({
+        vault: [...vaultMatches].sort((a, b) => (a.distance ?? Number.POSITIVE_INFINITY) - (b.distance ?? Number.POSITIVE_INFINITY)),
+        memory: [...memoryMatches].sort((a, b) => (a.distance ?? Number.POSITIVE_INFINITY) - (b.distance ?? Number.POSITIVE_INFINITY))
+      });
+      setLastSearchedAt(new Date().toISOString());
+    } catch (error) {
+      setSearchError(error.message || "Search failed.");
+    } finally {
+      setSearchLoading(false);
+    }
   }
 
   async function loadVaultSnapshot() {
@@ -1020,6 +1112,32 @@ function App() {
   ];
 
   const selectedSource = sourceList.find((item) => item.source_uid === selectedSourceUID);
+  const queryTerms = splitQueryTerms(searchQuery);
+  const vaultMatches = searchResults.vault;
+  const memoryMatches = searchResults.memory;
+
+  useEffect(() => {
+    if (debouncedSearchQuery.trim().length >= 2) {
+      runUnifiedSearch(debouncedSearchQuery);
+    }
+  }, [debouncedSearchQuery, includeMemoryMatches]);
+
+  function submitSearch(event) {
+    event.preventDefault();
+    runUnifiedSearch(searchQuery);
+  }
+
+  function openVaultResultInEditor(match) {
+    const cached = editorFiles.find((file) => file.file_path === match.file_path);
+    if (!cached) {
+      pushFeed("Open vault match", "File is not loaded in editor cache yet. Use Editor > Load files first.", "error");
+      return;
+    }
+
+    openEditorFile(cached);
+    setActiveTab("editor");
+    pushFeed("Open vault match", `Opened ${match.file_path} in Editor tab.`, "success");
+  }
 
   if (showLanding) {
     return (
@@ -1185,6 +1303,104 @@ function App() {
                 <JsonView title="Masked key list" value={listKeysResult ? { result: listKeysResult } : createdKeyResult} />
               </Panel>
             </section>
+          ) : null}
+
+          {activeTab === "search" ? (
+            <>
+              <Panel
+                title="Unified search"
+                eyebrow="Search-first flow"
+                detail="Semantic vault matches are primary; nearest memory atoms are optional and run in parallel."
+              >
+                <form className="search-shell" onSubmit={submitSearch}>
+                  <div className="search-query-bar">
+                    <label className="field grow">
+                      <span>Search query</span>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                        placeholder="Ask across vault notes and memory atoms…"
+                      />
+                    </label>
+                    <label className="toggle">
+                      <input
+                        type="checkbox"
+                        checked={includeMemoryMatches}
+                        onChange={(event) => setIncludeMemoryMatches(event.target.checked)}
+                      />
+                      Include memory matches
+                    </label>
+                    <button type="submit" className="button primary" disabled={searchLoading}>
+                      {searchLoading ? "Searching…" : "Search"}
+                    </button>
+                  </div>
+
+                  {lastSearchedAt ? <p className="subtle-note">Last searched: {formatTime(lastSearchedAt)}</p> : null}
+                  {searchError ? <p className="search-error">{searchError}</p> : null}
+
+                  {!searchQuery.trim() ? (
+                    <p className="empty-state">Start typing a focused query (concept, person, or file topic), then press Search.</p>
+                  ) : null}
+                  {searchQuery.trim() && searchQuery.trim().length < 2 ? (
+                    <p className="empty-state">Use at least 2 characters so semantic ranking can produce stable matches.</p>
+                  ) : null}
+                </form>
+              </Panel>
+
+              <Panel title="Vault matches" eyebrow="Primary source">
+                {vaultMatches.length === 0 ? (
+                  <p className="empty-state">No vault matches yet. Try a narrower topic, or verify the selected vault has indexed notes.</p>
+                ) : (
+                  <div className="search-results-grid">
+                    {vaultMatches.map((match, index) => {
+                      const confidence = confidenceFromDistance(match.distance);
+                      return (
+                        <article key={`${match.file_path}-${index}`} className="search-card">
+                          <header>
+                            <button type="button" className="search-result-link" onClick={() => openVaultResultInEditor(match)}>
+                              {match.file_path}
+                            </button>
+                            <span className={`confidence-badge ${confidence.tone}`}>{confidence.label}</span>
+                          </header>
+                          <p className="search-title">{highlightText(match.title || "Untitled", queryTerms)}</p>
+                          <p className="search-snippet">{highlightText(match.keypoint || "No keypoint snippet available.", queryTerms)}</p>
+                          <p className="search-distance">Distance: {formatNumber(match.distance, 5)}</p>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </Panel>
+
+              <Panel title="Memory matches" eyebrow="Optional secondary source">
+                {memoryMatches.length === 0 ? (
+                  <p className="empty-state">
+                    {includeMemoryMatches
+                      ? "No nearby memory atoms yet. Add atoms in the Atoms tab to enrich this source."
+                      : "Memory matching is disabled. Enable “Include memory matches” to compare atom neighbors."}
+                  </p>
+                ) : (
+                  <div className="search-results-grid">
+                    {memoryMatches.map((match, index) => {
+                      const confidence = confidenceFromDistance(match.distance);
+                      const decoded = decodeJsonIfPossible(match.metadata);
+                      return (
+                        <article key={`${match.id || index}`} className="search-card compact">
+                          <header>
+                            <strong>Atom #{match.id ?? index + 1}</strong>
+                            <span className={`confidence-badge ${confidence.tone}`}>{confidence.label}</span>
+                          </header>
+                          <p className="search-snippet">{highlightText(match.text || "", queryTerms)}</p>
+                          <p className="search-distance">Distance: {formatNumber(match.distance, 5)}</p>
+                          <p className="search-meta">{typeof decoded === "string" ? decoded : JSON.stringify(decoded)}</p>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </Panel>
+            </>
           ) : null}
 
           {activeTab === "atoms" ? (
