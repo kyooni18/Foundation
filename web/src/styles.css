@@ -426,6 +426,134 @@ a {
   overflow: auto;
 }
 
+.search-shell {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.search-query-bar {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgba(255, 250, 244, 0.96);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.search-error {
+  margin: 0;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.search-results-grid {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.search-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.search-card.compact {
+  gap: 0.35rem;
+}
+
+.search-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.search-result-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-deep);
+  font-weight: 600;
+  text-align: left;
+}
+
+.search-result-link:hover {
+  text-decoration: underline;
+}
+
+.search-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.search-snippet,
+.search-meta,
+.search-distance {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.search-distance {
+  font-family: "SFMono-Regular", "Menlo", monospace;
+  font-weight: 600;
+}
+
+.search-meta {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.confidence-badge.high {
+  background: rgba(29, 125, 99, 0.16);
+  color: #0f6a53;
+}
+
+.confidence-badge.medium {
+  background: rgba(187, 92, 53, 0.15);
+  color: #8b3f21;
+}
+
+.confidence-badge.low,
+.confidence-badge.unknown {
+  background: rgba(107, 98, 89, 0.16);
+  color: #4f4740;
+}
+
+mark {
+  background: rgba(255, 199, 79, 0.45);
+  padding: 0 0.12rem;
+  border-radius: 0.2rem;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
