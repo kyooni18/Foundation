@@ -1127,6 +1127,7 @@ def run_full_push(options: SyncOptions, state: Dict[str, Any]) -> Dict[str, Any]
     info(f"Starting full-push for vault `{options.vault_uid}` from {options.local_path}")
     info("Scanning local vault files (this can take a while on iCloud/network storage) ...")
     snapshot = scan_local_vault(options.local_path, progress_label="full-push scan")
+    snapshot = scan_local_vault(options.local_path)
     info(f"Scanned local vault: {len(snapshot)} file(s) detected.")
     if not snapshot:
         warn(
