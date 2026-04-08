@@ -623,10 +623,21 @@ def scan_fingerprint(path: Path, relative_path: str) -> Optional[str]:
         return None
 
 
-def scan_local_vault(root: Path) -> Dict[str, Dict[str, Any]]:
+def scan_local_vault(root: Path, progress_label: Optional[str] = None) -> Dict[str, Dict[str, Any]]:
     snapshot: Dict[str, Dict[str, Any]] = {}
+    scanned_dirs = 0
+    scanned_files = 0
+    last_progress_at = time.monotonic()
 
     for current_root, _, file_names in os.walk(root):
+        scanned_dirs += 1
+        if progress_label and (scanned_dirs % 50 == 0 or time.monotonic() - last_progress_at >= 2.0):
+            info(
+                f"{progress_label}: traversed {scanned_dirs} directorie(s), "
+                f"indexed {scanned_files} file(s) ..."
+            )
+            last_progress_at = time.monotonic()
+
         current_root_path = Path(current_root)
         for file_name in file_names:
             full_path = current_root_path / file_name
@@ -643,6 +654,13 @@ def scan_local_vault(root: Path) -> Dict[str, Dict[str, Any]]:
                     "modified_unix_ms": int(stat.st_mtime * 1000),
                     "content_fingerprint": scan_fingerprint(full_path, relative),
                 }
+                scanned_files += 1
+                if progress_label and (scanned_files % 250 == 0 or time.monotonic() - last_progress_at >= 2.0):
+                    info(
+                        f"{progress_label}: traversed {scanned_dirs} directorie(s), "
+                        f"indexed {scanned_files} file(s) ..."
+                    )
+                    last_progress_at = time.monotonic()
             except Exception as exc:
                 warn(f"Failed to read {full_path}: {exc}")
 
@@ -1107,6 +1125,8 @@ def push_delta_changes_in_batches(options: SyncOptions, changes: List[Dict[str, 
 
 def run_full_push(options: SyncOptions, state: Dict[str, Any]) -> Dict[str, Any]:
     info(f"Starting full-push for vault `{options.vault_uid}` from {options.local_path}")
+    info("Scanning local vault files (this can take a while on iCloud/network storage) ...")
+    snapshot = scan_local_vault(options.local_path, progress_label="full-push scan")
     snapshot = scan_local_vault(options.local_path)
     info(f"Scanned local vault: {len(snapshot)} file(s) detected.")
     if not snapshot:
