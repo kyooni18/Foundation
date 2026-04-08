@@ -1106,7 +1106,9 @@ def push_delta_changes_in_batches(options: SyncOptions, changes: List[Dict[str, 
 
 
 def run_full_push(options: SyncOptions, state: Dict[str, Any]) -> Dict[str, Any]:
+    info(f"Starting full-push for vault `{options.vault_uid}` from {options.local_path}")
     snapshot = scan_local_vault(options.local_path)
+    info(f"Scanned local vault: {len(snapshot)} file(s) detected.")
     if not snapshot:
         warn(
             "Local vault is empty at "
@@ -1125,8 +1127,10 @@ def run_full_push(options: SyncOptions, state: Dict[str, Any]) -> Dict[str, Any]
         "files": payload_files,
     }
     full_payload_size = encoded_byte_count(full_payload)
+    info(f"Prepared full-push payload: {len(payload_files)} file(s), {full_payload_size} bytes.")
 
     if full_payload_size <= options.max_upload_bytes:
+        info("Uploading full snapshot via /vaults/sync/full-push ...")
         response = api_post(options.base_url, options.api_key, "/vaults/sync/full-push", full_payload)
         info(
             "Full push complete: "
@@ -1143,35 +1147,55 @@ def run_full_push(options: SyncOptions, state: Dict[str, Any]) -> Dict[str, Any]
         "using batched delta-push fallback."
     )
 
-    status = api_post(
-        options.base_url,
-        options.api_key,
-        "/vaults/sync/status",
-        {
-            "vault_uid": options.vault_uid,
-            "since_unix_ms": None,
-            "limit": options.limit,
-        },
-    )
-    remote_timestamps = status.get("file_timestamps") or []
-    if not isinstance(remote_timestamps, list):
-        remote_timestamps = []
+    latest_change_id_from_status: Optional[int] = None
+    latest_change_unix_ms_from_status: Optional[int] = None
 
-    changes = build_delta_changes_using_remote_status(
-        local_snapshot=snapshot,
-        previous_local_snapshot=state.get("local_snapshot", {}),
-        remote_file_timestamps=remote_timestamps,
-        local_root=options.local_path,
-        force_full_mirror=True,
-        prefer_fingerprint_fallback=is_likely_icloud_drive_path(options.local_path),
-    )
+    try:
+        info("Loading remote status for batched full-push fallback ...")
+        status = api_post(
+            options.base_url,
+            options.api_key,
+            "/vaults/sync/status",
+            {
+                "vault_uid": options.vault_uid,
+                "since_unix_ms": None,
+                "limit": options.limit,
+            },
+        )
+        latest_change_id_from_status = status.get("latest_change_id")
+        latest_change_unix_ms_from_status = status.get("latest_change_unix_ms")
+
+        remote_timestamps = status.get("file_timestamps") or []
+        if not isinstance(remote_timestamps, list):
+            remote_timestamps = []
+        info(f"Remote status loaded: {len(remote_timestamps)} indexed file(s).")
+
+        changes = build_delta_changes_using_remote_status(
+            local_snapshot=snapshot,
+            previous_local_snapshot=state.get("local_snapshot", {}),
+            remote_file_timestamps=remote_timestamps,
+            local_root=options.local_path,
+            force_full_mirror=True,
+            prefer_fingerprint_fallback=is_likely_icloud_drive_path(options.local_path),
+        )
+    except Exception as exc:
+        warn(f"Failed to load /vaults/sync/status for full-push fallback, using local state diff: {exc}")
+        info("Building local diff from previous sync state ...")
+        changes = build_delta_changes(
+            previous=state.get("local_snapshot", {}),
+            current=snapshot,
+            local_root=options.local_path,
+            prefer_fingerprint_fallback=is_likely_icloud_drive_path(options.local_path),
+        )
 
     if not changes:
         info("Full push fallback found no differences; nothing to upload.")
         next_state = dict(state)
         next_state["local_snapshot"] = snapshot
-        next_state["last_server_change_id"] = status.get("latest_change_id")
-        next_state["last_server_change_unix_ms"] = status.get("latest_change_unix_ms")
+        if latest_change_id_from_status is not None:
+            next_state["last_server_change_id"] = latest_change_id_from_status
+        if latest_change_unix_ms_from_status is not None:
+            next_state["last_server_change_unix_ms"] = latest_change_unix_ms_from_status
         return next_state
 
     push_result = push_delta_changes_in_batches(options, changes)
@@ -1186,12 +1210,12 @@ def run_full_push(options: SyncOptions, state: Dict[str, Any]) -> Dict[str, Any]
     next_state["last_server_change_id"] = (
         push_result.latest_change_id
         if push_result.latest_change_id is not None
-        else status.get("latest_change_id")
+        else latest_change_id_from_status
     )
     next_state["last_server_change_unix_ms"] = (
         push_result.latest_change_unix_ms
         if push_result.latest_change_unix_ms is not None
-        else status.get("latest_change_unix_ms")
+        else latest_change_unix_ms_from_status
     )
     return next_state
 
