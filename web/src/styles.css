@@ -59,6 +59,67 @@ a {
   color: inherit;
 }
 
+
+.landing-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1rem;
+}
+
+.landing-card {
+  width: min(720px, 100%);
+  padding: 2.25rem;
+  border: 1px solid rgba(53, 40, 31, 0.15);
+  border-radius: 1.4rem;
+  background: rgba(21, 17, 14, 0.9);
+  color: #fff7ef;
+  box-shadow: 0 26px 60px rgba(17, 10, 6, 0.35);
+  text-align: center;
+}
+
+.landing-card h1 {
+  margin: 0.75rem auto;
+  max-width: 18ch;
+  font-family: "Fraunces", serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  line-height: 0.95;
+}
+
+.landing-detail {
+  margin: 0.8rem auto 1.35rem;
+  max-width: 52ch;
+  color: rgba(255, 246, 236, 0.82);
+}
+
+.landing-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 0.7rem;
+}
+
+.landing-button {
+  min-height: 3.2rem;
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.landing-link {
+  margin: 0.35rem auto 0.8rem;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 246, 236, 0.85);
+  text-decoration: underline;
+}
+
+.landing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 246, 236, 0.92);
+}
+
 .app-shell {
   display: grid;
   grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
@@ -546,7 +607,8 @@ th {
   }
 
   .split-grid,
-  .secondary-column {
+  .secondary-column,
+  .landing-actions {
     grid-template-columns: 1fr;
   }
 }
