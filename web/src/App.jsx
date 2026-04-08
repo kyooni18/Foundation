@@ -1,6 +1,6 @@
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import { startTransition, useDeferredValue, useEffect, useState, useTransition } from "react";
+import { startTransition, useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 
 const API_BASE = (import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, "");
 const STORAGE_KEY = "foundation-web-state-v1";
@@ -23,22 +23,23 @@ const NAV_ITEMS = [
 
 function readStoredState() {
   if (typeof window === "undefined") {
-    return { apiKey: "", vaultUID: "" };
+    return { apiKey: "", vaultUID: "", hideLanding: false };
   }
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return { apiKey: "", vaultUID: "" };
+      return { apiKey: "", vaultUID: "", hideLanding: false };
     }
 
     const parsed = JSON.parse(raw);
     return {
       apiKey: typeof parsed.apiKey === "string" ? parsed.apiKey : "",
-      vaultUID: typeof parsed.vaultUID === "string" ? parsed.vaultUID : ""
+      vaultUID: typeof parsed.vaultUID === "string" ? parsed.vaultUID : "",
+      hideLanding: Boolean(parsed.hideLanding)
     };
   } catch {
-    return { apiKey: "", vaultUID: "" };
+    return { apiKey: "", vaultUID: "", hideLanding: false };
   }
 }
 
@@ -142,6 +143,42 @@ async function foundationFetch(path, { method = "GET", apiKey, payload, headers 
   return data;
 }
 
+function LandingScreen({ onConnectApiKey, onSearchVault, onContinue, suppressLanding, onSuppressLandingChange }) {
+  return (
+    <div className="landing-shell">
+      <section className="landing-card" aria-label="Foundation landing screen">
+        <p className="eyebrow">Foundation Web</p>
+        <h1>Search vault memory, inspect sources, and run operations from one secure console.</h1>
+        <p className="landing-detail">
+          Start with your API key and vault, then move into the full advanced control room when you are ready.
+        </p>
+
+        <div className="landing-actions">
+          <button type="button" className="button primary landing-button" onClick={onConnectApiKey}>
+            Connect API Key
+          </button>
+          <button type="button" className="button ghost landing-button" onClick={onSearchVault}>
+            Search Vault
+          </button>
+        </div>
+
+        <button type="button" className="landing-link" onClick={onContinue}>
+          Continue to Advanced Console
+        </button>
+
+        <label className="landing-toggle">
+          <input
+            type="checkbox"
+            checked={suppressLanding}
+            onChange={(event) => onSuppressLandingChange(event.target.checked)}
+          />
+          Don’t show this landing screen again.
+        </label>
+      </section>
+    </div>
+  );
+}
+
 function AppShell({ activeTab, onTabChange, apiKeyPresent, children }) {
   return (
     <div className="app-shell">
@@ -184,7 +221,7 @@ function AppShell({ activeTab, onTabChange, apiKeyPresent, children }) {
   );
 }
 
-function Hero({ apiKey, onApiKeyChange, vaultUID, onVaultUIDChange, onRunHealthChecks }) {
+function Hero({ apiKey, onApiKeyChange, vaultUID, onVaultUIDChange, onRunHealthChecks, apiKeyInputRef }) {
   return (
     <section className="hero">
       <div className="hero-copy">
@@ -205,6 +242,7 @@ function Hero({ apiKey, onApiKeyChange, vaultUID, onVaultUIDChange, onRunHealthC
             onChange={(event) => onApiKeyChange(event.target.value)}
             placeholder="foundation_..."
             autoComplete="off"
+            ref={apiKeyInputRef}
           />
         </label>
 
@@ -328,6 +366,8 @@ function App() {
   const [activeTab, setActiveTab] = useState("overview");
   const [apiKey, setApiKey] = useState(stored.apiKey);
   const [vaultUID, setVaultUID] = useState(stored.vaultUID);
+  const [suppressLanding, setSuppressLanding] = useState(stored.hideLanding);
+  const [showLanding, setShowLanding] = useState(!stored.hideLanding && !(stored.apiKey && stored.vaultUID));
   const [healthState, setHealthState] = useState({
     service: null,
     database: null,
@@ -367,6 +407,8 @@ function App() {
   const [editorPreviewMode, setEditorPreviewMode] = useState(false);
   const [editorSaving, setEditorSaving] = useState(false);
   const [isPending, startUiTransition] = useTransition();
+  const apiKeyInputRef = useRef(null);
+  const vaultQueryInputRef = useRef(null);
   const deferredSourceFilter = useDeferredValue(sourceFilter);
 
   useEffect(() => {
@@ -374,10 +416,38 @@ function App() {
       STORAGE_KEY,
       JSON.stringify({
         apiKey,
-        vaultUID
+        vaultUID,
+        hideLanding: suppressLanding
       })
     );
+  }, [apiKey, vaultUID, suppressLanding]);
+
+
+  useEffect(() => {
+    if (apiKey.trim() && vaultUID.trim()) {
+      setSuppressLanding(true);
+      setShowLanding(false);
+    }
   }, [apiKey, vaultUID]);
+
+  function focusAfterPaint(targetRef) {
+    requestAnimationFrame(() => {
+      targetRef.current?.focus();
+      targetRef.current?.select?.();
+    });
+  }
+
+  function openApiKeyFlow() {
+    setShowLanding(false);
+    setActiveTab("overview");
+    focusAfterPaint(apiKeyInputRef);
+  }
+
+  function openVaultSearchFlow() {
+    setShowLanding(false);
+    setActiveTab("vaults");
+    focusAfterPaint(vaultQueryInputRef);
+  }
 
   const filteredSources = sourceList.filter((source) => {
     const query = deferredSourceFilter.trim().toLowerCase();
@@ -888,6 +958,18 @@ function App() {
 
   const selectedSource = sourceList.find((item) => item.source_uid === selectedSourceUID);
 
+  if (showLanding) {
+    return (
+      <LandingScreen
+        onConnectApiKey={openApiKeyFlow}
+        onSearchVault={openVaultSearchFlow}
+        onContinue={() => setShowLanding(false)}
+        suppressLanding={suppressLanding}
+        onSuppressLandingChange={setSuppressLanding}
+      />
+    );
+  }
+
   return (
     <AppShell activeTab={activeTab} onTabChange={setActiveTab} apiKeyPresent={Boolean(apiKey)}>
       <Hero
@@ -896,6 +978,7 @@ function App() {
         vaultUID={vaultUID}
         onVaultUIDChange={setVaultUID}
         onRunHealthChecks={runHealthChecks}
+        apiKeyInputRef={apiKeyInputRef}
       />
 
       <div className="content-grid">
@@ -1215,7 +1298,7 @@ function App() {
                 <div className="inline-form">
                   <label className="field grow">
                     <span>Vault query</span>
-                    <input type="text" value={vaultQuery} onChange={(event) => setVaultQuery(event.target.value)} />
+                    <input ref={vaultQueryInputRef} type="text" value={vaultQuery} onChange={(event) => setVaultQuery(event.target.value)} />
                   </label>
                   <button type="button" className="button primary" onClick={searchVault}>
                     Search vault
