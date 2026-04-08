@@ -192,7 +192,6 @@ async function foundationFetch(path, { method = "GET", apiKey, payload, headers 
   return data;
 }
 
-function AppShell({ activeTab, onTabChange, apiKeyPresent, children, isSidebarOpen, onSidebarToggle, isNarrowScreen }) {
 function LandingScreen({ onConnectApiKey, onSearchVault, onContinue, suppressLanding, onSuppressLandingChange }) {
   return (
     <div className="landing-shell">
@@ -229,7 +228,7 @@ function LandingScreen({ onConnectApiKey, onSearchVault, onContinue, suppressLan
   );
 }
 
-function AppShell({ activeTab, onTabChange, apiKeyPresent, children }) {
+function AppShell({ activeTab, onTabChange, apiKeyPresent, children, isSidebarOpen, onSidebarToggle, isNarrowScreen }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -512,6 +511,8 @@ function App() {
 
     return () => window.clearTimeout(timer);
   }, [searchQuery]);
+
+  useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 900px)");
     const handleMediaChange = (event) => {
       setIsNarrowScreen(event.matches);
@@ -543,6 +544,7 @@ function App() {
     if (isNarrowScreen) {
       setIsSidebarOpen(false);
     }
+  }
   function focusAfterPaint(targetRef) {
     requestAnimationFrame(() => {
       targetRef.current?.focus();
