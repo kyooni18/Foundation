@@ -1,6 +1,6 @@
 # Foundation API 문서 (한국어)
 
-최종 업데이트: 2026-03-08
+최종 업데이트: 2026-04-08
 
 ## 1. 기본 정보
 
@@ -83,6 +83,7 @@ Authorization: Bearer <api_key>
 | POST | `/vaults/sync/status` | 필요 | 최신 timestamp, 파일별 timestamp, 변경 로그 조회 |
 | POST | `/vaults/sync/full-push` | 필요 | 볼트 디렉토리 전체를 1회 업로드 |
 | POST | `/vaults/sync/full-pull` | 필요 | 볼트 디렉토리 전체를 1회 다운로드 |
+| POST | `/vaults/search` | 필요 | 처리된 노트 keypoint 기반 의미 검색 |
 
 ---
 
@@ -582,6 +583,10 @@ Vault 동기화는 기존 atom/source 도메인과 분리된 전용 테이블을
 - `vault_uid`는 `vault_storage` 하위 실제 폴더명으로 사용됩니다 (`/`, `\` 포함 불가).
 - 무결성 검증은 강제하지 않습니다. `content_sha256`는 선택 메타데이터입니다.
 - push/full-push 시 기존 파생 필드는 비워지고, enrichment/atom 생성용 비동기 작업이 자동 적재됩니다.
+- Markdown 노트는 atomic keypoint로 분해되어 임베딩되고, `file_atoms`를 통해 파일과 연결됩니다.
+- 파일 임베딩 기반 유사도 링크가 생성되며, 관련 노트는 `[[relative/path]]` Obsidian 링크로 노트 본문에 반영됩니다.
+- Obsidian 링크 타깃은 NFD를 NFC로 정규화하여 한글 파일명 분해 이슈를 줄입니다.
+- Vault 노트/keypoint/질의 임베딩은 `/settings`의 활성 provider를 따릅니다. OpenAI API를 사용하려면 provider를 `openai`로 설정하세요.
 
 ### 12.1 `POST /vaults/sync/push`
 
@@ -805,6 +810,47 @@ Vault 동기화는 기존 atom/source 도메인과 분리된 전용 테이블을
       "action": "deleted",
       "changed_at_unix_ms": 1772595315000,
       "device_id": "iphone-15"
+    }
+  ]
+}
+```
+
+### 12.6 `POST /vaults/search`
+
+- 목적:
+  - 사용자 질의를 임베딩합니다.
+  - vault 내 노트 keypoint와 최근접 의미 검색을 수행합니다.
+  - Obsidian 링크 타깃을 포함한 상위 결과를 반환합니다.
+- 요청:
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "query": "project timeline risks",
+  "limit": 5
+}
+```
+
+- 참고:
+  - `limit`는 `1..50` 범위로 제한됩니다(기본 10).
+  - 검색 대상은 `file_atoms` + `atoms_db`에 저장된 노트 keypoint입니다.
+  - `obsidian_link`는 `.md` 확장자를 제거한 vault 상대 경로입니다.
+
+- 응답:
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "query": "project timeline risks",
+  "results": [
+    {
+      "file_path": "Projects/Plan.md",
+      "title": "Plan",
+      "keypoint": "Risks: delivery date is blocked by dependency migration.",
+      "distance": 0.1829,
+      "updated_unix_ms": 1772595300123,
+      "obsidian_link": "Projects/Plan"
     }
   ]
 }

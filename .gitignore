@@ -6,3 +6,7 @@ main/__pycache__/
 main/vault_storage
 main/database/dbdata/
 v/
+.vercel
+.env*.local
+web/node_modules/
+web/dist/

@@ -33,5 +33,19 @@ services:
       - ./vault_storage:/app/vault_storage
     restart: unless-stopped
 
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    image: kyooni18/foundation-web
+    depends_on:
+      db:
+        condition: service_healthy
+      main:
+        condition: service_started
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
 volumes:
   db_data:

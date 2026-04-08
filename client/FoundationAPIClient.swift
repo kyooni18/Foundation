@@ -259,6 +259,15 @@ public final class FoundationAPIClient {
         )
     }
 
+    public func searchVault(vaultUID: String, query: String, limit: Int? = nil) async throws -> VaultSemanticSearchResponse {
+        try await send(
+            path: "/vaults/search",
+            method: .post,
+            body: VaultSemanticSearchRequest(vault_uid: vaultUID, query: query, limit: limit),
+            requiresAuth: true
+        )
+    }
+
     // MARK: - Internal request pipeline
 
     private enum HTTPMethod: String {
@@ -572,6 +581,18 @@ public struct VaultSyncFullPullRequest: Encodable {
     }
 }
 
+public struct VaultSemanticSearchRequest: Encodable {
+    public let vault_uid: String
+    public let query: String
+    public let limit: Int?
+
+    public init(vault_uid: String, query: String, limit: Int? = nil) {
+        self.vault_uid = vault_uid
+        self.query = query
+        self.limit = limit
+    }
+}
+
 // MARK: - Response Models
 
 public struct HealthResponse: Decodable, FoundationAPIStatusResponse {
@@ -844,6 +865,40 @@ public struct VaultSyncPullResponse: Decodable, FoundationAPIStatusResponse {
         case snapshotFiles = "snapshot_files"
         case changedFiles = "changed_files"
         case changeLog = "change_log"
+        case error
+    }
+}
+
+public struct VaultSemanticSearchResultItem: Decodable {
+    public let filePath: String
+    public let title: String
+    public let keypoint: String
+    public let distance: Double
+    public let updatedUnixMS: Int64
+    public let obsidianLink: String
+
+    enum CodingKeys: String, CodingKey {
+        case filePath = "file_path"
+        case title
+        case keypoint
+        case distance
+        case updatedUnixMS = "updated_unix_ms"
+        case obsidianLink = "obsidian_link"
+    }
+}
+
+public struct VaultSemanticSearchResponse: Decodable, FoundationAPIStatusResponse {
+    public let ok: Bool
+    public let vaultUID: String
+    public let query: String
+    public let results: [VaultSemanticSearchResultItem]?
+    public let error: String?
+
+    enum CodingKeys: String, CodingKey {
+        case ok
+        case vaultUID = "vault_uid"
+        case query
+        case results
         case error
     }
 }

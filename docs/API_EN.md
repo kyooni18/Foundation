@@ -1,6 +1,6 @@
 # Foundation API Documentation (English)
 
-Last updated: 2026-03-08
+Last updated: 2026-04-08
 
 ## 1. Base information
 
@@ -82,6 +82,7 @@ Authorization: Bearer <api_key>
 | POST | `/vaults/sync/status` | Yes | Read vault latest timestamp, file timestamps, and changelog |
 | POST | `/vaults/sync/full-push` | Yes | Upload whole vault directory snapshot in one request |
 | POST | `/vaults/sync/full-pull` | Yes | Download whole vault directory snapshot in one request |
+| POST | `/vaults/search` | Yes | Semantic search over processed note keypoints |
 
 ---
 
@@ -579,6 +580,10 @@ Notes:
 - `vault_uid` is used as the actual directory name under `vault_storage` (must not include `/` or `\`).
 - Integrity verification is not enforced. `content_sha256` is optional metadata only.
 - On upload/full-push, stale file-derived fields are cleared and async jobs are enqueued for enrichment and atom generation.
+- Markdown notes are parsed into atomic keypoints, embedded, and linked to files through `file_atoms`.
+- Similarity links are generated from file embeddings, and related-note Obsidian links are written as `[[relative/path]]`.
+- Obsidian link targets are normalized from NFD to NFC to avoid decomposed Korean filename issues.
+- Vault note/keypoint/query embeddings follow the active provider in `/settings`; choose `openai` to force OpenAI embedding API usage.
 
 ### 12.1 `POST /vaults/sync/push`
 
@@ -802,6 +807,47 @@ Notes:
       "action": "deleted",
       "changed_at_unix_ms": 1772595315000,
       "device_id": "iphone-15"
+    }
+  ]
+}
+```
+
+### 12.6 `POST /vaults/search`
+
+- Purpose:
+  - Embed the user query.
+  - Search nearest keypoints linked to notes in the vault.
+  - Return top note matches with Obsidian link targets.
+- Request:
+
+```json
+{
+  "vault_uid": "my-obsidian-vault",
+  "query": "project timeline risks",
+  "limit": 5
+}
+```
+
+- Notes:
+  - `limit` is clamped to `1..50` (default 10).
+  - Search operates on processed note keypoints in `file_atoms` + `atoms_db`.
+  - `obsidian_link` uses the vault-relative path without `.md` extension.
+
+- Response:
+
+```json
+{
+  "ok": true,
+  "vault_uid": "my-obsidian-vault",
+  "query": "project timeline risks",
+  "results": [
+    {
+      "file_path": "Projects/Plan.md",
+      "title": "Plan",
+      "keypoint": "Risks: delivery date is blocked by dependency migration.",
+      "distance": 0.1829,
+      "updated_unix_ms": 1772595300123,
+      "obsidian_link": "Projects/Plan"
     }
   ]
 }

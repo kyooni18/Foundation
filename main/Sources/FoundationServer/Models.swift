@@ -388,6 +388,38 @@ struct VaultSyncFullPullPayload: Content {
     }
 }
 
+struct VaultSemanticSearchPayload: Content {
+    let vault_uid: String
+    let query: String
+    let limit: Int?
+
+    init(vault_uid: String, query: String, limit: Int?) {
+        self.vault_uid = vault_uid
+        self.query = query
+        self.limit = limit
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case vault_uid
+        case query
+        case limit
+    }
+
+    private enum DecodingKeys: String, CodingKey {
+        case vault_uid
+        case vaultUid
+        case query
+        case limit
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DecodingKeys.self)
+        vault_uid = try container.decodeAlias(String.self, primary: .vault_uid, alternate: .vaultUid)
+        query = try container.decode(String.self, forKey: .query)
+        limit = try container.decodeIfPresent(Int.self, forKey: .limit)
+    }
+}
+
 struct VaultSnapshotFileItem: Content {
     let file_path: String
     let content_base64: String
@@ -451,6 +483,23 @@ struct VaultSyncStatusResponse: Content {
     let latest_change_unix_ms: Int64?
     let file_timestamps: [VaultFileTimestampItem]
     let change_log: [VaultChangeLogItem]
+    let error: String?
+}
+
+struct VaultSemanticSearchResultItem: Content {
+    let file_path: String
+    let title: String
+    let keypoint: String
+    let distance: Double
+    let updated_unix_ms: Int64
+    let obsidian_link: String
+}
+
+struct VaultSemanticSearchResponse: Content {
+    let ok: Bool
+    let vault_uid: String
+    let query: String
+    let results: [VaultSemanticSearchResultItem]?
     let error: String?
 }
 

@@ -40,17 +40,42 @@ struct EmbeddingService: Sendable {
     }
 
     func embed(_ input: String, settings: EmbeddingSettings) async throws -> [Double] {
-        let normalized = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        if normalized.isEmpty {
-            return [Double](repeating: 0.0, count: dimension)
+        try await embedMany([input], settings: settings).first ?? zeroVector
+    }
+
+    func embedMany(_ inputs: [String], settings: EmbeddingSettings) async throws -> [[Double]] {
+        guard !inputs.isEmpty else {
+            return []
+        }
+
+        let normalized = inputs.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        var results = Array(repeating: zeroVector, count: normalized.count)
+
+        let nonEmptyInputs = normalized.enumerated().compactMap { index, value -> (Int, String)? in
+            value.isEmpty ? nil : (index, value)
+        }
+
+        guard !nonEmptyInputs.isEmpty else {
+            return results
         }
 
         switch settings.provider {
         case .qwen3:
-            return deterministicEmbed(normalized)
+            for (index, value) in nonEmptyInputs {
+                results[index] = deterministicEmbed(value)
+            }
         case .openai:
-            return try await openAIEmbed(normalized, settings: settings)
+            let vectors = try await openAIEmbedMany(nonEmptyInputs.map(\.1), settings: settings)
+            guard vectors.count == nonEmptyInputs.count else {
+                throw Abort(.badGateway, reason: "OpenAI embeddings API returned an unexpected number of vectors")
+            }
+
+            for ((index, _), vector) in zip(nonEmptyInputs, vectors) {
+                results[index] = vector
+            }
         }
+
+        return results
     }
 
     func vectorLiteral(for vector: [Double]) -> String {
@@ -77,7 +102,11 @@ struct EmbeddingService: Sendable {
         return l2Normalize(vector)
     }
 
-    private func openAIEmbed(_ input: String, settings: EmbeddingSettings) async throws -> [Double] {
+    private var zeroVector: [Double] {
+        [Double](repeating: 0.0, count: dimension)
+    }
+
+    private func openAIEmbedMany(_ inputs: [String], settings: EmbeddingSettings) async throws -> [[Double]] {
         guard let apiKey = settings.openAIAPIKey?.trimmingCharacters(in: .whitespacesAndNewlines), !apiKey.isEmpty else {
             throw Abort(.badRequest, reason: "OpenAI API key is missing. Update it in /settings.")
         }
@@ -90,7 +119,7 @@ struct EmbeddingService: Sendable {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        request.httpBody = try JSONEncoder().encode(OpenAIEmbeddingRequest(model: settings.openAIModel, input: input))
+        request.httpBody = try JSONEncoder().encode(OpenAIEmbeddingRequest(model: settings.openAIModel, input: inputs))
 
         let (payload, response) = try await URLSession.shared.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -105,11 +134,12 @@ struct EmbeddingService: Sendable {
         }
 
         let decoded = try JSONDecoder().decode(OpenAIEmbeddingResponse.self, from: payload)
-        guard let first = decoded.data.first else {
+        let sortedItems = decoded.data.sorted { $0.index < $1.index }
+        guard !sortedItems.isEmpty else {
             throw Abort(.badGateway, reason: "OpenAI embeddings API returned no vectors")
         }
 
-        return adjustDimensionAndNormalize(first.embedding)
+        return sortedItems.map { adjustDimensionAndNormalize($0.embedding) }
     }
 
     private func adjustDimensionAndNormalize(_ vector: [Double]) -> [Double] {
@@ -136,11 +166,12 @@ struct EmbeddingService: Sendable {
 
 private struct OpenAIEmbeddingRequest: Codable {
     let model: String
-    let input: String
+    let input: [String]
 }
 
 private struct OpenAIEmbeddingResponse: Decodable {
     struct Item: Decodable {
+        let index: Int
         let embedding: [Double]
     }
 

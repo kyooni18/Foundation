@@ -208,6 +208,7 @@ private func prepareSchema(app: Application) throws {
     try sql.raw("\(unsafeRaw: legacyVaultFilesMigrationSQL(dimension: config.embeddingDimension))").run().wait()
     try sql.raw("CREATE INDEX IF NOT EXISTS vault_files_vault_updated_idx ON vault_files (vault_id, updated_unix_ms DESC);").run().wait()
     try sql.raw("CREATE INDEX IF NOT EXISTS vault_files_vault_live_idx ON vault_files (vault_id, is_deleted, file_path);").run().wait()
+    try sql.raw("CREATE INDEX IF NOT EXISTS vault_files_vector_content_hnsw ON vault_files USING hnsw (vector_content vector_cosine_ops);").run().wait()
     try sql.raw(
         """
         DO $$
@@ -622,11 +623,12 @@ private func routes(_ app: Application) throws {
         let normalizedChanges = try payload.changes.map { try normalizeVaultChange($0, defaultTimestamp: nowUnixMS) }
         let atomsTable = req.application.context.config.embeddingsTable
 
-        let latestChange = try await req.db.transaction { tx async throws -> VaultInsertedChangeRow in
+        let txResult = try await req.db.transaction { tx async throws -> VaultSyncMutationResult in
             let txSQL = try sqlDatabase(from: tx)
             let vaultID = try await ensureVaultID(vaultUID: vaultUID, sql: txSQL)
             var latestInTx: VaultInsertedChangeRow?
             var shouldPruneGeneratedAtoms = false
+            var affectedFileIDs = Set<Int64>()
 
             for change in normalizedChanges {
                 let inserted = try await txSQL
@@ -675,6 +677,7 @@ private func routes(_ app: Application) throws {
                 )
                 try await linkVaultChangeToFile(changeID: changeRow.id, fileID: fileState.id, sql: txSQL)
                 try await clearFileAtomLinks(fileID: fileState.id, sql: txSQL)
+                affectedFileIDs.insert(fileState.id)
                 shouldPruneGeneratedAtoms = true
 
                 if change.action == .deleted {
@@ -696,7 +699,12 @@ private func routes(_ app: Application) throws {
             guard let latestInTx else {
                 throw Abort(.internalServerError, reason: "failed to resolve latest vault change")
             }
-            return latestInTx
+            return VaultSyncMutationResult(
+                vault_id: vaultID,
+                applied_changes: normalizedChanges.count,
+                latest_change: latestInTx,
+                affected_file_ids: affectedFileIDs
+            )
         }
 
         do {
@@ -706,20 +714,41 @@ private func routes(_ app: Application) throws {
                 ok: false,
                 vault_uid: vaultUID,
                 applied_changes: normalizedChanges.count,
-                latest_change_id: latestChange.id,
-                latest_change_unix_ms: latestChange.changed_at_unix_ms,
+                latest_change_id: txResult.latest_change?.id,
+                latest_change_unix_ms: txResult.latest_change?.changed_at_unix_ms,
                 error: "vault DB update succeeded, but writing workspace files failed: \(error.localizedDescription)"
             )
         }
 
-        return VaultSyncPushResponse(
-            ok: true,
-            vault_uid: vaultUID,
-            applied_changes: normalizedChanges.count,
-            latest_change_id: latestChange.id,
-            latest_change_unix_ms: latestChange.changed_at_unix_ms,
-            error: nil
-        )
+        let settings = try await currentEmbeddingSettings(req: req)
+        do {
+            let processing = try await processVaultNotes(
+                vaultID: txResult.vault_id,
+                vaultUID: vaultUID,
+                seedFileIDs: txResult.affected_file_ids,
+                sql: try sqlDatabase(from: req.db),
+                context: req.application.context,
+                settings: settings
+            )
+
+            return VaultSyncPushResponse(
+                ok: true,
+                vault_uid: vaultUID,
+                applied_changes: normalizedChanges.count,
+                latest_change_id: processing.latestChangeID ?? txResult.latest_change?.id,
+                latest_change_unix_ms: processing.latestChangeUnixMS ?? txResult.latest_change?.changed_at_unix_ms,
+                error: nil
+            )
+        } catch {
+            return VaultSyncPushResponse(
+                ok: false,
+                vault_uid: vaultUID,
+                applied_changes: normalizedChanges.count,
+                latest_change_id: txResult.latest_change?.id,
+                latest_change_unix_ms: txResult.latest_change?.changed_at_unix_ms,
+                error: "vault sync succeeded, but note processing failed: \(error.localizedDescription)"
+            )
+        }
     }
 
     app.post("vaults", "sync", "pull") { req async throws -> VaultSyncPullResponse in
@@ -994,7 +1023,7 @@ private func routes(_ app: Application) throws {
         let normalizedFiles = try normalizeFullVaultFiles(payload.files)
         let atomsTable = req.application.context.config.embeddingsTable
 
-        let txResult = try await req.db.transaction { tx async throws -> VaultFullPushTxResult in
+        let txResult = try await req.db.transaction { tx async throws -> VaultSyncMutationResult in
             let txSQL = try sqlDatabase(from: tx)
             let vaultID = try await ensureVaultID(vaultUID: vaultUID, sql: txSQL)
 
@@ -1015,6 +1044,7 @@ private func routes(_ app: Application) throws {
             var appliedChanges = 0
             var latestInTx: VaultInsertedChangeRow?
             var shouldPruneGeneratedAtoms = false
+            var affectedFileIDs = Set<Int64>()
 
             for file in normalizedFiles {
                 let action: VaultChangeAction = existingPaths.contains(file.file_path) ? .modified : .added
@@ -1065,6 +1095,7 @@ private func routes(_ app: Application) throws {
                 )
                 try await linkVaultChangeToFile(changeID: changeRow.id, fileID: fileState.id, sql: txSQL)
                 try await clearFileAtomLinks(fileID: fileState.id, sql: txSQL)
+                affectedFileIDs.insert(fileState.id)
                 shouldPruneGeneratedAtoms = true
                 try await enqueueVaultFileJobs(
                     fileID: fileState.id,
@@ -1122,6 +1153,7 @@ private func routes(_ app: Application) throws {
                 )
                 try await linkVaultChangeToFile(changeID: changeRow.id, fileID: fileState.id, sql: txSQL)
                 try await clearFileAtomLinks(fileID: fileState.id, sql: txSQL)
+                affectedFileIDs.insert(fileState.id)
                 shouldPruneGeneratedAtoms = true
                 try await supersedeVaultFileJobs(fileID: fileState.id, sql: txSQL)
             }
@@ -1130,7 +1162,12 @@ private func routes(_ app: Application) throws {
                 try await pruneOrphanedGeneratedAtoms(sql: txSQL, atomsTable: atomsTable)
             }
 
-            return VaultFullPushTxResult(applied_changes: appliedChanges, latest_change: latestInTx)
+            return VaultSyncMutationResult(
+                vault_id: vaultID,
+                applied_changes: appliedChanges,
+                latest_change: latestInTx,
+                affected_file_ids: affectedFileIDs
+            )
         }
 
         do {
@@ -1146,14 +1183,35 @@ private func routes(_ app: Application) throws {
             )
         }
 
-        return VaultSyncPushResponse(
-            ok: true,
-            vault_uid: vaultUID,
-            applied_changes: txResult.applied_changes,
-            latest_change_id: txResult.latest_change?.id,
-            latest_change_unix_ms: txResult.latest_change?.changed_at_unix_ms,
-            error: nil
-        )
+        let settings = try await currentEmbeddingSettings(req: req)
+        do {
+            let processing = try await processVaultNotes(
+                vaultID: txResult.vault_id,
+                vaultUID: vaultUID,
+                seedFileIDs: txResult.affected_file_ids,
+                sql: try sqlDatabase(from: req.db),
+                context: req.application.context,
+                settings: settings
+            )
+
+            return VaultSyncPushResponse(
+                ok: true,
+                vault_uid: vaultUID,
+                applied_changes: txResult.applied_changes,
+                latest_change_id: processing.latestChangeID ?? txResult.latest_change?.id,
+                latest_change_unix_ms: processing.latestChangeUnixMS ?? txResult.latest_change?.changed_at_unix_ms,
+                error: nil
+            )
+        } catch {
+            return VaultSyncPushResponse(
+                ok: false,
+                vault_uid: vaultUID,
+                applied_changes: txResult.applied_changes,
+                latest_change_id: txResult.latest_change?.id,
+                latest_change_unix_ms: txResult.latest_change?.changed_at_unix_ms,
+                error: "vault sync succeeded, but note processing failed: \(error.localizedDescription)"
+            )
+        }
     }
 
     app.post("vaults", "sync", "full-pull") { req async throws -> VaultSyncPullResponse in
@@ -1220,6 +1278,42 @@ private func routes(_ app: Application) throws {
             change_log: nil,
             error: nil
         )
+    }
+
+    app.post("vaults", "search") { req async throws -> VaultSemanticSearchResponse in
+        try await authorize(req)
+        let payload = try req.content.decode(VaultSemanticSearchPayload.self)
+        let vaultUID = try requireVaultUID(payload.vault_uid)
+        let query = try requireText(payload.query)
+        let limit = max(1, min(payload.limit ?? 10, 50))
+        let settings = try await currentEmbeddingSettings(req: req)
+
+        do {
+            let results = try await semanticSearchVaultNotes(
+                vaultUID: vaultUID,
+                query: query,
+                limit: limit,
+                sql: try sqlDatabase(from: req.db),
+                context: req.application.context,
+                settings: settings
+            )
+
+            return VaultSemanticSearchResponse(
+                ok: true,
+                vault_uid: vaultUID,
+                query: query,
+                results: results,
+                error: nil
+            )
+        } catch {
+            return VaultSemanticSearchResponse(
+                ok: false,
+                vault_uid: vaultUID,
+                query: query,
+                results: nil,
+                error: error.localizedDescription
+            )
+        }
     }
 
     app.get("settings", "login") { req async throws -> Response in
@@ -1998,7 +2092,7 @@ private func findSourceSimilarities(sourceID: Int64, limit: Int, sql: any SQLDat
     }
 }
 
-private enum VaultChangeAction: String {
+enum VaultChangeAction: String {
     case added
     case modified
     case deleted
@@ -2039,9 +2133,11 @@ private struct NormalizedVaultFullFile {
     let size_bytes: Int64
 }
 
-private struct VaultFullPushTxResult {
+private struct VaultSyncMutationResult {
+    let vault_id: Int64
     let applied_changes: Int
     let latest_change: VaultInsertedChangeRow?
+    let affected_file_ids: Set<Int64>
 }
 
 private struct VaultFileStateRow: Decodable {
@@ -2049,7 +2145,7 @@ private struct VaultFileStateRow: Decodable {
     let content_version: Int64
 }
 
-private func unixMillisecondsNow() -> Int64 {
+func unixMillisecondsNow() -> Int64 {
     Int64((Date().timeIntervalSince1970 * 1000.0).rounded())
 }
 
