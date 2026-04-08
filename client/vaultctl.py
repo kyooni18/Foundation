@@ -627,6 +627,8 @@ def scan_local_vault(root: Path, progress_label: Optional[str] = None) -> Dict[s
     snapshot: Dict[str, Dict[str, Any]] = {}
     scanned_dirs = -1  # root itself 제외
     visited_files = 0
+    scanned_dirs = 0
+    scanned_files = 0
     last_progress_at = time.monotonic()
 
     for current_root, _, file_names in os.walk(root):
