@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify";
+import { marked } from "marked";
 import { startTransition, useDeferredValue, useEffect, useState, useTransition } from "react";
 
 const API_BASE = (import.meta.env.VITE_API_BASE || "/api").replace(/\/$/, "");
@@ -15,7 +17,8 @@ const NAV_ITEMS = [
   { id: "keys", label: "Keys", eyebrow: "Bootstrap and verify" },
   { id: "atoms", label: "Atoms", eyebrow: "Add, delete, and search" },
   { id: "sources", label: "Sources", eyebrow: "Index provenance graph" },
-  { id: "vaults", label: "Vaults", eyebrow: "Status, search, and upload" }
+  { id: "vaults", label: "Vaults", eyebrow: "Status, search, and upload" },
+  { id: "editor", label: "Editor", eyebrow: "Browse and edit vault notes" }
 ];
 
 function readStoredState() {
@@ -87,6 +90,22 @@ function bytesToBase64(bytes) {
 async function fileToBase64(file) {
   const buffer = await file.arrayBuffer();
   return bytesToBase64(new Uint8Array(buffer));
+}
+
+function base64ToText(base64) {
+  if (!base64) return "";
+  try {
+    const binary = window.atob(base64.replace(/\s/g, ""));
+    const bytes = Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
+    return new TextDecoder("utf-8").decode(bytes);
+  } catch {
+    return "";
+  }
+}
+
+function textToBase64(text) {
+  const bytes = new TextEncoder().encode(text);
+  return bytesToBase64(bytes);
 }
 
 async function foundationFetch(path, { method = "GET", apiKey, payload, headers } = {}) {
@@ -341,6 +360,12 @@ function App() {
   const [vaultSnapshot, setVaultSnapshot] = useState([]);
   const [uploadFiles, setUploadFiles] = useState([]);
   const [uploadSummary, setUploadSummary] = useState(null);
+  const [editorFiles, setEditorFiles] = useState([]);
+  const [editorFileFilter, setEditorFileFilter] = useState("");
+  const [editorSelectedPath, setEditorSelectedPath] = useState(null);
+  const [editorContent, setEditorContent] = useState("");
+  const [editorPreviewMode, setEditorPreviewMode] = useState(false);
+  const [editorSaving, setEditorSaving] = useState(false);
   const [isPending, startUiTransition] = useTransition();
   const deferredSourceFilter = useDeferredValue(sourceFilter);
 
@@ -767,6 +792,82 @@ function App() {
     });
   }
 
+  async function loadEditorFiles() {
+    if (!vaultUID.trim()) {
+      pushFeed("Load vault files", "Enter a vault UID first.", "error");
+      return;
+    }
+
+    await runAction({
+      title: "Load vault files",
+      path: "/vaults/sync/full-pull",
+      method: "POST",
+      auth: true,
+      payload: { vault_uid: vaultUID },
+      onSuccess: (data) => {
+        const files = (data.snapshot_files || []).filter((f) => f.file_path.endsWith(".md") || f.file_path.endsWith(".txt"));
+        setEditorFiles(files);
+        if (files.length > 0 && !editorSelectedPath) {
+          const first = files[0];
+          setEditorSelectedPath(first.file_path);
+          setEditorContent(base64ToText(first.content_base64 || ""));
+          setEditorPreviewMode(false);
+        }
+      },
+      successMessage: `Loaded ${vaultUID} file list for editor.`
+    });
+  }
+
+  function openEditorFile(file) {
+    setEditorSelectedPath(file.file_path);
+    setEditorContent(base64ToText(file.content_base64 || ""));
+    setEditorPreviewMode(false);
+  }
+
+  async function saveEditorFile() {
+    if (!vaultUID.trim() || !editorSelectedPath) {
+      pushFeed("Save file", "Open a vault file first.", "error");
+      return;
+    }
+
+    setEditorSaving(true);
+
+    const contentBase64 = textToBase64(editorContent);
+    const sizeBytes = new TextEncoder().encode(editorContent).length;
+
+    await runAction({
+      title: "Save file",
+      path: "/vaults/sync/push",
+      method: "POST",
+      auth: true,
+      payload: {
+        vault_uid: vaultUID,
+        device_id: "foundation-web-editor",
+        changes: [
+          {
+            file_path: editorSelectedPath,
+            action: "modified",
+            changed_at_unix_ms: Date.now(),
+            content_base64: contentBase64,
+            size_bytes: sizeBytes
+          }
+        ]
+      },
+      onSuccess: () => {
+        setEditorFiles((prev) =>
+          prev.map((f) =>
+            f.file_path === editorSelectedPath
+              ? { ...f, content_base64: contentBase64, size_bytes: sizeBytes }
+              : f
+          )
+        );
+      },
+      successMessage: `Saved ${editorSelectedPath} to ${vaultUID}.`
+    });
+
+    setEditorSaving(false);
+  }
+
   const healthMetrics = [
     {
       label: "Service",
@@ -1182,6 +1283,101 @@ function App() {
                   ]}
                   emptyText="Run full pull to inspect snapshot files."
                 />
+              </Panel>
+            </>
+          ) : null}
+
+          {activeTab === "editor" ? (
+            <>
+              <Panel
+                title="Vault note editor"
+                eyebrow="Browse and edit markdown"
+                detail="Pull vault files from the server, pick a note, and edit or preview it. Saving pushes the change back via the sync API."
+                actions={
+                  <div className="button-row">
+                    <button type="button" className="button primary" onClick={loadEditorFiles}>
+                      Load files
+                    </button>
+                  </div>
+                }
+              >
+                <div className="editor-layout">
+                  <div className="editor-sidebar">
+                    <label className="field">
+                      <span>Filter files</span>
+                      <input
+                        type="text"
+                        value={editorFileFilter}
+                        onChange={(event) => setEditorFileFilter(event.target.value)}
+                        placeholder="search filename…"
+                      />
+                    </label>
+                    <div className="editor-file-list">
+                      {editorFiles.length === 0 ? (
+                        <p className="empty-state">Load files to browse vault notes.</p>
+                      ) : (
+                        editorFiles
+                          .filter((f) => !editorFileFilter.trim() || f.file_path.toLowerCase().includes(editorFileFilter.trim().toLowerCase()))
+                          .map((file) => (
+                            <button
+                              key={file.file_path}
+                              type="button"
+                              className={`editor-file-item ${editorSelectedPath === file.file_path ? "active" : ""}`}
+                              onClick={() => openEditorFile(file)}
+                            >
+                              <span className="editor-file-name">{file.file_path.split("/").pop()}</span>
+                              <span className="editor-file-path">{file.file_path}</span>
+                            </button>
+                          ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="editor-main">
+                    <div className="editor-toolbar">
+                      <span className="editor-filename">{editorSelectedPath || "No file selected"}</span>
+                      <div className="button-row">
+                        <button
+                          type="button"
+                          className={`button ghost ${!editorPreviewMode ? "active" : ""}`}
+                          onClick={() => setEditorPreviewMode(false)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className={`button ghost ${editorPreviewMode ? "active" : ""}`}
+                          onClick={() => setEditorPreviewMode(true)}
+                        >
+                          Preview
+                        </button>
+                        <button
+                          type="button"
+                          className="button primary"
+                          onClick={saveEditorFile}
+                          disabled={!editorSelectedPath || editorSaving}
+                        >
+                          {editorSaving ? "Saving…" : "Save"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {editorPreviewMode ? (
+                      <div
+                        className="editor-preview markdown-body"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(editorContent)) }}
+                      />
+                    ) : (
+                      <textarea
+                        className="editor-textarea"
+                        value={editorContent}
+                        onChange={(event) => setEditorContent(event.target.value)}
+                        spellCheck={false}
+                        placeholder="Select a file to edit…"
+                      />
+                    )}
+                  </div>
+                </div>
               </Panel>
             </>
           ) : null}
