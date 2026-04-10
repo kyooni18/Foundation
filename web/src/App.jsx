@@ -16,11 +16,15 @@ const NAV_ITEMS = [
   { id: "search", label: "Search", eyebrow: "Vault and memory lookup" },
   { id: "overview", label: "Overview", eyebrow: "Health and routing" },
   { id: "keys", label: "Keys", eyebrow: "Bootstrap and verify" },
-  { id: "search", label: "Search", eyebrow: "Vault + memory relevance" },
   { id: "atoms", label: "Atoms", eyebrow: "Add, delete, and search" },
   { id: "sources", label: "Sources", eyebrow: "Index provenance graph" },
   { id: "vaults", label: "Vaults", eyebrow: "Status, search, and upload" },
   { id: "editor", label: "Editor", eyebrow: "Browse and edit vault notes" }
+];
+
+const USER_TABS = [
+  { id: "search", label: "Search" },
+  { id: "editor", label: "Notes" }
 ];
 
 const DEFAULT_TAB = "search";
@@ -36,23 +40,24 @@ function tabFromHash(hashValue) {
 
 function readStoredState() {
   if (typeof window === "undefined") {
-    return { apiKey: "", vaultUID: "", hideLanding: false };
+    return { apiKey: "", vaultUID: "", hideLanding: false, appMode: "user" };
   }
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return { apiKey: "", vaultUID: "", hideLanding: false };
+      return { apiKey: "", vaultUID: "", hideLanding: false, appMode: "user" };
     }
 
     const parsed = JSON.parse(raw);
     return {
       apiKey: typeof parsed.apiKey === "string" ? parsed.apiKey : "",
       vaultUID: typeof parsed.vaultUID === "string" ? parsed.vaultUID : "",
-      hideLanding: Boolean(parsed.hideLanding)
+      hideLanding: Boolean(parsed.hideLanding),
+      appMode: parsed.appMode === "admin" ? "admin" : "user"
     };
   } catch {
-    return { apiKey: "", vaultUID: "", hideLanding: false };
+    return { apiKey: "", vaultUID: "", hideLanding: false, appMode: "user" };
   }
 }
 
@@ -192,28 +197,24 @@ async function foundationFetch(path, { method = "GET", apiKey, payload, headers 
   return data;
 }
 
-function LandingScreen({ onConnectApiKey, onSearchVault, onContinue, suppressLanding, onSuppressLandingChange }) {
+function LandingScreen({ onEnterUserMode, onEnterAdminMode, suppressLanding, onSuppressLandingChange }) {
   return (
     <div className="landing-shell">
       <section className="landing-card" aria-label="Foundation landing screen">
         <p className="eyebrow">Foundation Web</p>
-        <h1>Search vault memory, inspect sources, and run operations from one secure console.</h1>
+        <h1>Search vault memory and edit notes.</h1>
         <p className="landing-detail">
-          Start with your API key and vault, then move into the full advanced control room when you are ready.
+          Use the simple interface to search and edit notes, or open the advanced control panel for full API operations.
         </p>
 
         <div className="landing-actions">
-          <button type="button" className="button primary landing-button" onClick={onConnectApiKey}>
-            Connect API Key
+          <button type="button" className="button primary landing-button" onClick={onEnterUserMode}>
+            Search &amp; Notes
           </button>
-          <button type="button" className="button ghost landing-button" onClick={onSearchVault}>
-            Search Vault
+          <button type="button" className="button ghost landing-button" onClick={onEnterAdminMode}>
+            Control Panel
           </button>
         </div>
-
-        <button type="button" className="landing-link" onClick={onContinue}>
-          Continue to Advanced Console
-        </button>
 
         <label className="landing-toggle">
           <input
@@ -228,7 +229,7 @@ function LandingScreen({ onConnectApiKey, onSearchVault, onContinue, suppressLan
   );
 }
 
-function AppShell({ activeTab, onTabChange, apiKeyPresent, children, isSidebarOpen, onSidebarToggle, isNarrowScreen }) {
+function AppShell({ activeTab, onTabChange, apiKeyPresent, onSwitchToUser, children, isSidebarOpen, onSidebarToggle, isNarrowScreen }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -279,9 +280,70 @@ function AppShell({ activeTab, onTabChange, apiKeyPresent, children, isSidebarOp
             </button>
           ))}
         </nav>
+
+        <button type="button" className="sidebar-user-link" onClick={onSwitchToUser}>
+          ← User view
+        </button>
       </aside>
 
       <main className="workspace">{children}</main>
+    </div>
+  );
+}
+
+function UserShell({ activeTab, onTabChange, onSwitchToAdmin, apiKey, vaultUID, onApiKeyChange, onVaultUIDChange, children }) {
+  return (
+    <div className="user-shell">
+      <header className="user-header">
+        <div className="user-header-brand">
+          <div className="brand-mark">F</div>
+          <span className="user-brand-name">Foundation</span>
+        </div>
+
+        <nav className="user-nav" aria-label="User navigation">
+          {USER_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`user-nav-tab ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => onTabChange(tab.id)}
+              aria-current={activeTab === tab.id ? "page" : undefined}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="user-header-right">
+          <button type="button" className="user-admin-link" onClick={onSwitchToAdmin} title="Switch to Control Panel">
+            ⚙ Control Panel
+          </button>
+        </div>
+      </header>
+
+      <div className="user-settings-bar">
+        <label className="user-settings-field">
+          <span>API Key</span>
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(event) => onApiKeyChange(event.target.value)}
+            placeholder="foundation_..."
+            autoComplete="off"
+          />
+        </label>
+        <label className="user-settings-field">
+          <span>Vault UID</span>
+          <input
+            type="text"
+            value={vaultUID}
+            onChange={(event) => onVaultUIDChange(event.target.value)}
+            placeholder="archive"
+          />
+        </label>
+      </div>
+
+      <main className="user-workspace">{children}</main>
     </div>
   );
 }
@@ -426,8 +488,186 @@ function ResultTable({ columns, rows, emptyText = "No rows yet." }) {
   );
 }
 
+function UserSearchView({
+  searchQuery, onSearchQueryChange, searchLoading, searchError, lastSearchedAt,
+  includeMemoryMatches, onIncludeMemoryMatchesChange, vaultMatches, memoryMatches,
+  queryTerms, onSubmitSearch, onOpenInEditor
+}) {
+  return (
+    <div className="user-search-view">
+      <form className="user-search-form" onSubmit={onSubmitSearch}>
+        <div className="user-search-box">
+          <input
+            type="search"
+            className="user-search-input"
+            value={searchQuery}
+            onChange={(event) => onSearchQueryChange(event.target.value)}
+            placeholder="Search vault notes and memory…"
+            autoFocus
+          />
+          <button type="submit" className="user-search-button" disabled={searchLoading}>
+            {searchLoading ? "Searching…" : "Search"}
+          </button>
+        </div>
+        <label className="user-search-toggle">
+          <input
+            type="checkbox"
+            checked={includeMemoryMatches}
+            onChange={(event) => onIncludeMemoryMatchesChange(event.target.checked)}
+          />
+          Include memory atoms
+        </label>
+        {searchError ? <p className="user-search-error">{searchError}</p> : null}
+        {lastSearchedAt ? <p className="user-search-meta">Last searched: {formatTime(lastSearchedAt)}</p> : null}
+      </form>
+
+      {!searchQuery.trim() ? (
+        <p className="user-empty-hint">Type a query above to search your vault and memory.</p>
+      ) : null}
+
+      {vaultMatches.length > 0 ? (
+        <section className="user-results-section">
+          <p className="user-results-label">Vault notes</p>
+          <div className="user-results-grid">
+            {vaultMatches.map((match, index) => {
+              const confidence = confidenceFromDistance(match.distance);
+              return (
+                <article key={`${match.file_path}-${index}`} className="user-result-card">
+                  <div className="user-result-header">
+                    <button type="button" className="user-result-title" onClick={() => onOpenInEditor(match)}>
+                      {match.title || match.file_path}
+                    </button>
+                    <span className={`confidence-badge ${confidence.tone}`}>{confidence.label}</span>
+                  </div>
+                  <p className="user-result-snippet">{highlightText(match.keypoint || "", queryTerms)}</p>
+                  <p className="user-result-path">{match.file_path}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {includeMemoryMatches && memoryMatches.length > 0 ? (
+        <section className="user-results-section">
+          <p className="user-results-label">Memory atoms</p>
+          <div className="user-results-grid">
+            {memoryMatches.map((match, index) => {
+              const confidence = confidenceFromDistance(match.distance);
+              return (
+                <article key={`${match.id || index}`} className="user-result-card user-result-card--atom">
+                  <div className="user-result-header">
+                    <strong className="user-result-title-plain">Atom #{match.id ?? index + 1}</strong>
+                    <span className={`confidence-badge ${confidence.tone}`}>{confidence.label}</span>
+                  </div>
+                  <p className="user-result-snippet">{highlightText(match.text || "", queryTerms)}</p>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+function UserEditorView({
+  vaultUID, editorFiles, editorFileFilter, onEditorFileFilterChange,
+  editorSelectedPath, editorContent, onEditorContentChange,
+  editorPreviewMode, onEditorPreviewModeChange,
+  editorSaving, onLoadFiles, onOpenFile, onSaveFile
+}) {
+  return (
+    <div className="user-editor-view">
+      <div className="user-editor-layout">
+        <aside className="user-editor-sidebar">
+          <div className="user-editor-sidebar-top">
+            <button type="button" className="button primary" onClick={onLoadFiles}>
+              Load files
+            </button>
+            <label className="field">
+              <span>Filter</span>
+              <input
+                type="text"
+                value={editorFileFilter}
+                onChange={(event) => onEditorFileFilterChange(event.target.value)}
+                placeholder="search filename…"
+              />
+            </label>
+          </div>
+          <div className="editor-file-list">
+            {editorFiles.length === 0 ? (
+              <p className="user-empty-hint">Load files to browse vault notes.</p>
+            ) : (
+              editorFiles
+                .filter((f) => !editorFileFilter.trim() || f.file_path.toLowerCase().includes(editorFileFilter.trim().toLowerCase()))
+                .map((file) => (
+                  <button
+                    key={file.file_path}
+                    type="button"
+                    className={`editor-file-item ${editorSelectedPath === file.file_path ? "active" : ""}`}
+                    onClick={() => onOpenFile(file)}
+                  >
+                    <span className="editor-file-name">{file.file_path.split("/").pop()}</span>
+                    <span className="editor-file-path">{file.file_path}</span>
+                  </button>
+                ))
+            )}
+          </div>
+        </aside>
+
+        <div className="editor-main">
+          <div className="editor-toolbar">
+            <span className="editor-filename">{editorSelectedPath || "No file selected"}</span>
+            <div className="button-row">
+              <button
+                type="button"
+                className={`button ghost ${!editorPreviewMode ? "active" : ""}`}
+                onClick={() => onEditorPreviewModeChange(false)}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                className={`button ghost ${editorPreviewMode ? "active" : ""}`}
+                onClick={() => onEditorPreviewModeChange(true)}
+              >
+                Preview
+              </button>
+              <button
+                type="button"
+                className="button primary"
+                onClick={onSaveFile}
+                disabled={!editorSelectedPath || editorSaving}
+              >
+                {editorSaving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+
+          {editorPreviewMode ? (
+            <div
+              className="editor-preview markdown-body"
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(editorContent)) }}
+            />
+          ) : (
+            <textarea
+              className="editor-textarea"
+              value={editorContent}
+              onChange={(event) => onEditorContentChange(event.target.value)}
+              spellCheck={false}
+              placeholder="Select a file to edit…"
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const stored = readStoredState();
+  const [appMode, setAppMode] = useState(stored.appMode);
   const [activeTab, setActiveTab] = useState(() => tabFromHash(window.location.hash));
   const [isNarrowScreen, setIsNarrowScreen] = useState(() => window.matchMedia("(max-width: 900px)").matches);
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => !window.matchMedia("(max-width: 900px)").matches);
@@ -491,10 +731,11 @@ function App() {
       JSON.stringify({
         apiKey,
         vaultUID,
-        hideLanding: suppressLanding
+        hideLanding: suppressLanding,
+        appMode
       })
     );
-  }, [apiKey, vaultUID, suppressLanding]);
+  }, [apiKey, vaultUID, suppressLanding, appMode]);
 
 
   useEffect(() => {
@@ -552,16 +793,17 @@ function App() {
     });
   }
 
-  function openApiKeyFlow() {
+  function enterUserMode() {
+    setAppMode("user");
+    setShowLanding(false);
+    setActiveTab("search");
+  }
+
+  function enterAdminMode() {
+    setAppMode("admin");
     setShowLanding(false);
     setActiveTab("overview");
     focusAfterPaint(apiKeyInputRef);
-  }
-
-  function openVaultSearchFlow() {
-    setShowLanding(false);
-    setActiveTab("vaults");
-    focusAfterPaint(vaultQueryInputRef);
   }
 
   const filteredSources = sourceList.filter((source) => {
@@ -1144,12 +1386,59 @@ function App() {
   if (showLanding) {
     return (
       <LandingScreen
-        onConnectApiKey={openApiKeyFlow}
-        onSearchVault={openVaultSearchFlow}
-        onContinue={() => setShowLanding(false)}
+        onEnterUserMode={enterUserMode}
+        onEnterAdminMode={enterAdminMode}
         suppressLanding={suppressLanding}
         onSuppressLandingChange={setSuppressLanding}
       />
+    );
+  }
+
+  if (appMode === "user") {
+    return (
+      <UserShell
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        onSwitchToAdmin={() => { setAppMode("admin"); setActiveTab("overview"); }}
+        apiKey={apiKey}
+        vaultUID={vaultUID}
+        onApiKeyChange={setApiKey}
+        onVaultUIDChange={setVaultUID}
+      >
+        {activeTab === "search" ? (
+          <UserSearchView
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            searchLoading={searchLoading}
+            searchError={searchError}
+            lastSearchedAt={lastSearchedAt}
+            includeMemoryMatches={includeMemoryMatches}
+            onIncludeMemoryMatchesChange={setIncludeMemoryMatches}
+            vaultMatches={vaultMatches}
+            memoryMatches={memoryMatches}
+            queryTerms={queryTerms}
+            onSubmitSearch={submitSearch}
+            onOpenInEditor={openVaultResultInEditor}
+          />
+        ) : null}
+        {activeTab === "editor" ? (
+          <UserEditorView
+            vaultUID={vaultUID}
+            editorFiles={editorFiles}
+            editorFileFilter={editorFileFilter}
+            onEditorFileFilterChange={setEditorFileFilter}
+            editorSelectedPath={editorSelectedPath}
+            editorContent={editorContent}
+            onEditorContentChange={setEditorContent}
+            editorPreviewMode={editorPreviewMode}
+            onEditorPreviewModeChange={setEditorPreviewMode}
+            editorSaving={editorSaving}
+            onLoadFiles={loadEditorFiles}
+            onOpenFile={openEditorFile}
+            onSaveFile={saveEditorFile}
+          />
+        ) : null}
+      </UserShell>
     );
   }
 
@@ -1158,6 +1447,7 @@ function App() {
       activeTab={activeTab}
       onTabChange={handleTabChange}
       apiKeyPresent={Boolean(apiKey)}
+      onSwitchToUser={() => { setAppMode("user"); setActiveTab("search"); }}
       isSidebarOpen={isSidebarOpen}
       onSidebarToggle={() => setIsSidebarOpen((current) => !current)}
       isNarrowScreen={isNarrowScreen}
