@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+data/
+.DS_Store
+*.log
+.yeet/
+native/apple-foundation-model/.build/
+native/apple-foundation-model/.swiftpm/

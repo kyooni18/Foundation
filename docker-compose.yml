@@ -1,0 +1,48 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: foundation
+      POSTGRES_USER: foundation
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foundation}
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U foundation -d foundation"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  foundation:
+    profiles: ["cloud"]
+    env_file:
+      - .env
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://foundation:${POSTGRES_PASSWORD:-foundation}@db:5432/foundation
+      HOST: 0.0.0.0
+      PORT: 8787
+      MCP_PATH: /mcp
+      FOUNDATION_MCP_FILE_ACCESS: ${FOUNDATION_MCP_FILE_ACCESS:-off}
+      FOUNDATION_MCP_ADMIN: ${FOUNDATION_MCP_ADMIN:-false}
+      FOUNDATION_MCP_NOTION: ${FOUNDATION_MCP_NOTION:-false}
+      FOUNDATION_API_KEY: ${FOUNDATION_API_KEY:-}
+      LLM_PROVIDER: ${CLOUD_LLM_PROVIDER:-openai}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-gemini}
+      EMBEDDING_DIMENSIONS: 3072
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_LLM_MODEL: ${OPENAI_LLM_MODEL:-gpt-5.6-luna}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-large}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_BASE_URL: ${GEMINI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta}
+      GEMINI_EMBEDDING_MODEL: ${GEMINI_EMBEDDING_MODEL:-gemini-embedding-2}
+    ports:
+      - "8787:8787"

@@ -1,0 +1,49 @@
+{
+  "name": "@kyooni18/foundation",
+  "version": "0.1.0",
+  "description": "Atom-first personal knowledge substrate with PostgreSQL/pgvector and MCP",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "foundation": "dist/cli.js",
+    "foundation-mcp": "dist/stdio.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "build:apple-model": "swift build -c release --package-path native/apple-foundation-model",
+    "db:up": "sh scripts/db-tunnel.sh up",
+    "db:down": "sh scripts/db-tunnel.sh down",
+    "db:tunnel": "sh scripts/db-tunnel.sh start",
+    "db:tunnel:stop": "sh scripts/db-tunnel.sh stop",
+    "db:tunnel:status": "sh scripts/db-tunnel.sh status",
+    "local:up": "npm run db:tunnel && npm start",
+    "start": "node dist/index.js",
+    "cli": "node dist/cli.js",
+    "mcp:stdio": "node dist/stdio.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm test",
+    "smoke:pgvector": "node scripts/pgvector-smoke.mjs",
+    "cloud:up": "sh scripts/db-tunnel.sh compose --profile cloud up -d --build",
+    "cloud:down": "sh scripts/db-tunnel.sh compose --profile cloud down"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "dotenv": "^17.0.0",
+    "express": "^5.0.0",
+    "pg": "^8.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.0"
+  }
+}
