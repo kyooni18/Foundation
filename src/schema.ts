@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 export const schemaStatements = [
   `CREATE EXTENSION IF NOT EXISTS vector`,
@@ -192,6 +192,8 @@ export const schemaStatements = [
   `CREATE INDEX IF NOT EXISTS atoms_tags_gin ON atoms USING GIN (tags)`,
   `CREATE INDEX IF NOT EXISTS atoms_content_trgm ON atoms USING GIN (content gin_trgm_ops)`,
   `CREATE INDEX IF NOT EXISTS atoms_fts_gin ON atoms USING GIN (to_tsvector('simple', content))`,
+  `CREATE INDEX IF NOT EXISTS atoms_metadata_gin ON atoms USING GIN (metadata)`,
+  `CREATE INDEX IF NOT EXISTS atoms_metadata_fts_gin ON atoms USING GIN (jsonb_to_tsvector('simple', metadata, '["string","key","numeric"]'::jsonb))`,
   `CREATE INDEX IF NOT EXISTS atoms_vector_hnsw ON atoms USING hnsw (vector halfvec_cosine_ops) WHERE vector IS NOT NULL`,
   `CREATE INDEX IF NOT EXISTS atoms_vector_provenance_idx
     ON atoms (vector_provider, vector_model, vector_dimensions)
@@ -202,6 +204,8 @@ export const schemaStatements = [
   `CREATE INDEX IF NOT EXISTS files_content_trgm ON files USING GIN (content gin_trgm_ops)`,
   `CREATE INDEX IF NOT EXISTS files_subject_trgm ON files USING GIN (subject gin_trgm_ops)`,
   `CREATE INDEX IF NOT EXISTS files_fts_gin ON files USING GIN (to_tsvector('simple', coalesce(content,'') || ' ' || coalesce(interpreted,'') || ' ' || coalesce(subject,'')))`,
+  `CREATE INDEX IF NOT EXISTS files_metadata_gin ON files USING GIN (metadata)`,
+  `CREATE INDEX IF NOT EXISTS files_metadata_fts_gin ON files USING GIN (jsonb_to_tsvector('simple', metadata, '["string","key","numeric"]'::jsonb))`,
   `CREATE INDEX IF NOT EXISTS files_vector_subject_hnsw ON files USING hnsw (vector_subject halfvec_cosine_ops) WHERE vector_subject IS NOT NULL`,
   `CREATE INDEX IF NOT EXISTS files_vector_content_hnsw ON files USING hnsw (vector_content halfvec_cosine_ops) WHERE vector_content IS NOT NULL`,
   `CREATE INDEX IF NOT EXISTS files_vector_subject_provenance_idx

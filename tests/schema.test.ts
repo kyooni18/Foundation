@@ -5,7 +5,7 @@ describe("Foundation schema", () => {
   it("keeps Atom top-level and File docking relational", () => {
     const sql = schemaStatements.join("\n").toLowerCase();
     const atomTable = schemaStatements.find(statement => statement.toLowerCase().includes("create table if not exists atoms"))!.toLowerCase();
-    expect(SCHEMA_VERSION).toBe(5);
+    expect(SCHEMA_VERSION).toBe(6);
     expect(sql).toContain("create table if not exists atoms");
     expect(sql).toContain("create table if not exists atom_file_docks");
     expect(atomTable).not.toContain("vault_id");
@@ -30,6 +30,14 @@ describe("Foundation schema", () => {
     expect(sql).toContain("vector_content_provider text");
     expect(sql).toContain("atoms_vector_provenance_idx");
     expect(sql).toContain("files_vector_content_provenance_idx");
+  });
+
+  it("indexes metadata for structured and full-text retrieval", () => {
+    const sql = schemaStatements.join("\n").toLowerCase();
+    expect(sql).toContain("atoms_metadata_gin");
+    expect(sql).toContain("atoms_metadata_fts_gin");
+    expect(sql).toContain("files_metadata_gin");
+    expect(sql).toContain("files_metadata_fts_gin");
   });
 
   it("invalidates legacy vectors that have no trustworthy provenance", () => {
