@@ -377,28 +377,18 @@ Stop the tunnel with:
 npm run db:tunnel:stop
 ```
 
-## Containerized profile
+## Quick start (Docker Compose)
 
-The database service uses `pgvector/pgvector:pg16` (PostgreSQL 16 with pgvector). Its data cluster is stored at `./data/pgdata`, separate from other files in `data/`. Existing cluster files directly under `data/` are left untouched and are not automatically adopted; migrate any existing database explicitly before switching to this layout.
-
-Start the application and PostgreSQL/pgvector with Docker Compose:
+Requires Docker Compose. Copy the template, set a strong database password and provider API keys, then start Foundation with PostgreSQL/pgvector:
 
 ```sh
+cp .env.example .env
+# Edit .env: set POSTGRES_PASSWORD, OPENAI_API_KEY, and GEMINI_API_KEY
 docker compose up --build
 ```
 
-PostgreSQL stores its complete data directory in the project-local `./data/` directory, bind-mounted at `/var/lib/postgresql/data`. Compose creates `data/` automatically on first run; the data survives container removal and recreation. Keep this directory when rebuilding/recreating containers, and do not run `docker compose down -v` expecting it to be removed (it is a host directory).
+Open `http://localhost:8787`. Data persists in `./data/`. Stop with `Ctrl-C` or `docker compose down`. Apple Foundation Models are host-only; the container uses a cloud LLM provider.
 
-
-The `cloud` Compose profile runs Foundation inside the container network and therefore does not need the SSH database tunnel.
-
-```sh
-npm run cloud:up
-```
-
-This uses the same Apple Container / remote Docker bootstrap logic as the local database scripts.
-
-Apple Foundation Models are host-only; use a remote/cloud LLM provider for the containerized Foundation service.
 
 ## Environment
 
