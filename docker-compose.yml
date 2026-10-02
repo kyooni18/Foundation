@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: foundation
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-foundation}
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - foundation-db-data:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5432:5432"
     healthcheck:
@@ -17,7 +17,6 @@ services:
       retries: 20
 
   foundation:
-    profiles: ["cloud"]
     env_file:
       - .env
     build: .
@@ -46,3 +45,8 @@ services:
       GEMINI_EMBEDDING_MODEL: ${GEMINI_EMBEDDING_MODEL:-gemini-embedding-2}
     ports:
       - "8787:8787"
+
+volumes:
+  foundation-db-data:
+    name: foundation-db-data
+    external: true

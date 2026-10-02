@@ -161,21 +161,21 @@ export function createMcpServer(
     "recall",
     {
       title: "Recall",
-      description: "Retrieve durable knowledge using exact, lexical, tag, and semantic matching across Foundation memory.",
+      description: "Retrieve durable knowledge using exact, lexical, tag, and semantic matching across Foundation memory. Returns only the recalled memory id and text.",
       inputSchema: z.object({
         query: z.string().min(1).max(20_000),
         limit: z.number().int().min(1).max(100).default(10)
       }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
     },
-    tool(({ query, limit }) => foundation.search(query, limit))
+    tool(async ({ query, limit }) => (await foundation.search(query, limit)).map(({ id, rawText }) => ({ id, text: rawText })))
   );
 
   server.registerTool(
     "remember",
     {
       title: "Remember",
-      description: "Store durable knowledge through Foundation's reconciliation path. Compound input is split into Atoms and duplicate, update, supersede, and conflict handling is automatic and conservative.",
+      description: "Store durable knowledge through Foundation's reconciliation path. Compound input is split into Atoms and duplicate, update, supersede, and conflict handling is automatic and conservative. Returns only unique resulting memory IDs.",
       inputSchema: z.object({
         content: z.string().min(1).max(100_000),
         sourceTime: z.string().datetime({ offset: true }).optional(),
@@ -185,7 +185,7 @@ export function createMcpServer(
       }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
-    tool(input => foundation.remember(input))
+    tool(async input => ({ ids: [...new Set((await foundation.remember(input)).results.map(({ atom }) => atom.id))] }))
   );
 
   server.registerTool(
