@@ -47,6 +47,8 @@ Inactive Atoms are preserved but excluded from Atom semantic retrieval. This is 
 Foundation combines:
 
 - exact match
+
+
 - PostgreSQL full-text search
 - `pg_trgm` similarity
 - tag overlap
@@ -376,6 +378,8 @@ npm run db:tunnel:stop
 ```
 
 ## Containerized profile
+
+The database service uses `pgvector/pgvector:pg16` (PostgreSQL 16 with pgvector). Its data cluster is stored at `./data/pgdata`, separate from other files in `data/`. Existing cluster files directly under `data/` are left untouched and are not automatically adopted; migrate any existing database explicitly before switching to this layout.
 
 Start the application and PostgreSQL/pgvector with Docker Compose:
 
