@@ -377,6 +377,15 @@ npm run db:tunnel:stop
 
 ## Containerized profile
 
+Start the application and PostgreSQL/pgvector with Docker Compose:
+
+```sh
+docker compose up --build
+```
+
+PostgreSQL stores its complete data directory in the project-local `./data/` directory, bind-mounted at `/var/lib/postgresql/data`. Compose creates `data/` automatically on first run; the data survives container removal and recreation. Keep this directory when rebuilding/recreating containers, and do not run `docker compose down -v` expecting it to be removed (it is a host directory).
+
+
 The `cloud` Compose profile runs Foundation inside the container network and therefore does not need the SSH database tunnel.
 
 ```sh

@@ -7,3 +7,4 @@ data/
 .yeet/
 native/apple-foundation-model/.build/
 native/apple-foundation-model/.swiftpm/
+data.tar.xz
