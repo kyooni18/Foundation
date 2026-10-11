@@ -30,30 +30,39 @@ Direct memory such as “remember that I like spicy pasta” creates an Atom dir
 
 Note ingestion accepts an optional `sourceTime` and Foundation has a configured time zone. The extraction layer receives both, so relative expressions such as “today”, “yesterday”, “tonight”, and their Korean equivalents can be grounded to the time at which the source was actually written rather than the time of import.
 
-Derived Atom metadata can contain:
+Derived Atom metadata can contain `validFrom`, `expires`, `subject`, `confidence`, `memoryType` (Preference, Fact, Project, Decision, Context, Instruction), `scope` and `active`. Since schema v7 the fields that drive behaviour are real columns, kept in sync with metadata for compatibility:
 
-- `validFrom`
-- `expires`
-- `subject`
-- `confidence`
-- `memoryType`: Preference, Fact, Project, Decision, Context, or Instruction
-- `scope`: Global, Project, or Conversation
-- `active`
+| column | meaning |
+| --- | --- |
+| `status` | `active`, `superseded` (replaced, kept as history) or `forgotten` (removed from recall by `forget`/deactivate) |
+| `valid_from`, `expires_at` | the interval in which the fact was/is true |
+| `scope_kind`, `scope_key` | `global`, or `project`/`conversation` plus the normalized project name / conversation id |
 
-Inactive Atoms are preserved but excluded from Atom semantic retrieval. This is also the soft-delete mechanism used by Notion synchronization.
+Reads are **current** by default: `status='active'`, already valid, not expired. `asOf=<ISO-8601>` answers "what was true then" (superseded Atoms are visible inside the interval in which they were true) and `history=true` includes every non-forgotten Atom ranked below current ones, each labelled `state: superseded|expired|future`. Forgotten Atoms are never returned. Ranking freshness uses `valid_from`, never `updated_at`, so touching an old fact does not make it look current.
+
+`supersede` sets the old Atom's `expires_at` to the new fact's validity start and keeps it as history. If the new fact is *older* than the current one (late arrival) it is stored as history and the current fact is untouched. If it is valid only in the future, the old fact stays current until then. Conflicting facts are never auto-resolved: both stay current, linked by `conflicts_with`, and recall reports `conflictsWith`.
+
+## Scope isolation
+
+Identity of a memory is **(scope, content)**, not content alone. The same sentence remembered in two projects is two Atoms; they never merge, are never offered to each other's reconciliation, and forgetting one leaves the other.
+
+- `remember` accepts `project`, `conversationId` and `scope`. A project/conversation scope is only stored when its key is present; otherwise the Atom falls back to Global and is flagged `scopeUnresolved`.
+- `recall`/`search` accept `project` and `conversationId` (or `project:<name>` inside the query). A scoped read sees that project **plus Global** memories (Global slightly discounted); other projects and other conversations are invisible. A read with neither argument is *unscoped* and sees everything (legacy behaviour).
+- `FOUNDATION_PROJECT` sets a default project for callers that name none, which gives per-workspace isolation to a stdio MCP server with no client changes.
+- Files are scoped by `metadata.project` / `metadata.conversationId`, or by the Atoms they are docked to: a File whose only Atoms belong to another project is hidden. Files stay searchable independently of their Atoms.
 
 ## Retrieval
 
-Foundation combines:
+Retrieval is a two-stage pipeline:
 
-- exact match
+1. **Candidate generation** — one index-friendly query per signal, each with a LIMIT: exact hash, full-text (GIN), `pg_trgm` word similarity (GIN), identifier substring (trigram GIN), tag overlap (GIN), and pgvector cosine (HNSW with iterative scan so scope/status filters cannot starve it). Scope, lifecycle and metadata filters are added to the SQL only when they apply, so they do not block index plans.
+2. **Rescoring and fusion** — the union is rescored by primary key with exact signals, then fused with weighted reciprocal-rank fusion.
 
+Relevance is thresholded: a result is returned only if at least one strong signal clears its own bar (exact match, identifier match, idf-weighted term coverage, fuzzy match, semantic similarity within a band of the best vector hit, or tag coverage). A query can therefore return nothing. When one result is decisive (exact, or every term of a multi-term query matches) weaker partial matches are dropped; near-duplicate Atoms are suppressed and runs from one source File are softened. Without embeddings, retrieval keeps working lexically, by exact identifier and by tag.
 
-- PostgreSQL full-text search
-- `pg_trgm` similarity
-- tag overlap
-- pgvector cosine similarity
-- Atom-to-File evidence
+**Identity.** `recall` results of `kind: "atom"` always carry the **Atom id** — the same id `forget` accepts. The Files an Atom is docked to are reported as `sources`/`fileIds` (provenance) and are folded into the Atom unless the File matched better on its own, in which case it is a separate `kind: "file"` result. Passing a File id to `forget` is rejected with an explanatory error, because a File can back several memories.
+
+Diagnostics (not exposed as MCP tools): `foundation explain <query> [--plans]` shows each generator's rows/latency/plan, every candidate's signals and why it was cut; `foundation relations <atom-id>` shows relations, sources, history and reconciliation events; `foundation diagnose` prints scope/status/embedding health counts without memory text.
 
 All embedding columns use `HALFVEC(3072)` with HNSW cosine indexes.
 
@@ -72,7 +81,7 @@ The current production database is using Gemini `gemini-embedding-2` at 3072 dim
 
 ## Schema
 
-Current schema version: **5**.
+Current schema version: **7**. See `docs/QUALITY.md` for the v6→v7 migration notes.
 
 Major tables:
 
@@ -164,7 +173,7 @@ foundation-mcp
 
 MCP exposes a deliberately small model surface. By default the model sees exactly three high-level memory tools: `recall`, `remember`, and `forget`.
 
-`recall` retrieves durable memory with hybrid exact, lexical, tag, and semantic matching. `remember` is the preferred durable write path: it decomposes compound input and conservatively reconciles duplicates, compatible updates, superseded facts, and conflicts. `forget` accepts an exact memory ID returned by `recall` and removes that memory from active recall without exposing low-level storage objects.
+`recall` retrieves durable memory with hybrid exact, lexical, tag, and semantic matching. `remember` is the preferred durable write path: it decomposes compound input and conservatively reconciles duplicates, compatible updates, superseded facts, and conflicts. `forget` accepts the exact memory ID returned by `recall` (always an Atom id) and removes that memory from active recall without exposing low-level storage objects.
 
 Model-visible expansion is explicit server policy. `FOUNDATION_MCP_FILE_ACCESS=read|write` exposes a single `file` facade; read mode provides `get`/`list`, while write mode additionally provides `ingest`, `create`, `update`, `interpret`, and `delete`. `FOUNDATION_MCP_ADMIN=true` exposes `admin` (`stats`, `reindex`), and `FOUNDATION_MCP_NOTION=true` exposes `notion` (`status`, `sync`) when Notion is configured.
 
@@ -177,21 +186,19 @@ Low-level Atom CRUD, docking, FileLink plumbing, Vault CRUD, hard Atom deletion,
 
 For each atomic fact Foundation:
 
-1. checks exact active content first;
-2. gathers related Atoms using lexical similarity, tags, and provenance-compatible vector search;
-3. asks the selected LLM provider (OpenAI or Apple Foundation Models) to classify the relationship;
-4. applies conservative confidence thresholds before any automatic replacement;
-5. records the decision in `memory_events`.
+1. **plans outside any transaction** — embeds, gathers same-scope candidates (lexical similarity, tags, provenance-compatible vectors) and asks the selected LLM provider to classify the relationship, so no database transaction is held open across model calls;
+2. applies conservative confidence thresholds (duplicate ≥ 0.70, supersede ≥ 0.75, update ≥ 0.80; below that it keeps both Atoms as a `conflict`) and ignores resolver targets that are not same-scope candidates;
+3. **applies everything in one transaction** — takes row locks on the target, re-validates that it is unchanged since planning (otherwise degrades to `conflict`, never overwrites), writes Atoms, relations, `memory_events` and the `memory_requests` record together, so a failure leaves nothing partial.
 
 Actions:
 
-- `duplicate`: keep the existing Atom and refresh tags/metadata.
-- `update`: update the same Atom when the change is compatible and history is not meaningfully lost.
-- `supersede`: create a new current Atom, deactivate the old Atom, and record a `supersedes` relation.
+- `duplicate`: keep the existing Atom and refresh tags and `lastRememberedAt`; its validity and provenance are not overwritten. Re-remembering something that was forgotten revives it.
+- `update`: update the same Atom (same id) when the change is compatible; the previous wording is kept in `metadata.history`.
+- `supersede`: create a new current Atom, mark the old one `superseded` with an expiry at the new fact's start, and record a `supersedes` relation.
 - `conflict`: preserve both active Atoms and record a `conflicts_with` relation.
 - `new`: store independent knowledge.
 
-A caller may provide `requestId`. Concurrent calls with the same ID share one in-flight operation, and completed results are persisted in `memory_requests` so retries after completion or process restart do not create another memory event.
+A caller may provide `requestId`. Idempotency is enforced in the database (a per-request advisory lock plus the `memory_requests` record written in the same transaction as the memories), so retries after failure, process restarts and concurrent instances never create a second memory event. Reusing a `requestId` with different content is an error.
 
 Embedding failure does not discard memory. The Atom is stored with `embeddingDeferred=true`, and a later reindex fills the missing vector.
 
@@ -217,7 +224,10 @@ Examples:
 
 ```sh
 npm run cli -- stats
-npm run cli -- search "파스타" --limit=10
+npm run cli -- search "파스타" --limit=10 --project=Mun
+npm run cli -- explain "deploy target" --project=Mun --plans
+npm run cli -- relations <atom-id>
+npm run cli -- diagnose
 npm run cli -- ingest "오늘 도쿄에서 파스타 먹음" --source-time=2026-09-23T12:00:00+09:00
 npm run cli -- reindex --kind=atoms --concurrency=4
 npm run cli -- list atoms --limit=50
