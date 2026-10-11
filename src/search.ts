@@ -10,7 +10,7 @@ import {
   type ScopeContext
 } from "./scope.js";
 import type { SearchItem, SearchSignals } from "./types.js";
-import { contentHash, normalizeTags, normalizeText, record, vectorLiteral } from "./utils.js";
+import { contentHash, normalizeTags, normalizeText, record, vectorArray } from "./utils.js";
 
 const METADATA_KEYS = new Map<string, string>([
   ["project", "project"],
@@ -412,13 +412,13 @@ function buildGenerators(
     ORDER BY GREATEST(word_similarity($7::text, f.subject), word_similarity($7::text, f.name)) DESC NULLS LAST LIMIT $8`, [analysis.text, candidateLimit]);
 
   if (embedding) {
-    const prov = [embedding.provider, embedding.model, embedding.dimensions, vectorLiteral(embedding.vector), candidateLimit];
+    const prov = [embedding.provider, embedding.model, embedding.dimensions, vectorArray(embedding.vector), candidateLimit];
     atom("vector", `SELECT a.id FROM atoms a WHERE a.vector IS NOT NULL AND a.vector_provider=$7 AND a.vector_model=$8 AND a.vector_dimensions=$9
-      AND ${ATOM_BASE_WHERE} ORDER BY a.vector <=> $10::halfvec LIMIT $11`, prov, true);
+      AND ${ATOM_BASE_WHERE} ORDER BY a.vector <=> $10::real[]::halfvec LIMIT $11`, prov, true);
     file("vector_content", `SELECT f.id FROM files f WHERE f.vector_content IS NOT NULL AND f.vector_content_provider=$7 AND f.vector_content_model=$8 AND f.vector_content_dimensions=$9
-      AND ${FILE_BASE_WHERE} ORDER BY f.vector_content <=> $10::halfvec LIMIT $11`, prov, true);
+      AND ${FILE_BASE_WHERE} ORDER BY f.vector_content <=> $10::real[]::halfvec LIMIT $11`, prov, true);
     file("vector_subject", `SELECT f.id FROM files f WHERE f.vector_subject IS NOT NULL AND f.vector_subject_provider=$7 AND f.vector_subject_model=$8 AND f.vector_subject_dimensions=$9
-      AND ${FILE_BASE_WHERE} ORDER BY f.vector_subject <=> $10::halfvec LIMIT $11`, prov, true);
+      AND ${FILE_BASE_WHERE} ORDER BY f.vector_subject <=> $10::real[]::halfvec LIMIT $11`, prov, true);
   }
   return out;
 }
@@ -455,29 +455,33 @@ async function runGenerator(db: Database, generator: Generator, trace: SearchTra
   return rows.map(row => String(row.id));
 }
 
+// The query vector travels as real[]: a 3072-float *text* halfvec parameter costs ~0.75ms per evaluated row on
+// seq-scan plans (measured 46ms vs 3ms for 60 rows); the array cast is ~15x cheaper and still index-eligible.
 const ATOM_RESCORE_SQL = `
+WITH q AS (SELECT $5::real[]::halfvec AS v)
 SELECT a.id, a.content, a.tags, a.metadata, a.scope_kind, a.scope_key, a.status, a.valid_from, a.expires_at, a.created_at,
   CASE WHEN a.content_hash=$2 OR a.normalized_content=$3 THEN 1 ELSE 0 END AS exact_score,
   word_similarity($4::text, a.content) AS fuzzy_score,
-  CASE WHEN $5::halfvec IS NULL OR a.vector IS NULL OR a.vector_provider IS DISTINCT FROM $6
+  CASE WHEN q.v IS NULL OR a.vector IS NULL OR a.vector_provider IS DISTINCT FROM $6
          OR a.vector_model IS DISTINCT FROM $7 OR a.vector_dimensions IS DISTINCT FROM $8
-       THEN 0 ELSE 1 - (a.vector <=> $5::halfvec) END AS semantic_score,
+       THEN 0 ELSE 1 - (a.vector <=> q.v) END AS semantic_score,
   COALESCE((SELECT jsonb_agg(jsonb_build_object('id', f.id, 'name', f.name) ORDER BY f.created_at)
             FROM atom_file_docks d JOIN files f ON f.id = d.file_id WHERE d.atom_id = a.id), '[]'::jsonb) AS sources
-FROM atoms a WHERE a.id = ANY($1::uuid[])`;
+FROM atoms a CROSS JOIN q WHERE a.id = ANY($1::uuid[])`;
 
 const FILE_RESCORE_SQL = `
+WITH q AS (SELECT $4::real[]::halfvec AS v)
 SELECT f.id, f.name, left(coalesce(f.content,''), 50000) AS snippet, f.subject, f.tags, f.metadata, f.modified_at,
   CASE WHEN lower(coalesce(f.name,''))=$2 OR lower(coalesce(f.subject,''))=$2 OR lower(left(coalesce(f.content,''), 5000))=$2 THEN 1 ELSE 0 END AS exact_score,
   GREATEST(word_similarity($3::text, coalesce(f.name,'')), word_similarity($3::text, coalesce(f.subject,'')),
            word_similarity($3::text, left(coalesce(f.content,''), 20000))) AS fuzzy_score,
-  CASE WHEN $4::halfvec IS NULL THEN 0 ELSE GREATEST(
+  CASE WHEN q.v IS NULL THEN 0 ELSE GREATEST(
     CASE WHEN f.vector_content IS NULL OR f.vector_content_provider IS DISTINCT FROM $5 OR f.vector_content_model IS DISTINCT FROM $6
-              OR f.vector_content_dimensions IS DISTINCT FROM $7 THEN 0 ELSE 1 - (f.vector_content <=> $4::halfvec) END,
+              OR f.vector_content_dimensions IS DISTINCT FROM $7 THEN 0 ELSE 1 - (f.vector_content <=> q.v) END,
     CASE WHEN f.vector_subject IS NULL OR f.vector_subject_provider IS DISTINCT FROM $5 OR f.vector_subject_model IS DISTINCT FROM $6
-              OR f.vector_subject_dimensions IS DISTINCT FROM $7 THEN 0 ELSE 1 - (f.vector_subject <=> $4::halfvec) END
+              OR f.vector_subject_dimensions IS DISTINCT FROM $7 THEN 0 ELSE 1 - (f.vector_subject <=> q.v) END
   ) END AS semantic_score
-FROM files f WHERE f.id = ANY($1::uuid[])`;
+FROM files f CROSS JOIN q WHERE f.id = ANY($1::uuid[])`;
 
 const RELATED_ATOM_IDS_SQL = `
 SELECT edge.relation, edge.seed_id, edge.related_id
@@ -509,20 +513,42 @@ function lowerText(value: string): string {
   return identifierParts(value).join(" ") + " " + value.toLowerCase();
 }
 
-/** Fraction of query terms present in the text (identifier-aware, substring based for agglutinative scripts). */
-export function lexicalCoverage(tokens: string[], text: string): number {
+/**
+ * Weight each query term by how discriminating it is inside the candidate pool (BM25-style idf). A term
+ * that appears in nearly every candidate (a project name inside a project scope, "service") must not
+ * make a weak partial match look relevant. Small pools fall back to uniform weights.
+ */
+export function tokenWeights(tokens: string[], texts: string[]): Map<string, number> {
+  const weights = new Map<string, number>();
+  if (texts.length < 8) {
+    for (const token of tokens) weights.set(token, 1);
+    return weights;
+  }
+  const haystacks = texts.map(lowerText);
+  for (const token of tokens) {
+    const df = haystacks.filter(text => text.includes(token)).length;
+    weights.set(token, Math.max(0.1, Math.log(1 + (texts.length - df + 0.5) / (df + 0.5))));
+  }
+  return weights;
+}
+
+/** Weighted fraction of query terms present in the text (identifier-aware, substring based for agglutinative scripts). */
+export function lexicalCoverage(tokens: string[], text: string, weights?: Map<string, number>): number {
   if (tokens.length === 0) return 0;
   const haystack = lowerText(text);
   let hit = 0;
+  let total = 0;
   for (const token of tokens) {
+    const weight = weights?.get(token) ?? 1;
+    total += weight;
     if (haystack.includes(token)) {
-      hit += 1;
+      hit += weight;
       continue;
     }
     const parts = identifierParts(token).map(part => part.toLowerCase());
-    if (parts.length > 1 && parts.every(part => haystack.includes(part))) hit += 1;
+    if (parts.length > 1 && parts.every(part => haystack.includes(part))) hit += weight;
   }
-  return hit / tokens.length;
+  return total > 0 ? hit / total : 0;
 }
 
 function symbolCoverage(identifiers: string[], text: string): number {
@@ -532,17 +558,24 @@ function symbolCoverage(identifiers: string[], text: string): number {
   return hit / identifiers.length;
 }
 
-function tagCoverage(tokens: string[], tags: string[]): number {
+function tagCoverage(tokens: string[], tags: string[], weights?: Map<string, number>): number {
   if (tokens.length === 0 || tags.length === 0) return 0;
   const set = new Set(tags.map(tag => tag.toLowerCase()));
-  return tokens.filter(token => set.has(token)).length / tokens.length;
+  let hit = 0;
+  let total = 0;
+  for (const token of tokens) {
+    const weight = weights?.get(token) ?? 1;
+    total += weight;
+    if (set.has(token)) hit += weight;
+  }
+  return total > 0 ? hit / total : 0;
 }
 
 const METADATA_TEXT_FIELDS = ["subject", "project", "repo", "kind", "path", "source", "memoryType"];
 
-function metadataCoverage(tokens: string[], metadata: Record<string, unknown>): number {
+function metadataCoverage(tokens: string[], metadata: Record<string, unknown>, weights?: Map<string, number>): number {
   const text = METADATA_TEXT_FIELDS.map(key => metadata[key]).filter((v): v is string => typeof v === "string").join(" ");
-  return text ? lexicalCoverage(tokens, text) : 0;
+  return text ? lexicalCoverage(tokens, text, weights) : 0;
 }
 
 function contentTokens(text: string): Set<string> {
@@ -559,6 +592,7 @@ function jaccard(a: Set<string>, b: Set<string>): number {
 const GLOBAL_FALLBACK_FACTOR = 0.92;
 const HISTORICAL_FACTOR = 0.7;
 const DEFAULT_MIN_SCORE = 0.22;
+const DECISIVE_TAIL_RATIO = 0.6;
 
 interface Scored {
   item: SearchItem;
@@ -617,7 +651,7 @@ export async function searchFoundation(
 
   const rescoreStarted = performance.now();
   const lowered = analysis.text.toLowerCase();
-  const vector = vectorLiteral(queryEmbedding?.vector ?? null);
+  const vector = queryEmbedding ? vectorArray(queryEmbedding.vector) : null;
   const emb = [queryEmbedding?.provider ?? null, queryEmbedding?.model ?? null, queryEmbedding?.dimensions ?? null];
   const [atomRows, fileRows] = await Promise.all([
     atomIds.size
@@ -629,14 +663,18 @@ export async function searchFoundation(
   ]);
   if (trace) trace.rescoreMs = performance.now() - rescoreStarted;
 
+  const weights = tokenWeights(analysis.tokens, [
+    ...atomRows.rows.map(row => String(row.content)),
+    ...fileRows.rows.map(row => [row.name, row.subject, row.snippet].filter(Boolean).join(" "))
+  ]);
   const signalOf = (row: Row, text: string, tags: string[], metadata: Record<string, unknown>): SearchSignals => ({
     exact: numberScore(row, "exact_score"),
-    lexical: lexicalCoverage(analysis.tokens, text),
+    lexical: lexicalCoverage(analysis.tokens, text, weights),
     symbol: symbolCoverage(analysis.identifiers, text),
     fuzzy: numberScore(row, "fuzzy_score"),
     semantic: numberScore(row, "semantic_score"),
-    tag: tagCoverage(analysis.tokens, tags),
-    metadata: metadataCoverage(analysis.tokens, metadata)
+    tag: tagCoverage(analysis.tokens, tags, weights),
+    metadata: metadataCoverage(analysis.tokens, metadata, weights)
   });
 
   const kinds = new Map<string, "atom" | "file">();
@@ -781,10 +819,19 @@ export async function searchFoundation(
     if (entry.item.kind !== "atom") continue;
     for (const id of entry.sourceIds) bestAtomForFile.set(id, Math.max(bestAtomForFile.get(id) ?? 0, entry.item.score));
   }
-  const final = selected
+  let final = selected
     .filter(entry => entry.item.kind === "atom" || (bestAtomForFile.get(entry.item.id) ?? -1) < entry.item.score)
-    .map(entry => entry.item)
-    .slice(0, limit);
+    .map(entry => entry.item);
+
+  // When a decisive answer exists (exact match, or every term of a multi-term query present), weaker
+  // partial matches are dropped instead of trailing it. Broad queries keep their longer tail.
+  const topKey = final[0] ? `${final[0].kind}:${final[0].id}` : null;
+  const topSignals = topKey ? signalMap.get(topKey) : undefined;
+  if (topSignals && final[0] && (topSignals.exact > 0 || (analysis.tokens.length >= 3 && topSignals.lexical >= 0.99))) {
+    const floor = final[0].score * DECISIVE_TAIL_RATIO;
+    final = final.filter(item => item.score >= floor);
+  }
+  final = final.slice(0, limit);
 
   const finalAtomIds = final.filter(item => item.kind === "atom").map(item => item.id);
   const finalFileIds = final.filter(item => item.kind === "file").map(item => item.id);

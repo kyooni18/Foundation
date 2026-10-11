@@ -22,3 +22,10 @@ export function vectorLiteral(vector: number[] | null): string | null {
 export function record(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
+
+/** Query-side vector as a plain number[] (sent as real[]), validated like vectorLiteral. */
+export function vectorArray(vector: number[]): number[] {
+  if (vector.length !== 3072) throw new Error(`Expected a 3072-dimensional vector, got ${vector.length}`);
+  if (vector.some(value => !Number.isFinite(value))) throw new Error("Vector contains a non-finite value");
+  return vector;
+}

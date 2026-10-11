@@ -1,0 +1,189 @@
+{
+  "dataset": {
+    "projects": 8,
+    "atoms": 403,
+    "files": 8,
+    "queries": 237,
+    "seedMs": 19498
+  },
+  "retrieval": [
+    {
+      "label": "hybrid (embeddings)",
+      "queries": 237,
+      "precisionAt5": 1,
+      "recallAt10": 1,
+      "irrelevantResultRate": 0.1,
+      "crossProjectLeaks": 0,
+      "staleResults": 0,
+      "unanswerableReturnedEmpty": "3/3",
+      "fileRecall": "8/8",
+      "conflictsFlagged": "8/8",
+      "p50ms": 9.92,
+      "p95ms": 13.17,
+      "byKind": {
+        "outdated-decision": {
+          "queries": 24,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0.4
+        },
+        "project-fact": {
+          "queries": 96,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0.094
+        },
+        "identifier": {
+          "queries": 96,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0
+        },
+        "contradiction": {
+          "queries": 8,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0
+        },
+        "global-fallback": {
+          "queries": 2,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0
+        }
+      }
+    },
+    {
+      "label": "lexical only (embeddings down)",
+      "queries": 237,
+      "precisionAt5": 1,
+      "recallAt10": 1,
+      "irrelevantResultRate": 0.1958762886597938,
+      "crossProjectLeaks": 0,
+      "staleResults": 0,
+      "unanswerableReturnedEmpty": "3/3",
+      "fileRecall": "8/8",
+      "conflictsFlagged": "8/8",
+      "p50ms": 6.43,
+      "p95ms": 11.37,
+      "byKind": {
+        "outdated-decision": {
+          "queries": 24,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0.647
+        },
+        "project-fact": {
+          "queries": 96,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0.119
+        },
+        "identifier": {
+          "queries": 96,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0
+        },
+        "contradiction": {
+          "queries": 8,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0
+        },
+        "global-fallback": {
+          "queries": 2,
+          "precisionAt5": 1,
+          "recallAt10": 1,
+          "irrelevantRate": 0
+        }
+      }
+    }
+  ],
+  "reconciliation": {
+    "checks": 50,
+    "correct": 50,
+    "accuracy": 1
+  },
+  "concurrentIdenticalWrites": {
+    "writers": 12,
+    "distinctAtoms": 1
+  },
+  "generatorPlans": [
+    {
+      "target": "atoms",
+      "name": "tags",
+      "rows": 12,
+      "ms": 4.05,
+      "plan": "Limit  (cost=46.31..46.31 rows=1 width=24) |   ->  Sort  (cost=46.31..46.31 rows=1 width=24) |         Sort Key: ((SubPlan 1)) DESC, a.id |         ->  Nested Loop Anti Join  (cost=0.00..46.30 rows=1 width=24)"
+    },
+    {
+      "target": "files",
+      "name": "tags",
+      "rows": 0,
+      "ms": 4.13,
+      "plan": "Limit  (cost=26.10..99.28 rows=1 width=16) |   ->  Nested Loop Anti Join  (cost=26.10..99.28 rows=1 width=16) |         Join Filter: (lower(COALESCE((f.metadata ->> filter.key), ''::text)) <> lower(filter.value)) |         ->  Bitmap Heap Scan on files f  (cost=26.10..98.24 rows=1 width=48)"
+    },
+    {
+      "target": "files",
+      "name": "fts",
+      "rows": 1,
+      "ms": 4.19,
+      "plan": "Limit  (cost=100.33..100.34 rows=1 width=20) |   ->  Sort  (cost=100.33..100.34 rows=1 width=20) |         Sort Key: (ts_rank(to_tsvector('simple'::regconfig, ((((COALESCE(f.content, ''::text) || ' '::text) || COALESCE(f.interpreted, ''::text)) || ' '::text) || COALESCE(f.subject, ''::text))), '''decision'' | ''alpha'' | ''queue'' | ''moved'''::tsquery)) DESC |         ->  Nested Loop Anti Join  ("
+    },
+    {
+      "target": "atoms",
+      "name": "fts",
+      "rows": 35,
+      "ms": 4.25,
+      "plan": "Limit  (cost=149.03..149.04 rows=1 width=20) |   ->  Sort  (cost=149.03..149.04 rows=1 width=20) |         Sort Key: (ts_rank(to_tsvector('simple'::regconfig, a.content), '''decision'' | ''alpha'' | ''queue'' | ''moved'''::tsquery)) DESC |         ->  Nested Loop Anti Join  (cost=16.55..149.02 rows=1 width=20)"
+    },
+    {
+      "target": "files",
+      "name": "trigram",
+      "rows": 0,
+      "ms": 4.27,
+      "plan": "Limit  (cost=484.27..484.28 rows=1 width=20) |   ->  Sort  (cost=484.27..484.28 rows=1 width=20) |         Sort Key: (GREATEST(word_similarity('alpha queue moved decision'::text, f.subject), word_similarity('alpha queue moved decision'::text, f.name))) DESC NULLS LAST |         ->  Nested Loop Anti Join  (cost=388.03..484.26 rows=1 width=20)"
+    },
+    {
+      "target": "atoms",
+      "name": "exact",
+      "rows": 0,
+      "ms": 5.79,
+      "plan": "Limit  (cost=0.00..43.60 rows=1 width=16) |   ->  Nested Loop Anti Join  (cost=0.00..43.60 rows=1 width=16) |         Join Filter: (lower(COALESCE((a.metadata ->> filter.key), ''::text)) <> lower(filter.value)) |         ->  Seq Scan on atoms a  (cost=0.00..42.56 rows=1 width=53)"
+    },
+    {
+      "target": "atoms",
+      "name": "vector",
+      "rows": 51,
+      "ms": 6.62,
+      "plan": "Limit  (cost=58.53..58.53 rows=1 width=24) |   ->  Sort  (cost=58.53..58.53 rows=1 width=24) |         Sort Key: ((a.vector <=> '[vector]'::halfvec)) |         ->  Nested Loop Anti Join  (cost=0.00..58.52 rows=1 width=24)"
+    },
+    {
+      "target": "files",
+      "name": "vector_content",
+      "rows": 1,
+      "ms": 7.82,
+      "plan": "Limit  (cost=30.90..30.90 rows=1 width=24) |   ->  Sort  (cost=30.90..30.90 rows=1 width=24) |         Sort Key: ((f.vector_content <=> '[vector]'::halfvec)) |         ->  Nested Loop Anti Join  (cost=0.15..30.89 rows=1 width=24)"
+    },
+    {
+      "target": "files",
+      "name": "vector_subject",
+      "rows": 0,
+      "ms": 8.4,
+      "plan": "Limit  (cost=30.88..30.88 rows=1 width=24) |   ->  Sort  (cost=30.88..30.88 rows=1 width=24) |         Sort Key: ((f.vector_subject <=> '[vector]'::halfvec)) |         ->  Nested Loop Anti Join  (cost=0.13..30.87 rows=1 width=24)"
+    },
+    {
+      "target": "atoms",
+      "name": "trigram",
+      "rows": 3,
+      "ms": 9.5,
+      "plan": "Limit  (cost=42.91..42.92 rows=1 width=20) |   ->  Sort  (cost=42.91..42.92 rows=1 width=20) |         Sort Key: (word_similarity('alpha queue moved decision'::text, a.content)) DESC |         ->  Nested Loop Anti Join  (cost=0.00..42.90 rows=1 width=20)"
+    }
+  ],
+  "sampleTrace": {
+    "totalMs": 16.85687499999767,
+    "rescoreMs": 2.734667000000627,
+    "embeddingError": null
+  }
+}
