@@ -162,3 +162,22 @@ export function temporalState(
   if (row.expiresAt && row.expiresAt <= at) return "expired";
   return "current";
 }
+
+export type AddParam = (value: unknown) => string;
+
+/** Atom visibility predicate. Emits `TRUE` for unscoped reads so the planner sees no extra quals. */
+export function atomScopePredicate(alias: string, filter: ScopeFilterParams, add: AddParam): string {
+  if (filter.all) return "TRUE";
+  const parts = [`${alias}.scope_kind = 'global'`];
+  if (filter.project) parts.push(`(${alias}.scope_kind = 'project' AND ${alias}.scope_key = ${add(filter.project)}::text)`);
+  if (filter.conversation) parts.push(`(${alias}.scope_kind = 'conversation' AND ${alias}.scope_key = ${add(filter.conversation)}::text)`);
+  return `(${parts.join(" OR ")})`;
+}
+
+/** Temporal predicate, specialised per mode so index-friendly plans stay possible. */
+export function atomTemporalPredicate(alias: string, query: TemporalQuery, add: AddParam): string {
+  if (query.mode === "history") return `${alias}.status <> 'forgotten'`;
+  const at = add(query.at.toISOString());
+  const status = query.mode === "current" ? `${alias}.status = 'active'` : `${alias}.status <> 'forgotten'`;
+  return `(${status} AND (${alias}.valid_from IS NULL OR ${alias}.valid_from <= ${at}::timestamptz) AND (${alias}.expires_at IS NULL OR ${alias}.expires_at > ${at}::timestamptz))`;
+}

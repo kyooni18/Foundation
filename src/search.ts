@@ -2,12 +2,14 @@ import type { QueryResultRow } from "pg";
 import type { AIProvider, EmbeddingResult } from "./ai.js";
 import type { Database } from "./db.js";
 import {
-  atomScopeSql,
-  atomTemporalSql,
+  atomScopePredicate,
+  atomTemporalPredicate,
   scopeFilterParams,
   temporalQuery,
   temporalState,
-  type ScopeContext
+  type ScopeContext,
+  type ScopeFilterParams,
+  type TemporalQuery
 } from "./scope.js";
 import type { SearchItem, SearchSignals } from "./types.js";
 import { contentHash, normalizeTags, normalizeText, record, vectorArray } from "./utils.js";
@@ -348,23 +350,50 @@ function symbolPatterns(identifiers: string[]): string[] {
     .slice(0, 24);
 }
 
-const ATOM_BASE_WHERE = [
-  atomScopeSql("a", 1, 2, 3),
-  atomTemporalSql("a", 4, 5),
-  "NOT EXISTS (SELECT 1 FROM jsonb_each_text($6::jsonb) AS filter(key,value) WHERE lower(coalesce(a.metadata ->> filter.key,'')) <> lower(filter.value))"
-].join("\n  AND ");
+/** Collects bind parameters while a statement is assembled, so unused predicates add neither SQL nor params. */
+class Params {
+  readonly values: unknown[] = [];
+  add = (value: unknown): string => {
+    this.values.push(value);
+    return `$${this.values.length}`;
+  };
+}
+
+interface BaseContext {
+  scope: ScopeFilterParams;
+  temporal: TemporalQuery;
+  filters: Record<string, string>;
+}
+
+function metadataFilterPredicate(alias: string, filters: Record<string, string>, add: (v: unknown) => string): string {
+  if (Object.keys(filters).length === 0) return "TRUE";
+  return `NOT EXISTS (SELECT 1 FROM jsonb_each_text(${add(JSON.stringify(filters))}::jsonb) AS filter(key,value) WHERE lower(coalesce(${alias}.metadata ->> filter.key,'')) <> lower(filter.value))`;
+}
+
+function atomBase(alias: string, ctx: BaseContext, p: Params): string {
+  return [
+    atomScopePredicate(alias, ctx.scope, p.add),
+    atomTemporalPredicate(alias, ctx.temporal, p.add),
+    metadataFilterPredicate(alias, ctx.filters, p.add)
+  ].filter(part => part !== "TRUE").join("\n  AND ") || "TRUE";
+}
 
 // Files carry scope through metadata, or through the Atoms they are docked to. A File whose only
 // Atoms belong to another project is never shown; a File with no Atoms and no scope metadata stays shared.
-const FILE_BASE_WHERE = [
-  // Files have no temporal columns; $4/$5 are referenced only so the shared parameter list type-checks.
-  "($4::text IS NOT NULL AND $5::timestamptz IS NOT NULL)",
-  "($1::boolean OR f.metadata->>'project' IS NULL OR lower(f.metadata->>'project') = $2::text)",
-  "($1::boolean OR f.metadata->>'conversationId' IS NULL OR lower(f.metadata->>'conversationId') = $3::text)",
-  `(NOT EXISTS (SELECT 1 FROM atom_file_docks d WHERE d.file_id = f.id)
-    OR EXISTS (SELECT 1 FROM atom_file_docks d JOIN atoms a ON a.id = d.atom_id WHERE d.file_id = f.id AND ${atomScopeSql("a", 1, 2, 3)}))`,
-  "NOT EXISTS (SELECT 1 FROM jsonb_each_text($6::jsonb) AS filter(key,value) WHERE lower(coalesce(f.metadata ->> filter.key,'')) <> lower(filter.value))"
-].join("\n  AND ");
+function fileBase(alias: string, ctx: BaseContext, p: Params): string {
+  const parts: string[] = [];
+  if (!ctx.scope.all) {
+    const project = p.add(ctx.scope.project);
+    const conversation = p.add(ctx.scope.conversation);
+    parts.push(`(${alias}.metadata->>'project' IS NULL OR lower(${alias}.metadata->>'project') = ${project}::text)`);
+    parts.push(`(${alias}.metadata->>'conversationId' IS NULL OR lower(${alias}.metadata->>'conversationId') = ${conversation}::text)`);
+    parts.push(`(NOT EXISTS (SELECT 1 FROM atom_file_docks d WHERE d.file_id = ${alias}.id)
+    OR EXISTS (SELECT 1 FROM atom_file_docks d JOIN atoms da ON da.id = d.atom_id WHERE d.file_id = ${alias}.id AND ${atomScopePredicate("da", ctx.scope, p.add)}))`);
+  }
+  const filter = metadataFilterPredicate(alias, ctx.filters, p.add);
+  if (filter !== "TRUE") parts.push(filter);
+  return parts.join("\n  AND ") || "TRUE";
+}
 
 const FILE_FTS = "to_tsvector('simple', coalesce(f.content,'') || ' ' || coalesce(f.interpreted,'') || ' ' || coalesce(f.subject,''))";
 
@@ -378,7 +407,7 @@ interface Generator {
 
 function buildGenerators(
   analysis: SearchQueryAnalysis,
-  base: unknown[],
+  ctx: BaseContext,
   hash: string,
   embedding: EmbeddingResult | null,
   candidateLimit: number
@@ -387,38 +416,64 @@ function buildGenerators(
   const ts = tsQueryFromTokens(analysis.tokens);
   const patterns = symbolPatterns(analysis.identifiers);
   const out: Generator[] = [];
-  const atom = (name: string, sql: string, extra: unknown[], vector = false) =>
-    out.push({ target: "atoms", name, sql, params: [...base, ...extra], vector });
-  const file = (name: string, sql: string, extra: unknown[], vector = false) =>
-    out.push({ target: "files", name, sql, params: [...base, ...extra], vector });
+  const add = (target: "atoms" | "files", name: string, build: (p: Params, base: string) => string, vector = false) => {
+    const p = new Params();
+    const base = target === "atoms" ? atomBase("a", ctx, p) : fileBase("f", ctx, p);
+    out.push({ target, name, sql: build(p, base), params: p.values, vector });
+  };
+  const atom = (name: string, build: (p: Params, base: string) => string, vector = false) => add("atoms", name, build, vector);
+  const file = (name: string, build: (p: Params, base: string) => string, vector = false) => add("files", name, build, vector);
 
-  atom("exact", `SELECT a.id FROM atoms a WHERE (a.content_hash=$7 OR a.normalized_content=$8) AND ${ATOM_BASE_WHERE} LIMIT 20`, [hash, lowered]);
+  atom("exact", (p, base) => `SELECT a.id FROM atoms a WHERE (a.content_hash=${p.add(hash)} OR a.normalized_content=${p.add(lowered)}) AND ${base} LIMIT 20`);
   if (ts) {
-    atom("fts", `SELECT a.id FROM atoms a WHERE to_tsvector('simple', a.content) @@ to_tsquery('simple',$7) AND ${ATOM_BASE_WHERE}
-      ORDER BY ts_rank(to_tsvector('simple', a.content), to_tsquery('simple',$7)) DESC LIMIT $8`, [ts, candidateLimit]);
-    file("fts", `SELECT f.id FROM files f WHERE ${FILE_FTS} @@ to_tsquery('simple',$7) AND ${FILE_BASE_WHERE}
-      ORDER BY ts_rank(${FILE_FTS}, to_tsquery('simple',$7)) DESC LIMIT $8`, [ts, candidateLimit]);
+    atom("fts", (p, base) => {
+      const q = p.add(ts);
+      return `SELECT a.id FROM atoms a WHERE to_tsvector('simple', a.content) @@ to_tsquery('simple',${q}) AND ${base}
+      ORDER BY ts_rank(to_tsvector('simple', a.content), to_tsquery('simple',${q})) DESC LIMIT ${p.add(candidateLimit)}`;
+    });
+    file("fts", (p, base) => {
+      const q = p.add(ts);
+      return `SELECT f.id FROM files f WHERE ${FILE_FTS} @@ to_tsquery('simple',${q}) AND ${base}
+      ORDER BY ts_rank(${FILE_FTS}, to_tsquery('simple',${q})) DESC LIMIT ${p.add(candidateLimit)}`;
+    });
   }
-  atom("trigram", `SELECT a.id FROM atoms a WHERE $7::text <% a.content AND ${ATOM_BASE_WHERE}
-    ORDER BY word_similarity($7::text, a.content) DESC LIMIT $8`, [analysis.text, candidateLimit]);
+  atom("trigram", (p, base) => {
+    const q = p.add(analysis.text);
+    return `SELECT a.id FROM atoms a WHERE ${q}::text <% a.content AND ${base}
+    ORDER BY word_similarity(${q}::text, a.content) DESC LIMIT ${p.add(candidateLimit)}`;
+  });
   if (patterns.length) {
-    atom("symbol", `SELECT a.id FROM atoms a WHERE a.content ILIKE ANY($7::text[]) AND ${ATOM_BASE_WHERE} LIMIT $8`, [patterns, candidateLimit]);
-    file("symbol", `SELECT f.id FROM files f WHERE (f.content ILIKE ANY($7::text[]) OR f.subject ILIKE ANY($7::text[]) OR f.name ILIKE ANY($7::text[])) AND ${FILE_BASE_WHERE} LIMIT $8`, [patterns, candidateLimit]);
+    atom("symbol", (p, base) => `SELECT a.id FROM atoms a WHERE a.content ILIKE ANY(${p.add(patterns)}::text[]) AND ${base} LIMIT ${p.add(candidateLimit)}`);
+    file("symbol", (p, base) => {
+      const q = p.add(patterns);
+      return `SELECT f.id FROM files f WHERE (f.content ILIKE ANY(${q}::text[]) OR f.subject ILIKE ANY(${q}::text[]) OR f.name ILIKE ANY(${q}::text[])) AND ${base} LIMIT ${p.add(candidateLimit)}`;
+    });
   }
-  atom("tags", `SELECT a.id FROM atoms a WHERE a.tags && $7::text[] AND ${ATOM_BASE_WHERE}
-    ORDER BY (SELECT count(*) FROM unnest(a.tags) t WHERE t = ANY($7::text[])) DESC, a.id LIMIT $8`, [analysis.tags, candidateLimit]);
-  file("tags", `SELECT f.id FROM files f WHERE f.tags && $7::text[] AND ${FILE_BASE_WHERE} LIMIT $8`, [analysis.tags, candidateLimit]);
-  file("trigram", `SELECT f.id FROM files f WHERE ($7::text <% f.content OR $7::text <% f.subject OR $7::text <% f.name) AND ${FILE_BASE_WHERE}
-    ORDER BY GREATEST(word_similarity($7::text, f.subject), word_similarity($7::text, f.name)) DESC NULLS LAST LIMIT $8`, [analysis.text, candidateLimit]);
+  atom("tags", (p, base) => {
+    const q = p.add(analysis.tags);
+    return `SELECT a.id FROM atoms a WHERE a.tags && ${q}::text[] AND ${base}
+    ORDER BY (SELECT count(*) FROM unnest(a.tags) t WHERE t = ANY(${q}::text[])) DESC, a.id LIMIT ${p.add(candidateLimit)}`;
+  });
+  file("tags", (p, base) => `SELECT f.id FROM files f WHERE f.tags && ${p.add(analysis.tags)}::text[] AND ${base} LIMIT ${p.add(candidateLimit)}`);
+  file("trigram", (p, base) => {
+    const q = p.add(analysis.text);
+    return `SELECT f.id FROM files f WHERE (${q}::text <% f.content OR ${q}::text <% f.subject OR ${q}::text <% f.name) AND ${base}
+    ORDER BY GREATEST(word_similarity(${q}::text, f.subject), word_similarity(${q}::text, f.name)) DESC NULLS LAST LIMIT ${p.add(candidateLimit)}`;
+  });
 
   if (embedding) {
-    const prov = [embedding.provider, embedding.model, embedding.dimensions, vectorArray(embedding.vector), candidateLimit];
-    atom("vector", `SELECT a.id FROM atoms a WHERE a.vector IS NOT NULL AND a.vector_provider=$7 AND a.vector_model=$8 AND a.vector_dimensions=$9
-      AND ${ATOM_BASE_WHERE} ORDER BY a.vector <=> $10::real[]::halfvec LIMIT $11`, prov, true);
-    file("vector_content", `SELECT f.id FROM files f WHERE f.vector_content IS NOT NULL AND f.vector_content_provider=$7 AND f.vector_content_model=$8 AND f.vector_content_dimensions=$9
-      AND ${FILE_BASE_WHERE} ORDER BY f.vector_content <=> $10::real[]::halfvec LIMIT $11`, prov, true);
-    file("vector_subject", `SELECT f.id FROM files f WHERE f.vector_subject IS NOT NULL AND f.vector_subject_provider=$7 AND f.vector_subject_model=$8 AND f.vector_subject_dimensions=$9
-      AND ${FILE_BASE_WHERE} ORDER BY f.vector_subject <=> $10::real[]::halfvec LIMIT $11`, prov, true);
+    const vec = vectorArray(embedding.vector);
+    const provenance = (p: Params, prefix: string, alias: string) =>
+      `${alias}.${prefix} IS NOT NULL AND ${alias}.${prefix}_provider=${p.add(embedding.provider)} AND ${alias}.${prefix}_model=${p.add(embedding.model)} AND ${alias}.${prefix}_dimensions=${p.add(embedding.dimensions)}`;
+    atom("vector", (p, base) =>
+      `SELECT a.id FROM atoms a WHERE ${provenance(p, "vector", "a")} AND ${base}
+      ORDER BY a.vector <=> ${p.add(vec)}::real[]::halfvec LIMIT ${p.add(candidateLimit)}`, true);
+    file("vector_content", (p, base) =>
+      `SELECT f.id FROM files f WHERE ${provenance(p, "vector_content", "f")} AND ${base}
+      ORDER BY f.vector_content <=> ${p.add(vec)}::real[]::halfvec LIMIT ${p.add(candidateLimit)}`, true);
+    file("vector_subject", (p, base) =>
+      `SELECT f.id FROM files f WHERE ${provenance(p, "vector_subject", "f")} AND ${base}
+      ORDER BY f.vector_subject <=> ${p.add(vec)}::real[]::halfvec LIMIT ${p.add(candidateLimit)}`, true);
   }
   return out;
 }
@@ -483,18 +538,25 @@ SELECT f.id, f.name, left(coalesce(f.content,''), 50000) AS snippet, f.subject, 
   ) END AS semantic_score
 FROM files f CROSS JOIN q WHERE f.id = ANY($1::uuid[])`;
 
-const RELATED_ATOM_IDS_SQL = `
-SELECT edge.relation, edge.seed_id, edge.related_id
+function relatedAtomsQuery(seedIds: string[], ctx: BaseContext): { sql: string; params: unknown[] } {
+  const p = new Params();
+  const seeds = p.add(seedIds);
+  const base = atomBase("a", ctx, p);
+  return {
+    params: p.values,
+    sql: `SELECT edge.relation, edge.seed_id, edge.related_id
 FROM (
   SELECT r.relation,
-    CASE WHEN r.from_atom_id = ANY($1::uuid[]) THEN r.from_atom_id ELSE r.to_atom_id END AS seed_id,
-    CASE WHEN r.from_atom_id = ANY($1::uuid[]) THEN r.to_atom_id ELSE r.from_atom_id END AS related_id
+    CASE WHEN r.from_atom_id = ANY(${seeds}::uuid[]) THEN r.from_atom_id ELSE r.to_atom_id END AS seed_id,
+    CASE WHEN r.from_atom_id = ANY(${seeds}::uuid[]) THEN r.to_atom_id ELSE r.from_atom_id END AS related_id
   FROM atom_relations r
-  WHERE (r.from_atom_id = ANY($1::uuid[]) OR r.to_atom_id = ANY($1::uuid[]))
+  WHERE (r.from_atom_id = ANY(${seeds}::uuid[]) OR r.to_atom_id = ANY(${seeds}::uuid[]))
     AND r.relation IN ('refines','supersedes')
 ) edge
 JOIN atoms a ON a.id = edge.related_id
-WHERE ${ATOM_BASE_WHERE.replace(/\$([1-6])\b/g, (_m, n: string) => `$${Number(n) + 1}`)}`;
+WHERE ${base}`
+  };
+}
 
 const CONFLICTS_SQL = `
 SELECT r.from_atom_id, r.to_atom_id
@@ -638,9 +700,9 @@ export async function searchFoundation(
     trace.embedding = queryEmbedding ? { provider: queryEmbedding.provider, model: queryEmbedding.model } : null;
   }
 
-  const base = [scopeParams.all, scopeParams.project, scopeParams.conversation, temporal.mode, temporal.at.toISOString(), JSON.stringify(filters)];
+  const baseContext: BaseContext = { scope: scopeParams, temporal, filters };
   const candidateLimit = Math.max(40, Math.min(limit * 8, 200));
-  const generators = buildGenerators(analysis, base, contentHash(analysis.text), queryEmbedding, candidateLimit);
+  const generators = buildGenerators(analysis, baseContext, contentHash(analysis.text), queryEmbedding, candidateLimit);
 
   const idSets = await Promise.all(generators.map(generator => runGenerator(db, generator, trace)));
   const atomIds = new Set<string>();
@@ -765,7 +827,8 @@ export async function searchFoundation(
     .slice(0, Math.min(16, Math.max(6, limit)));
   if (seeds.length) {
     const seedById = new Map(seeds.map(entry => [entry.item.id, entry.item]));
-    const edges = await db.query(RELATED_ATOM_IDS_SQL, [seeds.map(entry => entry.item.id), ...base]);
+    const relatedQuery = relatedAtomsQuery(seeds.map(entry => entry.item.id), baseContext);
+    const edges = await db.query(relatedQuery.sql, relatedQuery.params);
     const relatedIds = [...new Set(edges.rows.map(row => String(row.related_id)).filter(id => !scored.has("atom:" + id)))];
     if (relatedIds.length) {
       const related = await db.query(ATOM_RESCORE_SQL, [relatedIds, contentHash(analysis.text), lowered, analysis.text, vector, ...emb]);

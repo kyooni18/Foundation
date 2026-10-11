@@ -4,7 +4,7 @@ import type { Database } from "./db.js";
 import type { FileInterpreter } from "./interpreter.js";
 import type { Atom, AtomStatus, AtomType, EmbeddingProvenance, FileLink, FileObject, SearchItem, Vault } from "./types.js";
 import { resolveWriteScope, scopeLabel, type MemoryScope, type ScopeContext } from "./scope.js";
-import { searchFoundation, type SearchOptions } from "./search.js";
+import { newSearchTrace, searchFoundation, type SearchOptions, type SearchTrace } from "./search.js";
 import { contentHash, normalizeTags, normalizeText, record, vectorLiteral } from "./utils.js";
 
 function embeddingProvenanceFromRow(row: QueryResultRow, prefix: string): EmbeddingProvenance | null {
@@ -1361,6 +1361,72 @@ export class Foundation {
     // A server-configured default project scopes callers that did not name one.
     if (!options.project && !options.conversationId && this.defaults.project) options.project = this.defaults.project;
     return searchFoundation(this.db, this.ai, query, options);
+  }
+
+  /** Ranking diagnostics for the CLI: what each generator found, every candidate's signals, why it was cut. */
+  async explainSearch(query: string, options: SearchOptions & { plans?: boolean } = {}): Promise<{ trace: SearchTrace; results: SearchItem[] }> {
+    const trace = newSearchTrace(options.plans ?? false);
+    const results = await this.search(query, { ...options, trace });
+    for (const generator of trace.generators) {
+      if (generator.plan) generator.plan = generator.plan.map(line => line.replace(/\[[-0-9.,eE+]{200,}\]/g, "[vector]"));
+    }
+    trace.candidates.sort((a, b) => b.score - a.score);
+    return { trace, results };
+  }
+
+  /** An Atom with its relations, docks, lifecycle and reconciliation history, for diagnosing memory identity. */
+  async atomRelations(id: string): Promise<Record<string, unknown>> {
+    const atom = await this.getAtom(id);
+    const [relations, events, files] = await Promise.all([
+      this.db.query(
+        `SELECT r.relation, r.from_atom_id, r.to_atom_id, r.created_at, r.metadata,
+                CASE WHEN r.from_atom_id=$1 THEN 'out' ELSE 'in' END AS direction,
+                o.content AS other_content, o.status AS other_status
+         FROM atom_relations r
+         JOIN atoms o ON o.id = CASE WHEN r.from_atom_id=$1 THEN r.to_atom_id ELSE r.from_atom_id END
+         WHERE r.from_atom_id=$1 OR r.to_atom_id=$1 ORDER BY r.created_at`, [id]),
+      this.db.query(
+        `SELECT action, confidence, rationale, request_id, created_at, target_atom_id, result_atom_id
+         FROM memory_events WHERE result_atom_id=$1 OR target_atom_id=$1 ORDER BY created_at`, [id]),
+      this.db.query(
+        `SELECT f.id, f.name FROM atom_file_docks d JOIN files f ON f.id=d.file_id WHERE d.atom_id=$1`, [id])
+    ]);
+    return {
+      id: atom.id,
+      content: atom.content,
+      scope: atom.scope,
+      status: atom.status,
+      validFrom: atom.validFrom,
+      expiresAt: atom.expiresAt,
+      sources: files.rows,
+      relations: relations.rows.map(row => ({
+        relation: row.relation,
+        direction: row.direction,
+        otherAtomId: row.direction === "out" ? row.to_atom_id : row.from_atom_id,
+        otherStatus: row.other_status,
+        otherContent: String(row.other_content).slice(0, 160),
+        at: row.created_at
+      })),
+      events: events.rows,
+      history: Array.isArray(atom.metadata.history) ? atom.metadata.history : []
+    };
+  }
+
+  /** Scope/lifecycle/embedding health summary. Counts only; never returns memory text. */
+  async diagnose(): Promise<Record<string, unknown>> {
+    const [byScope, byStatus, health] = await Promise.all([
+      this.db.query("SELECT scope_kind, count(*)::int AS atoms, count(DISTINCT scope_key)::int AS keys FROM atoms GROUP BY scope_kind ORDER BY scope_kind"),
+      this.db.query("SELECT status, count(*)::int AS atoms FROM atoms GROUP BY status ORDER BY status"),
+      this.db.query(`SELECT
+        (SELECT count(*)::int FROM atoms WHERE metadata ? 'scopeUnresolved') AS scope_unresolved,
+        (SELECT count(*)::int FROM atoms WHERE status='active' AND expires_at IS NOT NULL AND expires_at <= NOW()) AS expired_but_active,
+        (SELECT count(*)::int FROM atoms WHERE status='active' AND valid_from > NOW()) AS not_yet_valid,
+        (SELECT count(*)::int FROM atoms WHERE status='active' AND vector IS NULL) AS active_without_embedding,
+        (SELECT count(*)::int FROM atom_relations WHERE relation='conflicts_with') AS conflicts,
+        (SELECT count(*)::int FROM (SELECT 1 FROM atoms WHERE status='active' GROUP BY lower(content) HAVING count(DISTINCT scope_kind || ':' || scope_key) > 1) x) AS content_shared_across_scopes,
+        (SELECT count(*)::int FROM memory_requests) AS idempotent_requests`)
+    ]);
+    return { scopes: byScope.rows, status: byStatus.rows, ...health.rows[0] };
   }
 
   async stats(): Promise<Record<string, unknown>> {

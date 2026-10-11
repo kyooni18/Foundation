@@ -23,14 +23,27 @@ function print(value: unknown): void {
   process.stdout.write(JSON.stringify(value, null, 2) + "\n");
 }
 
+function searchOptions() {
+  return {
+    limit: numberOption("limit", 10),
+    project: option("project"),
+    conversationId: option("conversation"),
+    asOf: option("as-of"),
+    history: flag("history")
+  };
+}
+
 function usage(): never {
   process.stderr.write(`Foundation CLI
 
 Usage:
   foundation stats
-  foundation search <query> [--limit=10]
+  foundation search <query> [--limit=10] [--project=<name>] [--conversation=<id>] [--as-of=<ISO-8601>] [--history]
+  foundation explain <query> [--limit=10] [--project=<name>] [--conversation=<id>] [--as-of=<ISO-8601>] [--history] [--plans]
+  foundation relations <atom-id>
+  foundation diagnose
   foundation ingest <raw text> [--name=Note] [--vault=<uid>] [--source-time=<ISO-8601>]
-  foundation remember <text> [--source-time=<ISO-8601>] [--request-id=<id>]
+  foundation remember <text> [--source-time=<ISO-8601>] [--request-id=<id>] [--project=<name>] [--conversation=<id>] [--scope=global|project|conversation]
   foundation reindex [--kind=all|atoms|files] [--limit=1000] [--concurrency=4] [--force]
   foundation list atoms|files|vaults [--limit=50] [--offset=0]
   foundation get atom|file|vault <id-or-uid>
@@ -58,7 +71,20 @@ async function main(): Promise<void> {
         return;
       case "search":
         if (!args.length) usage();
-        print(await f.search(args.join(" "), numberOption("limit", 10)));
+        print(await f.search(args.join(" "), searchOptions()));
+        return;
+      case "explain":
+        if (!args.length) usage();
+        print(await f.explainSearch(args.join(" "), { ...searchOptions(), plans: flag("plans") }));
+        return;
+      case "relations": {
+        const [id] = args;
+        if (!id) usage();
+        print(await f.atomRelations(id));
+        return;
+      }
+      case "diagnose":
+        print(await f.diagnose());
         return;
       case "ingest":
         if (!args.length) usage();
@@ -74,7 +100,10 @@ async function main(): Promise<void> {
         print(await f.remember({
           content: args.join(" "),
           sourceTime: option("source-time"),
-          requestId: option("request-id")
+          requestId: option("request-id"),
+          project: option("project"),
+          conversationId: option("conversation"),
+          scope: option("scope") as "global" | "project" | "conversation" | undefined
         }));
         return;
       case "reindex": {
