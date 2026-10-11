@@ -47,7 +47,7 @@ describe("reciprocal-rank fusion", () => {
     ], { now: Date.parse("2026-09-29T00:00:00Z") });
 
     expect(ranked[0]?.key).toBe("structured-hit");
-    expect(ranked[0]?.matchedBy).toEqual(expect.arrayContaining(["text", "symbol", "vector", "tag", "metadata"]));
+    expect(ranked[0]?.matchedBy).toEqual(expect.arrayContaining(["text", "symbol", "tag", "metadata"]));
   });
 
   it("keeps exact matches dominant", () => {

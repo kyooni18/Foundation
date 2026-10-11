@@ -52,7 +52,7 @@ describe("Foundation MCP model surface", () => {
 
     expect(result.content).toEqual([{
       type: "text",
-      text: JSON.stringify([{ id, text: "Foundation MCP is available." }])
+      text: JSON.stringify([{ id, kind: "atom", text: "Foundation MCP is available." }])
     }]);
     await client.close();
     await server.close();

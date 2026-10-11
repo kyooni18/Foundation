@@ -5,7 +5,7 @@ describe("Foundation schema", () => {
   it("keeps Atom top-level and File docking relational", () => {
     const sql = schemaStatements.join("\n").toLowerCase();
     const atomTable = schemaStatements.find(statement => statement.toLowerCase().includes("create table if not exists atoms"))!.toLowerCase();
-    expect(SCHEMA_VERSION).toBe(6);
+    expect(SCHEMA_VERSION).toBe(7);
     expect(sql).toContain("create table if not exists atoms");
     expect(sql).toContain("create table if not exists atom_file_docks");
     expect(atomTable).not.toContain("vault_id");
@@ -64,5 +64,14 @@ describe("Foundation schema", () => {
     expect(sql).toContain("create table if not exists memory_requests");
     expect(sql).toContain("create table if not exists memory_events");
     expect(sql).toContain("action in ('new','duplicate','update','supersede','conflict')");
+  });
+
+  it("scopes Atom identity and tracks lifecycle without destructive migration steps", () => {
+    const sql = schemaStatements.join("\n").toLowerCase();
+    expect(sql).toContain("atoms_scope_hash_uidx");
+    expect(sql).toContain("(scope_kind, scope_key, content_hash)");
+    expect(sql).toContain("drop index if exists atoms_content_hash_idx");
+    expect(sql).toContain("atoms_backup_v6");
+    expect(sql).not.toMatch(/drop table|truncate|delete from atoms/);
   });
 });

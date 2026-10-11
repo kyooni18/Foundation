@@ -362,7 +362,7 @@ const FILE_BASE_WHERE = [
   "($1::boolean OR f.metadata->>'project' IS NULL OR lower(f.metadata->>'project') = $2::text)",
   "($1::boolean OR f.metadata->>'conversationId' IS NULL OR lower(f.metadata->>'conversationId') = $3::text)",
   `(NOT EXISTS (SELECT 1 FROM atom_file_docks d WHERE d.file_id = f.id)
-    OR EXISTS (SELECT 1 FROM atom_file_docks d JOIN atoms a ON a.id = d.atom_id WHERE d.file_id = f.id AND a.status <> 'forgotten' AND ${atomScopeSql("a", 1, 2, 3)}))`,
+    OR EXISTS (SELECT 1 FROM atom_file_docks d JOIN atoms a ON a.id = d.atom_id WHERE d.file_id = f.id AND ${atomScopeSql("a", 1, 2, 3)}))`,
   "NOT EXISTS (SELECT 1 FROM jsonb_each_text($6::jsonb) AS filter(key,value) WHERE lower(coalesce(f.metadata ->> filter.key,'')) <> lower(filter.value))"
 ].join("\n  AND ");
 

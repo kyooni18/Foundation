@@ -7,7 +7,7 @@ afterEach(() => {
 });
 
 describe("config", () => {
-  it("defaults to Gemini maximum-size embeddings", () => {
+  it("defaults to maximum-size embeddings with no provider until configured", () => {
     delete process.env.AI_PROVIDER;
     delete process.env.LLM_PROVIDER;
     delete process.env.EMBEDDING_PROVIDER;
@@ -26,7 +26,7 @@ describe("config", () => {
     expect(config.mcpNotionEnabled).toBe(false);
     expect(config.embeddingDimensions).toBe(3072);
     expect(config.llmProvider).toBe("none");
-    expect(config.embeddingProvider).toBe("gemini");
+    expect(config.embeddingProvider).toBe("none");
     expect(config.geminiEmbeddingModel).toBe("gemini-embedding-2");
   });
 

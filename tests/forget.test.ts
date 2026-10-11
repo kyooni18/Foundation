@@ -18,7 +18,7 @@ describe("Foundation forget", () => {
 
     await expect(foundation.forget(id)).resolves.toEqual({ id, forgotten: true });
     expect(query).toHaveBeenCalledTimes(1);
-    expect(String(query.mock.calls[0]?.[0])).toContain("metadata=metadata || '{\"active\":false}'::jsonb");
+    expect(String(query.mock.calls[0]?.[0])).toContain("status='forgotten'");
   });
 
   it("is idempotent for an already-forgotten memory", async () => {
@@ -33,6 +33,7 @@ describe("Foundation forget", () => {
 
   it("reports false for an unknown memory id", async () => {
     const query = vi.fn()
+      .mockResolvedValueOnce({ rowCount: 0, rows: [] })
       .mockResolvedValueOnce({ rowCount: 0, rows: [] })
       .mockResolvedValueOnce({ rowCount: 0, rows: [] });
     const foundation = foundationWithQuery(query);
