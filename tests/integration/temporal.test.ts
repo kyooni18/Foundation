@@ -78,3 +78,26 @@ describe.skipIf(!hasTestDatabase)("temporal correctness", () => {
     for (const hit of hits) expect(hit.conflictsWith?.length).toBe(1);
   });
 });
+
+describe.skipIf(!hasTestDatabase)("validity mirrors and external sync safety", () => {
+  let t: TestDb;
+  let f: Foundation;
+  beforeAll(async () => { t = await createTestDb(); f = new Foundation(t.db, new FakeAI(), "UTC"); });
+  afterAll(async () => { await t.drop(); });
+
+  it("keeps metadata.validFrom/expires in step with the validity columns", async () => {
+    const atom = (await f.createAtom({ content: "Mirror check fact", metadata: {} })).atom;
+    const updated = await f.updateAtom(atom.id, { expiresAt: "2031-01-01T00:00:00Z", validFrom: "2030-01-01T00:00:00Z" });
+    expect(updated.metadata.expires).toBe("2031-01-01T00:00:00.000Z");
+    expect(updated.metadata.validFrom).toBe("2030-01-01T00:00:00.000Z");
+  });
+
+  it("does not let the legacy active toggle revive or bury a superseded Atom", async () => {
+    const atom = (await f.createAtom({ content: "Superseded legacy toggle fact", status: "superseded", expiresAt: "2025-01-01T00:00:00Z", metadata: {} })).atom;
+    expect((await f.updateAtom(atom.id, { active: true })).status).toBe("superseded");
+    expect((await f.updateAtom(atom.id, { active: false })).status).toBe("superseded");
+    const active = (await f.createAtom({ content: "Toggle me active fact", metadata: {} })).atom;
+    expect((await f.updateAtom(active.id, { active: false })).status).toBe("forgotten");
+    expect((await f.updateAtom(active.id, { active: true })).status).toBe("active");
+  });
+});

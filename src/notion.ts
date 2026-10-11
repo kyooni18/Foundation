@@ -144,8 +144,8 @@ function atomToProperties(atom: Atom): Record<string, unknown> {
     Subject: textProperty(subject),
     Type: { select: { name: memoryType } },
     Importance: { select: importance ? { name: importance } : null },
-    "Valid From": dateProperty(metadata.validFrom),
-    Expires: dateProperty(metadata.expires)
+    "Valid From": dateProperty(atom.validFrom?.toISOString() ?? metadata.validFrom),
+    Expires: dateProperty(atom.expiresAt?.toISOString() ?? metadata.expires)
   };
 }
 
@@ -328,6 +328,11 @@ export class NotionSync {
     }
 
     const metadata = parsedToMetadata(memory);
+    // A superseded Atom's validity interval is owned by Foundation; a Notion page cannot widen it.
+    if (atom?.status === "superseded") {
+      delete metadata.validFrom;
+      delete metadata.expires;
+    }
     if (!atom) {
       const created = await this.foundation.createAtom({
         content: memory.content,

@@ -352,16 +352,23 @@ export class Foundation {
     if (status !== current.status) add("status", status);
 
     const incoming = input.metadata ?? {};
+    // Columns are authoritative; metadata mirrors them (ISO strings) so Notion export and legacy readers agree.
+    const temporalMirror: Record<string, unknown> = {};
     if (input.validFrom !== undefined || "validFrom" in incoming) {
-      add("valid_from", parseTimestamp(input.validFrom !== undefined ? input.validFrom : incoming.validFrom));
+      const validFrom = parseTimestamp(input.validFrom !== undefined ? input.validFrom : incoming.validFrom);
+      add("valid_from", validFrom);
+      temporalMirror.validFrom = validFrom?.toISOString() ?? null;
     }
     if (input.expiresAt !== undefined || "expires" in incoming) {
-      add("expires_at", parseTimestamp(input.expiresAt !== undefined ? input.expiresAt : incoming.expires));
+      const expiresAt = parseTimestamp(input.expiresAt !== undefined ? input.expiresAt : incoming.expires);
+      add("expires_at", expiresAt);
+      temporalMirror.expires = expiresAt?.toISOString() ?? null;
     }
 
     const { active: _ignored, scope: _scopeLabel, ...metadataPatch } = incoming;
     const patch = {
       ...metadataPatch,
+      ...temporalMirror,
       active: status === "active",
       ...(status === "forgotten" && current.status !== "forgotten" ? { forgottenAt: new Date().toISOString() } : {})
     };
