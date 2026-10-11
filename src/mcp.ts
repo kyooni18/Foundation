@@ -161,27 +161,44 @@ export function createMcpServer(
     "recall",
     {
       title: "Recall",
-      description: "Retrieve durable knowledge using exact, lexical, tag, and semantic matching across Foundation memory. Returns only the recalled memory id and text.",
+      description: "Retrieve durable knowledge using exact, lexical, tag, and semantic matching. Returns only currently-valid memories unless asOf/includeHistory is set, and may return nothing. Pass project (and conversationId) to isolate results to that project plus global memories. Each result's id identifies exactly one memory and can be passed to forget; results with kind \"file\" are source documents, not forgettable memories.",
       inputSchema: z.object({
         query: z.string().min(1).max(20_000),
-        limit: z.number().int().min(1).max(100).default(10)
+        limit: z.number().int().min(1).max(100).default(10),
+        project: z.string().max(500).optional(),
+        conversationId: z.string().max(500).optional(),
+        asOf: z.string().datetime({ offset: true }).optional(),
+        includeHistory: z.boolean().default(false)
       }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
     },
-    tool(async ({ query, limit }) => (await foundation.search(query, limit)).map(({ id, rawText }) => ({ id, text: rawText })))
+    tool(async ({ query, limit, project, conversationId, asOf, includeHistory }) => {
+      const items = await foundation.search(query, { limit, project, conversationId, asOf, history: includeHistory });
+      return items.map(item => ({
+        id: item.id,
+        kind: item.kind,
+        text: item.rawText,
+        ...(item.state && item.state !== "current" ? { state: item.state } : {}),
+        ...(item.sources?.length ? { fileIds: item.sources.map(source => source.fileId) } : {}),
+        ...(item.conflictsWith?.length ? { conflictsWith: item.conflictsWith } : {})
+      }));
+    })
   );
 
   server.registerTool(
     "remember",
     {
       title: "Remember",
-      description: "Store durable knowledge through Foundation's reconciliation path. Compound input is split into Atoms and duplicate, update, supersede, and conflict handling is automatic and conservative. Returns only unique resulting memory IDs.",
+      description: "Store durable knowledge through Foundation's reconciliation path. Compound input is split into Atoms and duplicate, update, supersede, and conflict handling is automatic and conservative; memories never merge across scopes. Pass project (or conversationId) to keep a memory out of other projects. Returns only unique resulting memory IDs.",
       inputSchema: z.object({
         content: z.string().min(1).max(100_000),
         sourceTime: z.string().datetime({ offset: true }).optional(),
         requestId: z.string().min(1).max(500).optional(),
         tags: z.array(z.string().max(100)).max(100).default([]),
-        metadata: metadata.default({})
+        metadata: metadata.default({}),
+        scope: z.enum(["global", "project", "conversation"]).optional(),
+        project: z.string().max(500).optional(),
+        conversationId: z.string().max(500).optional()
       }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
@@ -192,7 +209,7 @@ export function createMcpServer(
     "forget",
     {
       title: "Forget",
-      description: "Remove one durable memory from active recall by exact memory ID. Use an id returned by recall. This does not expose or return low-level Atom data.",
+      description: "Remove one durable memory from active recall by exact memory ID. Use the id of a memory returned by recall (not a source file id). Source files are kept. This does not expose or return low-level Atom data.",
       inputSchema: z.object({
         id: z.string().uuid()
       }),

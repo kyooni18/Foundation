@@ -16,6 +16,8 @@ export interface Config {
   mcpNotionEnabled: boolean;
   apiKey: string | null;
   timeZone: string;
+  /** Optional default project scope for recall/remember callers that do not name one. */
+  defaultProject: string | null;
   notionCli: string;
   notionDataSourceId: string | null;
   publicBaseUrl: string;
@@ -122,6 +124,7 @@ export function loadConfig(): Config {
     mcpAdminEnabled: bool("FOUNDATION_MCP_ADMIN", false),
     mcpNotionEnabled: bool("FOUNDATION_MCP_NOTION", false),
     apiKey,
+    defaultProject: process.env.FOUNDATION_PROJECT?.trim() || null,
     timeZone: process.env.FOUNDATION_TIME_ZONE?.trim() || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
 
     notionCli: process.env.NOTION_CLI?.trim() || "ntn",

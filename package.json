@@ -29,7 +29,11 @@
     "check": "npm run typecheck && npm test",
     "smoke:pgvector": "node scripts/pgvector-smoke.mjs",
     "cloud:up": "sh scripts/db-tunnel.sh compose --profile cloud up -d --build",
-    "cloud:down": "sh scripts/db-tunnel.sh compose --profile cloud down"
+    "cloud:down": "sh scripts/db-tunnel.sh compose --profile cloud down",
+    "test:db:up": "sh scripts/test-db.sh up",
+    "test:db:down": "sh scripts/test-db.sh down",
+    "test:integration": "TEST_DATABASE_URL=${TEST_DATABASE_URL:-postgresql://postgres:test@127.0.0.1:55433/postgres} vitest run tests/integration",
+    "bench": "tsx bench/run.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",

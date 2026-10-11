@@ -321,7 +321,7 @@ export class NotionSync {
 
   private async pull(memory: ParsedMemory, atom?: Atom | null): Promise<Atom> {
     if (!atom) {
-      const existing = await this.db.query("SELECT id::text FROM atoms WHERE content_hash=$1 LIMIT 1", [contentHash(memory.content)]);
+      const existing = await this.db.query("SELECT id::text FROM atoms WHERE scope_kind='global' AND content_hash=$1 AND status<>'superseded' LIMIT 1", [contentHash(memory.content)]);
       if (existing.rows[0]?.id) {
         atom = await this.foundation.getAtom(String(existing.rows[0].id));
       }

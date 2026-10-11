@@ -304,7 +304,14 @@ export async function serveHTTP(
   api.get("/search", asyncRoute(async (req, res) => {
     const query = typeof req.query.q === "string" ? req.query.q : "";
     if (!query.trim()) throw new Error("q is required");
-    res.json(await foundation.search(query, integer(req.query.limit, 10, 1, 100)));
+    const text = (value: unknown) => (typeof value === "string" && value.trim() ? value : undefined);
+    res.json(await foundation.search(query, {
+      limit: integer(req.query.limit, 10, 1, 100),
+      project: text(req.query.project),
+      conversationId: text(req.query.conversationId),
+      asOf: text(req.query.asOf),
+      history: req.query.history === "true" || req.query.history === "1"
+    }));
   }));
 
   api.post("/notes", asyncRoute(async (req, res) => {
@@ -329,8 +336,17 @@ export async function serveHTTP(
       tags: Array.isArray(body.tags) ? body.tags.filter((value): value is string => typeof value === "string") : [],
       metadata: body.metadata && typeof body.metadata === "object"
         ? body.metadata as Record<string, unknown>
-        : {}
+        : {},
+      scope: body.scope === "global" || body.scope === "project" || body.scope === "conversation" ? body.scope : undefined,
+      project: typeof body.project === "string" ? body.project : undefined,
+      conversationId: typeof body.conversationId === "string" ? body.conversationId : undefined
     }));
+  }));
+
+  api.post("/forget", asyncRoute(async (req, res) => {
+    const body = req.body as Record<string, unknown>;
+    if (typeof body.id !== "string") throw new Error("id is required");
+    res.json(await foundation.forget(body.id));
   }));
 
   api.post("/reindex", asyncRoute(async (req, res) => {

@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 7;
 
 export const schemaStatements = [
   `CREATE EXTENSION IF NOT EXISTS vector`,
@@ -188,7 +188,6 @@ export const schemaStatements = [
         vector_content_embedded_at IS NULL
       )`,
 
-  `CREATE UNIQUE INDEX IF NOT EXISTS atoms_content_hash_idx ON atoms (content_hash)`,
   `CREATE INDEX IF NOT EXISTS atoms_tags_gin ON atoms USING GIN (tags)`,
   `CREATE INDEX IF NOT EXISTS atoms_content_trgm ON atoms USING GIN (content gin_trgm_ops)`,
   `CREATE INDEX IF NOT EXISTS atoms_fts_gin ON atoms USING GIN (to_tsvector('simple', content))`,
@@ -351,6 +350,100 @@ export const schemaStatements = [
     ON oauth_tokens (token_kind, expires_at)`,
   `CREATE INDEX IF NOT EXISTS oauth_tokens_family_idx
     ON oauth_tokens (family_id) WHERE family_id IS NOT NULL`,
+
+
+  // ---- v7: memory scope isolation, lifecycle status and temporal validity ----
+  `CREATE OR REPLACE FUNCTION foundation_try_timestamptz(value TEXT) RETURNS TIMESTAMPTZ
+    LANGUAGE plpgsql STABLE AS $fn$
+    BEGIN
+      IF value IS NULL OR btrim(value) = '' THEN RETURN NULL; END IF;
+      RETURN value::timestamptz;
+    EXCEPTION WHEN others THEN
+      RETURN NULL;
+    END
+    $fn$`,
+  `ALTER TABLE atoms ADD COLUMN IF NOT EXISTS scope_kind TEXT NOT NULL DEFAULT 'global'`,
+  `ALTER TABLE atoms ADD COLUMN IF NOT EXISTS scope_key TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE atoms ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active'`,
+  `ALTER TABLE atoms ADD COLUMN IF NOT EXISTS valid_from TIMESTAMPTZ`,
+  `ALTER TABLE atoms ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ`,
+
+  // One-time, non-destructive backfill. Atom ids, relations and bindings are untouched; a
+  // metadata-only backup of the pre-migration atoms and relations is kept in *_backup_v6 tables.
+  `DO $foundation_v7_backfill$
+  BEGIN
+    IF EXISTS (SELECT 1 FROM foundation_schema WHERE version >= 7) THEN RETURN; END IF;
+
+    CREATE TABLE IF NOT EXISTS atoms_backup_v6 AS
+      SELECT id, content, normalized_content, content_hash, type, tags, metadata, created_at, updated_at
+      FROM atoms;
+    CREATE TABLE IF NOT EXISTS atom_relations_backup_v6 AS SELECT * FROM atom_relations;
+
+    UPDATE atoms SET status = CASE
+      WHEN metadata->>'active' = 'false' THEN
+        CASE WHEN metadata ? 'supersededBy'
+               OR EXISTS (SELECT 1 FROM atom_relations r WHERE r.to_atom_id = atoms.id AND r.relation = 'supersedes')
+             THEN 'superseded' ELSE 'forgotten' END
+      ELSE 'active' END;
+
+    UPDATE atoms SET
+      valid_from = foundation_try_timestamptz(metadata->>'validFrom'),
+      expires_at = foundation_try_timestamptz(metadata->>'expires');
+
+    UPDATE atoms o SET expires_at = COALESCE(o.expires_at, s.t)
+      FROM (
+        SELECT r.to_atom_id AS id, min(COALESCE(n.valid_from, r.created_at)) AS t
+        FROM atom_relations r JOIN atoms n ON n.id = r.from_atom_id
+        WHERE r.relation = 'supersedes'
+        GROUP BY r.to_atom_id
+      ) s
+      WHERE o.id = s.id AND o.status = 'superseded';
+
+    UPDATE atoms SET
+      scope_kind = 'project',
+      scope_key = regexp_replace(lower(normalize(btrim(COALESCE(
+        NULLIF(btrim(metadata->>'project'), ''),
+        NULLIF(btrim(metadata->>'projectId'), ''),
+        NULLIF(btrim(metadata->>'repo'), ''))), NFKC)), '\s+', ' ', 'g')
+      WHERE COALESCE(NULLIF(btrim(metadata->>'project'), ''), NULLIF(btrim(metadata->>'projectId'), ''), NULLIF(btrim(metadata->>'repo'), '')) IS NOT NULL
+        AND lower(COALESCE(metadata->>'scope', 'project')) NOT IN ('global', 'conversation');
+
+    UPDATE atoms SET
+      scope_kind = 'conversation',
+      scope_key = regexp_replace(lower(normalize(btrim(metadata->>'conversationId'), NFKC)), '\s+', ' ', 'g')
+      WHERE NULLIF(btrim(metadata->>'conversationId'), '') IS NOT NULL
+        AND lower(COALESCE(metadata->>'scope', 'conversation')) = 'conversation';
+
+    UPDATE atoms SET metadata = metadata || '{"scopeUnresolved":true}'::jsonb
+      WHERE scope_kind = 'global' AND lower(COALESCE(metadata->>'scope', '')) IN ('project', 'conversation');
+  END
+  $foundation_v7_backfill$`,
+
+  `DO $foundation_v7_constraints$
+  BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'atoms_scope_kind_check') THEN
+      ALTER TABLE atoms ADD CONSTRAINT atoms_scope_kind_check CHECK (scope_kind IN ('global','project','conversation'));
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'atoms_scope_key_check') THEN
+      ALTER TABLE atoms ADD CONSTRAINT atoms_scope_key_check
+        CHECK ((scope_kind = 'global' AND scope_key = '') OR (scope_kind <> 'global' AND scope_key <> ''));
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'atoms_status_check') THEN
+      ALTER TABLE atoms ADD CONSTRAINT atoms_status_check CHECK (status IN ('active','superseded','forgotten'));
+    END IF;
+  END
+  $foundation_v7_constraints$`,
+
+  // Identity is (scope, content): identical facts in independent scopes never merge.
+  // Superseded rows are historical copies and may repeat an active fact's content.
+  `CREATE UNIQUE INDEX IF NOT EXISTS atoms_scope_hash_uidx
+    ON atoms (scope_kind, scope_key, content_hash) WHERE status <> 'superseded'`,
+  `DROP INDEX IF EXISTS atoms_content_hash_idx`,
+  `CREATE INDEX IF NOT EXISTS atoms_content_hash_lookup_idx ON atoms (content_hash)`,
+  `CREATE INDEX IF NOT EXISTS atoms_scope_status_idx ON atoms (scope_kind, scope_key, status)`,
+  `CREATE INDEX IF NOT EXISTS atoms_validity_idx ON atoms (valid_from, expires_at) WHERE status <> 'forgotten'`,
+  `CREATE INDEX IF NOT EXISTS files_name_trgm ON files USING GIN (name gin_trgm_ops)`,
+  `CREATE INDEX IF NOT EXISTS files_project_idx ON files ((lower(metadata->>'project'))) WHERE metadata ? 'project'`,
 
   `INSERT INTO foundation_schema(version) VALUES (${SCHEMA_VERSION}) ON CONFLICT (version) DO NOTHING`
 ] as const;

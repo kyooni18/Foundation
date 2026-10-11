@@ -25,7 +25,7 @@ export async function createRuntime(): Promise<FoundationRuntime> {
   await db.initialize();
   const ai = createAIProvider(config);
   const interpreter = new OpenAIFileInterpreter(config);
-  const foundation = new Foundation(db, ai, config.timeZone, interpreter);
+  const foundation = new Foundation(db, ai, config.timeZone, interpreter, { project: config.defaultProject });
   const notion = new NotionSync(config, db, foundation);
   const oauth = new OAuthService(config, db);
 

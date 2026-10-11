@@ -1,9 +1,10 @@
-import type { PoolClient, QueryResultRow } from "pg";
+import type { PoolClient, QueryResult, QueryResultRow } from "pg";
 import type { AIProvider, EmbeddingResult, MemoryResolution, MemoryResolutionCandidate } from "./ai.js";
 import type { Database } from "./db.js";
 import type { FileInterpreter } from "./interpreter.js";
-import type { Atom, AtomType, EmbeddingProvenance, FileLink, FileObject, SearchItem, Vault } from "./types.js";
-import { searchFoundation } from "./search.js";
+import type { Atom, AtomStatus, AtomType, EmbeddingProvenance, FileLink, FileObject, SearchItem, Vault } from "./types.js";
+import { resolveWriteScope, scopeLabel, type MemoryScope, type ScopeContext } from "./scope.js";
+import { searchFoundation, type SearchOptions } from "./search.js";
 import { contentHash, normalizeTags, normalizeText, record, vectorLiteral } from "./utils.js";
 
 function embeddingProvenanceFromRow(row: QueryResultRow, prefix: string): EmbeddingProvenance | null {
@@ -29,9 +30,27 @@ function embeddingProvenanceFromRow(row: QueryResultRow, prefix: string): Embedd
   };
 }
 
+function stringOrNull(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function parseTimestamp(value: unknown): Date | null {
+  if (value === null || value === undefined || value === "") return null;
+  const date = value instanceof Date ? value : new Date(String(value));
+  return Number.isFinite(date.getTime()) ? date : null;
+}
+
+interface Queryable {
+  query(text: string, values?: unknown[]): Promise<QueryResult<any>>;
+}
+
 function atomFromRow(row: QueryResultRow): Atom {
   return {
     id: String(row.id),
+    scope: { kind: (row.scope_kind ?? "global") as MemoryScope["kind"], key: String(row.scope_key ?? "") },
+    status: (row.status ?? "active") as AtomStatus,
+    validFrom: row.valid_from ? new Date(row.valid_from) : null,
+    expiresAt: row.expires_at ? new Date(row.expires_at) : null,
     content: String(row.content),
     normalizedContent: String(row.normalized_content),
     tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
@@ -93,6 +112,24 @@ export interface RememberInput {
   requestId?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
+  /** Explicit storage scope. Project/conversation scopes need `project` / `conversationId`. */
+  scope?: "global" | "project" | "conversation";
+  project?: string;
+  conversationId?: string;
+}
+
+interface AtomPlan {
+  content: string;
+  storedContent: string;
+  tags: string[];
+  metadata: Record<string, unknown>;
+  scope: MemoryScope;
+  scopeUnresolved: string | null;
+  candidates: MemoryResolutionCandidate[];
+  resolution: MemoryResolution;
+  target: MemoryResolutionCandidate | null;
+  embedding: EmbeddingResult | null;
+  embeddingError: string | null;
 }
 
 export interface RememberAtomicResult {
@@ -117,9 +154,10 @@ export class Foundation {
     private readonly db: Database,
     private readonly ai: AIProvider,
     private readonly timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
-    private readonly interpreter?: FileInterpreter
+    private readonly interpreter?: FileInterpreter,
+    private readonly defaults: { project?: string | null } = {}
   ) {}
-  private readonly rememberInFlight = new Map<string, Promise<RememberResult>>();
+  private readonly rememberInFlight = new Map<string, { content: string; promise: Promise<RememberResult> }>();
   async createVault(input: {
     vaultUid: string;
     name?: string | null;
@@ -179,12 +217,23 @@ export class Foundation {
     metadata?: Record<string, unknown>;
     vector?: number[] | null;
     embedding?: EmbeddingResult | null;
-  }): Promise<{ atom: Atom; created: boolean }> {
+    scope?: MemoryScope;
+    status?: AtomStatus;
+    validFrom?: Date | string | null;
+    expiresAt?: Date | string | null;
+    /** Explicit user intent to bring a previously forgotten identical memory back. */
+    reviveForgotten?: boolean;
+  }, client?: Queryable): Promise<{ atom: Atom; created: boolean }> {
     const content = normalizeText(input.content);
     if (!content) throw new Error("Atom content must not be empty");
     const normalized = content.toLowerCase();
     const hash = contentHash(content);
     const tags = normalizeTags(input.tags ?? []);
+    const metadata = input.metadata ?? {};
+    const scope = input.scope ?? resolveWriteScope({ metadata, extractedScope: stringOrNull(metadata.scope) }).scope;
+    const status = input.status ?? "active";
+    const validFrom = parseTimestamp(input.validFrom !== undefined ? input.validFrom : metadata.validFrom);
+    const expiresAt = parseTimestamp(input.expiresAt !== undefined ? input.expiresAt : metadata.expires);
 
     const generated = input.embedding !== undefined
       ? input.embedding
@@ -199,25 +248,29 @@ export class Foundation {
               dimensions: 3072 as const
             };
 
-    const result = await this.db.query(
+    const result = await (client ?? this.db).query(
       `INSERT INTO atoms (
          content,normalized_content,content_hash,
          vector,vector_provider,vector_model,vector_dimensions,vector_embedded_at,
-         type,tags,metadata
+         type,tags,metadata,scope_kind,scope_key,status,valid_from,expires_at
        )
        VALUES (
          $1,$2,$3,
          $4::halfvec,$5,$6,$7,CASE WHEN $4::halfvec IS NULL THEN NULL ELSE NOW() END,
-         $8,$9::text[],$10::jsonb
+         $8,$9::text[],($10::jsonb || jsonb_build_object('active', $13::text = 'active')),$11,$12,$13,$14::timestamptz,$15::timestamptz
        )
-       ON CONFLICT (content_hash) DO UPDATE SET
+       ON CONFLICT (scope_kind, scope_key, content_hash) WHERE status <> 'superseded' DO UPDATE SET
          tags=ARRAY(SELECT DISTINCT value FROM unnest(atoms.tags || EXCLUDED.tags) AS value ORDER BY value),
          vector=COALESCE(EXCLUDED.vector,atoms.vector),
          vector_provider=CASE WHEN EXCLUDED.vector IS NULL THEN atoms.vector_provider ELSE EXCLUDED.vector_provider END,
          vector_model=CASE WHEN EXCLUDED.vector IS NULL THEN atoms.vector_model ELSE EXCLUDED.vector_model END,
          vector_dimensions=CASE WHEN EXCLUDED.vector IS NULL THEN atoms.vector_dimensions ELSE EXCLUDED.vector_dimensions END,
          vector_embedded_at=CASE WHEN EXCLUDED.vector IS NULL THEN atoms.vector_embedded_at ELSE EXCLUDED.vector_embedded_at END,
-         metadata=atoms.metadata || EXCLUDED.metadata,
+         status=CASE WHEN atoms.status='forgotten' AND $16::boolean THEN 'active' ELSE atoms.status END,
+         valid_from=CASE WHEN atoms.status='forgotten' AND $16::boolean THEN EXCLUDED.valid_from ELSE COALESCE(atoms.valid_from,EXCLUDED.valid_from) END,
+         expires_at=CASE WHEN atoms.status='forgotten' AND $16::boolean THEN EXCLUDED.expires_at ELSE atoms.expires_at END,
+         metadata=(atoms.metadata || (EXCLUDED.metadata - 'active')) || jsonb_build_object(
+           'active', CASE WHEN atoms.status='forgotten' AND $16::boolean THEN TRUE ELSE atoms.status='active' END),
          updated_at=NOW()
        RETURNING atoms.*, (xmax = 0) AS inserted`,
       [
@@ -230,12 +283,17 @@ export class Foundation {
         generated?.dimensions ?? null,
         input.type ?? "usercreated",
         tags,
-        JSON.stringify(input.metadata ?? {})
+        JSON.stringify(metadata),
+        scope.kind,
+        scope.key,
+        status,
+        validFrom,
+        expiresAt,
+        input.reviveForgotten ?? false
       ]
     );
     return { atom: atomFromRow(result.rows[0]!), created: Boolean(result.rows[0]!.inserted) };
   }
-
 
   async updateAtom(id: string, input: {
     content?: string;
@@ -243,9 +301,13 @@ export class Foundation {
     tags?: string[];
     metadata?: Record<string, unknown>;
     active?: boolean;
+    status?: AtomStatus;
+    validFrom?: Date | string | null;
+    expiresAt?: Date | string | null;
     embedding?: EmbeddingResult | null;
-  }): Promise<Atom> {
-    const currentResult = await this.db.query("SELECT * FROM atoms WHERE id=$1", [id]);
+  }, client?: Queryable): Promise<Atom> {
+    const q = client ?? this.db;
+    const currentResult = await q.query(`SELECT * FROM atoms WHERE id=$1${client ? " FOR UPDATE" : ""}`, [id]);
     if (!currentResult.rows[0]) throw new Error("Atom not found");
     const current = atomFromRow(currentResult.rows[0]);
 
@@ -281,24 +343,40 @@ export class Foundation {
       values.push(normalizeTags(input.tags));
     }
 
-    const metadata = {
-      ...(input.metadata ?? {}),
-      ...(input.active === undefined ? {} : { active: input.active })
-    };
-    if (Object.keys(metadata).length) {
-      sets.push(`metadata=metadata || $${index++}::jsonb`);
-      values.push(JSON.stringify(metadata));
+    // `active` is the legacy toggle. It never resurrects or destroys history on its own: a superseded
+    // Atom stays superseded, only active <-> forgotten flips.
+    let status: AtomStatus = input.status ?? current.status;
+    if (input.status === undefined && input.active !== undefined && current.status !== "superseded") {
+      status = input.active ? "active" : "forgotten";
+    }
+    if (status !== current.status) add("status", status);
+
+    const incoming = input.metadata ?? {};
+    if (input.validFrom !== undefined || "validFrom" in incoming) {
+      add("valid_from", parseTimestamp(input.validFrom !== undefined ? input.validFrom : incoming.validFrom));
+    }
+    if (input.expiresAt !== undefined || "expires" in incoming) {
+      add("expires_at", parseTimestamp(input.expiresAt !== undefined ? input.expiresAt : incoming.expires));
     }
 
+    const { active: _ignored, scope: _scopeLabel, ...metadataPatch } = incoming;
+    const patch = {
+      ...metadataPatch,
+      active: status === "active",
+      ...(status === "forgotten" && current.status !== "forgotten" ? { forgottenAt: new Date().toISOString() } : {})
+    };
+    sets.push(`metadata=metadata || $${index++}::jsonb`);
+    values.push(JSON.stringify(patch));
+
     try {
-      const result = await this.db.query(
+      const result = await q.query(
         `UPDATE atoms SET ${sets.join(", ")} WHERE id=$1 RETURNING *`,
         values
       );
       return atomFromRow(result.rows[0]!);
     } catch (error) {
       if (error && typeof error === "object" && "code" in error && error.code === "23505") {
-        throw new Error("An Atom with the same normalized content already exists; use atom_merge for explicit consolidation");
+        throw new Error("An Atom with the same normalized content already exists in this scope; use atom_merge for explicit consolidation");
       }
       throw error;
     }
@@ -644,6 +722,8 @@ export class Foundation {
     vaultUid?: string | null;
     metadata?: Record<string, unknown>;
     sourceTime?: string;
+    project?: string;
+    conversationId?: string;
   }): Promise<{
     file: FileObject;
     atomIds: string[];
@@ -666,6 +746,8 @@ export class Foundation {
       tags: extraction.tags,
       metadata: {
         ...(input.metadata ?? {}),
+        ...(input.project ?? this.defaults.project ? { project: input.project ?? this.defaults.project } : {}),
+        ...(input.conversationId ? { conversationId: input.conversationId } : {}),
         ingestion: "note",
         sourceTime,
         timeZone: this.timeZone
@@ -674,8 +756,15 @@ export class Foundation {
 
     const atomIds: string[] = [];
     for (const extracted of extraction.atoms) {
+      const { scope, unresolved } = resolveWriteScope({
+        project: input.project ?? this.defaults.project,
+        conversationId: input.conversationId,
+        extractedScope: extracted.scope ?? null,
+        metadata: input.metadata ?? {}
+      });
       const created = await this.createAtom({
         content: extracted.content,
+        scope,
         type: "aicreated",
         tags: extracted.tags,
         metadata: {
@@ -686,7 +775,8 @@ export class Foundation {
           subject: extracted.subject ?? extraction.subject,
           confidence: extracted.confidence ?? null,
           memoryType: extracted.memoryType ?? "Context",
-          scope: extracted.scope ?? "Global",
+          scope: scopeLabel(scope),
+          ...(unresolved ? { scopeUnresolved: unresolved } : {}),
           source: file.id,
           sourceTime,
           timeZone: this.timeZone
@@ -714,7 +804,13 @@ export class Foundation {
     }
   }
 
-  private async memoryCandidates(content: string, tags: string[], limit = 12): Promise<MemoryResolutionCandidate[]> {
+  /** Same-scope neighbours of `content`. Never crosses scopes, never includes forgotten/superseded Atoms. */
+  private async memoryCandidates(
+    content: string,
+    tags: string[],
+    scope: MemoryScope,
+    limit = 12
+  ): Promise<MemoryResolutionCandidate[]> {
     let embedding: EmbeddingResult | null = null;
     try {
       embedding = await this.ai.embed(content, "query");
@@ -736,17 +832,20 @@ export class Foundation {
            THEN 0 ELSE 1 - (vector <=> $2::halfvec) END
          ) AS candidate_score
        FROM atoms
-       WHERE lower(content)=lower($1)
-          OR similarity(content,$1) >= 0.20
-          OR tags && $3::text[]
-          OR (
-            $2::halfvec IS NOT NULL
-            AND vector IS NOT NULL
-            AND vector_provider IS NOT DISTINCT FROM $4
-            AND vector_model IS NOT DISTINCT FROM $5
-            AND vector_dimensions IS NOT DISTINCT FROM $6
-            AND 1 - (vector <=> $2::halfvec) >= 0.55
-          )
+       WHERE scope_kind=$8 AND scope_key=$9 AND status='active'
+         AND (
+              lower(content)=lower($1)
+           OR similarity(content,$1) >= 0.20
+           OR tags && $3::text[]
+           OR (
+             $2::halfvec IS NOT NULL
+             AND vector IS NOT NULL
+             AND vector_provider IS NOT DISTINCT FROM $4
+             AND vector_model IS NOT DISTINCT FROM $5
+             AND vector_dimensions IS NOT DISTINCT FROM $6
+             AND 1 - (vector <=> $2::halfvec) >= 0.55
+           )
+         )
        ORDER BY candidate_score DESC, updated_at DESC
        LIMIT $7`,
       [
@@ -756,7 +855,9 @@ export class Foundation {
         embedding?.provider ?? null,
         embedding?.model ?? null,
         embedding?.dimensions ?? null,
-        Math.max(1, Math.min(limit, 32))
+        Math.max(1, Math.min(limit, 32)),
+        scope.kind,
+        scope.key
       ]
     );
 
@@ -766,114 +867,37 @@ export class Foundation {
         id: String(row.id),
         content: String(row.content),
         tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
-        active: metadata.active !== false,
+        active: true,
         similarity: Number(row.candidate_score ?? 0),
         createdAt: new Date(row.created_at).toISOString(),
         updatedAt: new Date(row.updated_at).toISOString(),
-        metadata
+        metadata: {
+          ...metadata,
+          validFrom: row.valid_from ? new Date(row.valid_from).toISOString() : null,
+          expires: row.expires_at ? new Date(row.expires_at).toISOString() : null
+        }
       };
     });
   }
 
-  private async createRememberAtom(
-    content: string,
-    tags: string[],
-    metadata: Record<string, unknown>
-  ): Promise<{ atom: Atom; created: boolean; embeddingDeferred: boolean }> {
-    const embedded = await this.tryEmbedDocument(content);
-    const mergedMetadata = {
-      ...metadata,
-      ...(embedded.error ? {
-        embeddingDeferred: true,
-        embeddingError: embedded.error.slice(0, 1000)
-      } : {
-        embeddingDeferred: false,
-        embeddingError: null
-      })
-    };
-    const created = await this.createAtom({
-      content,
-      type: "usercreated",
-      tags,
-      metadata: mergedMetadata,
-      embedding: embedded.embedding
-    });
-    return { ...created, embeddingDeferred: Boolean(embedded.error) };
-  }
-
-  private async recordMemoryRelation(
-    fromAtomId: string,
-    toAtomId: string,
-    relation: "supersedes" | "conflicts_with" | "refines" | "duplicate_of",
-    metadata: Record<string, unknown>
-  ): Promise<void> {
-    if (fromAtomId === toAtomId) return;
-    await this.db.query(
-      `INSERT INTO atom_relations(from_atom_id,to_atom_id,relation,metadata)
-       VALUES($1,$2,$3,$4::jsonb)
-       ON CONFLICT(from_atom_id,to_atom_id,relation) DO UPDATE SET
-         metadata=atom_relations.metadata || EXCLUDED.metadata`,
-      [fromAtomId, toAtomId, relation, JSON.stringify(metadata)]
-    );
-  }
-
-  private async rememberAtomic(input: {
+  /**
+   * Phase 1 of remember for one Atom: all model inference (embedding, candidate recall, reconciliation)
+   * happens here, outside any database transaction. The returned plan is validated again under row
+   * locks in applyPlan, so a stale plan degrades to a conservative write instead of an overwrite.
+   */
+  private async planAtomic(input: {
     content: string;
     tags: string[];
     metadata: Record<string, unknown>;
     sourceTime: string;
-    requestId?: string;
-  }): Promise<RememberAtomicResult> {
+    scope: MemoryScope;
+    scopeUnresolved: string | null;
+  }): Promise<AtomPlan> {
     const normalized = normalizeText(input.content);
     if (!normalized) throw new Error("Remembered content must not be empty");
     const incomingTags = normalizeTags(input.tags);
-    const rememberedAt = new Date().toISOString();
 
-    const exact = await this.db.query(
-      `SELECT * FROM atoms
-       WHERE content_hash=$1
-         AND COALESCE(metadata->>'active','true') <> 'false'
-       LIMIT 1`,
-      [contentHash(normalized)]
-    );
-    if (exact.rows[0]) {
-      const target = atomFromRow(exact.rows[0]);
-      const atom = await this.updateAtom(target.id, {
-        tags: normalizeTags([...target.tags, ...incomingTags]),
-        metadata: {
-          ...input.metadata,
-          active: true,
-          lastRememberedAt: rememberedAt,
-          lastSourceTime: input.sourceTime
-        }
-      });
-      await this.db.query(
-        `INSERT INTO memory_events(
-           request_id,input_content,source_time,action,target_atom_id,result_atom_id,
-           confidence,rationale,candidates,metadata
-         ) VALUES($1,$2,$3,'duplicate',$4,$4,1,$5,$6::jsonb,$7::jsonb)`,
-        [
-          input.requestId ?? null,
-          normalized,
-          input.sourceTime,
-          target.id,
-          "Exact active content match",
-          JSON.stringify([{ id: target.id, similarity: 1, active: true }]),
-          JSON.stringify(input.metadata)
-        ]
-      );
-      return {
-        action: "duplicate",
-        targetAtomId: target.id,
-        atom,
-        confidence: 1,
-        rationale: "Exact active content match",
-        embeddingDeferred: atom.embedding === null,
-        candidates: [{ id: target.id, similarity: 1 }]
-      };
-    }
-
-    const candidates = await this.memoryCandidates(normalized, incomingTags);
+    const candidates = await this.memoryCandidates(normalized, incomingTags, input.scope);
     let resolution: MemoryResolution = {
       action: "new",
       targetAtomId: null,
@@ -905,9 +929,20 @@ export class Foundation {
       ? candidates.find(candidate => candidate.id === resolution.targetAtomId) ?? null
       : null;
 
+    if (resolution.action !== "new" && !target) {
+      resolution = {
+        ...resolution,
+        action: "new",
+        targetAtomId: null,
+        rationale: `Resolver named no valid same-scope target; stored as new. ${resolution.rationale}`
+      };
+    }
+
+    const confidence = Number.isFinite(resolution.confidence) ? Math.max(0, Math.min(1, resolution.confidence)) : 0;
     if (
-      (resolution.action === "duplicate" && resolution.confidence < 0.65) ||
-      ((resolution.action === "update" || resolution.action === "supersede") && resolution.confidence < 0.72)
+      (resolution.action === "duplicate" && confidence < 0.7) ||
+      (resolution.action === "supersede" && confidence < 0.75) ||
+      (resolution.action === "update" && confidence < 0.8)
     ) {
       resolution = {
         ...resolution,
@@ -915,131 +950,319 @@ export class Foundation {
         rationale: `Low-confidence destructive reconciliation avoided. ${resolution.rationale}`
       };
     }
+    resolution = { ...resolution, confidence };
 
-    if (target && !target.active && (resolution.action === "duplicate" || resolution.action === "update")) {
-      resolution = {
-        ...resolution,
-        action: "new",
-        targetAtomId: null,
-        rationale: `Inactive historical candidate was not reactivated automatically. ${resolution.rationale}`
-      };
-      target = null;
-    }
+    // Only `update` may rewrite wording; everything else keeps the extracted Atom text verbatim.
+    const canonical = resolution.action === "update"
+      ? normalizeText(resolution.canonicalContent) || normalized
+      : normalized;
+    const storedContent = resolution.action === "update" ? canonical : normalized;
+    const embedded = await this.tryEmbedDocument(storedContent);
 
-    const baseMetadata = {
-      ...input.metadata,
-      active: true,
+    return {
+      content: normalized,
+      storedContent,
+      tags: normalizeTags([...incomingTags, ...resolution.tags]),
+      metadata: input.metadata,
+      scope: input.scope,
+      scopeUnresolved: input.scopeUnresolved,
+      candidates,
+      resolution,
+      target,
+      embedding: embedded.embedding,
+      embeddingError: embedded.error
+    };
+  }
+
+  private async recordMemoryRelation(
+    client: Queryable,
+    fromAtomId: string,
+    toAtomId: string,
+    relation: "supersedes" | "conflicts_with" | "refines" | "duplicate_of",
+    metadata: Record<string, unknown>
+  ): Promise<void> {
+    if (fromAtomId === toAtomId) return;
+    await client.query(
+      `INSERT INTO atom_relations(from_atom_id,to_atom_id,relation,metadata)
+       VALUES($1,$2,$3,$4::jsonb)
+       ON CONFLICT(from_atom_id,to_atom_id,relation) DO UPDATE SET
+         metadata=atom_relations.metadata || EXCLUDED.metadata`,
+      [fromAtomId, toAtomId, relation, JSON.stringify(metadata)]
+    );
+  }
+
+  /**
+   * Phase 2: apply one planned Atom inside the request transaction. Every row it depends on is locked
+   * and re-checked; a plan that went stale falls back to "new + conflicts_with" rather than overwriting.
+   */
+  private async applyPlan(
+    client: PoolClient,
+    plan: AtomPlan,
+    ctx: { sourceTime: string; requestId?: string; touched: Set<string> }
+  ): Promise<RememberAtomicResult> {
+    const rememberedAt = new Date().toISOString();
+    const hash = contentHash(plan.content);
+    const sourceTime = new Date(ctx.sourceTime);
+    const declaredFrom = parseTimestamp(plan.metadata.validFrom);
+    const newValidFrom = declaredFrom ?? sourceTime;
+    const embeddingDeferred = plan.embedding === null && plan.embeddingError !== null;
+    const baseMetadata: Record<string, unknown> = {
+      ...plan.metadata,
+      scope: scopeLabel(plan.scope),
+      ...(plan.scopeUnresolved ? { scopeUnresolved: plan.scopeUnresolved } : {}),
       rememberedAt,
-      sourceTime: input.sourceTime,
+      sourceTime: ctx.sourceTime,
       timeZone: this.timeZone,
-      resolverConfidence: resolution.confidence
+      resolverConfidence: plan.resolution.confidence,
+      embeddingDeferred,
+      embeddingError: plan.embeddingError?.slice(0, 1000) ?? null
+    };
+    delete baseMetadata.active;
+
+    let action: MemoryResolution["action"] = plan.resolution.action;
+    let rationale = plan.resolution.rationale;
+    let target: Atom | null = null;
+    let atom: Atom;
+    let deferred = embeddingDeferred;
+
+    const event = async (resultAtomId: string, targetId: string | null) => {
+      await client.query(
+        `INSERT INTO memory_events(
+           request_id,input_content,source_time,action,target_atom_id,result_atom_id,
+           confidence,rationale,candidates,metadata
+         ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb)`,
+        [
+          ctx.requestId ?? null,
+          plan.content,
+          ctx.sourceTime,
+          action,
+          targetId,
+          resultAtomId,
+          plan.resolution.confidence,
+          rationale,
+          JSON.stringify(plan.candidates.map(c => ({ id: c.id, similarity: c.similarity, active: c.active }))),
+          JSON.stringify({ ...plan.metadata, scope: plan.scope })
+        ]
+      );
+    };
+    const finish = (): RememberAtomicResult => ({
+      action,
+      targetAtomId: target?.id ?? null,
+      atom,
+      confidence: plan.resolution.confidence,
+      rationale,
+      embeddingDeferred: deferred,
+      candidates: plan.candidates.map(c => ({ id: c.id, similarity: c.similarity }))
+    });
+    const lockTarget = async (): Promise<{ atom: Atom; stable: boolean } | null> => {
+      if (!plan.target) return null;
+      const row = (await client.query("SELECT * FROM atoms WHERE id=$1 FOR UPDATE", [plan.target.id])).rows[0];
+      if (!row) return null;
+      const locked = atomFromRow(row);
+      const stable = locked.status === "active" &&
+        locked.updatedAt.toISOString() === plan.target.updatedAt &&
+        !ctx.touched.has(locked.id);
+      return { atom: locked, stable };
     };
 
-    let atom: Atom;
-    let embeddingDeferred = false;
+    // 1. Identical content in the same scope: refresh instead of duplicating. Never overwrites
+    //    validity or provenance of the existing Atom with the new extraction's guesses.
+    const exact = (await client.query(
+      `SELECT * FROM atoms
+       WHERE scope_kind=$1 AND scope_key=$2 AND status<>'superseded' AND (content_hash=$3 OR normalized_content=$4)
+       ORDER BY (status='active') DESC LIMIT 1 FOR UPDATE`,
+      [plan.scope.kind, plan.scope.key, hash, plan.content.toLowerCase()]
+    )).rows[0];
+    if (exact) {
+      const existing = atomFromRow(exact);
+      if (existing.status === "active") {
+        target = existing;
+        action = "duplicate";
+        rationale = "Exact active content match in the same scope";
+        atom = await this.updateAtom(existing.id, {
+          tags: normalizeTags([...existing.tags, ...plan.tags]),
+          metadata: { lastRememberedAt: rememberedAt, lastSourceTime: ctx.sourceTime }
+        }, client);
+        ctx.touched.add(atom.id);
+        await event(atom.id, existing.id);
+        return finish();
+      }
+      // The user deliberately remembered something they had forgotten: bring it back.
+      target = null;
+      action = "new";
+      rationale = "Re-remembered previously forgotten memory";
+      atom = await this.updateAtom(existing.id, {
+        status: "active",
+        tags: normalizeTags([...existing.tags, ...plan.tags]),
+        validFrom: newValidFrom,
+        expiresAt: parseTimestamp(plan.metadata.expires),
+        metadata: { ...baseMetadata, revivedAt: rememberedAt },
+        embedding: plan.embedding ?? undefined
+      }, client);
+      ctx.touched.add(atom.id);
+      await event(atom.id, null);
+      return finish();
+    }
 
-    if (resolution.action === "duplicate" && target) {
-      const current = await this.getAtom(target.id);
-      atom = await this.updateAtom(target.id, {
-        tags: normalizeTags([...current.tags, ...resolution.tags]),
-        metadata: {
-          ...baseMetadata,
-          lastRememberedAt: rememberedAt,
-          duplicateRefresh: true
-        }
-      });
-    } else if (resolution.action === "update" && target) {
-      const embedded = await this.tryEmbedDocument(resolution.canonicalContent);
-      embeddingDeferred = Boolean(embedded.error);
-      const current = await this.getAtom(target.id);
-      atom = await this.updateAtom(target.id, {
-        content: resolution.canonicalContent,
-        tags: normalizeTags([...current.tags, ...resolution.tags]),
-        embedding: embedded.embedding,
-        metadata: {
-          ...baseMetadata,
-          previousContent: current.content,
-          embeddingDeferred,
-          embeddingError: embedded.error?.slice(0, 1000) ?? null
-        },
-        active: true
-      });
-    } else {
-      const created = await this.createRememberAtom(
-        resolution.canonicalContent,
-        resolution.tags,
-        baseMetadata
-      );
-      atom = created.atom;
-      embeddingDeferred = created.embeddingDeferred;
-
-      if (resolution.action === "supersede" && target) {
-        await this.updateAtom(target.id, {
-          active: false,
-          metadata: {
-            supersededBy: atom.id,
-            supersededAt: rememberedAt,
-            supersedeReason: resolution.rationale
-          }
-        });
-        await this.recordMemoryRelation(atom.id, target.id, "supersedes", {
-          sourceTime: input.sourceTime,
-          confidence: resolution.confidence,
-          rationale: resolution.rationale
-        });
-      } else if (resolution.action === "conflict" && target) {
-        await this.recordMemoryRelation(atom.id, target.id, "conflicts_with", {
-          sourceTime: input.sourceTime,
-          confidence: resolution.confidence,
-          rationale: resolution.rationale
-        });
+    // 2. Resolver decisions, each re-validated against the locked target.
+    let stable = false;
+    if (plan.resolution.action !== "new") {
+      const locked = await lockTarget();
+      target = locked?.atom ?? null;
+      stable = locked?.stable ?? false;
+      if (!stable && plan.resolution.action !== "conflict") {
+        const stillActive = target !== null && target.status === "active";
+        action = stillActive ? "conflict" : "new";
+        rationale = `Target changed or was unavailable after planning; kept both. ${rationale}`;
+        if (!stillActive) target = null;
+      } else if (plan.resolution.action === "conflict" && (target === null || target.status !== "active")) {
+        action = "new";
+        target = null;
       }
     }
 
-    await this.db.query(
-      `INSERT INTO memory_events(
-         request_id,input_content,source_time,action,target_atom_id,result_atom_id,
-         confidence,rationale,candidates,metadata
-       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb)`,
-      [
-        input.requestId ?? null,
-        normalized,
-        input.sourceTime,
-        resolution.action,
-        target?.id ?? null,
-        atom.id,
-        resolution.confidence,
-        resolution.rationale,
-        JSON.stringify(candidates.map(candidate => ({
-          id: candidate.id,
-          similarity: candidate.similarity,
-          active: candidate.active
-        }))),
-        JSON.stringify(input.metadata)
-      ]
-    );
+    if (action === "duplicate" && target) {
+      atom = await this.updateAtom(target.id, {
+        tags: normalizeTags([...target.tags, ...plan.tags]),
+        metadata: { lastRememberedAt: rememberedAt, lastSourceTime: ctx.sourceTime, duplicateRefresh: true }
+      }, client);
+      ctx.touched.add(atom.id);
+      await event(atom.id, target.id);
+      return finish();
+    }
 
-    return {
-      action: resolution.action,
-      targetAtomId: target?.id ?? null,
-      atom,
-      confidence: resolution.confidence,
-      rationale: resolution.rationale,
-      embeddingDeferred,
-      candidates: candidates.map(candidate => ({ id: candidate.id, similarity: candidate.similarity }))
-    };
+    if (action === "update" && target && stable) {
+      const clash = (await client.query(
+        `SELECT id FROM atoms WHERE scope_kind=$1 AND scope_key=$2 AND status<>'superseded' AND content_hash=$3 AND id<>$4 LIMIT 1`,
+        [plan.scope.kind, plan.scope.key, contentHash(plan.storedContent), target.id]
+      )).rows[0];
+      if (clash) {
+        // The rewritten wording already exists as another Atom; refresh that one, leave the target alone.
+        action = "duplicate";
+        rationale = `Updated wording already exists as another Atom. ${rationale}`;
+        const existing = atomFromRow((await client.query("SELECT * FROM atoms WHERE id=$1 FOR UPDATE", [clash.id])).rows[0]);
+        target = existing;
+        atom = await this.updateAtom(existing.id, {
+          tags: normalizeTags([...existing.tags, ...plan.tags]),
+          metadata: { lastRememberedAt: rememberedAt, lastSourceTime: ctx.sourceTime }
+        }, client);
+        ctx.touched.add(atom.id);
+        await event(atom.id, existing.id);
+        return finish();
+      }
+      const history = Array.isArray(target.metadata.history) ? target.metadata.history.slice(-19) : [];
+      const { validFrom: _vf, expires: _ex, ...updateMetadata } = baseMetadata;
+      atom = await this.updateAtom(target.id, {
+        content: plan.storedContent,
+        tags: normalizeTags([...target.tags, ...plan.tags]),
+        embedding: plan.embedding,
+        metadata: {
+          ...updateMetadata,
+          previousContent: target.content,
+          history: [...history, { content: target.content, replacedAt: rememberedAt, sourceTime: ctx.sourceTime }]
+        }
+      }, client);
+      ctx.touched.add(atom.id);
+      await event(atom.id, target.id);
+      return finish();
+    }
+
+    // 3. Everything else creates a new Atom.
+    if (action === "update" || action === "duplicate") {
+      action = target ? "conflict" : "new";
+      rationale = `Target was not safely updatable; stored as a separate Atom. ${rationale}`;
+    }
+
+    const historical = action === "supersede" && target !== null && stable &&
+      target.validFrom !== null && newValidFrom < target.validFrom;
+    const created = await this.createAtom({
+      content: plan.storedContent,
+      type: "usercreated",
+      tags: plan.tags,
+      metadata: baseMetadata,
+      embedding: plan.embedding,
+      scope: plan.scope,
+      status: historical ? "superseded" : "active",
+      validFrom: newValidFrom,
+      expiresAt: historical ? target!.validFrom : parseTimestamp(plan.metadata.expires)
+    }, client);
+    atom = created.atom;
+    ctx.touched.add(atom.id);
+
+    if (!created.created && action === "new") {
+      action = "duplicate";
+      rationale = "Concurrent identical write merged into the existing Atom";
+    }
+
+    if (action === "supersede" && target && stable) {
+      if (historical) {
+        // Out-of-order arrival: the incoming fact is older than the current one. Keep it as history only.
+        await this.recordMemoryRelation(client, target.id, atom.id, "supersedes", {
+          sourceTime: ctx.sourceTime,
+          confidence: plan.resolution.confidence,
+          rationale: "Older fact received after a newer one"
+        });
+        rationale = `Older fact recorded as history; current fact unchanged. ${rationale}`;
+      } else {
+        const takesEffectNow = newValidFrom.getTime() <= Date.now();
+        const expires = target.expiresAt && target.expiresAt < newValidFrom ? target.expiresAt : newValidFrom;
+        await this.updateAtom(target.id, {
+          ...(takesEffectNow ? { status: "superseded" as const } : {}),
+          expiresAt: expires,
+          metadata: {
+            supersededBy: atom.id,
+            supersededAt: rememberedAt,
+            supersedeReason: rationale
+          }
+        }, client);
+        ctx.touched.add(target.id);
+        await this.recordMemoryRelation(client, atom.id, target.id, "supersedes", {
+          sourceTime: ctx.sourceTime,
+          confidence: plan.resolution.confidence,
+          rationale
+        });
+      }
+    } else if (action === "supersede") {
+      action = "new";
+    } else if (action === "conflict" && target) {
+      await this.recordMemoryRelation(client, atom.id, target.id, "conflicts_with", {
+        sourceTime: ctx.sourceTime,
+        confidence: plan.resolution.confidence,
+        rationale
+      });
+    }
+
+    await event(atom.id, target?.id ?? null);
+    return finish();
   }
 
   async remember(input: RememberInput): Promise<RememberResult> {
     if (!input.requestId) return this.rememberUnlocked(input);
 
+    const content = normalizeText(input.content);
     const existing = this.rememberInFlight.get(input.requestId);
-    if (existing) return existing;
+    if (existing) {
+      if (existing.content !== content) throw new Error("requestId is already in use for different content");
+      return existing.promise;
+    }
 
-    const pending = this.rememberUnlocked(input)
+    const promise = this.rememberUnlocked(input)
       .finally(() => this.rememberInFlight.delete(input.requestId!));
-    this.rememberInFlight.set(input.requestId, pending);
-    return pending;
+    this.rememberInFlight.set(input.requestId, { content, promise });
+    return promise;
+  }
+
+  private async priorRequest(requestId: string, content: string, client?: Queryable): Promise<RememberResult | null> {
+    const prior = await (client ?? this.db).query(
+      "SELECT input_content,result FROM memory_requests WHERE request_id=$1 LIMIT 1",
+      [requestId]
+    );
+    const row = prior.rows[0];
+    if (!row) return null;
+    if (normalizeText(String(row.input_content)) !== content) {
+      throw new Error("requestId is already in use for different content");
+    }
+    return row.result as RememberResult;
   }
 
   private async rememberUnlocked(input: RememberInput): Promise<RememberResult> {
@@ -1049,13 +1272,11 @@ export class Foundation {
     if (!Number.isFinite(new Date(sourceTime).getTime())) throw new Error("sourceTime must be valid ISO-8601");
 
     if (input.requestId) {
-      const prior = await this.db.query(
-        "SELECT result FROM memory_requests WHERE request_id=$1 LIMIT 1",
-        [input.requestId]
-      );
-      if (prior.rows[0]?.result) return prior.rows[0].result as RememberResult;
+      const prior = await this.priorRequest(input.requestId, content);
+      if (prior) return prior;
     }
 
+    // ---- Phase 1: inference only, no transaction held open. ----
     let extracted: Awaited<ReturnType<AIProvider["extractNote"]>> | null = null;
     try {
       extracted = await this.ai.extractNote(content, { sourceTime, timeZone: this.timeZone });
@@ -1076,47 +1297,70 @@ export class Foundation {
           scope: null
         }];
 
-    const results = [];
+    const callerMetadata = input.metadata ?? {};
+    const plans: AtomPlan[] = [];
     for (const item of atomic) {
-      results.push(await this.rememberAtomic({
+      const { scope, unresolved } = resolveWriteScope({
+        scope: input.scope,
+        project: input.project ?? this.defaults.project,
+        conversationId: input.conversationId,
+        extractedScope: item.scope ?? null,
+        metadata: callerMetadata
+      });
+      plans.push(await this.planAtomic({
         content: item.content,
         tags: normalizeTags([...(input.tags ?? []), ...item.tags]),
         sourceTime,
-        requestId: input.requestId,
+        scope,
+        scopeUnresolved: unresolved,
         metadata: {
-          ...(input.metadata ?? {}),
+          ...callerMetadata,
           validFrom: item.validFrom ?? null,
           expires: item.expires ?? null,
           subject: item.subject ?? extracted?.subject ?? null,
           confidence: item.confidence ?? null,
           memoryType: item.memoryType ?? "Context",
-          scope: item.scope ?? "Global",
           rememberSource: "foundation.remember"
         }
       }));
     }
 
-    const result = {
-      requestId: input.requestId ?? null,
-      sourceTime,
-      decomposed: atomic.length > 1,
-      results
-    };
+    // ---- Phase 2: one transaction for every Atom, relation, event and the request record. ----
+    return this.db.transaction(async client => {
+      if (input.requestId) {
+        await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [input.requestId]);
+        const prior = await this.priorRequest(input.requestId, content, client);
+        if (prior) return prior;
+      }
 
-    if (input.requestId) {
-      await this.db.query(
-        `INSERT INTO memory_requests(request_id,input_content,source_time,result)
-         VALUES($1,$2,$3,$4::jsonb)
-         ON CONFLICT(request_id) DO NOTHING`,
-        [input.requestId, content, sourceTime, JSON.stringify(result)]
-      );
-    }
+      const touched = new Set<string>();
+      const results: RememberAtomicResult[] = [];
+      for (const plan of plans) {
+        results.push(await this.applyPlan(client, plan, { sourceTime, requestId: input.requestId, touched }));
+      }
 
-    return result;
+      const result: RememberResult = {
+        requestId: input.requestId ?? null,
+        sourceTime,
+        decomposed: atomic.length > 1,
+        results
+      };
+      if (input.requestId) {
+        await client.query(
+          `INSERT INTO memory_requests(request_id,input_content,source_time,result)
+           VALUES($1,$2,$3,$4::jsonb)`,
+          [input.requestId, content, sourceTime, JSON.stringify(result)]
+        );
+      }
+      return result;
+    });
   }
 
-  async search(query: string, limit = 10): Promise<SearchItem[]> {
-    return searchFoundation(this.db, this.ai, query, limit);
+  async search(query: string, limitOrOptions: number | SearchOptions = 10): Promise<SearchItem[]> {
+    const options: SearchOptions = typeof limitOrOptions === "number" ? { limit: limitOrOptions } : { ...limitOrOptions };
+    // A server-configured default project scopes callers that did not name one.
+    if (!options.project && !options.conversationId && this.defaults.project) options.project = this.defaults.project;
+    return searchFoundation(this.db, this.ai, query, options);
   }
 
   async stats(): Promise<Record<string, unknown>> {
@@ -1162,18 +1406,30 @@ export class Foundation {
     return result.rows.map(vaultFromRow);
   }
 
+  /**
+   * Remove one memory from recall by exact Atom id. Source Files and relations are kept as evidence.
+   * A File id is rejected explicitly: a File can back several Atoms, so it never identifies one memory.
+   */
   async forget(id: string): Promise<{ id: string; forgotten: boolean }> {
     const result = await this.db.query(
       `UPDATE atoms
-       SET metadata=metadata || '{"active":false}'::jsonb, updated_at=NOW()
-       WHERE id=$1 AND COALESCE(metadata->>'active','true') <> 'false'
+       SET status='forgotten',
+           metadata=metadata || jsonb_build_object('active', FALSE, 'forgottenAt', to_jsonb(NOW()::text)),
+           updated_at=NOW()
+       WHERE id=$1 AND status <> 'forgotten'
        RETURNING id`,
       [id]
     );
     if (result.rowCount) return { id, forgotten: true };
 
     const existing = await this.db.query("SELECT 1 FROM atoms WHERE id=$1", [id]);
-    return { id, forgotten: Boolean(existing.rowCount) };
+    if (existing.rowCount) return { id, forgotten: true };
+
+    const file = await this.db.query("SELECT 1 FROM files WHERE id=$1", [id]);
+    if (file.rowCount) {
+      throw new Error("The id refers to a source File, not a memory. Use the memory id returned by recall; a File may back several memories.");
+    }
+    return { id, forgotten: false };
   }
 
   async deleteAtom(id: string): Promise<{ deleted: boolean }> {
@@ -1242,7 +1498,7 @@ export class Foundation {
       `SELECT *, 1 - (vector <=> $1::halfvec) AS similarity_score
        FROM atoms
        WHERE vector IS NOT NULL
-         AND COALESCE(metadata->>'active','true') <> 'false'
+         AND status='active'
          AND vector_provider=$2
          AND vector_model=$3
          AND vector_dimensions=$4
@@ -1276,6 +1532,10 @@ export class Foundation {
       );
       if (pair.rows.length !== 2) throw new Error("Both source and target Atoms must exist");
       const source = pair.rows.find(row => String(row.id) === sourceId)!;
+      const targetRow = pair.rows.find(row => String(row.id) === targetId)!;
+      if (source.scope_kind !== targetRow.scope_kind || source.scope_key !== targetRow.scope_key) {
+        throw new Error("Atoms from different scopes cannot be merged");
+      }
 
       await client.query(
         `INSERT INTO atom_file_docks(atom_id,file_id,metadata,created_at)

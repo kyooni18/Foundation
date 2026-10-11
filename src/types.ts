@@ -8,8 +8,14 @@ export interface EmbeddingProvenance {
   embeddedAt: Date;
 }
 
+export type AtomStatus = "active" | "superseded" | "forgotten";
+
 export interface Atom {
   id: string;
+  scope: { kind: "global" | "project" | "conversation"; key: string };
+  status: AtomStatus;
+  validFrom: Date | null;
+  expiresAt: Date | null;
   content: string;
   normalizedContent: string;
   tags: string[];
@@ -78,12 +84,33 @@ export interface ExtractedAtom {
 }
 export interface ExtractionResult { subject: string | null; tags: string[]; atoms: ExtractedAtom[]; }
 
+export interface SearchSignals {
+  exact: number;
+  lexical: number;
+  symbol: number;
+  fuzzy: number;
+  semantic: number;
+  tag: number;
+  metadata: number;
+}
+
 export interface SearchItem {
   kind: "file" | "atom";
+  /** Atom id for kind "atom" (always forgettable), File id for kind "file". Never mixed. */
   id: string;
   score: number;
   rawText: string | null;
   fileId?: string;
   atomId?: string;
   matchedBy: string[];
+  scope?: { kind: "global" | "project" | "conversation"; key: string };
+  /** Temporal state relative to the query time; only "current" unless history/asOf was requested. */
+  state?: "current" | "superseded" | "expired" | "future";
+  validFrom?: string | null;
+  expires?: string | null;
+  /** Source Files this Atom is docked to (provenance). */
+  sources?: Array<{ fileId: string; name?: string | null }>;
+  /** Active Atoms recorded as contradicting this one; none is auto-resolved. */
+  conflictsWith?: string[];
+  signals?: SearchSignals;
 }
