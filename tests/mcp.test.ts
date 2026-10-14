@@ -58,31 +58,9 @@ describe("Foundation MCP model surface", () => {
     await server.close();
   });
 
-  it("keeps remember output model-facing and minimal", async () => {
-    const id = "a2f99dd8-5a4c-4b62-b8b7-f27b29d16618";
+  it("returns a background remember receipt immediately", async () => {
     const foundation = {
-      remember: async () => ({
-        requestId: "req-1",
-        sourceTime: "2026-09-27T13:00:00+09:00",
-        decomposed: true,
-        results: [{
-          action: "new",
-          targetAtomId: null,
-          atom: { id, content: "Foundation remember output is compact." },
-          confidence: 1,
-          rationale: "No related candidate",
-          embeddingDeferred: false,
-          candidates: []
-        }, {
-          action: "duplicate",
-          targetAtomId: id,
-          atom: { id, content: "Duplicate decomposition result." },
-          confidence: 1,
-          rationale: "Exact active content match",
-          embeddingDeferred: false,
-          candidates: [{ id, similarity: 1 }]
-        }]
-      })
+      enqueueRemember: async () => ({ status: "queued", requestId: "req-1", pending: 1 })
     } as unknown as Parameters<typeof createMcpServer>[0];
     const server = createMcpServer(foundation, {
       mcpFileAccess: "off",
@@ -98,7 +76,7 @@ describe("Foundation MCP model surface", () => {
 
     expect(result.content).toEqual([{
       type: "text",
-      text: JSON.stringify({ ids: [id] })
+      text: JSON.stringify({ status: "queued", requestId: "req-1", pending: 1 })
     }]);
     await client.close();
     await server.close();

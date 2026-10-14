@@ -37,6 +37,9 @@ export async function createRuntime(): Promise<FoundationRuntime> {
     notion,
     oauth,
     interpreter,
-    close: () => db.close()
+    close: async () => {
+      await foundation.flushRemember();
+      await db.close();
+    }
   };
 }

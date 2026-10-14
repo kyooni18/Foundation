@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { PoolClient, QueryResult, QueryResultRow } from "pg";
 import type { AIProvider, EmbeddingResult, MemoryResolution, MemoryResolutionCandidate } from "./ai.js";
 import type { Database } from "./db.js";
@@ -142,6 +143,12 @@ export interface RememberAtomicResult {
   candidates: Array<{ id: string; similarity: number }>;
 }
 
+const REMEMBER_CONCURRENCY = 8;
+
+export type RememberReceipt =
+  | { status: "queued"; requestId: string; pending: number }
+  | { status: "stored"; requestId: string; ids: string[] };
+
 export interface RememberResult {
   requestId: string | null;
   sourceTime: string;
@@ -158,6 +165,8 @@ export class Foundation {
     private readonly defaults: { project?: string | null } = {}
   ) {}
   private readonly rememberInFlight = new Map<string, { content: string; promise: Promise<RememberResult> }>();
+  private readonly rememberQueue: (RememberInput & { requestId: string; sourceTime: string })[] = [];
+  private readonly rememberWorkers = new Set<Promise<void>>();
   async createVault(input: {
     vaultUid: string;
     name?: string | null;
@@ -1257,6 +1266,48 @@ export class Foundation {
       .finally(() => this.rememberInFlight.delete(input.requestId!));
     this.rememberInFlight.set(input.requestId, { content, promise });
     return promise;
+  }
+
+  /**
+   * Validate and accept a remember request, then reconcile it in the background so callers are not
+   * blocked on extraction/embedding/LLM resolution. Every request gets a requestId (so it is idempotent
+   * and its eventual result is recorded) and its sourceTime is pinned to acceptance time.
+   */
+  async enqueueRemember(input: RememberInput): Promise<RememberReceipt> {
+    const content = normalizeText(input.content);
+    if (!content) throw new Error("content must not be empty");
+    const sourceTime = input.sourceTime ?? new Date().toISOString();
+    if (!Number.isFinite(new Date(sourceTime).getTime())) throw new Error("sourceTime must be valid ISO-8601");
+    const requestId = input.requestId ?? randomUUID();
+
+    const prior = input.requestId ? await this.priorRequest(requestId, content) : null;
+    if (prior) return { status: "stored", requestId, ids: [...new Set(prior.results.map(({ atom }) => atom.id))] };
+
+    this.rememberQueue.push({ ...input, content, requestId, sourceTime });
+    this.startRememberWorkers();
+    return { status: "queued", requestId, pending: this.rememberQueue.length };
+  }
+
+  /** Resolve once every accepted background remember has been reconciled. */
+  async flushRemember(): Promise<void> {
+    while (this.rememberWorkers.size) await Promise.all(this.rememberWorkers);
+  }
+
+  private startRememberWorkers(): void {
+    // Each enqueue may add a worker, so concurrent MCP calls are reconciled in parallel (as direct
+    // remember calls always were), bounded to protect the AI provider and the connection pool.
+    while (this.rememberWorkers.size < Math.min(REMEMBER_CONCURRENCY, this.rememberQueue.length)) {
+      const worker: Promise<void> = (async () => {
+        for (let item = this.rememberQueue.shift(); item; item = this.rememberQueue.shift()) {
+          try {
+            await this.remember(item);
+          } catch (error) {
+            console.error(`Foundation background remember ${item.requestId} failed:`, error);
+          }
+        }
+      })().finally(() => this.rememberWorkers.delete(worker));
+      this.rememberWorkers.add(worker);
+    }
   }
 
   private async priorRequest(requestId: string, content: string, client?: Queryable): Promise<RememberResult | null> {

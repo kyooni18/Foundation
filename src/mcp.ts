@@ -189,7 +189,7 @@ export function createMcpServer(
     "remember",
     {
       title: "Remember",
-      description: "Store durable knowledge through Foundation's reconciliation path. Compound input is split into Atoms and duplicate, update, supersede, and conflict handling is automatic and conservative; memories never merge across scopes. Pass project (or conversationId) to keep a memory out of other projects. Returns only unique resulting memory IDs.",
+      description: "Store durable knowledge through Foundation's reconciliation path. Compound input is split into Atoms and duplicate, update, supersede, and conflict handling is automatic and conservative; memories never merge across scopes. Pass project (or conversationId) to keep a memory out of other projects. Reconciliation runs in the background so this returns immediately with a requestId; resubmitting the same requestId is idempotent and returns the stored memory IDs once processing has finished.",
       inputSchema: z.object({
         content: z.string().min(1).max(100_000),
         sourceTime: z.string().datetime({ offset: true }).optional(),
@@ -202,7 +202,7 @@ export function createMcpServer(
       }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
     },
-    tool(async input => ({ ids: [...new Set((await foundation.remember(input)).results.map(({ atom }) => atom.id))] }))
+    tool(input => foundation.enqueueRemember(input))
   );
 
   server.registerTool(
