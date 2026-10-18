@@ -32,6 +32,7 @@ export interface Config {
 
   openAIAPIKey: string | null;
   openAIBaseURL: string;
+  openAIFlexEnabled: boolean;
   openAILLMModel: string;
   openAIEmbeddingModel: string;
   openAIInterpretationModel: string;
@@ -139,6 +140,7 @@ export function loadConfig(): Config {
     embeddingDimensions: 3072,
 
     openAIAPIKey: process.env.OPENAI_API_KEY?.trim() || null,
+    openAIFlexEnabled: bool("OPENAI_FLEX_ENABLED", true),
     openAIBaseURL: url("OPENAI_BASE_URL", "https://api.openai.com/v1"),
     openAILLMModel: process.env.OPENAI_LLM_MODEL?.trim() || process.env.EXTRACTION_MODEL?.trim() || "gpt-5.6-luna",
     openAIEmbeddingModel: process.env.OPENAI_EMBEDDING_MODEL?.trim() || genericEmbeddingModel || "text-embedding-3-large",

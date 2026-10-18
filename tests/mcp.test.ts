@@ -4,6 +4,32 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createMcpServer, mcpModelToolNames, mcpToolCallIsReadOnly } from "../src/mcp.js";
 
 describe("Foundation MCP model surface", () => {
+  it("reads and updates only allowlisted live admin configuration", async () => {
+    const config = { mcpFileAccess: "off" as const, mcpAdminEnabled: true,
+      mcpNotionEnabled: false, openAIFlexEnabled: true, openAIAPIKey: "secret" };
+    const server = createMcpServer({} as Parameters<typeof createMcpServer>[0], config);
+    const client = new Client({ name: "config-test", version: "0.0.0" });
+    const [ct, st] = InMemoryTransport.createLinkedPair();
+    await server.connect(st);
+    await client.connect(ct);
+    try {
+      const read = await client.callTool({ name: "admin", arguments: { action: "getConfig" } });
+      expect(JSON.stringify(read)).not.toContain("secret");
+      await client.callTool({ name: "admin", arguments: {
+        action: "setConfig", input: { openAIFlexEnabled: false }
+      } });
+      expect(config.openAIFlexEnabled).toBe(false);
+      const rejected = await client.callTool({ name: "admin", arguments: {
+        action: "setConfig", input: { openAIAPIKey: "stolen", openAIFlexEnabled: true }
+      } });
+      expect(rejected.isError).toBe(true);
+      expect(config.openAIAPIKey).toBe("secret");
+      expect(config.openAIFlexEnabled).toBe(false);
+      expect(mcpToolCallIsReadOnly("admin", { action: "getConfig" })).toBe(true);
+      expect(mcpToolCallIsReadOnly("admin", { action: "setConfig" })).toBe(false);
+    } finally { await client.close(); await server.close(); }
+  });
+
   it("defaults to the three high-level facades", () => {
     expect(mcpModelToolNames({
       mcpFileAccess: "off",

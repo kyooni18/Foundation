@@ -463,3 +463,26 @@ http://127.0.0.1:8787/health
 ```
 
 The database schema is initialized transactionally under an advisory lock, and all transport layers call the same Foundation domain service.
+
+### Live MCP configuration and OpenAI Flex
+
+Set `FOUNDATION_MCP_ADMIN=true` to enable `admin` configuration actions on
+**both stdio and HTTP MCP** (the default three-tool surface is unchanged).
+Call `admin` with `{"action":"getConfig"}` to inspect safe settings, or:
+
+```json
+{"action":"setConfig","input":{"openAIFlexEnabled":false,"aiTimeoutMs":120000}}
+```
+
+Live settings are `openAIFlexEnabled`, `openAILLMModel`,
+`openAIInterpretationModel`, `openAITranscriptionModel`, and `aiTimeoutMs`
+(1,000–120,000 ms). Changes affect subsequent requests in the current server
+process, across HTTP sessions; they do not rewrite `.env` or survive restart.
+Credentials, authentication, provider selection and tool-exposure policy cannot
+be read or modified through this facade. HTTP config writes require write scope.
+
+`OPENAI_FLEX_ENABLED=true` is the default: OpenAI chat completion and Responses
+requests send `service_tier: "flex"`. Set it to `false` for standard processing or
+for compatible endpoints/models that do not support Flex. Embedding and audio
+transcription requests never receive this parameter. Flex can have higher latency
+or capacity errors; errors propagate normally without an automatic paid-tier retry.

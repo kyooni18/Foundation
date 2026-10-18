@@ -7,6 +7,15 @@ afterEach(() => {
 });
 
 describe("config", () => {
+  it("enables OpenAI flex by default and validates overrides", () => {
+    delete process.env.OPENAI_FLEX_ENABLED;
+    expect(loadConfig().openAIFlexEnabled).toBe(true);
+    process.env.OPENAI_FLEX_ENABLED = "false";
+    expect(loadConfig().openAIFlexEnabled).toBe(false);
+    process.env.OPENAI_FLEX_ENABLED = "invalid";
+    expect(() => loadConfig()).toThrow(/OPENAI_FLEX_ENABLED/);
+  });
+
   it("defaults to maximum-size embeddings with no provider until configured", () => {
     delete process.env.AI_PROVIDER;
     delete process.env.LLM_PROVIDER;

@@ -96,6 +96,7 @@ export class OpenAIFileInterpreter implements FileInterpreter {
   private async responses(content: Array<Record<string, unknown>>): Promise<string> {
     const response = await this.json("/responses", {
       model: this.config.openAIInterpretationModel,
+      ...(this.config.openAIFlexEnabled ? { service_tier: "flex" } : {}),
       input: [{
         role: "user",
         content: [
@@ -192,6 +193,7 @@ export class OpenAIFileInterpreter implements FileInterpreter {
         text,
         provider: "openai",
         model: this.config.openAIInterpretationModel,
+      ...(this.config.openAIFlexEnabled ? { service_tier: "flex" } : {}),
         method: "video",
         metadata: { frames: frameNames.length, transcribedAudio: Boolean(transcript) }
       };
@@ -229,6 +231,7 @@ export class OpenAIFileInterpreter implements FileInterpreter {
         text,
         provider: "openai",
         model: this.config.openAIInterpretationModel,
+      ...(this.config.openAIFlexEnabled ? { service_tier: "flex" } : {}),
         method: "image",
         metadata: { bytes: bytes.length }
       };
@@ -258,6 +261,7 @@ export class OpenAIFileInterpreter implements FileInterpreter {
       text,
       provider: "openai",
       model: this.config.openAIInterpretationModel,
+      ...(this.config.openAIFlexEnabled ? { service_tier: "flex" } : {}),
       method: "file",
       metadata: { bytes: bytes.length, mimeType: mime }
     };

@@ -94,7 +94,10 @@ class OpenAIClient {
         "content-type": "application/json",
         authorization: `Bearer ${this.config.openAIAPIKey}`
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        ...body,
+        ...(path === "/chat/completions" && this.config.openAIFlexEnabled ? { service_tier: "flex" } : {})
+      }),
       signal: AbortSignal.timeout(this.config.aiTimeoutMs)
     });
 

@@ -136,7 +136,7 @@ export function mcpToolCallIsReadOnly(name: string, args: unknown): boolean {
   if (name === "recall") return true;
   if (name === "remember" || name === "forget") return false;
   if (name === "file") return ["get", "list"].includes(action);
-  if (name === "admin") return action === "stats";
+  if (name === "admin") return ["stats", "getConfig"].includes(action);
   if (name === "notion") return action === "status";
   return false;
 }
@@ -145,7 +145,7 @@ export function createMcpServer(
   foundation: Foundation,
   config: Pick<Config,
     "mcpFileAccess" | "mcpAdminEnabled" | "mcpNotionEnabled"
-  >,
+  > & Partial<Config>,
   notion?: NotionSync
 ): McpServer {
   const modelTools = mcpModelToolNames(config, Boolean(notion));
@@ -300,6 +300,23 @@ export function createMcpServer(
   if (config.mcpAdminEnabled) {
     const admin = new Map<string, FacadeAction>();
     defineAction(admin, "stats", z.object({}), () => foundation.stats());
+    // Deliberately allowlist live settings: never expose credentials, network,
+    // authentication, provider selection or tool-exposure policy.
+    const settingsSchema = z.object({
+      openAIFlexEnabled: z.boolean().optional(),
+      openAILLMModel: z.string().trim().min(1).max(200).optional(),
+      openAIInterpretationModel: z.string().trim().min(1).max(200).optional(),
+      openAITranscriptionModel: z.string().trim().min(1).max(200).optional(),
+      aiTimeoutMs: z.number().int().min(1000).max(120000).optional()
+    }).strict();
+    const getSettings = () => Object.fromEntries(
+      Object.keys(settingsSchema.shape).map(key => [key, config[key as keyof Config]])
+    );
+    defineAction(admin, "getConfig", z.object({}).strict(), async () => getSettings());
+    defineAction(admin, "setConfig", settingsSchema, async input => {
+      Object.assign(config, input);
+      return getSettings();
+    });
     defineAction(
       admin,
       "reindex",
