@@ -41,7 +41,7 @@ export interface SearchQueryAnalysis {
   metadataFilters: Record<string, string>;
   /** Meaningful lowercase query terms (stopwords removed). */
   tokens: string[];
-  /** Identifier-like terms (snake_case, camelCase, paths, versions) matched as exact substrings. */
+  /** Identifier-like terms (snake_case, camelCase, paths, versions) matched with token boundaries. */
   identifiers: string[];
 }
 
@@ -149,6 +149,10 @@ export interface FuseOptions {
   /** Number of meaningful query terms; drives how much lexical coverage counts as relevant. */
   queryTokenCount?: number;
   semanticMin?: number;
+  /** Entity/identifier lookups need an identity anchor, not embedding proximity. */
+  requireAnchor?: boolean;
+  /** Calibrated separately from semantic corroboration. */
+  semanticOnlyMin?: number;
 }
 
 function boundedUnit(value: unknown): number {
@@ -234,14 +238,19 @@ export function fuseSearchCandidates(
   const rows = [...unique.values()];
   const bestSemantic = rows.reduce((best, row) => Math.max(best, row.semantic), 0);
   const semanticFloor = Math.max(semMin, bestSemantic - SEMANTIC_BAND);
+  const anchored = (row: SearchSignalCandidate): boolean =>
+    row.exact > 0 || row.symbol >= 0.5 || row.lexical >= lexMin || row.tag >= lexMin || row.metadata >= lexMin;
+  const semanticPass = (row: SearchSignalCandidate): boolean =>
+    row.semantic >= semanticFloor && (anchored(row) ||
+      (!options.requireAnchor && row.semantic >= (options.semanticOnlyMin ?? 0.68)));
 
   type Signal = { field: keyof SearchSignals; matchedBy: string; weight: number; strong: boolean; pass: (row: SearchSignalCandidate) => boolean };
   const signals: Signal[] = [
     { field: "exact", matchedBy: "exact", weight: 2.4, strong: true, pass: row => row.exact > 0 },
     { field: "symbol", matchedBy: "symbol", weight: 1.5, strong: true, pass: row => row.symbol >= 0.5 },
     { field: "lexical", matchedBy: "text", weight: 1.25, strong: true, pass: row => row.lexical >= lexMin },
-    { field: "fuzzy", matchedBy: "fuzzy", weight: 0.8, strong: true, pass: row => (row.fuzzy ?? 0) >= FUZZY_MIN },
-    { field: "semantic", matchedBy: "vector", weight: 1, strong: true, pass: row => row.semantic >= semanticFloor },
+    { field: "fuzzy", matchedBy: "fuzzy", weight: 0.8, strong: true, pass: row => (row.fuzzy ?? 0) >= FUZZY_MIN && (!options.requireAnchor || anchored(row)) },
+    { field: "semantic", matchedBy: "vector", weight: 1, strong: true, pass: semanticPass },
     { field: "tag", matchedBy: "tag", weight: 1.1, strong: true, pass: row => row.tag >= lexMin },
     { field: "metadata", matchedBy: "metadata", weight: 0.5, strong: false, pass: row => row.metadata >= 0.5 }
   ];
@@ -258,8 +267,11 @@ export function fuseSearchCandidates(
     const ranked = rows
       .filter(row => signal.pass(row))
       .sort((a, b) => value(b, signal.field) - value(a, signal.field) || a.key.localeCompare(b.key));
+    let rank = 0;
     ranked.forEach((row, index) => {
-      raw.set(row.key, (raw.get(row.key) ?? 0) + signal.weight / (rrfK + index + 1));
+      // Equal evidence gets equal RRF credit; UUID order is only a deterministic final tie-break.
+      if (index === 0 || value(row, signal.field) !== value(ranked[index - 1]!, signal.field)) rank = index;
+      raw.set(row.key, (raw.get(row.key) ?? 0) + signal.weight / (rrfK + rank + 1));
       const set = matched.get(row.key) ?? new Set<string>();
       set.add(signal.matchedBy);
       matched.set(row.key, set);
@@ -273,12 +285,12 @@ export function fuseSearchCandidates(
       const metadata = row.metadataObject ?? {};
       const quality = importanceScore(metadata.importance) * 0.6 + boundedUnit(metadata.confidence) * 0.4;
       const freshness = freshnessScore(row.changedAt, now);
-      const semanticDirect = row.semantic >= semanticFloor ? boundedUnit((row.semantic - 0.5) / 0.5) : 0;
+      const semanticDirect = semanticPass(row) ? boundedUnit((row.semantic - 0.5) / 0.5) : 0;
       const direct = Math.max(
         row.exact > 0 ? 1 : 0,
         row.symbol >= 0.5 ? boundedUnit(row.symbol) * 0.95 : 0,
         row.lexical >= lexMin ? boundedUnit(row.lexical) * 0.9 : 0,
-        (row.fuzzy ?? 0) >= FUZZY_MIN ? boundedUnit(row.fuzzy) * 0.8 : 0,
+        (row.fuzzy ?? 0) >= FUZZY_MIN && (!options.requireAnchor || anchored(row)) ? boundedUnit(row.fuzzy) * 0.8 : 0,
         row.tag >= lexMin ? boundedUnit(row.tag) * 0.75 : 0,
         semanticDirect * 0.85,
         row.metadata >= 0.5 ? boundedUnit(row.metadata) * 0.4 : 0
@@ -293,7 +305,7 @@ export function fuseSearchCandidates(
         score,
         matchedBy: [...(matched.get(row.key) ?? new Set<string>())],
         eligible: strong > 0,
-        dropReason: strong > 0 ? null : "no signal cleared its relevance threshold"
+        dropReason: strong > 0 ? null : options.requireAnchor ? "entity lookup requires a token, identifier, or tag anchor" : "no signal cleared its relevance threshold (semantic-only evidence too weak)"
       };
     })
     .sort((a, b) => b.score - a.score || a.key.localeCompare(b.key));
@@ -429,21 +441,21 @@ function buildGenerators(
     atom("fts", (p, base) => {
       const q = p.add(ts);
       return `SELECT a.id FROM atoms a WHERE to_tsvector('simple', a.content) @@ to_tsquery('simple',${q}) AND ${base}
-      ORDER BY ts_rank(to_tsvector('simple', a.content), to_tsquery('simple',${q})) DESC LIMIT ${p.add(candidateLimit)}`;
+      ORDER BY ts_rank(to_tsvector('simple', a.content), to_tsquery('simple',${q})) DESC, a.id LIMIT ${p.add(candidateLimit)}`;
     });
     file("fts", (p, base) => {
       const q = p.add(ts);
       return `SELECT f.id FROM files f WHERE ${FILE_FTS} @@ to_tsquery('simple',${q}) AND ${base}
-      ORDER BY ts_rank(${FILE_FTS}, to_tsquery('simple',${q})) DESC LIMIT ${p.add(candidateLimit)}`;
+      ORDER BY ts_rank(${FILE_FTS}, to_tsquery('simple',${q})) DESC, f.id LIMIT ${p.add(candidateLimit)}`;
     });
   }
   atom("trigram", (p, base) => {
     const q = p.add(analysis.text);
     return `SELECT a.id FROM atoms a WHERE ${q}::text <% a.content AND ${base}
-    ORDER BY word_similarity(${q}::text, a.content) DESC LIMIT ${p.add(candidateLimit)}`;
+    ORDER BY word_similarity(${q}::text, a.content) DESC, a.id LIMIT ${p.add(candidateLimit)}`;
   });
   if (patterns.length) {
-    atom("symbol", (p, base) => `SELECT a.id FROM atoms a WHERE a.content ILIKE ANY(${p.add(patterns)}::text[]) AND ${base} LIMIT ${p.add(candidateLimit)}`);
+    atom("symbol", (p, base) => `SELECT a.id FROM atoms a WHERE a.content ILIKE ANY(${p.add(patterns)}::text[]) AND ${base} ORDER BY a.id LIMIT ${p.add(candidateLimit)}`);
     file("symbol", (p, base) => {
       const q = p.add(patterns);
       return `SELECT f.id FROM files f WHERE (f.content ILIKE ANY(${q}::text[]) OR f.subject ILIKE ANY(${q}::text[]) OR f.name ILIKE ANY(${q}::text[])) AND ${base} LIMIT ${p.add(candidateLimit)}`;
@@ -571,8 +583,24 @@ function numberScore(row: Row, key: string): number {
   return Math.max(0, Number(row[key] ?? 0));
 }
 
+/** Latin/digit terms require word boundaries; Korean may carry grammatical particles. */
+function containsTerm(text: string, term: string): boolean {
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const suffix = /[가-힣]$/.test(term)
+    ? "(?:은|는|이|가|을|를|의|에|에서|으로|로|와|과|도|만|입니다|이다)?"
+    : "";
+  return new RegExp(`(?<![\\p{L}\\p{N}])${escaped}${suffix}(?![\\p{L}\\p{N}])`, "u").test(text);
+}
+
+export function requiresIdentityAnchor(query: SearchQueryAnalysis): boolean {
+  // A single Latin name/acronym (case insensitive), or a structured identifier, denotes
+  // an identity. Natural-language sentences remain eligible for cross-language semantics.
+  return (query.tokens.length <= 2 && query.identifiers.length > 0) ||
+    (query.tokens.length === 1 && /^[a-z0-9._/@#+:-]+$/i.test(query.tokens[0]!));
+}
+
 function lowerText(value: string): string {
-  return identifierParts(value).join(" ") + " " + value.toLowerCase();
+  return identifierParts(value).join(" ").toLowerCase() + " " + value.toLowerCase();
 }
 
 /**
@@ -588,13 +616,13 @@ export function tokenWeights(tokens: string[], texts: string[]): Map<string, num
   }
   const haystacks = texts.map(lowerText);
   for (const token of tokens) {
-    const df = haystacks.filter(text => text.includes(token)).length;
+    const df = haystacks.filter(text => containsTerm(text, token)).length;
     weights.set(token, Math.max(0.1, Math.log(1 + (texts.length - df + 0.5) / (df + 0.5))));
   }
   return weights;
 }
 
-/** Weighted fraction of query terms present in the text (identifier-aware, substring based for agglutinative scripts). */
+/** Weighted fraction of query terms present in the text (identifier-aware, word-boundary safe with Korean particles). */
 export function lexicalCoverage(tokens: string[], text: string, weights?: Map<string, number>): number {
   if (tokens.length === 0) return 0;
   const haystack = lowerText(text);
@@ -603,12 +631,11 @@ export function lexicalCoverage(tokens: string[], text: string, weights?: Map<st
   for (const token of tokens) {
     const weight = weights?.get(token) ?? 1;
     total += weight;
-    if (haystack.includes(token)) {
+    if (containsTerm(haystack, token)) {
       hit += weight;
       continue;
     }
-    const parts = identifierParts(token).map(part => part.toLowerCase());
-    if (parts.length > 1 && parts.every(part => haystack.includes(part))) hit += weight;
+    if (identifierVariants(token).some(variant => containsTerm(text.toLowerCase(), variant))) hit += weight;
   }
   return total > 0 ? hit / total : 0;
 }
@@ -616,7 +643,7 @@ export function lexicalCoverage(tokens: string[], text: string, weights?: Map<st
 function symbolCoverage(identifiers: string[], text: string): number {
   if (identifiers.length === 0) return 0;
   const haystack = text.toLowerCase();
-  const hit = identifiers.filter(id => identifierVariants(id).some(variant => haystack.includes(variant))).length;
+  const hit = identifiers.filter(id => identifierVariants(id).some(variant => containsTerm(haystack, variant))).length;
   return hit / identifiers.length;
 }
 
@@ -767,7 +794,10 @@ export async function searchFoundation(
     push(key, "file", signalOf(row, text, tags, metadata), metadata, null);
   }
 
-  const fused = fuseSearchCandidates(candidates, { queryTokenCount: analysis.tokens.length });
+  const fused = fuseSearchCandidates(candidates, {
+    queryTokenCount: analysis.tokens.length,
+    requireAnchor: requiresIdentityAnchor(analysis)
+  });
   const fusedByKey = new Map(fused.map(item => [item.key, item]));
 
   const scored = new Map<string, Scored>();
@@ -890,9 +920,15 @@ export async function searchFoundation(
   // partial matches are dropped instead of trailing it. Broad queries keep their longer tail.
   const topKey = final[0] ? `${final[0].kind}:${final[0].id}` : null;
   const topSignals = topKey ? signalMap.get(topKey) : undefined;
-  if (topSignals && final[0] && (topSignals.exact > 0 || (analysis.tokens.length >= 3 && topSignals.lexical >= 0.99))) {
+  if (topSignals && final[0] && (topSignals.exact > 0 || (analysis.tokens.length >= 2 && topSignals.lexical >= 0.99))) {
     const floor = final[0].score * DECISIVE_TAIL_RATIO;
-    final = final.filter(item => item.score >= floor);
+    final = final.filter(item => {
+      const signals = signalMap.get(`${item.kind}:${item.id}`)!;
+      // A paraphrase may outrank the lexical answer semantically. Do not let the lexical
+      // tail heuristic discard it merely because stopwords/inflections differ.
+      return item.score >= floor || (!requiresIdentityAnchor(analysis) &&
+        signals.semantic >= 0.68 && signals.semantic > topSignals.semantic);
+    });
   }
   final = final.slice(0, limit);
 

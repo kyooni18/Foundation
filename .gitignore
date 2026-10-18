@@ -10,3 +10,4 @@ native/apple-foundation-model/.swiftpm/
 data.tar.xz
 *.dump
 bench/results/
+.local/

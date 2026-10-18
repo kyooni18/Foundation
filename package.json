@@ -33,7 +33,9 @@
     "test:db:up": "sh scripts/test-db.sh up",
     "test:db:down": "sh scripts/test-db.sh down",
     "test:integration": "TEST_DATABASE_URL=${TEST_DATABASE_URL:-postgresql://postgres:test@127.0.0.1:55433/postgres} vitest run tests/integration",
-    "bench": "tsx bench/run.ts"
+    "bench": "tsx bench/run.ts",
+    "bench:quality": "tsx bench/retrieval-quality.ts",
+    "bench:quality:calibrate": "tsx bench/calibrate-quality.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",

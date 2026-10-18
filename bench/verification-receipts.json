@@ -1,0 +1,144 @@
+{
+  "chronology": {
+    "before.dump": "2026-10-18T13:44:03.695114",
+    "migration-validation.log": "2026-10-18T13:48:09.503555",
+    "migration-production.log": "2026-10-18T13:51:58.109785"
+  },
+  "preProductionValidation": {
+    "rollbackVerified": true,
+    "idempotent": true,
+    "scopeRepairs": 857
+  },
+  "preservation": {
+    "restoredBeforeEqualsDisposableAfterEqualsProductionBeforeEqualsProductionAfter": true,
+    "fingerprints": {
+      "atom_file_docks": {
+        "n": 0,
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "atom_relations": {
+        "n": 394,
+        "hash": "36f63bd3ff158b8a1fe2b5cd2475f8a9"
+      },
+      "atom_relations_backup_v6": {
+        "n": 309,
+        "hash": "293983c387b010246bb1f5f65e9ee214"
+      },
+      "atoms": {
+        "n": 2620,
+        "hash": "c51717f265ed7afe028976cc5dcab7b6"
+      },
+      "atoms_backup_v6": {
+        "n": 2005,
+        "hash": "747e4498f5a0af944be7c694ac310c7e"
+      },
+      "external_bindings": {
+        "n": 0,
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "file_link_atoms": {
+        "n": 0,
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "file_links": {
+        "n": 0,
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "files": {
+        "n": 0,
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "memory_events": {
+        "n": 3698,
+        "hash": "f9b164977852923d3478abe2cf02554b"
+      },
+      "memory_requests": {
+        "n": 113,
+        "hash": "51cc76824cb40db1d1b0f75c4dbd290e"
+      },
+      "modifications": {
+        "n": 0,
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      },
+      "oauth_authorization_codes": {
+        "n": 6,
+        "hash": "6d5ee0dd5f8581498f7cc1c836e5ab9c"
+      },
+      "oauth_clients": {
+        "n": 27,
+        "hash": "3b9e449e6ab42e7f781e90d5886c04e7"
+      },
+      "oauth_tokens": {
+        "n": 332,
+        "hash": "1bdbfd67d0fa7cd8add5636e260c3423"
+      },
+      "vaults": {
+        "n": 0,
+        "hash": "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    },
+    "excludedFields": [
+      "atoms.scope_key"
+    ],
+    "excludedTables": [
+      "foundation_schema",
+      "atom_scope_repairs_v8"
+    ]
+  },
+  "workingTree": {
+    "initialDirtyPaths": [
+      ".env.example",
+      "README.md",
+      "src/ai.ts",
+      "src/config.ts",
+      "src/interpreter.ts",
+      "src/mcp.ts",
+      "tests/config.test.ts",
+      "tests/mcp.test.ts"
+    ],
+    "finalDiffStats": " .env.example         | 96 +++++++++++++++++++++++++++++++++++++++++++++++++---\n README.md            | 23 +++++++++++++\n src/ai.ts            |  5 ++-\n src/config.ts        |  2 ++\n src/interpreter.ts   |  4 +++\n src/mcp.ts           | 21 ++++++++++--\n tests/config.test.ts |  9 +++++\n tests/mcp.test.ts    | 26 ++++++++++++++\n 8 files changed, 179 insertions(+), 7 deletions(-)\n",
+    "comparison": "All eight initially dirty files retain the earlier observed diff statistics and modification times preceding this repair. No write/edit command in this job targeted them. Initial byte hashes were not captured; final hashes are receipts, not a retroactive hash comparison.",
+    "files": [
+      {
+        "path": ".env.example",
+        "lastModified": "2026-10-18T13:39:57.979318",
+        "finalSha256": "08680685262e79a221fd636c6e47853b93419cc79d614a3ff35ff7bb283ed5b1"
+      },
+      {
+        "path": "README.md",
+        "lastModified": "2026-10-18T13:30:24.115929",
+        "finalSha256": "859289b4b032c5d06541d98379730b0897b1a5673a310522983d31e786433ce4"
+      },
+      {
+        "path": "src/ai.ts",
+        "lastModified": "2026-10-18T13:30:41.956656",
+        "finalSha256": "0621be57d59feafaf52e2b2727e4e242f765894b0dff4d3fadc575c7a59cd47c"
+      },
+      {
+        "path": "src/config.ts",
+        "lastModified": "2026-10-18T13:29:59.840517",
+        "finalSha256": "c3d92f9cecf3c5e45d28f120b66a8913e8fb7fe2e7f049974328a2a54642f65c"
+      },
+      {
+        "path": "src/interpreter.ts",
+        "lastModified": "2026-10-18T13:29:59.841808",
+        "finalSha256": "49e1bf236b28628bfc066245424e9ba86158426bd97513847feb7f82e6e7b50b"
+      },
+      {
+        "path": "src/mcp.ts",
+        "lastModified": "2026-10-18T13:29:59.842352",
+        "finalSha256": "dce7ebd647c2e9af2ae9c8cb789c11d66c4b295084affda18a23d3472df0d2fc"
+      },
+      {
+        "path": "tests/config.test.ts",
+        "lastModified": "2026-10-18T13:30:24.114201",
+        "finalSha256": "37de5cb6894bd84997541ac3e0db44c52c3c2b8f5f64713cc260db33b15e6dc5"
+      },
+      {
+        "path": "tests/mcp.test.ts",
+        "lastModified": "2026-10-18T13:30:24.114727",
+        "finalSha256": "a853c1fd54344e46b6511f87e16940a8fece7b0c554557513d7ddff29f67a060"
+      }
+    ]
+  }
+}

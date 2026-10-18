@@ -79,3 +79,23 @@ describe("reciprocal-rank fusion", () => {
     expect(ranked[0]?.key).toBe("exact");
   });
 });
+
+// Independent names and near-substrings guard against special-casing Comet.
+describe("identity and semantic calibration regressions", () => {
+  const candidate = (semantic: number, overrides = {}) => ({ key: "x", exact: 0, lexical: 0, symbol: 0, semantic, tag: 0, metadata: 0, ...overrides });
+  it("does not let even high embedding proximity invent an entity match", () => {
+    expect(fuseSearchCandidates([candidate(0.95)], {requireAnchor:true})[0]?.eligible).toBe(false);
+    expect(fuseSearchCandidates([candidate(0.65,{lexical:1})], {requireAnchor:true,queryTokenCount:1})[0]?.eligible).toBe(true);
+  });
+  it("separates semantic corroboration from standalone semantic acceptance", () => {
+    expect(fuseSearchCandidates([candidate(0.66)])[0]?.eligible).toBe(false);
+    expect(fuseSearchCandidates([candidate(0.70)])[0]?.eligible).toBe(true);
+    expect(fuseSearchCandidates([candidate(0.64,{lexical:1})])[0]?.matchedBy).toContain("vector");
+  });
+});
+
+it("does not assign different RRF credit to identical evidence based on UUID order", () => {
+  const evidence = {exact:0,lexical:1,symbol:0,semantic:0,tag:0,metadata:0};
+  const scores = fuseSearchCandidates([{key:"z",...evidence},{key:"a",...evidence}],{queryTokenCount:1});
+  expect(scores[0]?.score).toBe(scores[1]?.score);
+});

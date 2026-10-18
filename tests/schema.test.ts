@@ -5,7 +5,7 @@ describe("Foundation schema", () => {
   it("keeps Atom top-level and File docking relational", () => {
     const sql = schemaStatements.join("\n").toLowerCase();
     const atomTable = schemaStatements.find(statement => statement.toLowerCase().includes("create table if not exists atoms"))!.toLowerCase();
-    expect(SCHEMA_VERSION).toBe(7);
+    expect(SCHEMA_VERSION).toBe(8);
     expect(sql).toContain("create table if not exists atoms");
     expect(sql).toContain("create table if not exists atom_file_docks");
     expect(atomTable).not.toContain("vault_id");

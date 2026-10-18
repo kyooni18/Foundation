@@ -1,0 +1,345 @@
+{
+  "description": "Hand-labeled isolated corpus. All queries default to intentional global retrieval; scoped and lifecycle cases are explicit. Semantic positives include paraphrases and Korean queries with zero shared tokens. Calibration cases and independent held-out negatives are marked.",
+  "documents": [
+    {
+      "key": "apple-runtime",
+      "project": "AppleDocker",
+      "text": "AppleDocker runs the Docker engine inside an Apple Container virtual machine on macOS. The engine stores its data on a persistent ext4 volume."
+    },
+    {
+      "key": "apple-relay",
+      "project": "AppleDocker",
+      "text": "AppleDocker uses a per-user launchd service to forward container ports to the Mac host. Install and up bootstrap the port relay automatically."
+    },
+    {
+      "key": "apple-path",
+      "project": "AppleDocker",
+      "text": "The installed binary is /Users/kyooni18/.local/bin/apple-docker."
+    },
+    {
+      "key": "ksl-guidance",
+      "project": "KSL",
+      "corrupted": "k l",
+      "text": "KSL landing guidance uses closed-loop throttle and attitude control to land the rocket vertically."
+    },
+    {
+      "key": "ksl-commit",
+      "project": "KSL",
+      "corrupted": "k l",
+      "text": "KSL Git commit 9b8c41: Commit the flight controller refactor and update launch scripts."
+    },
+    {
+      "key": "ksl-current",
+      "project": "KSL",
+      "text": "KSL telemetry transport now uses UDP.",
+      "validFrom": "2025-01-01",
+      "tags": [
+        "telemetry"
+      ]
+    },
+    {
+      "key": "ksl-old",
+      "project": "KSL",
+      "text": "KSL telemetry transport previously used TCP.",
+      "status": "superseded",
+      "validFrom": "2024-01-01",
+      "expires": "2025-01-01",
+      "tags": [
+        "telemetry"
+      ]
+    },
+    {
+      "key": "shuttle",
+      "project": "KSPShuttleLander",
+      "corrupted": "k p huttlelander",
+      "text": "KSPShuttleLander computes a descent trajectory and landing burn for a reusable shuttle."
+    },
+    {
+      "key": "tooling",
+      "project": "StructToolingAB",
+      "corrupted": " tructtoolingab",
+      "text": "StructToolingAB generates strongly typed bindings from structural schemas."
+    },
+    {
+      "key": "foundation-db",
+      "project": "Foundation",
+      "text": "Foundation stores memories in PostgreSQL with pgvector and Gemini embeddings."
+    },
+    {
+      "key": "foundation-backup",
+      "project": "Foundation",
+      "text": "Foundation database backups use pg_dump custom format archives verified by restoring into a disposable database."
+    },
+    {
+      "key": "marks-db",
+      "project": "Marks",
+      "text": "Marks stores bookmarks and annotations in PostgreSQL."
+    },
+    {
+      "key": "pipeline",
+      "project": "CI",
+      "text": "The deployment pipeline builds an image and pushes it to the container registry."
+    },
+    {
+      "key": "commits",
+      "project": "Yeet",
+      "text": "Git Commit records preserve the hash, author, branch, and commit message for each change."
+    },
+    {
+      "key": "orbit",
+      "project": "SpaceSim",
+      "text": "The satellite orbit propagator integrates gravitational acceleration with an adaptive time step."
+    },
+    {
+      "key": "korean",
+      "project": "Notes",
+      "text": "사용자는 답변을 한국어로 받는 것을 선호한다."
+    },
+    {
+      "key": "backup",
+      "project": "Ops",
+      "text": "Nightly snapshots protect the database against accidental deletion. Restore drills run every Sunday."
+    },
+    {
+      "key": "food",
+      "project": "Kitchen",
+      "text": "Sourdough bread needs a fermented starter and a long cold proof."
+    },
+    {
+      "key": "cache",
+      "project": "API",
+      "text": "Redis caches session tokens for fifteen minutes."
+    },
+    {
+      "key": "auth",
+      "project": "API",
+      "text": "OAuth refresh token rotation detects replay attacks."
+    },
+    {
+      "key": "apple-weak",
+      "project": "Orchard",
+      "text": "Apple trees require pruning in winter and well-drained soil."
+    },
+    {
+      "key": "docker-weak",
+      "project": "Warehouse",
+      "text": "The dock workers unload shipping containers at the harbor."
+    },
+    {
+      "key": "old-weak",
+      "project": "Ops",
+      "text": "Old deployment decisions are recorded in the engineering journal."
+    },
+    {
+      "key": "ksl-substring",
+      "project": "Other",
+      "text": "KSL2 is an unrelated test fixture, not the original lander."
+    }
+  ],
+  "queries": [
+    {
+      "query": "Comet",
+      "relevant": [],
+      "split": "calibration"
+    },
+    {
+      "query": "comet",
+      "relevant": [],
+      "split": "test"
+    },
+    {
+      "query": "Neptune",
+      "relevant": [],
+      "split": "test"
+    },
+    {
+      "query": "Pine",
+      "relevant": [],
+      "split": "test"
+    },
+    {
+      "query": "Quartz",
+      "relevant": [],
+      "split": "test"
+    },
+    {
+      "query": "AppleDocker",
+      "relevant": [
+        "apple-runtime",
+        "apple-relay",
+        "apple-path"
+      ],
+      "split": "calibration"
+    },
+    {
+      "query": "How are containers hosted on this Mac?",
+      "relevant": [
+        "apple-runtime",
+        "apple-relay"
+      ],
+      "split": "calibration"
+    },
+    {
+      "query": "애플 실리콘에서 컨테이너를 실행하는 방법",
+      "relevant": [
+        "apple-runtime",
+        "apple-relay"
+      ],
+      "split": "calibration"
+    },
+    {
+      "query": "macOS Docker 포트 전달",
+      "relevant": [
+        "apple-relay",
+        "apple-runtime"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "KSL",
+      "relevant": [
+        "ksl-guidance",
+        "ksl-commit",
+        "ksl-current"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "landing guidance",
+      "project": "KSL",
+      "relevant": [
+        "ksl-guidance"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "KSPShuttleLander",
+      "project": "KSPShuttleLander",
+      "relevant": [
+        "shuttle"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "StructToolingAB",
+      "project": "StructToolingAB",
+      "relevant": [
+        "tooling"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "What database does Foundation use?",
+      "relevant": [
+        "foundation-db",
+        "foundation-backup"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "Foundation 데이터베이스",
+      "relevant": [
+        "foundation-db",
+        "foundation-backup"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "PostgreSQL",
+      "relevant": [
+        "foundation-db",
+        "marks-db"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "Which projects use PostgreSQL?",
+      "relevant": [
+        "foundation-db",
+        "marks-db"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "착륙 유도 제어",
+      "relevant": [
+        "ksl-guidance",
+        "shuttle"
+      ],
+      "split": "calibration"
+    },
+    {
+      "query": "How do we protect information from accidental loss?",
+      "relevant": [
+        "foundation-backup",
+        "backup"
+      ],
+      "split": "calibration"
+    },
+    {
+      "query": "How does the user prefer responses to be written?",
+      "relevant": [
+        "korean"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "database backup",
+      "relevant": [
+        "foundation-backup",
+        "backup"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "Git commit",
+      "relevant": [
+        "ksl-commit",
+        "commits"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "How do I grow tomatoes on Mars?",
+      "relevant": [],
+      "split": "calibration"
+    },
+    {
+      "query": "바나나 우주 요리법",
+      "relevant": [],
+      "split": "test"
+    },
+    {
+      "query": "Where is the quantum banana reactor?",
+      "relevant": [],
+      "split": "test"
+    },
+    {
+      "query": "KSL telemetry",
+      "project": "KSL",
+      "relevant": [
+        "ksl-current"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "KSL telemetry",
+      "project": "KSL",
+      "asOf": "2024-06-01T00:00:00Z",
+      "relevant": [
+        "ksl-old"
+      ],
+      "split": "test"
+    },
+    {
+      "query": "KSL telemetry",
+      "project": "KSL",
+      "history": true,
+      "relevant": [
+        "ksl-old",
+        "ksl-current"
+      ],
+      "split": "test"
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+[
+  {
+    "stage": "BACKUP_RESTORED_AND_VERIFIED",
+    "sha256": "8d24a1587fb21351b88c68c3c397cd8d9e3d77b2c630cecafae5d309f008be6f",
+    "restoredTables": 16,
+    "atoms": {
+      "n": 2620,
+      "hash": "c51717f265ed7afe028976cc5dcab7b6"
+    },
+    "relations": {
+      "n": 394,
+      "hash": "36f63bd3ff158b8a1fe2b5cd2475f8a9"
+    },
+    "allNonScopeFieldsMatchProduction": true
+  },
+  {
+    "stage": "PRODUCTION_EQUIVALENT_MIGRATION",
+    "allExistingTablesAndNonScopeFieldsIdentical": true,
+    "repairs": [
+      {
+        "old_key": "k p huttlelander",
+        "new_key": "kspshuttlelander",
+        "n": 281,
+        "active": 241
+      },
+      {
+        "old_key": " tructtoolingab",
+        "new_key": "structtoolingab",
+        "n": 182,
+        "active": 166
+      },
+      {
+        "old_key": "k l",
+        "new_key": "ksl",
+        "n": 121,
+        "active": 112
+      },
+      {
+        "old_key": "/u er /kyooni18/code/yeet",
+        "new_key": "/users/kyooni18/code/yeet",
+        "n": 82,
+        "active": 73
+      },
+      {
+        "old_key": "/u er /kyooni18/code/k l",
+        "new_key": "/users/kyooni18/code/ksl",
+        "n": 68,
+        "active": 63
+      },
+      {
+        "old_key": "k p huttlelauncher",
+        "new_key": "kspshuttlelauncher",
+        "n": 51,
+        "active": 42
+      },
+      {
+        "old_key": "/u er /kyooni18/code/mark ",
+        "new_key": "/users/kyooni18/code/marks",
+        "n": 25,
+        "active": 22
+      },
+      {
+        "old_key": "mark  /  egno",
+        "new_key": "marks / segno",
+        "n": 13,
+        "active": 12
+      },
+      {
+        "old_key": "mark ",
+        "new_key": "marks",
+        "n": 10,
+        "active": 9
+      },
+      {
+        "old_key": "k l unified flight control",
+        "new_key": "ksl unified flight control",
+        "n": 9,
+        "active": 8
+      },
+      {
+        "old_key": "/u er /kyooni18/code/k p huttlelander",
+        "new_key": "/users/kyooni18/code/kspshuttlelander",
+        "n": 7,
+        "active": 7
+      },
+      {
+        "old_key": "yeet-maco ",
+        "new_key": "yeet-macos",
+        "n": 5,
+        "active": 4
+      },
+      {
+        "old_key": " egno maco  app",
+        "new_key": "segno macos app",
+        "n": 3,
+        "active": 3
+      }
+    ],
+    "ksl": [
+      {
+        "scope_key": "ksl",
+        "status": "active",
+        "n": 265
+      },
+      {
+        "scope_key": "ksl",
+        "status": "superseded",
+        "n": 31
+      }
+    ]
+  },
+  {
+    "stage": "ROLLBACK_VERIFIED",
+    "allRowsIncludingOriginalScopesEqualRestoredBackup": true,
+    "schema8Rows": 0
+  },
+  {
+    "stage": "REAPPLICATION_AND_IDEMPOTENCE_VERIFIED",
+    "allRowsIncludingRepairedScopesIdentical": true,
+    "auditRows": 857
+  },
+  {
+    "stage": "LIVE_METADATA_RECOVERY",
+    "recovery": [
+      {
+        "original_project": "KSL",
+        "old_key": "k l",
+        "new_key": "ksl",
+        "n": 121
+      },
+      {
+        "original_project": "KSPShuttleLander",
+        "old_key": "k p huttlelander",
+        "new_key": "kspshuttlelander",
+        "n": 281
+      },
+      {
+        "original_project": "StructToolingAB",
+        "old_key": " tructtoolingab",
+        "new_key": "structtoolingab",
+        "n": 182
+      }
+    ],
+    "versions": [
+      6,
+      7,
+      8
+    ],
+    "scopeAuditMismatch": 0
+  }
+]

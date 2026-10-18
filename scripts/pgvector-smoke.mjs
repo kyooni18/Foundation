@@ -103,6 +103,9 @@ try {
     vaultFileCount: loadedVault.files.length,
     searchTopRawText: search[0]?.rawText ?? null,
     searchMatchedBy: search[0]?.matchedBy ?? [],
+    // Atom-first search reports provenance in sources rather than a legacy "atom" signal.
+    hasAtomFileEvidence: search.some(item => item.kind === "atom" && item.sources?.some(source => source.fileId === first.id)) ||
+      (search.some(item => item.kind === "file" && item.id === first.id) && loadedFile.atoms.length === 4),
     statsAtoms: stats.atoms,
     embedding: stats.embedding
   };
@@ -119,7 +122,7 @@ try {
   if (verdict.searchTopRawText !== "도쿄 파이어볼 파스타집 진짜 맛있는듯") {
     throw new Error("Search did not resolve derived evidence to the updated raw File text");
   }
-  if (!verdict.searchMatchedBy.includes("vector") || !verdict.searchMatchedBy.includes("atom")) {
+  if (!verdict.searchMatchedBy.includes("vector") || !verdict.hasAtomFileEvidence) {
     throw new Error("Search did not exercise pgvector and Atom-to-File evidence");
   }
 } finally {

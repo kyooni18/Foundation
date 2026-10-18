@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;
 
 export const schemaStatements = [
   `CREATE EXTENSION IF NOT EXISTS vector`,
@@ -404,13 +404,13 @@ export const schemaStatements = [
       scope_key = regexp_replace(lower(normalize(btrim(COALESCE(
         NULLIF(btrim(metadata->>'project'), ''),
         NULLIF(btrim(metadata->>'projectId'), ''),
-        NULLIF(btrim(metadata->>'repo'), ''))), NFKC)), '\s+', ' ', 'g')
+        NULLIF(btrim(metadata->>'repo'), ''))), NFKC)), '[[:space:]]+', ' ', 'g')
       WHERE COALESCE(NULLIF(btrim(metadata->>'project'), ''), NULLIF(btrim(metadata->>'projectId'), ''), NULLIF(btrim(metadata->>'repo'), '')) IS NOT NULL
         AND lower(COALESCE(metadata->>'scope', 'project')) NOT IN ('global', 'conversation');
 
     UPDATE atoms SET
       scope_kind = 'conversation',
-      scope_key = regexp_replace(lower(normalize(btrim(metadata->>'conversationId'), NFKC)), '\s+', ' ', 'g')
+      scope_key = regexp_replace(lower(normalize(btrim(metadata->>'conversationId'), NFKC)), '[[:space:]]+', ' ', 'g')
       WHERE NULLIF(btrim(metadata->>'conversationId'), '') IS NOT NULL
         AND lower(COALESCE(metadata->>'scope', 'conversation')) = 'conversation';
 
@@ -444,6 +444,60 @@ export const schemaStatements = [
   `CREATE INDEX IF NOT EXISTS atoms_validity_idx ON atoms (valid_from, expires_at) WHERE status <> 'forgotten'`,
   `CREATE INDEX IF NOT EXISTS files_name_trgm ON files USING GIN (name gin_trgm_ops)`,
   `CREATE INDEX IF NOT EXISTS files_project_idx ON files ((lower(metadata->>'project'))) WHERE metadata ? 'project'`,
+
+  // v8 repairs only the demonstrable v7 transform, never arbitrary scope/metadata drift.
+  // POSIX whitespace avoids JavaScript template-literal backslash interpretation entirely.
+  `DO $foundation_v8_repair$
+  BEGIN
+    IF EXISTS (SELECT 1 FROM foundation_schema WHERE version >= 8) THEN RETURN; END IF;
+    LOCK TABLE atoms IN SHARE ROW EXCLUSIVE MODE;
+    CREATE TEMP TABLE foundation_scope_repair ON COMMIT DROP AS
+      WITH original AS (
+        SELECT a.id, a.scope_kind, a.scope_key,
+          CASE WHEN a.scope_kind = 'project' THEN COALESCE(
+            NULLIF(btrim(a.metadata->>'project'), ''),
+            NULLIF(btrim(a.metadata->>'projectId'), ''),
+            NULLIF(btrim(a.metadata->>'repo'), ''))
+          WHEN a.scope_kind = 'conversation' THEN NULLIF(btrim(a.metadata->>'conversationId'), '') END AS raw
+        FROM atoms a
+        WHERE a.scope_kind IN ('project','conversation')
+      )
+      SELECT id, scope_kind, scope_key AS old_key,
+        regexp_replace(lower(normalize(btrim(raw), NFKC)), '[[:space:]]+', ' ', 'g') AS new_key
+      FROM original
+      WHERE raw IS NOT NULL
+        AND scope_key = regexp_replace(lower(normalize(btrim(raw), NFKC)), 's+', ' ', 'g')
+        AND scope_key <> regexp_replace(lower(normalize(btrim(raw), NFKC)), '[[:space:]]+', ' ', 'g');
+
+    IF EXISTS (SELECT 1 FROM foundation_scope_repair WHERE new_key = '') THEN
+      RAISE EXCEPTION 'v8: ambiguous empty scope identity; no scopes repaired';
+    END IF;
+    -- A v6 snapshot, when present, independently corroborates the metadata identity.
+    IF to_regclass('atoms_backup_v6') IS NOT NULL THEN
+      IF EXISTS (
+        SELECT 1 FROM foundation_scope_repair r JOIN atoms_backup_v6 b USING (id)
+        WHERE r.new_key IS DISTINCT FROM regexp_replace(lower(normalize(btrim(
+          CASE WHEN r.scope_kind = 'project' THEN COALESCE(NULLIF(btrim(b.metadata->>'project'), ''),
+            NULLIF(btrim(b.metadata->>'projectId'), ''), NULLIF(btrim(b.metadata->>'repo'), ''))
+          ELSE NULLIF(btrim(b.metadata->>'conversationId'), '') END), NFKC)), '[[:space:]]+', ' ', 'g')
+      ) THEN
+        RAISE EXCEPTION 'v8: original and current metadata disagree; no scopes repaired';
+      END IF;
+    END IF;
+    IF EXISTS (
+      SELECT 1 FROM atoms a LEFT JOIN foundation_scope_repair r USING (id)
+      WHERE a.status <> 'superseded'
+      GROUP BY a.scope_kind, COALESCE(r.new_key, a.scope_key), a.content_hash HAVING count(*) > 1
+    ) THEN
+      RAISE EXCEPTION 'v8: scope repair would collide with an existing identity; no scopes repaired';
+    END IF;
+    CREATE TABLE IF NOT EXISTS atom_scope_repairs_v8 (
+      id UUID PRIMARY KEY, scope_kind TEXT NOT NULL, old_key TEXT NOT NULL, new_key TEXT NOT NULL
+    );
+    INSERT INTO atom_scope_repairs_v8 SELECT * FROM foundation_scope_repair;
+    UPDATE atoms a SET scope_key = r.new_key FROM foundation_scope_repair r WHERE a.id = r.id;
+  END
+  $foundation_v8_repair$`,
 
   `INSERT INTO foundation_schema(version) VALUES (${SCHEMA_VERSION}) ON CONFLICT (version) DO NOTHING`
 ] as const;

@@ -1,0 +1,544 @@
+{
+  "provider": {
+    "provider": "gemini",
+    "model": "gemini-embedding-2",
+    "dimensions": 3072
+  },
+  "corpusDocuments": 24,
+  "queries": 28,
+  "before": {
+    "queries": 28,
+    "precisionAt5": 0.2900000000000001,
+    "recallAt5": 0.75,
+    "mrr": 0.85,
+    "ndcg": 0.7726294385530916,
+    "returnedPrecision": 0.8787878787878788,
+    "falsePositiveRate": 0.12121212121212122,
+    "noAnswerAccuracy": 1,
+    "meanMs": 164.48616817857143,
+    "p50Ms": 166.7928750000001,
+    "p95Ms": 178.092666
+  },
+  "after": {
+    "queries": 28,
+    "precisionAt5": 0.3300000000000002,
+    "recallAt5": 0.925,
+    "mrr": 1,
+    "ndcg": 0.9419720789148187,
+    "returnedPrecision": 0.9428571428571428,
+    "falsePositiveRate": 0.05714285714285714,
+    "noAnswerAccuracy": 1,
+    "meanMs": 175.11639589285707,
+    "p50Ms": 173.10420799999974,
+    "p95Ms": 196.036834
+  },
+  "regressionBefore": {
+    "queries": 21,
+    "precisionAt5": 0.28,
+    "recallAt5": 0.7666666666666667,
+    "mrr": 0.8,
+    "ndcg": 0.7742098128510305,
+    "returnedPrecision": 0.875,
+    "falsePositiveRate": 0.125,
+    "noAnswerAccuracy": 1,
+    "meanMs": 162.36162304761905,
+    "p50Ms": 165.43679200000042,
+    "p95Ms": 176.099917
+  },
+  "regressionAfter": {
+    "queries": 21,
+    "precisionAt5": 0.33333333333333337,
+    "recallAt5": 1,
+    "mrr": 1,
+    "ndcg": 1,
+    "returnedPrecision": 0.9615384615384616,
+    "falsePositiveRate": 0.038461538461538464,
+    "noAnswerAccuracy": 1,
+    "meanMs": 171.85145042857138,
+    "p50Ms": 171.09287499999937,
+    "p95Ms": 181.3227079999997
+  },
+  "semanticOnlyCalibration": {
+    "cases": 7,
+    "rows": [
+      {
+        "semanticOnlyMin": 0.6,
+        "tp": 8,
+        "fp": 1,
+        "fn": 3,
+        "precision": 0.8888888888888888,
+        "recall": 0.7272727272727273,
+        "f1": 0.8
+      },
+      {
+        "semanticOnlyMin": 0.64,
+        "tp": 8,
+        "fp": 1,
+        "fn": 3,
+        "precision": 0.8888888888888888,
+        "recall": 0.7272727272727273,
+        "f1": 0.8
+      },
+      {
+        "semanticOnlyMin": 0.66,
+        "tp": 8,
+        "fp": 1,
+        "fn": 3,
+        "precision": 0.8888888888888888,
+        "recall": 0.7272727272727273,
+        "f1": 0.8
+      },
+      {
+        "semanticOnlyMin": 0.68,
+        "tp": 8,
+        "fp": 1,
+        "fn": 3,
+        "precision": 0.8888888888888888,
+        "recall": 0.7272727272727273,
+        "f1": 0.8
+      },
+      {
+        "semanticOnlyMin": 0.7,
+        "tp": 7,
+        "fp": 1,
+        "fn": 4,
+        "precision": 0.875,
+        "recall": 0.6363636363636364,
+        "f1": 0.7368421052631579
+      },
+      {
+        "semanticOnlyMin": 0.72,
+        "tp": 7,
+        "fp": 0,
+        "fn": 4,
+        "precision": 1,
+        "recall": 0.6363636363636364,
+        "f1": 0.7777777777777778
+      },
+      {
+        "semanticOnlyMin": 0.75,
+        "tp": 5,
+        "fp": 0,
+        "fn": 6,
+        "precision": 1,
+        "recall": 0.45454545454545453,
+        "f1": 0.625
+      }
+    ]
+  },
+  "cases": [
+    {
+      "query": "Comet",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [],
+      "before": [],
+      "after": []
+    },
+    {
+      "query": "comet",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [],
+      "before": [],
+      "after": []
+    },
+    {
+      "query": "Neptune",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [],
+      "before": [],
+      "after": []
+    },
+    {
+      "query": "Pine",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [],
+      "before": [],
+      "after": []
+    },
+    {
+      "query": "Quartz",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [],
+      "before": [],
+      "after": []
+    },
+    {
+      "query": "AppleDocker",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "apple-runtime",
+        "apple-relay",
+        "apple-path"
+      ],
+      "before": [
+        "apple-runtime",
+        "apple-relay",
+        "apple-path"
+      ],
+      "after": [
+        "apple-runtime",
+        "apple-relay",
+        "apple-path"
+      ]
+    },
+    {
+      "query": "How are containers hosted on this Mac?",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "apple-runtime",
+        "apple-relay"
+      ],
+      "before": [
+        "apple-runtime",
+        "apple-relay"
+      ],
+      "after": [
+        "apple-runtime",
+        "apple-relay"
+      ]
+    },
+    {
+      "query": "애플 실리콘에서 컨테이너를 실행하는 방법",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "apple-runtime",
+        "apple-relay"
+      ],
+      "before": [
+        "apple-runtime",
+        "apple-path"
+      ],
+      "after": [
+        "apple-runtime",
+        "apple-path"
+      ]
+    },
+    {
+      "query": "macOS Docker 포트 전달",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "apple-relay",
+        "apple-runtime"
+      ],
+      "before": [
+        "apple-runtime",
+        "apple-relay",
+        "apple-path"
+      ],
+      "after": [
+        "apple-runtime",
+        "apple-relay",
+        "apple-path"
+      ]
+    },
+    {
+      "query": "KSL",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "ksl-guidance",
+        "ksl-commit",
+        "ksl-current"
+      ],
+      "before": [
+        "ksl-current",
+        "ksl-guidance",
+        "ksl-commit",
+        "ksl-substring"
+      ],
+      "after": [
+        "ksl-current",
+        "ksl-guidance",
+        "ksl-commit"
+      ]
+    },
+    {
+      "query": "landing guidance",
+      "project": "KSL",
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "ksl-guidance"
+      ],
+      "before": [],
+      "after": [
+        "ksl-guidance"
+      ]
+    },
+    {
+      "query": "KSPShuttleLander",
+      "project": "KSPShuttleLander",
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "shuttle"
+      ],
+      "before": [],
+      "after": [
+        "shuttle"
+      ]
+    },
+    {
+      "query": "StructToolingAB",
+      "project": "StructToolingAB",
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "tooling"
+      ],
+      "before": [],
+      "after": [
+        "tooling"
+      ]
+    },
+    {
+      "query": "What database does Foundation use?",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "foundation-db",
+        "foundation-backup"
+      ],
+      "before": [
+        "foundation-backup"
+      ],
+      "after": [
+        "foundation-backup",
+        "foundation-db"
+      ]
+    },
+    {
+      "query": "Foundation 데이터베이스",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "foundation-db",
+        "foundation-backup"
+      ],
+      "before": [
+        "foundation-db",
+        "foundation-backup"
+      ],
+      "after": [
+        "foundation-db",
+        "foundation-backup"
+      ]
+    },
+    {
+      "query": "PostgreSQL",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "foundation-db",
+        "marks-db"
+      ],
+      "before": [
+        "marks-db",
+        "foundation-db",
+        "foundation-backup"
+      ],
+      "after": [
+        "marks-db",
+        "foundation-db"
+      ]
+    },
+    {
+      "query": "Which projects use PostgreSQL?",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "foundation-db",
+        "marks-db"
+      ],
+      "before": [
+        "marks-db",
+        "foundation-db"
+      ],
+      "after": [
+        "marks-db",
+        "foundation-db"
+      ]
+    },
+    {
+      "query": "착륙 유도 제어",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "ksl-guidance",
+        "shuttle"
+      ],
+      "before": [
+        "ksl-guidance"
+      ],
+      "after": [
+        "ksl-guidance"
+      ]
+    },
+    {
+      "query": "How do we protect information from accidental loss?",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "foundation-backup",
+        "backup"
+      ],
+      "before": [
+        "backup"
+      ],
+      "after": [
+        "backup"
+      ]
+    },
+    {
+      "query": "How does the user prefer responses to be written?",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "korean"
+      ],
+      "before": [
+        "korean"
+      ],
+      "after": [
+        "korean"
+      ]
+    },
+    {
+      "query": "database backup",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "foundation-backup",
+        "backup"
+      ],
+      "before": [
+        "foundation-backup",
+        "backup"
+      ],
+      "after": [
+        "foundation-backup",
+        "backup"
+      ]
+    },
+    {
+      "query": "Git commit",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "ksl-commit",
+        "commits"
+      ],
+      "before": [
+        "commits",
+        "ksl-commit"
+      ],
+      "after": [
+        "commits",
+        "ksl-commit"
+      ]
+    },
+    {
+      "query": "How do I grow tomatoes on Mars?",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [],
+      "before": [],
+      "after": []
+    },
+    {
+      "query": "바나나 우주 요리법",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [],
+      "before": [],
+      "after": []
+    },
+    {
+      "query": "Where is the quantum banana reactor?",
+      "project": null,
+      "asOf": null,
+      "history": null,
+      "relevant": [],
+      "before": [],
+      "after": []
+    },
+    {
+      "query": "KSL telemetry",
+      "project": "KSL",
+      "asOf": null,
+      "history": null,
+      "relevant": [
+        "ksl-current"
+      ],
+      "before": [
+        "ksl-current"
+      ],
+      "after": [
+        "ksl-current"
+      ]
+    },
+    {
+      "query": "KSL telemetry",
+      "project": "KSL",
+      "asOf": "2024-06-01T00:00:00Z",
+      "history": null,
+      "relevant": [
+        "ksl-old"
+      ],
+      "before": [
+        "ksl-old"
+      ],
+      "after": [
+        "ksl-old"
+      ]
+    },
+    {
+      "query": "KSL telemetry",
+      "project": "KSL",
+      "asOf": null,
+      "history": true,
+      "relevant": [
+        "ksl-old",
+        "ksl-current"
+      ],
+      "before": [
+        "ksl-current",
+        "ksl-old"
+      ],
+      "after": [
+        "ksl-current",
+        "ksl-old"
+      ]
+    }
+  ]
+}
