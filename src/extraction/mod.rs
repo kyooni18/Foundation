@@ -38,6 +38,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v2/frames.txt"),
                 include_str!("../../prompts/extraction-v2/review.txt"),
             )),
+            "extraction-v3" => Ok((
+                include_str!("../../prompts/extraction-v3/contract.txt"),
+                include_str!("../../prompts/extraction-v3/frames.txt"),
+                include_str!("../../prompts/extraction-v3/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -61,6 +66,16 @@ impl Plan {
         ))
     }
     pub fn hash(&self) -> Result<String> {
+        for config in [&self.extractor, &self.reviewer] {
+            if config.model.trim().is_empty()
+                || !(1..=600).contains(&config.timeout_seconds)
+                || config
+                    .max_output_tokens
+                    .is_some_and(|n| !(1..=262144).contains(&n))
+            {
+                return Err(invalid("configuration", "invalid model configuration"));
+            }
+        }
         let (_, frames, review) = self.components()?;
         Ok(hash(&format!(
             "{}\n{}\n{review}\n{frames}\n{}",
@@ -533,6 +548,7 @@ impl App {
         provider: &dyn LlmProvider,
         plan: &Plan,
     ) -> Result<Option<String>> {
+        plan.hash()?;
         use time::{Duration, OffsetDateTime, format_description::well_known::Rfc3339};
         fn stamp(t: OffsetDateTime) -> Timestamp {
             t.format(&Rfc3339)

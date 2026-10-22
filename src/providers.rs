@@ -6,6 +6,8 @@ use std::{future::Future, pin::Pin, time::Duration};
 pub struct ModelConfig {
     pub model: String,
     pub timeout_seconds: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_output_tokens: Option<u32>,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProviderError {
@@ -13,6 +15,9 @@ pub enum ProviderError {
     Timeout,
     InvalidOutput,
     LanguageRestriction,
+    Quota,
+    InvalidRequest,
+    RateLimited,
 }
 pub type ProviderFuture<'a> =
     Pin<Box<dyn Future<Output = Result<String, ProviderError>> + Send + 'a>>;
@@ -79,10 +84,40 @@ impl LlmProvider for OpenRouter {
             if config.model.is_empty() || !(1..=600).contains(&config.timeout_seconds) {
                 return Err(ProviderError::Unavailable);
             }
-            let response=self.client.post("https://openrouter.ai/api/v1/chat/completions").bearer_auth(&self.key)
-            .timeout(Duration::from_secs(config.timeout_seconds))
-            .json(&serde_json::json!({"model":config.model,"temperature":0,"response_format":{"type":"json_object"},"messages":[{"role":"system","content":system},{"role":"user","content":input}]}))
-            .send().await.map_err(|e|if e.is_timeout(){ProviderError::Timeout}else{ProviderError::Unavailable})?;
+            if config
+                .max_output_tokens
+                .is_some_and(|n| !(1..=262144).contains(&n))
+            {
+                return Err(ProviderError::Unavailable);
+            }
+            let mut payload = serde_json::json!({"model":config.model,"temperature":0,"response_format":{"type":"json_object"},"messages":[{"role":"system","content":system},{"role":"user","content":input}]});
+            if let Some(limit) = config.max_output_tokens {
+                payload["max_tokens"] = limit.into();
+            }
+            let response = self
+                .client
+                .post("https://openrouter.ai/api/v1/chat/completions")
+                .bearer_auth(&self.key)
+                .timeout(Duration::from_secs(config.timeout_seconds))
+                .json(&payload)
+                .send()
+                .await
+                .map_err(|e| {
+                    if e.is_timeout() {
+                        ProviderError::Timeout
+                    } else {
+                        ProviderError::Unavailable
+                    }
+                })?;
+            if response.status() == reqwest::StatusCode::PAYMENT_REQUIRED {
+                return Err(ProviderError::Quota);
+            }
+            if response.status() == reqwest::StatusCode::BAD_REQUEST {
+                return Err(ProviderError::InvalidRequest);
+            }
+            if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+                return Err(ProviderError::RateLimited);
+            }
             if !response.status().is_success() {
                 return Err(ProviderError::Unavailable);
             }
@@ -138,6 +173,10 @@ async fn read_completion(mut response: reqwest::Response) -> Result<String, Prov
     }
     let body: serde_json::Value =
         serde_json::from_slice(&bytes).map_err(|_| ProviderError::InvalidOutput)?;
+    // Even valid-looking JSON is incomplete if the provider reports truncation.
+    if body["choices"][0]["finish_reason"] != "stop" {
+        return Err(ProviderError::InvalidOutput);
+    }
     body["choices"][0]["message"]["content"]
         .as_str()
         .map(String::from)
@@ -150,7 +189,9 @@ mod tests {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     #[tokio::test]
     async fn response_decoding_bounds_and_sanitized_errors() {
-        let valid = r#"{"choices":[{"message":{"content":"{\"claims\":[]}"}}]}"#;
+        let valid =
+            r#"{"choices":[{"finish_reason":"stop","message":{"content":"{\"claims\":[]}"}}]}"#;
+        let truncated = valid.replace("\"stop\"", "\"length\"");
         let bodies = [
             (
                 format!(
@@ -159,6 +200,14 @@ mod tests {
                     valid
                 ),
                 Ok("{\"claims\":[]}".to_owned()),
+            ),
+            (
+                format!(
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    truncated.len(),
+                    truncated
+                ),
+                Err(ProviderError::InvalidOutput),
             ),
             (
                 "HTTP/1.1 200 OK\r\nContent-Length: 8388609\r\nConnection: close\r\n\r\n".into(),

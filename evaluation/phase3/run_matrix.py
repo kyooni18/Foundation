@@ -19,6 +19,8 @@ def main():
     parser.add_argument("--model", required=True)
     parser.add_argument("--reviewer", required=True)
     parser.add_argument("--prompt-version")
+    parser.add_argument("--max-output-tokens", type=int)
+    parser.add_argument("--review-max-output-tokens", type=int)
     parser.add_argument("--split", default="dev")
     parser.add_argument("--runs", type=int, default=2)
     parser.add_argument("--workers", type=int, default=4)
@@ -52,6 +54,10 @@ def main():
                "--split", args.split, "--variants", variant, "--runs", str(args.runs)]
         if args.prompt_version:
             cmd += ["--prompt-version", args.prompt_version]
+        if args.max_output_tokens:
+            cmd += ["--max-output-tokens", str(args.max_output_tokens)]
+        if args.review_max_output_tokens:
+            cmd += ["--review-max-output-tokens", str(args.review_max_output_tokens)]
         with open(str(stem) + ".log", "x") as log:
             status = subprocess.run(cmd, stdout=log, stderr=log, env=os.environ).returncode
         print(f"completed shard={part} variant={variant} exit={status}", flush=True)

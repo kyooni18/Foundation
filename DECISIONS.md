@@ -96,3 +96,37 @@ selects both extraction and review instructions. Unknown versions fail closed. S
 extractor identifiers use the frozen plan's version. No migration, authority change,
 or implicit upgrade of pending jobs is introduced. Editing v1 in place was rejected
 because it would prevent reproducible replays and could strand frozen requests.
+
+
+### D-44 — Output budgets and incomplete provider responses
+Live OpenRouter requests without an explicit output limit reserved up to 65,536 tokens
+and eventually returned HTTP 402, even though short requests still worked. ModelConfig
+now permits an explicit output budget included in frozen plan serialization/hash;
+omitted values preserve old request hashes and behavior. The cheap-model experiments
+use 16,384 extraction tokens and 4,096 review tokens. Exceeding a budget is a failure,
+never permission for partial persistence: non-stop completion reasons, including length
+truncation, are rejected even when their text happens to parse as JSON. Provider error
+enums distinguish quota, invalid requests and rate limits without retaining response
+bodies. No automatic credit purchase, model substitution or precision reduction occurs.
+Invalid local model configuration is rejected before leasing work.
+
+### D-45 — Editorial corpus corrections and inspectable intermediate experiments
+The new corpus annotations are draft semantic inventories, not independently adjudicated
+gold. Native Korean review identified two annotation problems: a bare '배포 ㄴㄴ' does
+not establish command versus status speech act, and an embedded instruction containing
+two independent requested actions needs two reported propositions. These development
+references were corrected with original source bytes unchanged. A disagreement relation
+may retain its presupposed attributed opinion in one proposition; a separately asserted
+opinion and a separately asserted disagreement remain distinct. Long-form editorial
+cases extend the corpus to 104 sources (84 development, 20 held-out).
+
+V3 adds contrastive examples for omitted subjects, embedded-instruction coverage,
+shorthand ambiguity, and date-only values in instant fields. V1/V2 prompts remain intact.
+The evaluation-only `english-staged` strategy saves an English draft and its prompt hash,
+then reconstructs using the original source plus that explicitly untrusted draft, with
+three final original-source review stages. Its experiment hash includes the intermediate
+prompt; its production-plan hash is recorded separately. This research strategy does
+not silently change the production worker or make translation authoritative. Its first
+request format failure (missing literal JSON in JSON-mode instructions) is preserved as
+a rejected experiment. Neither an internal-English instruction nor round-trip agreement
+establishes that a translation was faithful.

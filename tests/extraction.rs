@@ -12,10 +12,12 @@ fn plan() -> Plan {
         provider: "fake".into(),
         variant: "audited".into(),
         extractor: ModelConfig {
+            max_output_tokens: None,
             model: "fake".into(),
             timeout_seconds: 2,
         },
         reviewer: ModelConfig {
+            max_output_tokens: None,
             model: "independent-fake".into(),
             timeout_seconds: 2,
         },
@@ -415,6 +417,11 @@ async fn review_rejection_rolls_back_and_prompt_injection_remains_data() {
     );
     revised.prompt_version = Some("unrecognized".into());
     assert!(revised.hash().is_err());
+    let mut bounded = old.clone();
+    bounded.extractor.max_output_tokens = Some(16384);
+    assert_ne!(bounded.hash().unwrap(), old.hash().unwrap());
+    bounded.extractor.max_output_tokens = Some(0);
+    assert!(bounded.hash().is_err());
     let raw = output(vec![candidate(text)]);
     let proposal = propose(&fake(&raw, 1), &plan(), &source).await.unwrap();
     assert_eq!(proposal.raw, raw);
@@ -614,6 +621,7 @@ async fn provider_file_permissions_and_deepseek_guard() {
                 "English instruction",
                 "한국어 source",
                 &ModelConfig {
+                    max_output_tokens: None,
                     model: "deepseek/test".into(),
                     timeout_seconds: 1
                 }

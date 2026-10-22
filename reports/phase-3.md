@@ -195,7 +195,7 @@ and the local review gate. They do **not** establish that the new prompts fix th
 
 ## Corpus and scoring
 
-There are 96 cases, with no held-out examples copied into framing examples:
+There are now 104 cases (including eight long-form extensions), with no held-out examples copied into framing examples:
 
 | Corpus | Development | Held-out | Annotation status |
 |---|---:|---:|---|
@@ -291,7 +291,7 @@ while serving, configure the optional worker on `serve`; it shares the same core
 
 ## Validation evidence
 
-The final offline suite passes **38 top-level tests**. Two ignored helper tests are explicitly
+The current offline suite passes **40 top-level tests**. Two ignored helper tests are explicitly
 launched by their parent crash tests, not omitted acceptance work. Coverage includes:
 
 - All Phase 1/2 persistence, authorization, credential, HTTP, and MCP regressions.
@@ -322,8 +322,9 @@ and re-extraction potentially bypassing historical lifecycle restrictions.
 
 ## Remaining acceptance work and limitations
 
-1. Supply provider access and explicit models; run repeated development comparisons and
-   inspect actual failures. No model-quality acceptance can be inferred from offline tests.
+1. Complete the ongoing cheap-model development/legacy comparisons and inspect actual
+   failures. Provider access is working and funding was replenished; no model-quality
+   acceptance can be inferred from offline tests.
 2. Independently adjudicate semantic inventories, run the held-out baseline comparison,
    measure every listed rate and reviewer error mode, and revise general mechanisms when
    defects appear. Neither Korean-direct nor English-intermediate processing is yet selected
@@ -337,9 +338,9 @@ and re-extraction potentially bypassing historical lifecycle restrictions.
    provider context-limit failures remain recoverable failures, not partial extraction.
 6. Claim pagination materializes the visible set before slicing. It is isolated and stable
    by ID, but not optimized for large stores. Timing is not a constant-time privacy guarantee.
-7. The real HTTPS adapter compiles and its credential/DeepSeek guards are tested, but actual
-   provider interoperability, context limits, schema adherence, Korean fidelity, and prompt
-   injection resistance remain unverified without access.
+7. Live provider interoperability and a complete synthetic CLI lifecycle have now been
+   exercised. Semantic acceptance, context limits and prompt-injection robustness remain
+   under evaluation; passing selected examples does not establish universal correctness.
 
 Preserved checkpoints: `phase-1` = `50dbccb34fc3b5960fe02de2af56c8c33f7b5916`,
 `phase-2` = `ec11625f53f1bc12cb1f9e3e9849044f8e0d7d0d`. Implementation commits begin with

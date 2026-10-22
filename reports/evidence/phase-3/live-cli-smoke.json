@@ -1,0 +1,416 @@
+{
+  "source": "서버는 Rust로 작성됐고 SQLite를 사용하며 외부 네트워크에는 연결하지 않는다.",
+  "record": {
+    "args": [
+      "record",
+      "--principal",
+      "user",
+      "--content",
+      "서버는 Rust로 작성됐고 SQLite를 사용하며 외부 네트워크에는 연결하지 않는다."
+    ],
+    "exit": 0,
+    "stdout": "{\"source_id\":\"01M5JC46E1STNZG4Y4XRSMGD53\",\"created\":true}\n",
+    "stderr": "2026-10-22T17:56:44.591836Z  INFO prime_radiant::store::migrate: migration committed version=1\n2026-10-22T17:56:44.607697Z  INFO prime_radiant::store::migrate: migration committed version=2\n"
+  },
+  "work": {
+    "args": [
+      "extraction-work",
+      "--model",
+      "openai/gpt-6-luna",
+      "--reviewer",
+      "anthropic/claude-haiku-5.5",
+      "--prompt-version",
+      "extraction-v3",
+      "--max-output-tokens",
+      "16384",
+      "--review-max-output-tokens",
+      "4096"
+    ],
+    "exit": 0,
+    "stdout": "\"01M5JC4HRVQ3C9KHJKV53EBAS9\"\n",
+    "stderr": ""
+  },
+  "candidate_inspection": [
+    {
+      "attempts": 1,
+      "candidate": "01M5JC4HRVQ3C9KHJKV53EBAS9",
+      "failure": "review_required",
+      "hash": "e0749f330133357a22fa13171b046758199744fc2fa24185edb701327f414b1e",
+      "job": "01M5JC46E1NT7SPCR87N5AWJSY",
+      "lease_until": null,
+      "max_attempts": 3,
+      "output": "{\"claims\":[{\"text\":\"서버는 Rust로 작성되어 있다.\",\"lang\":\"ko\",\"category\":\"Fact\",\"speaker\":\"unknown\",\"speaker_label\":null,\"basis\":\"paraphrase\",\"anchor\":{\"quote\":\"서버는 Rust로 작성됐고\",\"occurrence\":0},\"tkind\":null,\"applies_from\":null,\"applies_to\":null,\"standing\":false,\"index_fields\":null,\"revision_of\":null,\"mentions\":[{\"surface\":\"서버\",\"occurrence\":0},{\"surface\":\"Rust\",\"occurrence\":0}],\"dependencies\":[]},{\"text\":\"서버는 SQLite를 사용한다.\",\"lang\":\"ko\",\"category\":\"Fact\",\"speaker\":\"unknown\",\"speaker_label\":null,\"basis\":\"paraphrase\",\"anchor\":{\"quote\":\"SQLite를 사용하며\",\"occurrence\":0},\"tkind\":null,\"applies_from\":null,\"applies_to\":null,\"standing\":false,\"index_fields\":null,\"revision_of\":null,\"mentions\":[{\"surface\":\"서버\",\"occurrence\":0},{\"surface\":\"SQLite\",\"occurrence\":0}],\"dependencies\":[]},{\"text\":\"서버는 외부 네트워크에 연결하지 않는다.\",\"lang\":\"ko\",\"category\":\"Fact\",\"speaker\":\"unknown\",\"speaker_label\":null,\"basis\":\"paraphrase\",\"anchor\":{\"quote\":\"외부 네트워크에는 연결하지 않는다\",\"occurrence\":0},\"tkind\":null,\"applies_from\":null,\"applies_to\":null,\"standing\":false,\"index_fields\":null,\"revision_of\":null,\"mentions\":[{\"surface\":\"서버\",\"occurrence\":0},{\"surface\":\"외부 네트워크\",\"occurrence\":0}],\"dependencies\":[]}],\"empty_reason\":null}",
+      "run_after": "2026-10-22T17:56:44.609Z",
+      "source": "01M5JC46E1STNZG4Y4XRSMGD53",
+      "state": "failed"
+    }
+  ],
+  "review": "Assistant inspected original and all three proposed propositions before exact-hash approval. Synthetic local database only. This smoke test is not corpus semantic acceptance.",
+  "operations": [
+    {
+      "args": [
+        "extraction-approve",
+        "01M5JC4HRVQ3C9KHJKV53EBAS9",
+        "e0749f330133357a22fa13171b046758199744fc2fa24185edb701327f414b1e"
+      ],
+      "result": [
+        "01M5JC639XDN779RQBN2JMCHC4",
+        "01M5JC639XVMHS0JB6Z0CJHQ7W",
+        "01M5JC639XZAH3WD7TQKTW56DP"
+      ]
+    },
+    {
+      "args": [
+        "extraction-approve",
+        "01M5JC4HRVQ3C9KHJKV53EBAS9",
+        "e0749f330133357a22fa13171b046758199744fc2fa24185edb701327f414b1e"
+      ],
+      "result": [
+        "01M5JC639XDN779RQBN2JMCHC4",
+        "01M5JC639XVMHS0JB6Z0CJHQ7W",
+        "01M5JC639XZAH3WD7TQKTW56DP"
+      ]
+    },
+    {
+      "args": [
+        "claims",
+        "--principal",
+        "agent"
+      ],
+      "result": [
+        {
+          "id": "01M5JC639XDN779RQBN2JMCHC4",
+          "source_id": "01M5JC46E1STNZG4Y4XRSMGD53",
+          "text": "서버는 Rust로 작성되어 있다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "basis": "paraphrase",
+          "anchor_start": 0,
+          "anchor_end": 30,
+          "anchor_quote": "서버는 Rust로 작성됐고",
+          "speaker_label": null,
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "created_at": "2026-10-22T17:57:46.941Z",
+          "lifecycle": "restore",
+          "source_lifecycle": "restore",
+          "recorder": "user",
+          "provenance": {
+            "extractor_id": "openrouter:extraction-v3:openai/gpt-6-luna:59b76db5a9fd361936b70a79ad767a3859a4b7bc2789c96cdc371545b430a992",
+            "job_id": "01M5JC46E1NT7SPCR87N5AWJSY",
+            "revision_of": null
+          },
+          "confirmed": false,
+          "needs_revalidation": false
+        },
+        {
+          "id": "01M5JC639XVMHS0JB6Z0CJHQ7W",
+          "source_id": "01M5JC46E1STNZG4Y4XRSMGD53",
+          "text": "서버는 SQLite를 사용한다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "basis": "paraphrase",
+          "anchor_start": 31,
+          "anchor_end": 53,
+          "anchor_quote": "SQLite를 사용하며",
+          "speaker_label": null,
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "created_at": "2026-10-22T17:57:46.941Z",
+          "lifecycle": "restore",
+          "source_lifecycle": "restore",
+          "recorder": "user",
+          "provenance": {
+            "extractor_id": "openrouter:extraction-v3:openai/gpt-6-luna:59b76db5a9fd361936b70a79ad767a3859a4b7bc2789c96cdc371545b430a992",
+            "job_id": "01M5JC46E1NT7SPCR87N5AWJSY",
+            "revision_of": null
+          },
+          "confirmed": false,
+          "needs_revalidation": false
+        },
+        {
+          "id": "01M5JC639XZAH3WD7TQKTW56DP",
+          "source_id": "01M5JC46E1STNZG4Y4XRSMGD53",
+          "text": "서버는 외부 네트워크에 연결하지 않는다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "basis": "paraphrase",
+          "anchor_start": 54,
+          "anchor_end": 102,
+          "anchor_quote": "외부 네트워크에는 연결하지 않는다",
+          "speaker_label": null,
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "created_at": "2026-10-22T17:57:46.941Z",
+          "lifecycle": "restore",
+          "source_lifecycle": "restore",
+          "recorder": "user",
+          "provenance": {
+            "extractor_id": "openrouter:extraction-v3:openai/gpt-6-luna:59b76db5a9fd361936b70a79ad767a3859a4b7bc2789c96cdc371545b430a992",
+            "job_id": "01M5JC46E1NT7SPCR87N5AWJSY",
+            "revision_of": null
+          },
+          "confirmed": false,
+          "needs_revalidation": false
+        }
+      ]
+    },
+    {
+      "args": [
+        "claims",
+        "--principal",
+        "user"
+      ],
+      "result": []
+    },
+    {
+      "args": [
+        "claim-status",
+        "01M5JC639XDN779RQBN2JMCHC4",
+        "confirm"
+      ],
+      "result": true
+    },
+    {
+      "args": [
+        "claims",
+        "--principal",
+        "user"
+      ],
+      "result": [
+        {
+          "id": "01M5JC639XDN779RQBN2JMCHC4",
+          "source_id": "01M5JC46E1STNZG4Y4XRSMGD53",
+          "text": "서버는 Rust로 작성되어 있다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "basis": "paraphrase",
+          "anchor_start": null,
+          "anchor_end": null,
+          "anchor_quote": null,
+          "speaker_label": null,
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "created_at": "2026-10-22T17:57:46.941Z",
+          "lifecycle": "restore",
+          "source_lifecycle": "restore",
+          "confirmed": true,
+          "needs_revalidation": false
+        }
+      ]
+    },
+    {
+      "args": [
+        "claim-status",
+        "01M5JC639XDN779RQBN2JMCHC4",
+        "retract"
+      ],
+      "result": true
+    },
+    {
+      "args": [
+        "claims",
+        "--principal",
+        "user"
+      ],
+      "result": []
+    },
+    {
+      "args": [
+        "claim-status",
+        "01M5JC639XDN779RQBN2JMCHC4",
+        "restore"
+      ],
+      "result": true
+    },
+    {
+      "args": [
+        "claims",
+        "--principal",
+        "user"
+      ],
+      "result": [
+        {
+          "id": "01M5JC639XDN779RQBN2JMCHC4",
+          "source_id": "01M5JC46E1STNZG4Y4XRSMGD53",
+          "text": "서버는 Rust로 작성되어 있다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "basis": "paraphrase",
+          "anchor_start": null,
+          "anchor_end": null,
+          "anchor_quote": null,
+          "speaker_label": null,
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "created_at": "2026-10-22T17:57:46.941Z",
+          "lifecycle": "restore",
+          "source_lifecycle": "restore",
+          "confirmed": true,
+          "needs_revalidation": false
+        }
+      ]
+    },
+    {
+      "args": [
+        "claim-status",
+        "01M5JC639XDN779RQBN2JMCHC4",
+        "forget"
+      ],
+      "result": true
+    },
+    {
+      "args": [
+        "claims",
+        "--principal",
+        "agent"
+      ],
+      "result": [
+        {
+          "id": "01M5JC639XVMHS0JB6Z0CJHQ7W",
+          "source_id": "01M5JC46E1STNZG4Y4XRSMGD53",
+          "text": "서버는 SQLite를 사용한다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "basis": "paraphrase",
+          "anchor_start": 31,
+          "anchor_end": 53,
+          "anchor_quote": "SQLite를 사용하며",
+          "speaker_label": null,
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "created_at": "2026-10-22T17:57:46.941Z",
+          "lifecycle": "restore",
+          "source_lifecycle": "restore",
+          "recorder": "user",
+          "provenance": {
+            "extractor_id": "openrouter:extraction-v3:openai/gpt-6-luna:59b76db5a9fd361936b70a79ad767a3859a4b7bc2789c96cdc371545b430a992",
+            "job_id": "01M5JC46E1NT7SPCR87N5AWJSY",
+            "revision_of": null
+          },
+          "confirmed": false,
+          "needs_revalidation": false
+        },
+        {
+          "id": "01M5JC639XZAH3WD7TQKTW56DP",
+          "source_id": "01M5JC46E1STNZG4Y4XRSMGD53",
+          "text": "서버는 외부 네트워크에 연결하지 않는다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "basis": "paraphrase",
+          "anchor_start": 54,
+          "anchor_end": 102,
+          "anchor_quote": "외부 네트워크에는 연결하지 않는다",
+          "speaker_label": null,
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "created_at": "2026-10-22T17:57:46.941Z",
+          "lifecycle": "restore",
+          "source_lifecycle": "restore",
+          "recorder": "user",
+          "provenance": {
+            "extractor_id": "openrouter:extraction-v3:openai/gpt-6-luna:59b76db5a9fd361936b70a79ad767a3859a4b7bc2789c96cdc371545b430a992",
+            "job_id": "01M5JC46E1NT7SPCR87N5AWJSY",
+            "revision_of": null
+          },
+          "confirmed": false,
+          "needs_revalidation": false
+        }
+      ]
+    },
+    {
+      "args": [
+        "claims",
+        "--principal",
+        "user"
+      ],
+      "result": []
+    },
+    {
+      "args": [
+        "check"
+      ],
+      "result": {
+        "ok": true,
+        "items": [
+          {
+            "name": "sqlite",
+            "ok": true,
+            "violations": 0,
+            "first_violation": null
+          },
+          {
+            "name": "foreign_keys",
+            "ok": true,
+            "violations": 0,
+            "first_violation": null
+          },
+          {
+            "name": "migrations",
+            "ok": true,
+            "violations": 0,
+            "first_violation": null
+          },
+          {
+            "name": "source_hashes",
+            "ok": true,
+            "violations": 0,
+            "first_violation": null
+          },
+          {
+            "name": "status_targets",
+            "ok": true,
+            "violations": 0,
+            "first_violation": null
+          },
+          {
+            "name": "triggers",
+            "ok": true,
+            "violations": 0,
+            "first_violation": null
+          },
+          {
+            "name": "claim_evidence",
+            "ok": true,
+            "violations": 0,
+            "first_violation": null
+          },
+          {
+            "name": "extraction_publication",
+            "ok": true,
+            "violations": 0,
+            "first_violation": null
+          }
+        ]
+      }
+    }
+  ]
+}

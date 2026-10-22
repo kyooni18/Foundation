@@ -356,10 +356,12 @@ fn claim_transport_equivalence_and_projection_isolation() {
                 provider: "fake".into(),
                 variant: "audited".into(),
                 extractor: ModelConfig {
+                    max_output_tokens: None,
                     model: "fake".into(),
                     timeout_seconds: 1,
                 },
                 reviewer: ModelConfig {
+                    max_output_tokens: None,
                     model: "fake".into(),
                     timeout_seconds: 1,
                 },

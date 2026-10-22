@@ -25,6 +25,12 @@ enum Command {
         reviewer: String,
         #[arg(long, default_value = "audited")]
         variant: String,
+        #[arg(long)]
+        prompt_version: Option<String>,
+        #[arg(long)]
+        max_output_tokens: Option<u32>,
+        #[arg(long)]
+        review_max_output_tokens: Option<u32>,
     },
     ExtractionInspect,
     ExtractionApprove {
@@ -65,6 +71,8 @@ enum Command {
         extraction_model: Option<String>,
         #[arg(long, requires = "extraction_model")]
         extraction_reviewer: Option<String>,
+        #[arg(long, requires = "extraction_model")]
+        extraction_prompt_version: Option<String>,
     },
     /// Connect stdio MCP to the sole DB-owning server.
     Mcp {
@@ -178,6 +186,7 @@ fn run() -> Result<()> {
         bind,
         extraction_model,
         extraction_reviewer,
+        extraction_prompt_version,
     } = cli.command
     {
         let credentials = prime_radiant::authentication::Credentials::open(credentials)?;
@@ -188,18 +197,21 @@ fn run() -> Result<()> {
                     let provider = prime_radiant::providers::OpenRouter::from_environment()
                         .map_err(|_| invalid("provider", "credential unavailable"))?;
                     let plan = prime_radiant::extraction::Plan {
-                        prompt_version: None,
+                        prompt_version: extraction_prompt_version,
                         provider: "openrouter".into(),
                         variant: "audited".into(),
                         extractor: prime_radiant::providers::ModelConfig {
+                            max_output_tokens: None,
                             model,
                             timeout_seconds: 120,
                         },
                         reviewer: prime_radiant::providers::ModelConfig {
+                            max_output_tokens: None,
                             model: reviewer,
                             timeout_seconds: 120,
                         },
                     };
+                    plan.hash()?;
                     Some(service.start_extraction_worker(std::sync::Arc::new(provider), plan))
                 } else {
                     None
@@ -256,18 +268,23 @@ fn run() -> Result<()> {
             model,
             reviewer,
             variant,
+            prompt_version,
+            max_output_tokens,
+            review_max_output_tokens,
         } => {
             let provider = prime_radiant::providers::OpenRouter::from_environment()
                 .map_err(|_| invalid("provider", "credential unavailable"))?;
             let plan = prime_radiant::extraction::Plan {
-                prompt_version: None,
+                prompt_version,
                 provider: "openrouter".into(),
                 variant,
                 extractor: prime_radiant::providers::ModelConfig {
+                    max_output_tokens,
                     model,
                     timeout_seconds: 120,
                 },
                 reviewer: prime_radiant::providers::ModelConfig {
+                    max_output_tokens: review_max_output_tokens,
                     model: reviewer,
                     timeout_seconds: 120,
                 },

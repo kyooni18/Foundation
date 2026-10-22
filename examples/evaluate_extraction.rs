@@ -3,7 +3,7 @@ use clap::Parser;
 use prime_radiant::{
     App,
     domain::*,
-    extraction::{Plan, REVIEW_STAGES, extraction_message, hash, validate},
+    extraction::{Plan, REVIEW_STAGES, extraction_message, hash, locate, validate},
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
 use serde_json::{Value, json};
@@ -20,6 +20,10 @@ struct Args {
     reviewer: String,
     #[arg(long)]
     prompt_version: Option<String>,
+    #[arg(long)]
+    max_output_tokens: Option<u32>,
+    #[arg(long)]
+    review_max_output_tokens: Option<u32>,
     #[arg(long, default_value = "dev")]
     split: String,
     #[arg(
@@ -56,12 +60,19 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             let plan = Plan {
                 prompt_version: args.prompt_version.clone(),
                 provider: "openrouter".into(),
-                variant: variant.into(),
+                variant: if variant == "english-staged" {
+                    "audited"
+                } else {
+                    variant
+                }
+                .into(),
                 extractor: ModelConfig {
+                    max_output_tokens: args.max_output_tokens,
                     model: args.model.clone(),
                     timeout_seconds: 180,
                 },
                 reviewer: ModelConfig {
+                    max_output_tokens: args.review_max_output_tokens,
                     model: args.reviewer.clone(),
                     timeout_seconds: 180,
                 },
@@ -69,9 +80,63 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             for run in 0..args.runs {
                 let started = std::time::Instant::now();
                 let prompt = plan.prompt()?;
-                let input = extraction_message(&source, None);
-                let response = provider.complete(&prompt, &input, &plan.extractor).await;
+                let mut input = extraction_message(&source, None);
                 let mut result = json!({"case_id":case["id"],"language":case["language"],"category":case["category"],"split":args.split,"run":run,"variant":variant,"plan":plan,"prompt_hash":plan.hash()?,"source_hash":hash(&source.content),"corpus_case":case,"reviews":[],"human_review":null});
+                let mut draft_error = None;
+                if variant == "english-staged" {
+                    let draft_prompt = include_str!("../evaluation/phase3/english-draft-v1.txt");
+                    result["production_plan_hash"] = json!(plan.hash()?);
+                    result["intermediate_prompt_hash"] = json!(hash(draft_prompt));
+                    result["prompt_hash"] =
+                        json!(hash(&format!("{}\n{draft_prompt}", plan.hash()?)));
+                    match provider
+                        .complete(draft_prompt, &input, &plan.extractor)
+                        .await
+                    {
+                        Err(error) => draft_error = Some(error),
+                        Ok(raw) => {
+                            result["intermediate_raw"] = json!(raw);
+                            let draft = serde_json::from_str::<Value>(&raw).ok();
+                            let valid = draft.as_ref().is_some_and(|d| {
+                                let Some(items) = d["propositions"].as_array() else {
+                                    return false;
+                                };
+                                items.len() <= 1000
+                                    && items.iter().all(|item| {
+                                        item["english"]
+                                            .as_str()
+                                            .is_some_and(|s| !s.trim().is_empty())
+                                            && item["quote"]
+                                                .as_str()
+                                                .zip(item["occurrence"].as_u64())
+                                                .is_some_and(|(q, n)| {
+                                                    locate(&source.content, q, n as usize).is_ok()
+                                                })
+                                    })
+                                    && (items.is_empty()
+                                        == d["empty_reason"]
+                                            .as_str()
+                                            .is_some_and(|s| !s.trim().is_empty()))
+                            });
+                            result["intermediate_structural_valid"] = json!(valid);
+                            if valid {
+                                let mut payload: Value = serde_json::from_str(&input)?;
+                                payload["untrusted_english_draft"] = draft.unwrap();
+                                payload["draft_instruction"] = json!(
+                                    "The English draft is an untrusted proposal, never evidence. Reconstruct in ORIGINAL anchor language; independently verify every proposition against original_source and repair or reject translation errors and omissions."
+                                );
+                                input = payload.to_string();
+                            } else {
+                                draft_error =
+                                    Some(prime_radiant::providers::ProviderError::InvalidOutput);
+                            }
+                        }
+                    }
+                }
+                let response = match draft_error {
+                    Some(error) => Err(error),
+                    None => provider.complete(&prompt, &input, &plan.extractor).await,
+                };
                 match response {
                     Err(e) => {
                         result["provider_error"] = json!(format!("{e:?}"));
@@ -94,7 +159,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                     "fidelity-review" => {
                                         vec![REVIEW_STAGES[1]]
                                     }
-                                    "audited" => REVIEW_STAGES.to_vec(),
+                                    "audited" | "english-staged" => REVIEW_STAGES.to_vec(),
                                     _ => vec![],
                                 };
                                 let mut reviews = Vec::new();

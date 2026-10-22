@@ -55,8 +55,10 @@ for row in rows:
     validate_review(row)
 groups=collections.defaultdict(list)
 for row in rows:
+    plan=row.get('plan',{})
+    context=(plan.get('prompt_version') or 'extraction-v1',plan.get('extractor',{}).get('model','unspecified'),plan.get('reviewer',{}).get('model','unspecified'))
     for key in [(row['variant'],row['language'],'all'),(row['variant'],row['language'],row['category'])]:
-        groups[key].append(row)
+        groups[context+key].append(row)
 output={}
 for key,rs in groups.items():
     reviewed=[r for r in rs if r.get(annotation) is not None]

@@ -10,6 +10,7 @@ import unittest
 SCRIPT = Path(__file__).with_name("score.py")
 FLAGS = ["atomicity_violation", "unsupported", "fidelity_error", "epistemic_error",
          "language_error", "anchor_error", "duplicate"]
+GROUP = "extraction-v1|unspecified|unspecified|audited|ko|all"
 
 class ScoringTests(unittest.TestCase):
     def run_score(self, rows):
@@ -30,12 +31,12 @@ class ScoringTests(unittest.TestCase):
                                      translation_errors=0, translation_candidates=0))
         result = self.run_score([row])
         self.assertEqual(result.returncode, 0, result.stderr)
-        group = json.loads(result.stdout)["audited|ko|all"]
+        group = json.loads(result.stdout)[GROUP]
         self.assertEqual(group["coverage"], dict(numerator=0, denominator=2, rate=0.0))
         self.assertIsNone(group["atomicity_violation"]["rate"])
         missing = copy.deepcopy(row)
         missing["human_review"] = None
-        group = json.loads(self.run_score([missing]).stdout)["audited|ko|all"]
+        group = json.loads(self.run_score([missing]).stdout)[GROUP]
         self.assertEqual(group["unreviewed"], 1)
         self.assertIsNone(group["coverage"]["rate"])
         mutations = [
