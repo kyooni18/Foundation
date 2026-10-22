@@ -63,12 +63,19 @@ impl LifecycleEvent {
         }
     }
 }
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Principal {
     pub(crate) kind: PrincipalKind,
     pub(crate) label: Option<String>,
     pub(crate) session_id: Option<String>,
     pub(crate) credential: Option<[u8; 32]>,
+}
+impl fmt::Debug for Principal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Principal")
+            .field("kind", &self.kind)
+            .finish_non_exhaustive()
+    }
 }
 impl Principal {
     /// Explicit local developer CLI/test entry point; not a transport authentication API.

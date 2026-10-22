@@ -118,13 +118,13 @@ impl Credentials {
     ) -> Result<()> {
         let registry = registry.as_ref();
         let token_file = token_file.as_ref();
-        if label.as_ref().is_some_and(|s| s.len() > 200) {
+        if registry == token_file || label.as_ref().is_some_and(|s| s.len() > 200) {
             return Err(Error::Credentials);
         }
         // Serialize provisioning independently of the live DB owner.
         let _lock =
             crate::store::conn::Ownership::acquire(registry).map_err(|_| Error::Credentials)?;
-        let mut data = if registry.exists() {
+        let mut data = if registry.symlink_metadata().is_ok() {
             Self::open(registry)?.read()?
         } else {
             Registry::default()
