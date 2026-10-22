@@ -61,6 +61,10 @@ enum Command {
         credentials: PathBuf,
         #[arg(long, default_value = "127.0.0.1:7823")]
         bind: std::net::SocketAddr,
+        #[arg(long, requires = "extraction_reviewer")]
+        extraction_model: Option<String>,
+        #[arg(long, requires = "extraction_model")]
+        extraction_reviewer: Option<String>,
     },
     /// Connect stdio MCP to the sole DB-owning server.
     Mcp {
@@ -169,10 +173,36 @@ fn run() -> Result<()> {
         output(serde_json::json!({"restored":true}));
         return Ok(());
     }
-    if let Command::Serve { credentials, bind } = cli.command {
+    if let Command::Serve {
+        credentials,
+        bind,
+        extraction_model,
+        extraction_reviewer,
+    } = cli.command
+    {
         let credentials = prime_radiant::authentication::Credentials::open(credentials)?;
         let service = prime_radiant::api::Service::new(App::open(path)?, credentials);
         return tokio::runtime::Runtime::new()?.block_on(async move {
+            let worker =
+                if let (Some(model), Some(reviewer)) = (extraction_model, extraction_reviewer) {
+                    let provider = prime_radiant::providers::OpenRouter::from_environment()
+                        .map_err(|_| invalid("provider", "credential unavailable"))?;
+                    let plan = prime_radiant::extraction::Plan {
+                        provider: "openrouter".into(),
+                        variant: "audited".into(),
+                        extractor: prime_radiant::providers::ModelConfig {
+                            model,
+                            timeout_seconds: 120,
+                        },
+                        reviewer: prime_radiant::providers::ModelConfig {
+                            model: reviewer,
+                            timeout_seconds: 120,
+                        },
+                    };
+                    Some(service.start_extraction_worker(std::sync::Arc::new(provider), plan))
+                } else {
+                    None
+                };
             let listener = prime_radiant::transport::http::bind(bind).await?;
             eprintln!("listening {}", listener.local_addr()?);
             axum::serve(listener, prime_radiant::transport::http::router(service))
@@ -180,6 +210,9 @@ fn run() -> Result<()> {
                     let _ = tokio::signal::ctrl_c().await;
                 })
                 .await?;
+            if let Some(worker) = worker {
+                worker.abort();
+            }
             Ok(())
         });
     }

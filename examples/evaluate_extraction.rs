@@ -3,7 +3,7 @@ use clap::Parser;
 use prime_radiant::{
     App,
     domain::*,
-    extraction::{Plan, hash, validate},
+    extraction::{Plan, REVIEW_STAGES, extraction_message, hash, review_prompt, validate},
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
 use serde_json::{Value, json};
@@ -65,7 +65,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             };
             for run in 0..args.runs {
                 let prompt = plan.prompt()?;
-                let input=json!({"original_source":source.content,"authored_at":source.authored_at,"observed_at":source.observed_at,"artifact_available":false}).to_string();
+                let input = extraction_message(&source, None);
                 let response = provider.complete(&prompt, &input, &plan.extractor).await;
                 let mut result = json!({"case_id":case["id"],"language":case["language"],"category":case["category"],"split":args.split,"run":run,"variant":variant,"plan":plan,"prompt_hash":plan.hash()?,"source_hash":hash(&source.content),"corpus_case":case,"reviews":[],"human_review":null});
                 match response {
@@ -80,24 +80,16 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                 result["structural_valid"] = json!(true);
                                 result["claim_count"] = json!(batch.claims.len());
                                 let stages = match variant {
-                                    "atomicity-review" => vec!["atomicity and over-splitting"],
+                                    "atomicity-review" => vec![REVIEW_STAGES[0]],
                                     "fidelity-review" => {
-                                        vec!["semantic fidelity and epistemic framing"]
+                                        vec![REVIEW_STAGES[1]]
                                     }
-                                    "audited" => vec![
-                                        "atomicity and over-splitting",
-                                        "semantic fidelity and epistemic framing",
-                                        "coverage and duplication",
-                                    ],
+                                    "audited" => REVIEW_STAGES.to_vec(),
                                     _ => vec![],
                                 };
                                 let mut reviews = Vec::new();
                                 for stage in stages {
-                                    let review_prompt = format!(
-                                        "{}\n{}\nReview responsibility: {stage}",
-                                        include_str!("../prompts/extraction-v1/review.txt"),
-                                        include_str!("../prompts/extraction-v1/frames.txt")
-                                    );
+                                    let review_prompt = review_prompt(stage);
                                     let review_input=json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch}).to_string();
                                     let review = provider
                                         .complete(&review_prompt, &review_input, &plan.reviewer)

@@ -176,6 +176,12 @@ pub fn validate(raw: &str, source: &SourceView) -> Result<Batch> {
             return Err(invalid("schema", "empty or duplicate claim"));
         }
         choice(&c.lang, &["ko", "en"])?;
+        let outside = |text: &str| {
+            text.chars().any(|ch|ch.is_alphabetic() && !(ch.is_ascii() || matches!(ch as u32,0xc0..=0x24f|0x1100..=0x11ff|0x3130..=0x318f|0xac00..=0xd7af)))
+        };
+        if outside(&c.text) || outside(&c.anchor.quote) {
+            return Err(invalid("language", "unsupported script"));
+        }
         choice(&c.category, &["Fact", "View", "Intent", "Rule"])?;
         choice(&c.speaker, &["user", "agent", "external", "unknown"])?;
         choice(
@@ -278,6 +284,9 @@ pub fn validate(raw: &str, source: &SourceView) -> Result<Batch> {
 fn review_valid(raw: &str, n: usize) -> Result<()> {
     let v: Value = serde_json::from_str(raw).map_err(|_| invalid("schema", "invalid review"))?;
     keys(&v, &["verdict", "issues", "checked", "coverage_complete"])?;
+    if v["verdict"] == "unresolved" {
+        return Err(invalid("unresolved", "review ambiguity"));
+    }
     if v["verdict"] != "pass"
         || v["coverage_complete"] != true
         || v["issues"] != serde_json::json!([])
@@ -307,18 +316,22 @@ pub async fn propose(
     plan: &Plan,
     source: &SourceView,
 ) -> Result<Proposal> {
-    propose_with_feedback(provider, plan, source, None).await
+    propose_with_feedback(provider, plan, source, None, &[]).await
 }
 async fn propose_with_feedback(
     provider: &dyn LlmProvider,
     plan: &Plan,
     source: &SourceView,
     feedback: Option<&str>,
+    prior_claims: &[Value],
 ) -> Result<Proposal> {
     if provider.identity() != plan.provider {
         return Err(invalid("provider", "configuration mismatch"));
     }
-    let input=serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"observed_at":source.observed_at,"artifact_available":source.artifact_ref.is_some(),"previous_failure_code":feedback,"repair_instruction":"Re-analyze the original source and repair the entire batch; do not omit difficult propositions to avoid failure."}).to_string();
+    let mut input: Value =
+        serde_json::from_str(&extraction_message(source, feedback)).expect("payload");
+    input["prior_extraction_claims"] = serde_json::json!(prior_claims);
+    let input = input.to_string();
     let call = |e: ProviderError| {
         invalid(
             "provider",
@@ -335,20 +348,23 @@ async fn propose_with_feedback(
         .map_err(call)?;
     let batch = validate(&raw, source)?;
     let mut reviews = Vec::new();
-    for stage in [
-        "atomicity and independence",
-        "semantic fidelity and epistemic framing",
-        "whole-batch coverage, duplication and conflicting interpretation",
-    ] {
-        let prompt = format!(
-            "{REVIEW}\n{FRAMES}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
-        );
+    for stage in REVIEW_STAGES {
+        let prompt = review_prompt(stage);
         let input=serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch}).to_string();
         let result = provider
             .complete(&prompt, &input, &plan.reviewer)
             .await
             .map_err(call)?;
-        review_valid(&result, batch.claims.len()).map_err(|_| {
+        review_valid(&result, batch.claims.len()).map_err(|error| {
+            if matches!(
+                error,
+                Error::InvalidInput {
+                    field: "unresolved",
+                    ..
+                }
+            ) {
+                return error;
+            }
             invalid(
                 if stage.starts_with("atomicity") {
                     "atomicity"
@@ -480,8 +496,11 @@ impl App {
                 [&lease.id],
                 |r| r.get(0),
             )?;
+            let reader = self.store.reader()?;
+            let prior:Vec<Value>=reader.prepare("SELECT c.id,c.text FROM claim c JOIN extraction_request r ON c.job_id=r.base_job WHERE r.job_id=?1 ORDER BY c.id")?.query_map([&lease.id],|r|Ok(serde_json::json!({"id":r.get::<_,String>(0)?,"text":r.get::<_,String>(1)?})))?.collect::<std::result::Result<_,_>>()?;
+            drop(reader);
             let proposal =
-                propose_with_feedback(provider, plan, &source, previous.as_deref()).await?;
+                propose_with_feedback(provider, plan, &source, previous.as_deref(), &prior).await?;
             self.quarantine_extraction(&lease, proposal)
         };
         match tokio::time::timeout(std::time::Duration::from_secs(budget), outcome).await {
@@ -490,11 +509,15 @@ impl App {
                 let code = match failure {
                     Err(_) => "timeout",
                     Ok(Err(Error::NotFound)) => "lifecycle",
+                    Ok(Err(Error::InvalidInput {
+                        field: "provider",
+                        reason,
+                    })) if reason == "timeout" => "timeout",
                     Ok(Err(Error::InvalidInput { field, .. })) => match field {
                         "anchor" => "anchor",
                         "language" => "language",
                         "schema" => "schema",
-                        "semantic" => "unresolved",
+                        "semantic" | "unresolved" => "unresolved",
                         "atomicity" => "atomicity",
                         "fidelity" => "fidelity",
                         "coverage" => "coverage",
@@ -519,7 +542,22 @@ impl App {
             return Err(Error::Forbidden);
         }
         let conn = self.store.reader()?;
-        let rows=conn.prepare("SELECT j.id,j.target_id,j.state,j.attempts,j.last_error,c.id,c.output_hash,c.output_json FROM job j LEFT JOIN extraction_candidate c ON c.job_id=j.id ORDER BY j.created_at,j.id")?.query_map([],|r|Ok(serde_json::json!({"job":r.get::<_,String>(0)?,"source":r.get::<_,String>(1)?,"state":r.get::<_,String>(2)?,"attempts":r.get::<_,u32>(3)?,"failure":r.get::<_,Option<String>>(4)?,"candidate":r.get::<_,Option<String>>(5)?,"hash":r.get::<_,Option<String>>(6)?,"output":r.get::<_,Option<String>>(7)?})))?.collect::<std::result::Result<Vec<_>,_>>()?;
+        let rows=conn.prepare("SELECT j.id,j.target_id,j.state,j.attempts,j.last_error,c.id,c.output_hash,c.output_json,j.max_attempts,j.run_after,j.lease_until FROM job j LEFT JOIN extraction_candidate c ON c.job_id=j.id ORDER BY j.created_at,j.id")?.query_map([],|r|Ok(serde_json::json!({"job":r.get::<_,String>(0)?,"source":r.get::<_,String>(1)?,"state":r.get::<_,String>(2)?,"attempts":r.get::<_,u32>(3)?,"failure":r.get::<_,Option<String>>(4)?,"candidate":r.get::<_,Option<String>>(5)?,"hash":r.get::<_,Option<String>>(6)?,"output":r.get::<_,Option<String>>(7)?,"max_attempts":r.get::<_,u32>(8)?,"run_after":r.get::<_,String>(9)?,"lease_until":r.get::<_,Option<String>>(10)?})))?.collect::<std::result::Result<Vec<_>,_>>()?;
         Ok(Value::Array(rows))
     }
+}
+
+/// Shared evaluation/production payload; original bytes remain authoritative.
+pub fn extraction_message(source: &SourceView, feedback: Option<&str>) -> String {
+    serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"observed_at":source.observed_at,"artifact_available":source.artifact_ref.is_some(),"previous_failure_code":feedback,"prior_extraction_claims":[],"repair_instruction":"Re-analyze the original source and repair the entire batch; do not omit difficult propositions to avoid failure."}).to_string()
+}
+pub const REVIEW_STAGES: [&str; 3] = [
+    "atomicity and independence",
+    "semantic fidelity and epistemic framing",
+    "whole-batch coverage, duplication and conflicting interpretation",
+];
+pub fn review_prompt(stage: &str) -> String {
+    format!(
+        "{REVIEW}\n{FRAMES}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
+    )
 }

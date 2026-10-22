@@ -432,6 +432,20 @@ fn leased_crash_worker() {
         .unwrap()
         .unwrap();
     app.extraction_input(&lease, &plan()).unwrap();
+    if std::env::var_os("PRIME_EXTRACTION_PUBLISH").is_some() {
+        let source = app.extraction_input(&lease, &plan()).unwrap();
+        let values: Vec<_> = source.content.lines().map(candidate).collect();
+        let n = values.len();
+        let raw = output(values);
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let proposal = runtime
+            .block_on(propose(&fake(&raw, n), &plan(), &source))
+            .unwrap();
+        let c = app.quarantine_extraction(&lease, proposal).unwrap();
+        println!("PUBLISHING");
+        std::io::stdout().flush().unwrap();
+        app.approve_extraction(&user(), &c, &hash(&raw)).unwrap();
+    }
     println!("LEASED");
     std::io::stdout().flush().unwrap();
     std::thread::sleep(std::time::Duration::from_secs(60));
@@ -533,7 +547,10 @@ fn phase_two_database_migrates_losslessly_with_pre_migration_backup() {
     let backup = std::fs::read_dir(dir.path())
         .unwrap()
         .map(|e| e.unwrap().path())
-        .find(|p| p.to_string_lossy().contains(".pre-v2."))
+        .find(|p| {
+            p.to_string_lossy().contains(".pre-v2.")
+                && p.extension().is_some_and(|ext| ext == "bak")
+        })
         .unwrap();
     let old = rusqlite::Connection::open(backup).unwrap();
     assert_eq!(
@@ -547,4 +564,165 @@ fn phase_two_database_migrates_losslessly_with_pre_migration_backup() {
         text
     );
     assert!(app.verify_integrity().unwrap().ok);
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn provider_file_permissions_and_deepseek_guard() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().canonicalize().unwrap().join("key");
+    assert!(OpenRouter::from_credential_file(&path).is_err());
+    std::fs::write(&path, "test-placeholder-no-network").unwrap();
+    std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o644)).unwrap();
+    assert!(OpenRouter::from_credential_file(&path).is_err());
+    std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600)).unwrap();
+    let provider = OpenRouter::from_credential_file(&path).unwrap();
+    assert_eq!(
+        provider
+            .complete(
+                "English instruction",
+                "한국어 source",
+                &ModelConfig {
+                    model: "deepseek/test".into(),
+                    timeout_seconds: 1
+                }
+            )
+            .await
+            .unwrap_err(),
+        ProviderError::LanguageRestriction
+    );
+}
+struct Stalled;
+impl LlmProvider for Stalled {
+    fn identity(&self) -> &str {
+        "fake"
+    }
+    fn complete<'a>(&'a self, _: &'a str, _: &'a str, _: &'a ModelConfig) -> ProviderFuture<'a> {
+        Box::pin(std::future::pending())
+    }
+}
+#[tokio::test]
+async fn timeout_releases_job_for_bounded_retry() {
+    let (_dir, app) = fixture();
+    app.record_source(&user(), RecordSource::plain("보존한다."))
+        .unwrap();
+    let mut config = plan();
+    config.extractor.timeout_seconds = 1;
+    config.reviewer.timeout_seconds = 1;
+    assert!(app.work_once(&Stalled, &config).await.is_err());
+    let state = row(&app);
+    assert_eq!(state["state"], "pending");
+    assert_eq!(state["failure"], "timeout");
+    assert_eq!(state["attempts"], 1);
+}
+
+#[tokio::test]
+async fn invalid_revision_rolls_back_whole_publication() {
+    let (dir, app) = fixture();
+    app.record_source(&user(), RecordSource::plain("첫째다. 둘째다."))
+        .unwrap();
+    let mut invalid = candidate("둘째다.");
+    invalid["revision_of"] = json!(ulid::Ulid::new().to_string());
+    let raw = output(vec![candidate("첫째다."), invalid]);
+    let id = app
+        .work_once(&fake(&raw, 2), &plan())
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(app.approve_extraction(&user(), &id, &hash(&raw)).is_err());
+    let conn = rusqlite::Connection::open(dir.path().join("db")).unwrap();
+    for table in ["claim", "mention", "claim_dependency", "extraction_run"] {
+        assert_eq!(
+            conn.query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r
+                .get::<_, usize>(0))
+                .unwrap(),
+            0
+        );
+    }
+    assert_eq!(row(&app)["state"], "failed");
+    assert!(app.verify_integrity().unwrap().ok);
+}
+
+#[tokio::test]
+async fn reextraction_cannot_resurrect_forgotten_claims() {
+    let (_dir, app) = fixture();
+    let source = app
+        .record_source(&user(), RecordSource::plain("기록은 남는다."))
+        .unwrap()
+        .source_id;
+    let raw = output(vec![candidate("기록은 남는다.")]);
+    let old = accept(&app, &raw, 1).await;
+    app.request_extraction(&user(), source.clone(), "new")
+        .unwrap();
+    let new = accept(&app, &raw, 1).await;
+    assert!(
+        app.get_claim(&p(PrincipalKind::Agent), &old[0])
+            .unwrap()
+            .provenance
+            .is_some()
+    );
+    assert!(app.get_claim(&user(), &old[0]).is_err());
+    app.set_claim_status(&user(), &old[0], "forget").unwrap();
+    assert!(app.get_claim(&p(PrincipalKind::Agent), &old[0]).is_err());
+    app.request_extraction(&user(), source, "after-forget")
+        .unwrap();
+    let c = app
+        .work_once(&fake(&raw, 1), &plan())
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(app.approve_extraction(&user(), &c, &hash(&raw)).is_err());
+    assert_eq!(app.list_claims(&user()).unwrap()[0].id, new[0]);
+}
+
+#[cfg(unix)]
+#[test]
+fn publication_kill_is_all_or_nothing_and_replayable() {
+    use std::{
+        io::{BufRead, BufReader},
+        process::{Command, Stdio},
+    };
+    for delay in [0, 1, 3] {
+        let (dir, app) = fixture();
+        let text = (0..50)
+            .map(|n| format!("명제 {n}."))
+            .collect::<Vec<_>>()
+            .join("\n");
+        app.record_source(&user(), RecordSource::plain(text))
+            .unwrap();
+        drop(app);
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "leased_crash_worker", "--ignored", "--nocapture"])
+            .env("PRIME_EXTRACTION_CRASH_DB", dir.path().join("db"))
+            .env("PRIME_EXTRACTION_PUBLISH", "1")
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let mut reader = BufReader::new(child.stdout.take().unwrap());
+        loop {
+            let mut line = String::new();
+            assert!(reader.read_line(&mut line).unwrap() > 0);
+            if line.starts_with("PUBLISHING") {
+                break;
+            }
+        }
+        std::thread::sleep(std::time::Duration::from_millis(delay));
+        child.kill().unwrap();
+        child.wait().unwrap();
+        let app = App::open(dir.path().join("db")).unwrap();
+        let count = app.list_claims(&user()).unwrap().len();
+        assert!(count == 0 || count == 50, "partial publication {count}");
+        assert!(app.verify_integrity().unwrap().ok);
+        let r = row(&app);
+        let ids = app
+            .approve_extraction(
+                &user(),
+                r["candidate"].as_str().unwrap(),
+                r["hash"].as_str().unwrap(),
+            )
+            .unwrap();
+        assert_eq!(ids.len(), 50);
+        assert_eq!(app.list_claims(&user()).unwrap().len(), 50);
+    }
 }

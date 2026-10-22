@@ -199,7 +199,7 @@ fn checked_file(path: &Path) -> Result<File> {
 fn checked_file(_path: &Path) -> Result<File> {
     Err(Error::Credentials)
 }
-fn secure_read(path: &Path) -> Result<Vec<u8>> {
+pub(crate) fn secure_read(path: &Path) -> Result<Vec<u8>> {
     let mut bytes = Vec::new();
     checked_file(path)?
         .take(1024 * 1024 + 1)

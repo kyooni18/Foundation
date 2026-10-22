@@ -30,7 +30,25 @@ pub struct OpenRouter {
     key: String,
 }
 impl OpenRouter {
+    pub fn from_credential_file(path: impl AsRef<std::path::Path>) -> Result<Self, ProviderError> {
+        let bytes = crate::authentication::secure_read(path.as_ref())
+            .map_err(|_| ProviderError::Unavailable)?;
+        let key = String::from_utf8(bytes)
+            .map_err(|_| ProviderError::Unavailable)?
+            .trim()
+            .to_owned();
+        if key.is_empty() {
+            return Err(ProviderError::Unavailable);
+        }
+        Ok(Self {
+            client: reqwest::Client::new(),
+            key,
+        })
+    }
     pub fn from_environment() -> Result<Self, ProviderError> {
+        if let Some(path) = std::env::var_os("OPENROUTER_API_KEY_FILE") {
+            return Self::from_credential_file(path);
+        }
         let key = std::env::var("OPENROUTER_API_KEY").map_err(|_| ProviderError::Unavailable)?;
         if key.trim().is_empty() {
             return Err(ProviderError::Unavailable);

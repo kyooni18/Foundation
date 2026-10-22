@@ -19,6 +19,9 @@ pub struct Server {
 }
 impl Server {
     pub fn start() -> Self {
+        Self::start_with_setup(|_| {})
+    }
+    pub fn start_with_setup(setup: impl FnOnce(&std::path::Path)) -> Self {
         let dir = tempfile::tempdir().unwrap();
         let root = dir.path().canonicalize().unwrap();
         for (i, kind) in [
@@ -41,6 +44,7 @@ impl Server {
         let tokens = (0..4)
             .map(|i| fs::read_to_string(root.join(format!("token{i}"))).unwrap())
             .collect();
+        setup(&root);
         let mut child = Command::new(env!("CARGO_BIN_EXE_primeradiant"))
             .args(["--db"])
             .arg(root.join("db"))

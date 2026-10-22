@@ -317,3 +317,106 @@ fn protocol_boundaries_and_loopback_only() {
     );
     assert_eq!(mcp.call("list", json!({}))["result"]["total"], 0);
 }
+
+#[test]
+fn claim_transport_equivalence_and_projection_isolation() {
+    use prime_radiant::{
+        App,
+        domain::*,
+        extraction::{Plan, hash},
+        providers::{FakeProvider, ModelConfig},
+    };
+    let mut ids = Vec::new();
+    let server = Server::start_with_setup(|root| {
+        let app = App::open(root.join("db")).unwrap();
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let user = Principal::for_local_cli(PrincipalKind::User, None, None);
+        for kind in [PrincipalKind::User, PrincipalKind::Agent] {
+            let principal = Principal::for_local_cli(kind, None, None);
+            app.record_source(
+                &principal,
+                RecordSource::plain("서버는 로컬에서 실행된다. 비공개 추가 내용."),
+            )
+            .unwrap();
+            let raw=json!({"claims":[{"text":"서버는 로컬에서 실행된다.","lang":"ko","category":"Fact","speaker":"user","speaker_label":"hidden metadata","basis":"verbatim","anchor":{"quote":"서버는 로컬에서 실행된다.","occurrence":0},"tkind":null,"applies_from":null,"applies_to":null,"standing":false,"index_fields":null,"revision_of":null,"mentions":[],"dependencies":[]}],"empty_reason":null}).to_string();
+            let review =
+                json!({"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true})
+                    .to_string();
+            let provider = FakeProvider(std::sync::Mutex::new(
+                [
+                    Ok(raw.clone()),
+                    Ok(review.clone()),
+                    Ok(review.clone()),
+                    Ok(review),
+                ]
+                .into(),
+            ));
+            let plan = Plan {
+                provider: "fake".into(),
+                variant: "audited".into(),
+                extractor: ModelConfig {
+                    model: "fake".into(),
+                    timeout_seconds: 1,
+                },
+                reviewer: ModelConfig {
+                    model: "fake".into(),
+                    timeout_seconds: 1,
+                },
+            };
+            let candidate = runtime
+                .block_on(app.work_once(&provider, &plan))
+                .unwrap()
+                .unwrap();
+            ids.push(
+                app.approve_extraction(&user, &candidate, &hash(&raw))
+                    .unwrap()[0]
+                    .clone(),
+            );
+        }
+    });
+    for role in 0..3 {
+        let mut mcp = server.mcp(role);
+        for (op, args) in [
+            ("claim_list", json!({"limit":1})),
+            ("claim_get", json!({"id":ids[0]})),
+            ("claim_get", json!({"id":ids[1]})),
+            ("claim_get", json!({"id":"missing"})),
+        ] {
+            assert_eq!(server.call(role, op, args.clone()), mcp.call(op, args));
+        }
+    }
+    let user_page = server.call(0, "claim_list", json!({"limit":1}));
+    assert_eq!(user_page["result"]["total"], 1);
+    assert!(user_page["result"]["next_cursor"].is_null());
+    assert!(!user_page.to_string().contains("hidden metadata"));
+    assert!(!user_page.to_string().contains("비공개 추가"));
+    assert_eq!(
+        server.call(0, "claim_get", json!({"id":ids[1]})),
+        server.call(0, "claim_get", json!({"id":"missing"}))
+    );
+    assert_eq!(
+        code(&server.call(1, "claim_confirm", json!({"id":ids[1]}))),
+        "forbidden"
+    );
+    assert_eq!(
+        server.call(0, "claim_confirm", json!({"id":ids[1]}))["ok"],
+        true
+    );
+    let mut mcp = server.mcp(0);
+    assert_eq!(
+        server.call(0, "claim_list", json!({})),
+        mcp.call("claim_list", json!({}))
+    );
+    assert_eq!(
+        server.call(0, "claim_list", json!({}))["result"]["total"],
+        2
+    );
+    assert_eq!(
+        server.call(0, "claim_forget", json!({"id":ids[1]}))["ok"],
+        true
+    );
+    assert_eq!(
+        server.call(1, "claim_get", json!({"id":ids[1]})),
+        server.call(1, "claim_get", json!({"id":"missing"}))
+    );
+}

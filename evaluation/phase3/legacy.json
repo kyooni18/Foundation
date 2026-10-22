@@ -14,7 +14,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "tentative_eval"
   },
   {
     "id": "r1-quote_other",
@@ -30,7 +31,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "quote_other"
   },
   {
     "id": "r1-question",
@@ -45,7 +47,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "question"
   },
   {
     "id": "r1-hypothetical",
@@ -61,7 +64,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "hypothetical"
   },
   {
     "id": "r1-decision_vs_proposal",
@@ -77,7 +81,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "decision_vs_proposal"
   },
   {
     "id": "r1-negated_past",
@@ -92,7 +97,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "negated_past"
   },
   {
     "id": "r1-ambiguous_ref",
@@ -107,7 +113,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "ambiguous_ref"
   },
   {
     "id": "r1-missing_project",
@@ -122,7 +129,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "missing_project"
   },
   {
     "id": "r1-sarcasm",
@@ -138,7 +146,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "sarcasm"
   },
   {
     "id": "r1-belief_wrong",
@@ -153,7 +162,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "belief_wrong"
   },
   {
     "id": "r1-future_plan_tentative",
@@ -168,7 +178,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "future_plan_tentative"
   },
   {
     "id": "r1-rule",
@@ -184,7 +195,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "rule"
   },
   {
     "id": "r1-agent_inference",
@@ -200,7 +212,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "agent_inference"
   },
   {
     "id": "r1-emotion",
@@ -216,7 +229,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "emotion"
   },
   {
     "id": "r1-correction",
@@ -232,7 +246,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "correction"
   },
   {
     "id": "r1-nested_quote",
@@ -248,7 +263,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "nested_quote"
   },
   {
     "id": "r1-counterfactual",
@@ -263,7 +279,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "counterfactual"
   },
   {
     "id": "r1-habitual_temporal",
@@ -278,7 +295,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "habitual_temporal"
   },
   {
     "id": "r1-list_compound",
@@ -294,7 +312,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "list_compound"
   },
   {
     "id": "r1-speculation_other_mind",
@@ -309,7 +328,8 @@
       ],
       "propositions": null,
       "annotation_status": "legacy criteria; proposition inventory requires review"
-    }
+    },
+    "category": "speculation_other_mind"
   },
   {
     "id": "r2-sarcasm_deploy",
@@ -328,7 +348,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "sarcasm_deploy"
   },
   {
     "id": "r2-sarcasm_meeting",
@@ -347,7 +368,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "sarcasm_meeting"
   },
   {
     "id": "r2-sarcasm_en",
@@ -366,7 +388,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "sarcasm_en"
   },
   {
     "id": "r2-sincere_praise",
@@ -385,7 +408,8 @@
       "answer": "yes",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "sincere_praise"
   },
   {
     "id": "r2-quote_other",
@@ -405,7 +429,8 @@
       "answer": "hearsay_from_jisu",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "quote_other"
   },
   {
     "id": "r2-nested_quote",
@@ -425,7 +450,8 @@
       "answer": "ceo_via_team_lead",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "nested_quote"
   },
   {
     "id": "r2-question_pw",
@@ -444,7 +470,8 @@
       "answer": "unknown_user_asked",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "question_pw"
   },
   {
     "id": "r2-question_neg",
@@ -463,7 +490,8 @@
       "answer": "unknown_user_asked",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "question_neg"
   },
   {
     "id": "r2-negation",
@@ -482,7 +510,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "negation"
   },
   {
     "id": "r2-double_neg",
@@ -501,7 +530,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "double_neg"
   },
   {
     "id": "r2-uncertain_belief",
@@ -520,7 +550,8 @@
       "answer": "suspected_unconfirmed",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "uncertain_belief"
   },
   {
     "id": "r2-hypothetical",
@@ -539,7 +570,8 @@
       "answer": "only_if_investment_fails",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "hypothetical"
   },
   {
     "id": "r2-counterfactual",
@@ -558,7 +590,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "counterfactual"
   },
   {
     "id": "r2-indirect_speech",
@@ -577,7 +610,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "indirect_speech"
   },
   {
     "id": "r2-wrong_belief",
@@ -596,7 +630,8 @@
       "answer": "2pm",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "wrong_belief"
   },
   {
     "id": "r2-suggestion_vs_decision",
@@ -615,7 +650,8 @@
       "answer": "on_hold",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "suggestion_vs_decision"
   },
   {
     "id": "r2-pronoun",
@@ -633,7 +669,8 @@
       "answer": "no_unresolved",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "pronoun"
   },
   {
     "id": "r2-indexical_time",
@@ -652,7 +689,8 @@
       "answer": "2026-10-12",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "indexical_time"
   },
   {
     "id": "r2-indexical_place",
@@ -671,7 +709,8 @@
       "answer": "onion_cafe_seongsu",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "indexical_place"
   },
   {
     "id": "r2-mixed_list",
@@ -690,7 +729,8 @@
       "answer": "not_done",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "mixed_list"
   },
   {
     "id": "r2-conditional_rule",
@@ -709,7 +749,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "conditional_rule"
   },
   {
     "id": "r2-other_mind",
@@ -728,7 +769,8 @@
       "answer": "user_impression",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "other_mind"
   },
   {
     "id": "r2-sarcasm_self",
@@ -747,7 +789,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "sarcasm_self"
   },
   {
     "id": "r2-quoted_disagree",
@@ -766,7 +809,8 @@
       "answer": "no",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "quoted_disagree"
   },
   {
     "id": "r2-retraction",
@@ -785,7 +829,8 @@
       "answer": "500",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "retraction"
   },
   {
     "id": "r2-joke_hyperbole",
@@ -804,7 +849,8 @@
       "answer": "no_hyperbole",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "joke_hyperbole"
   },
   {
     "id": "r2-habit_scope",
@@ -823,7 +869,8 @@
       "answer": "recent_habit_as_of_2026_10_15",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "habit_scope"
   },
   {
     "id": "r2-ambiguous_sarcasm",
@@ -842,6 +889,7 @@
       "answer": "cannot_tell",
       "propositions": null,
       "annotation_status": "legacy downstream question; inventory requires review"
-    }
+    },
+    "category": "ambiguous_sarcasm"
   }
 ]

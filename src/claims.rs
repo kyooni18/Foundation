@@ -29,6 +29,8 @@ pub struct ClaimView {
     pub source_lifecycle: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recorder: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provenance: Option<serde_json::Value>,
     pub confirmed: bool,
     pub needs_revalidation: bool,
 }
@@ -82,6 +84,14 @@ impl App {
             .optional()?;
         if current != base {
             return Err(invalid("approval", "stale extraction version"));
+        }
+        // A changed interpretation must never resurrect explicitly hidden knowledge.
+        let hidden:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM claim c WHERE c.source_id=?1 AND COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')<>'restore')",[&source_id],|r|r.get(0))?;
+        if hidden {
+            return Err(invalid(
+                "approval",
+                "source has hidden historical claims; lifecycle review required",
+            ));
         }
         let batch = extraction::validate(&raw, &source)?;
         let plan: Plan = serde_json::from_str(&plan)
@@ -157,6 +167,14 @@ impl App {
         p: &Principal,
         include_retracted: bool,
     ) -> Result<Vec<ClaimView>> {
+        self.read_claims(p, include_retracted, false)
+    }
+    fn read_claims(
+        &self,
+        p: &Principal,
+        include_retracted: bool,
+        history: bool,
+    ) -> Result<Vec<ClaimView>> {
         let conn = self.store.reader()?;
         // Filter before projection: no source/claim totals, hidden IDs, revision links or job metadata.
         let sql="WITH visible AS (SELECT c.*,s.recorder,
@@ -164,12 +182,12 @@ impl App {
      COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore') AS claim_state,
      COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('confirm','unconfirm') ORDER BY seq DESC LIMIT 1),'unconfirm')='confirm' AS confirmed,
      EXISTS(SELECT 1 FROM claim_dependency d JOIN claim sibling ON sibling.id=d.child WHERE sibling.job_id=c.job_id) AS needs_revalidation
-     FROM claim c JOIN source s ON s.id=c.source_id WHERE c.job_id=(SELECT job_id FROM extraction_run WHERE source_id=c.source_id ORDER BY seq DESC LIMIT 1))
-     SELECT id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,confirmed,needs_revalidation,speaker_label,tkind,applies_from,applies_to,standing,index_fields,created_at,claim_state,source_state,recorder FROM visible
+     FROM claim c JOIN source s ON s.id=c.source_id WHERE ((?3 AND ?1<>'user') OR c.job_id=(SELECT job_id FROM extraction_run WHERE source_id=c.source_id ORDER BY seq DESC LIMIT 1)))
+     SELECT id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,confirmed,needs_revalidation,speaker_label,tkind,applies_from,applies_to,standing,index_fields,created_at,claim_state,source_state,recorder,extractor_id,job_id,CASE WHEN COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=visible.revision_of AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')<>'forget' THEN revision_of END FROM visible
      WHERE source_state<>'forget' AND claim_state<>'forget' AND ((?2 AND ?1<>'user') OR (source_state='restore' AND claim_state='restore')) AND (?1<>'user' OR (NOT needs_revalidation AND ((recorder='user' AND speaker='user' AND basis='verbatim') OR confirmed))) ORDER BY id";
         Ok(conn
             .prepare(sql)?
-            .query_map(params![p.kind().as_str(), include_retracted], |r| {
+            .query_map(params![p.kind().as_str(), include_retracted,history], |r| {
                 Ok(ClaimView {
                     id: r.get(0)?,
                     source_id: r.get(1)?,
@@ -193,6 +211,7 @@ impl App {
                     } else {
                         Some(r.get(9)?)
                     },
+                    provenance:if p.kind()==PrincipalKind::User {None}else{Some(serde_json::json!({"extractor_id":r.get::<_,String>(22)?,"job_id":r.get::<_,String>(23)?,"revision_of":r.get::<_,Option<String>>(24)?}))},
                     confirmed: r.get(10)?,
                     needs_revalidation: r.get(11)?,
                     speaker_label: if p.kind() == PrincipalKind::User {
@@ -222,7 +241,15 @@ impl App {
             .collect::<std::result::Result<_, _>>()?)
     }
     pub fn get_claim(&self, p: &Principal, id: &str) -> Result<ClaimView> {
-        self.list_claims(p)?
+        self.get_claim_with_options(p, id, false)
+    }
+    pub fn get_claim_with_options(
+        &self,
+        p: &Principal,
+        id: &str,
+        include_retracted: bool,
+    ) -> Result<ClaimView> {
+        self.read_claims(p, include_retracted, true)?
             .into_iter()
             .find(|c| c.id == id)
             .ok_or(Error::NotFound)

@@ -15,6 +15,20 @@ impl Service {
             credentials,
         }
     }
+    /// Optional worker shares the sole DB owner; transport requests still use core policy.
+    pub fn start_extraction_worker(
+        &self,
+        provider: Arc<dyn crate::providers::LlmProvider>,
+        plan: crate::extraction::Plan,
+    ) -> tokio::task::JoinHandle<()> {
+        let app = self.app.clone();
+        tokio::spawn(async move {
+            loop {
+                let _ = app.work_once(provider.as_ref(), &plan).await;
+                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            }
+        })
+    }
     pub fn authenticate(&self, bearer: &str) -> Result<Principal> {
         self.credentials.authenticate(bearer)
     }
@@ -56,10 +70,7 @@ impl Service {
                     let r: Get = parse(arguments)?;
                     to_value(
                         self.app
-                            .list_claims_with_options(p, r.include_retracted)?
-                            .into_iter()
-                            .find(|c| c.id == r.id)
-                            .ok_or(Error::NotFound)?,
+                            .get_claim_with_options(p, &r.id, r.include_retracted)?,
                     )
                 }
                 "claim_list" => {

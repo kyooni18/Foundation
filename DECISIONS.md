@@ -70,3 +70,15 @@ individual anchors follow either language. Other BCP-47 languages remain unsuppo
 not be relabeled English. Script checks are necessary but cannot establish language or semantic
 fidelity; model review and explicit local review remain required. Extending the language envelope
 requires a forward migration and measured fixtures. No claim of universal language validation is made.
+
+### D-42 — Re-extraction cannot resurrect hidden historical Claims
+A fresh interpretation can restate a forgotten/retracted proposition with a new ID, even
+if the model omits `revision_of`. Until an independently validated semantic mapping can
+establish which propositions inherit lifecycle restrictions, publication is blocked when
+any Claim of that source is currently retracted or forgotten. The original Source and
+candidate remain recoverable. A user must resolve that lifecycle deliberately before
+publication. Automatically accepting unrelated-looking new IDs was rejected because it
+would make forget/retract ineffective; automatically copying endorsement onto rewritten
+text was rejected because approval of extraction is not endorsement of truth. Prior
+same-source Claim IDs/text are supplied as untrusted revision context, never as evidence.
+This is a conservative availability restriction, not Phase 4 validity propagation.
