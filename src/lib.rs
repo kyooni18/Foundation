@@ -1,7 +1,11 @@
 pub mod api;
 pub mod authentication;
 pub mod authz;
+pub mod claims;
+pub mod extraction;
+pub mod jobs;
 mod list;
+pub mod providers;
 pub mod transport;
 pub use list::{ListSources, SourcePage};
 pub mod domain;

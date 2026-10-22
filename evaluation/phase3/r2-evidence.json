@@ -1,0 +1,435 @@
+{
+  "summary": {
+    "raw|gpt-4o-mini": {
+      "mean_acc": 0.821,
+      "min": 23,
+      "max": 23,
+      "runs": 1
+    },
+    "raw|claude-sonnet-5.5": {
+      "mean_acc": 0.964,
+      "min": 27,
+      "max": 27,
+      "runs": 1
+    },
+    "bare_text|r=gpt-4o-mini": {
+      "mean_acc": 0.631,
+      "min": 13,
+      "max": 21,
+      "runs": 6
+    },
+    "bare_text|r=claude-sonnet-5.5": {
+      "mean_acc": 0.667,
+      "min": 14,
+      "max": 23,
+      "runs": 6
+    },
+    "bare_fields|r=gpt-4o-mini": {
+      "mean_acc": 0.75,
+      "min": 19,
+      "max": 24,
+      "runs": 6
+    },
+    "bare_fields|r=claude-sonnet-5.5": {
+      "mean_acc": 0.869,
+      "min": 23,
+      "max": 26,
+      "runs": 6
+    },
+    "frame_text|r=gpt-4o-mini": {
+      "mean_acc": 0.887,
+      "min": 21,
+      "max": 27,
+      "runs": 6
+    },
+    "frame_text|r=claude-sonnet-5.5": {
+      "mean_acc": 0.935,
+      "min": 24,
+      "max": 27,
+      "runs": 6
+    },
+    "frame_fields|r=gpt-4o-mini": {
+      "mean_acc": 0.899,
+      "min": 21,
+      "max": 27,
+      "runs": 6
+    },
+    "frame_fields|r=claude-sonnet-5.5": {
+      "mean_acc": 0.923,
+      "min": 23,
+      "max": 27,
+      "runs": 6
+    },
+    "frame_anchor|r=gpt-4o-mini": {
+      "mean_acc": 0.893,
+      "min": 22,
+      "max": 27,
+      "runs": 6
+    },
+    "frame_anchor|r=claude-sonnet-5.5": {
+      "mean_acc": 0.952,
+      "min": 26,
+      "max": 27,
+      "runs": 6
+    }
+  },
+  "anchor_exact": {
+    "gpt-4o-mini|run=0": "37/38",
+    "gpt-4o-mini|run=1": "40/40",
+    "claude-haiku-5.5|run=0": "57/57",
+    "claude-haiku-5.5|run=1": "54/54",
+    "claude-sonnet-5.5|run=0": "45/45",
+    "claude-sonnet-5.5|run=1": "46/46"
+  },
+  "validator": {
+    "bare|gpt-4o-mini|run=0": {
+      "lost": 6,
+      "caught": 4,
+      "false_alarm": "13/22",
+      "lost_cases": [
+        "quote_other",
+        "question_neg",
+        "counterfactual",
+        "indexical_place",
+        "sarcasm_self",
+        "ambiguous_sarcasm"
+      ]
+    },
+    "frame|gpt-4o-mini|run=0": {
+      "lost": 4,
+      "caught": 4,
+      "false_alarm": "14/24",
+      "lost_cases": [
+        "sarcasm_deploy",
+        "sarcasm_meeting",
+        "counterfactual",
+        "ambiguous_sarcasm"
+      ]
+    },
+    "bare|gpt-4o-mini|run=1": {
+      "lost": 5,
+      "caught": 4,
+      "false_alarm": "13/23",
+      "lost_cases": [
+        "quote_other",
+        "question_neg",
+        "counterfactual",
+        "indexical_place",
+        "ambiguous_sarcasm"
+      ]
+    },
+    "frame|gpt-4o-mini|run=1": {
+      "lost": 2,
+      "caught": 2,
+      "false_alarm": "17/26",
+      "lost_cases": [
+        "counterfactual",
+        "ambiguous_sarcasm"
+      ]
+    },
+    "bare|claude-haiku-5.5|run=0": {
+      "lost": 12,
+      "caught": 12,
+      "false_alarm": "10/16",
+      "lost_cases": [
+        "sarcasm_deploy",
+        "sarcasm_meeting",
+        "quote_other",
+        "question_pw",
+        "question_neg",
+        "double_neg",
+        "hypothetical",
+        "wrong_belief",
+        "conditional_rule",
+        "sarcasm_self",
+        "quoted_disagree",
+        "ambiguous_sarcasm"
+      ]
+    },
+    "frame|claude-haiku-5.5|run=0": {
+      "lost": 2,
+      "caught": 0,
+      "false_alarm": "6/26",
+      "lost_cases": [
+        "conditional_rule",
+        "ambiguous_sarcasm"
+      ]
+    },
+    "bare|claude-haiku-5.5|run=1": {
+      "lost": 14,
+      "caught": 13,
+      "false_alarm": "7/14",
+      "lost_cases": [
+        "sarcasm_meeting",
+        "quote_other",
+        "nested_quote",
+        "question_pw",
+        "question_neg",
+        "double_neg",
+        "uncertain_belief",
+        "hypothetical",
+        "wrong_belief",
+        "mixed_list",
+        "sarcasm_self",
+        "quoted_disagree",
+        "habit_scope",
+        "ambiguous_sarcasm"
+      ]
+    },
+    "frame|claude-haiku-5.5|run=1": {
+      "lost": 1,
+      "caught": 0,
+      "false_alarm": "6/27",
+      "lost_cases": [
+        "ambiguous_sarcasm"
+      ]
+    },
+    "bare|claude-sonnet-5.5|run=0": {
+      "lost": 10,
+      "caught": 10,
+      "false_alarm": "9/18",
+      "lost_cases": [
+        "sarcasm_deploy",
+        "sarcasm_meeting",
+        "quote_other",
+        "nested_quote",
+        "question_pw",
+        "question_neg",
+        "wrong_belief",
+        "quoted_disagree",
+        "retraction",
+        "ambiguous_sarcasm"
+      ]
+    },
+    "frame|claude-sonnet-5.5|run=0": {
+      "lost": 1,
+      "caught": 0,
+      "false_alarm": "4/27",
+      "lost_cases": [
+        "ambiguous_sarcasm"
+      ]
+    },
+    "bare|claude-sonnet-5.5|run=1": {
+      "lost": 9,
+      "caught": 9,
+      "false_alarm": "11/19",
+      "lost_cases": [
+        "sarcasm_deploy",
+        "sarcasm_meeting",
+        "quote_other",
+        "question_pw",
+        "question_neg",
+        "sarcasm_self",
+        "quoted_disagree",
+        "retraction",
+        "ambiguous_sarcasm"
+      ]
+    },
+    "frame|claude-sonnet-5.5|run=1": {
+      "lost": 1,
+      "caught": 0,
+      "false_alarm": "3/27",
+      "lost_cases": [
+        "ambiguous_sarcasm"
+      ]
+    }
+  },
+  "per_case_rate": {
+    "sarcasm_deploy": {
+      "bare_text": 0.58,
+      "bare_fields": 0.83,
+      "frame_text": 0.75,
+      "frame_fields": 0.67,
+      "frame_anchor": 0.83
+    },
+    "sarcasm_meeting": {
+      "bare_text": 0.25,
+      "bare_fields": 0.42,
+      "frame_text": 0.75,
+      "frame_fields": 0.75,
+      "frame_anchor": 0.83
+    },
+    "sarcasm_en": {
+      "bare_text": 0.92,
+      "bare_fields": 1.0,
+      "frame_text": 0.92,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "sincere_praise": {
+      "bare_text": 1.0,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "quote_other": {
+      "bare_text": 0.0,
+      "bare_fields": 0.92,
+      "frame_text": 1.0,
+      "frame_fields": 0.83,
+      "frame_anchor": 1.0
+    },
+    "nested_quote": {
+      "bare_text": 0.67,
+      "bare_fields": 0.75,
+      "frame_text": 1.0,
+      "frame_fields": 0.92,
+      "frame_anchor": 0.92
+    },
+    "question_pw": {
+      "bare_text": 0.33,
+      "bare_fields": 0.67,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "question_neg": {
+      "bare_text": 0.0,
+      "bare_fields": 0.0,
+      "frame_text": 0.67,
+      "frame_fields": 1.0,
+      "frame_anchor": 0.67
+    },
+    "negation": {
+      "bare_text": 1.0,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "double_neg": {
+      "bare_text": 0.67,
+      "bare_fields": 0.83,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "uncertain_belief": {
+      "bare_text": 0.83,
+      "bare_fields": 0.92,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "hypothetical": {
+      "bare_text": 0.83,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "counterfactual": {
+      "bare_text": 0.67,
+      "bare_fields": 0.75,
+      "frame_text": 0.67,
+      "frame_fields": 0.67,
+      "frame_anchor": 0.83
+    },
+    "indirect_speech": {
+      "bare_text": 1.0,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "wrong_belief": {
+      "bare_text": 0.5,
+      "bare_fields": 0.83,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "suggestion_vs_decision": {
+      "bare_text": 1.0,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "pronoun": {
+      "bare_text": 1.0,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "indexical_time": {
+      "bare_text": 1.0,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "indexical_place": {
+      "bare_text": 0.67,
+      "bare_fields": 0.67,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "mixed_list": {
+      "bare_text": 0.83,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "conditional_rule": {
+      "bare_text": 0.83,
+      "bare_fields": 1.0,
+      "frame_text": 0.92,
+      "frame_fields": 0.92,
+      "frame_anchor": 0.92
+    },
+    "other_mind": {
+      "bare_text": 0.67,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "sarcasm_self": {
+      "bare_text": 0.33,
+      "bare_fields": 0.5,
+      "frame_text": 0.83,
+      "frame_fields": 0.75,
+      "frame_anchor": 0.83
+    },
+    "quoted_disagree": {
+      "bare_text": 0.33,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "retraction": {
+      "bare_text": 0.67,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "joke_hyperbole": {
+      "bare_text": 0.67,
+      "bare_fields": 0.58,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "habit_scope": {
+      "bare_text": 0.92,
+      "bare_fields": 1.0,
+      "frame_text": 1.0,
+      "frame_fields": 1.0,
+      "frame_anchor": 1.0
+    },
+    "ambiguous_sarcasm": {
+      "bare_text": 0.0,
+      "bare_fields": 0.0,
+      "frame_text": 0.0,
+      "frame_fields": 0.0,
+      "frame_anchor": 0.0
+    }
+  }
+}

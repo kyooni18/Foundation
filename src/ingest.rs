@@ -56,6 +56,7 @@ impl App {
             }
             return Err(err.into());
         }
+        crate::jobs::enqueue(&tx, id.as_str(), &format!("initial/{id}"))?;
         tx.commit()?;
         Ok(Recorded {
             source_id: id,

@@ -52,6 +52,28 @@ impl Service {
                         r.include_retracted,
                     )?)
                 }
+                "claim_get" => {
+                    let r: Get = parse(arguments)?;
+                    to_value(
+                        self.app
+                            .list_claims_with_options(p, r.include_retracted)?
+                            .into_iter()
+                            .find(|c| c.id == r.id)
+                            .ok_or(Error::NotFound)?,
+                    )
+                }
+                "claim_list" => {
+                    to_value(self.app.page_claims(p, parse::<ListSources>(arguments)?)?)
+                }
+                "claim_retract" | "claim_forget" | "claim_confirm" | "claim_unconfirm" => {
+                    let r: Transition = parse(arguments)?;
+                    self.app.set_claim_status(
+                        p,
+                        &r.id,
+                        operation.strip_prefix("claim_").expect("prefix"),
+                    )?;
+                    Ok(json!({}))
+                }
                 "list" => to_value(self.app.list_sources(p, parse::<ListSources>(arguments)?)?),
                 "retract" | "forget" => {
                     let r: Transition = parse(arguments)?;

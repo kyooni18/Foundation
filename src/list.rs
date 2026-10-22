@@ -43,7 +43,7 @@ struct Position {
     include_retracted: bool,
 }
 impl App {
-    fn cursor_mac(&self, p: &Principal, body: &[u8]) -> Hmac<Sha256> {
+    pub(crate) fn cursor_mac(&self, p: &Principal, body: &[u8]) -> Hmac<Sha256> {
         let mut mac =
             Hmac::<Sha256>::new_from_slice(&self.cursor_key).expect("HMAC accepts any key");
         mac.update(p.kind.as_str().as_bytes());

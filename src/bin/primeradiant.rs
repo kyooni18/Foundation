@@ -15,6 +15,34 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     Init,
+    /// Queue any Phase 1/2 sources not yet assigned an extraction job.
+    ExtractionBackfill,
+    /// Run one durable job using OpenRouter credentials from the environment.
+    ExtractionWork {
+        #[arg(long)]
+        model: String,
+        #[arg(long)]
+        reviewer: String,
+        #[arg(long, default_value = "audited")]
+        variant: String,
+    },
+    ExtractionInspect,
+    ExtractionApprove {
+        candidate: String,
+        hash: String,
+    },
+    ExtractionRequest {
+        id: SourceId,
+        key: String,
+    },
+    Claims {
+        #[arg(long)]
+        principal: PrincipalKind,
+    },
+    ClaimStatus {
+        id: String,
+        event: String,
+    },
     Migrate,
     /// Provision one independent credential; no token is printed.
     CredentialIssue {
@@ -157,7 +185,60 @@ fn run() -> Result<()> {
     }
     let app = App::open(path)?;
     match cli.command {
-        Command::Init | Command::Migrate => output(serde_json::json!({"schema_version":1})),
+        Command::Init | Command::Migrate => output(serde_json::json!({"schema_version":2})),
+        Command::ExtractionBackfill => output(
+            app.backfill_extraction(&Principal::for_local_cli(PrincipalKind::User, None, None))?,
+        ),
+        Command::ExtractionInspect => output(app.inspect_extraction(&Principal::for_local_cli(
+            PrincipalKind::User,
+            None,
+            None,
+        ))?),
+        Command::ExtractionApprove { candidate, hash } => output(app.approve_extraction(
+            &Principal::for_local_cli(PrincipalKind::User, None, None),
+            &candidate,
+            &hash,
+        )?),
+        Command::ExtractionRequest { id, key } => {
+            app.request_extraction(
+                &Principal::for_local_cli(PrincipalKind::User, None, None),
+                id,
+                &key,
+            )?;
+            output(true);
+        }
+        Command::Claims { principal } => {
+            output(app.list_claims(&Principal::for_local_cli(principal, None, None))?)
+        }
+        Command::ClaimStatus { id, event } => {
+            app.set_claim_status(
+                &Principal::for_local_cli(PrincipalKind::User, None, None),
+                &id,
+                &event,
+            )?;
+            output(true);
+        }
+        Command::ExtractionWork {
+            model,
+            reviewer,
+            variant,
+        } => {
+            let provider = prime_radiant::providers::OpenRouter::from_environment()
+                .map_err(|_| invalid("provider", "credential unavailable"))?;
+            let plan = prime_radiant::extraction::Plan {
+                provider: "openrouter".into(),
+                variant,
+                extractor: prime_radiant::providers::ModelConfig {
+                    model,
+                    timeout_seconds: 120,
+                },
+                reviewer: prime_radiant::providers::ModelConfig {
+                    model: reviewer,
+                    timeout_seconds: 120,
+                },
+            };
+            output(tokio::runtime::Runtime::new()?.block_on(app.work_once(&provider, &plan))?);
+        }
         Command::Record {
             principal,
             label,

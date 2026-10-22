@@ -405,7 +405,7 @@ fn lifecycle_filtering_and_live_cursor_recheck() {
     );
 }
 #[test]
-fn metadata_cannot_become_authority_and_v1_schema_remains_unchanged() {
+fn metadata_cannot_become_authority_with_forward_migration() {
     let f = Fixture::new();
     let agent = &f.principals[1];
     let mut r = RecordSource::plain("user said this");
@@ -431,13 +431,13 @@ fn metadata_cannot_become_authority_and_v1_schema_remains_unchanged() {
     assert_eq!(
         conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
             .unwrap(),
-        1
+        2
     );
     assert_eq!(
         conn.query_row("SELECT count(*) FROM schema_migration", [], |r| r
             .get::<_, u32>(0))
             .unwrap(),
-        1
+        2
     );
     let tables: Vec<String> = conn
         .prepare("SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name")
@@ -449,6 +449,13 @@ fn metadata_cannot_become_authority_and_v1_schema_remains_unchanged() {
     assert_eq!(
         json!(tables),
         json!([
+            "claim",
+            "claim_dependency",
+            "extraction_candidate",
+            "extraction_request",
+            "extraction_run",
+            "job",
+            "mention",
             "schema_migration",
             "source",
             "sqlite_sequence",

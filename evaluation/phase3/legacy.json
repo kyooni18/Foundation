@@ -1,0 +1,847 @@
+[
+  {
+    "id": "r1-tentative_eval",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "도쿄 파이어볼 파스타집 맛있는듯",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "평가가 단정적 사실로 저장되지 않음",
+        "사용자가 그곳에서 먹었다고 날조하지 않음(직접 경험 단정)",
+        "사용자가 도쿄에 있었다고 날조하지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-quote_other",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "민수가 그러는데 다음 달에 회사 구조조정이 있대.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "구조조정이 사용자 단정 사실로 저장되지 않음",
+        "발화자 민수 보존"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-question",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "혹시 지난주에 서버 비밀번호 바뀌었나?",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "비밀번호 변경을 사실로 저장하지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-hypothetical",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "만약 이번 실험에서 loss가 0.1 아래로 안 떨어지면 아키텍처를 갈아엎을 거야.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "아키텍처 교체를 결정/사실로 무조건 저장하지 않음",
+        "조건(loss 0.1) 보존"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-decision_vs_proposal",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "팀장이 PostgreSQL 쓰자고 제안했는데, 우리는 결국 SQLite로 가기로 했다.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "SQLite 결정 존재",
+        "PostgreSQL이 결정으로 저장되지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-negated_past",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "어제 회의 안 갔음. 대신 집에서 논문 읽음.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "회의 참석으로 반전되지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-ambiguous_ref",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "걔가 또 늦었어. 진짜 짜증나.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "지시대상을 특정 인물로 날조하지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-missing_project",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "Helios 프로젝트에서 캐시 실험 실패함.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "Helios 프로젝트 속성 날조 없음(목적/기술 등)"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-sarcasm",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "아 네네 우리 팀 배포 프로세스 정말 완벽하죠 ^^ 오늘도 세 번 롤백함",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "배포 프로세스가 완벽하다고 저장하지 않음",
+        "롤백 3회 사실 보존"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-belief_wrong",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "나는 아직도 지구에서 만리장성이 맨눈으로 보인다고 믿고 있었는데 아니라더라.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "만리장성 가시성을 사실로 저장하지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-future_plan_tentative",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "다음 주쯤 부산 갈까 생각 중",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "부산 방문을 확정 계획/사실로 저장하지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-rule",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "앞으로 커밋 메시지는 무조건 영어로 써줘. 단, 문서 파일은 한국어 허용.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "영어 커밋 규칙",
+        "예외 조건 보존"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-agent_inference",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "(에이전트 관찰) 테스트 로그를 보니 test_auth가 3회 연속 타임아웃. 아마 네트워크 문제로 보임.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "원인 추정이 확정 사실로 저장되지 않음",
+        "타임아웃 관측 보존"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-emotion",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "발표 끝나고 나서 좀 허무했다.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "감정 보존",
+        "발표가 실패했다는 날조 없음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-correction",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "아까 말한 거 정정: 미팅은 화요일 아니고 목요일 3시.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "목요일 3시 존재",
+        "화요일 미팅이 현재 사실로 저장되지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-nested_quote",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "'새롭지 않다'가 사실로 저장되지 않음",
+        "사용자 반대 의견 보존"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-counterfactual",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "그때 그 주식 샀으면 지금 두 배 됐을 텐데.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "주식 구매를 사실로 저장하지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-habitual_temporal",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "요즘 매일 아침 6시에 일어나는 중",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "시간 범위 무근거 영구화 금지(항상/always 아님)"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-list_compound",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "오늘 점심 김치찌개, 저녁은 스킵. 커피 세 잔.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "김치찌개 보존",
+        "저녁 스킵 보존(먹었다로 반전 없음)"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r1-speculation_other_mind",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "지민이 나한테 화난 것 같은데 이유를 모르겠다.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "지민이 화났다고 단정하지 않음"
+      ],
+      "propositions": null,
+      "annotation_status": "legacy criteria; proposition inventory requires review"
+    }
+  },
+  {
+    "id": "r2-sarcasm_deploy",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "아 배포 프로세스 정말 완벽하죠 ^^ 이번 주에만 세 번 롤백했어요",
+    "authored_at": "2026-10-02T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 배포 프로세스가 잘 돌아간다고 생각하는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-sarcasm_meeting",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "오늘 회의 진짜 유익했다. 세 시간 동안 결론 하나도 안 났거든.",
+    "authored_at": "2026-10-03T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 오늘 회의가 유익했다고 평가하는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-sarcasm_en",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "en",
+    "source": "Oh great, another 'quick' migration that took the whole weekend. Love that for me.",
+    "authored_at": "2026-10-03T00:00:00.000Z",
+    "reference": {
+      "question": "Does the user think the migration was quick?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-sincere_praise",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "새 CI 진짜 빠르다. 빌드 12분에서 3분으로 줄었음.",
+    "authored_at": "2026-10-04T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 새 CI가 빠르다고 평가하는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "yes",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-quote_other",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "지수가 그러는데 다음 달에 사무실을 판교로 옮긴대.",
+    "authored_at": "2026-10-04T00:00:00.000Z",
+    "reference": {
+      "question": "기록에 따르면 사무실 이전은 확정된 사실인가, 지수의 전언인가?",
+      "options": [
+        "confirmed_fact",
+        "hearsay_from_jisu",
+        "user_belief",
+        "unknown"
+      ],
+      "answer": "hearsay_from_jisu",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-nested_quote",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "팀장님 말로는 대표가 '올해 안에 상장은 없다'고 했대.",
+    "authored_at": "2026-10-05T00:00:00.000Z",
+    "reference": {
+      "question": "'올해 상장 없음'은 누구의 발언으로 전해지는가?",
+      "options": [
+        "user",
+        "team_lead",
+        "ceo_via_team_lead",
+        "unknown"
+      ],
+      "answer": "ceo_via_team_lead",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-question_pw",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "혹시 지난주에 VPN 비밀번호 바뀌었나?",
+    "authored_at": "2026-10-05T00:00:00.000Z",
+    "reference": {
+      "question": "VPN 비밀번호가 지난주에 바뀌었는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown_user_asked"
+      ],
+      "answer": "unknown_user_asked",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-question_neg",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "이번 릴리스에 다크모드 안 들어가는 거 맞지?",
+    "authored_at": "2026-10-06T00:00:00.000Z",
+    "reference": {
+      "question": "다크모드가 이번 릴리스에서 빠졌는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown_user_asked"
+      ],
+      "answer": "unknown_user_asked",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-negation",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "Helios 캐시 레이어는 결국 Redis로 안 가기로 했다.",
+    "authored_at": "2026-10-06T00:00:00.000Z",
+    "reference": {
+      "question": "Helios 캐시 레이어는 Redis를 쓰는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-double_neg",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "운동이 싫은 건 아닌데 시간이 없어서 못 간다.",
+    "authored_at": "2026-10-07T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 운동을 싫어하는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-uncertain_belief",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "아마 프린터 토너가 떨어진 것 같은데 확인은 못 해봤다.",
+    "authored_at": "2026-10-07T00:00:00.000Z",
+    "reference": {
+      "question": "프린터 토너가 떨어진 것이 확인되었는가?",
+      "options": [
+        "confirmed",
+        "suspected_unconfirmed",
+        "denied"
+      ],
+      "answer": "suspected_unconfirmed",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-hypothetical",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "만약 이번 투자 못 받으면 팀을 절반으로 줄여야 할 거야.",
+    "authored_at": "2026-10-08T00:00:00.000Z",
+    "reference": {
+      "question": "팀이 절반으로 줄어드는가?",
+      "options": [
+        "yes",
+        "no",
+        "only_if_investment_fails"
+      ],
+      "answer": "only_if_investment_fails",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-counterfactual",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "그때 Postgres 대신 SQLite 썼으면 운영이 훨씬 편했을 텐데.",
+    "authored_at": "2026-10-08T00:00:00.000Z",
+    "reference": {
+      "question": "그 프로젝트는 SQLite를 썼는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-indirect_speech",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "엄마한테 이번 추석엔 못 내려간다고 말씀드렸다.",
+    "authored_at": "2026-10-09T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 이번 추석에 내려가는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-wrong_belief",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "회의가 3시인 줄 알았는데 2시였다.",
+    "authored_at": "2026-10-09T00:00:00.000Z",
+    "reference": {
+      "question": "회의는 몇 시였는가?",
+      "options": [
+        "2pm",
+        "3pm",
+        "unknown"
+      ],
+      "answer": "2pm",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-suggestion_vs_decision",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "민준이가 Kafka 쓰자고 했는데 일단 보류함.",
+    "authored_at": "2026-10-10T00:00:00.000Z",
+    "reference": {
+      "question": "Kafka 도입이 결정되었는가?",
+      "options": [
+        "decided",
+        "on_hold",
+        "rejected"
+      ],
+      "answer": "on_hold",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-pronoun",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "걔가 어제 또 늦었다. 이번이 세 번째임.",
+    "authored_at": "2026-10-10T00:00:00.000Z",
+    "reference": {
+      "question": "누가 늦었는지 기록에서 특정할 수 있는가?",
+      "options": [
+        "yes_named",
+        "no_unresolved"
+      ],
+      "answer": "no_unresolved",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-indexical_time",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "내일 오전에 치과 예약 있음.",
+    "authored_at": "2026-10-11T00:00:00.000Z",
+    "reference": {
+      "question": "치과 예약 날짜는?",
+      "options": [
+        "2026-10-11",
+        "2026-10-12",
+        "unknown"
+      ],
+      "answer": "2026-10-12",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-indexical_place",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "여기 와이파이 진짜 느리다. (성수동 카페 어니언에서)",
+    "authored_at": "2026-10-11T00:00:00.000Z",
+    "reference": {
+      "question": "와이파이가 느린 곳은 어디인가?",
+      "options": [
+        "user_home",
+        "onion_cafe_seongsu",
+        "unknown"
+      ],
+      "answer": "onion_cafe_seongsu",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-mixed_list",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "이번 주 할 일: 세금 신고(완료), 차 정비(예약만 함), 여권 갱신(아직)",
+    "authored_at": "2026-10-12T00:00:00.000Z",
+    "reference": {
+      "question": "여권 갱신은 완료되었는가?",
+      "options": [
+        "done",
+        "not_done",
+        "unknown"
+      ],
+      "answer": "not_done",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-conditional_rule",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "비 오는 날 말고는 자전거로 출근한다.",
+    "authored_at": "2026-10-12T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 비 오는 날 자전거로 출근하는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-other_mind",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "서연이 요즘 나한테 화난 것 같다. 답장이 짧아.",
+    "authored_at": "2026-10-13T00:00:00.000Z",
+    "reference": {
+      "question": "서연이 화났다는 것은 확인된 사실인가?",
+      "options": [
+        "confirmed",
+        "user_impression",
+        "denied"
+      ],
+      "answer": "user_impression",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-sarcasm_self",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "역시 나는 일정 관리의 천재야. 마감 세 개를 같은 날로 잡았네.",
+    "authored_at": "2026-10-13T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 자신의 일정 관리를 잘한다고 평가하는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-quoted_disagree",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "준호는 Rust가 과대평가됐다고 하는데 난 동의 안 함.",
+    "authored_at": "2026-10-14T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 Rust가 과대평가됐다고 보는가?",
+      "options": [
+        "yes",
+        "no",
+        "unknown"
+      ],
+      "answer": "no",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-retraction",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "아까 회의록에 예산 5천이라고 적었는데 5백이 맞음.",
+    "authored_at": "2026-10-14T00:00:00.000Z",
+    "reference": {
+      "question": "예산은 얼마인가?",
+      "options": [
+        "5000",
+        "500",
+        "unknown"
+      ],
+      "answer": "500",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-joke_hyperbole",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "오늘 커피 백 잔은 마신 듯ㅋㅋ",
+    "authored_at": "2026-10-15T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 오늘 커피를 문자 그대로 100잔 마셨는가?",
+      "options": [
+        "yes",
+        "no_hyperbole",
+        "unknown"
+      ],
+      "answer": "no_hyperbole",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-habit_scope",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "요즘은 점심을 거의 거른다.",
+    "authored_at": "2026-10-15T00:00:00.000Z",
+    "reference": {
+      "question": "점심을 거르는 것은 언제부터의 상태로 기록되었는가?",
+      "options": [
+        "since_birth_permanent",
+        "recent_habit_as_of_2026_10_15",
+        "unknown"
+      ],
+      "answer": "recent_habit_as_of_2026_10_15",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  },
+  {
+    "id": "r2-ambiguous_sarcasm",
+    "split": "dev",
+    "origin": "R2 synthetic",
+    "language": "ko",
+    "source": "와 이번 분기 목표 진짜 현실적이다.",
+    "authored_at": "2026-10-16T00:00:00.000Z",
+    "reference": {
+      "question": "사용자는 분기 목표가 현실적이라고 보는가?",
+      "options": [
+        "yes",
+        "no",
+        "cannot_tell"
+      ],
+      "answer": "cannot_tell",
+      "propositions": null,
+      "annotation_status": "legacy downstream question; inventory requires review"
+    }
+  }
+]

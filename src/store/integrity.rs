@@ -144,19 +144,81 @@ pub(crate) fn inspect_with(
         }
     }
     let mut targets = IntegrityItem::new("status_targets");
-    for row in conn.prepare("SELECT seq FROM status_event e WHERE target_kind<>'source' OR NOT EXISTS(SELECT 1 FROM source s WHERE s.id=e.target_id)")?.query_map([], |r| r.get::<_,i64>(0))? { targets.fail(row?.to_string()); }
+    let target_sql = if version >= 2 {
+        "SELECT seq FROM status_event e WHERE (target_kind='source' AND NOT EXISTS(SELECT 1 FROM source s WHERE s.id=e.target_id)) OR (target_kind='claim' AND NOT EXISTS(SELECT 1 FROM claim c WHERE c.id=e.target_id))"
+    } else {
+        "SELECT seq FROM status_event e WHERE target_kind<>'source' OR NOT EXISTS(SELECT 1 FROM source s WHERE s.id=e.target_id)"
+    };
+    for row in conn
+        .prepare(target_sql)?
+        .query_map([], |r| r.get::<_, i64>(0))?
+    {
+        targets.fail(row?.to_string());
+    }
     let mut triggers = IntegrityItem::new("triggers");
-    for name in TRIGGERS {
+    let mut required = TRIGGERS.to_vec();
+    if version >= 2 {
+        required.extend([
+            "claim_no_update",
+            "claim_no_delete",
+            "claim_anchor",
+            "mention_no_update",
+            "mention_no_delete",
+            "dependency_no_update",
+            "dependency_no_delete",
+            "dependency_cycle",
+            "request_no_update",
+            "request_no_delete",
+            "candidate_no_update",
+            "candidate_no_delete",
+            "run_no_update",
+            "run_no_delete",
+        ]);
+    }
+    for name in required {
         let present: bool = conn.query_row(
             "SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='trigger' AND name=?1)",
             [name],
             |r| r.get(0),
         )?;
         if !present {
-            triggers.fail(*name);
+            triggers.fail(name);
         }
     }
-    let items = vec![sqlite, fks, schema, hashes, targets, triggers];
+    let mut evidence = IntegrityItem::new("claim_evidence");
+    let mut publication = IntegrityItem::new("extraction_publication");
+    if version >= 2 {
+        for row in conn.prepare("SELECT c.id,s.content,c.anchor_start,c.anchor_end,c.anchor_quote,c.text,c.basis FROM claim c JOIN source s ON c.source_id=s.id")?.query_map([],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,usize>(2)?,r.get::<_,usize>(3)?,r.get::<_,String>(4)?,r.get::<_,String>(5)?,r.get::<_,String>(6)?)))? {
+        let (id,content,start,end,quote,text,basis)=row?;
+        if start>=end || content.get(start..end)!=Some(quote.as_str()) || (basis=="verbatim" && text!=quote){evidence.fail(id);}
+      }
+        for row in conn
+            .prepare("SELECT id,output_json,output_hash FROM extraction_candidate")?
+            .query_map([], |r| {
+                Ok((
+                    r.get::<_, String>(0)?,
+                    r.get::<_, String>(1)?,
+                    r.get::<_, String>(2)?,
+                ))
+            })?
+        {
+            let (id, raw, hash) = row?;
+            if sha256(raw.as_bytes()) != hash {
+                evidence.fail(id);
+            }
+        }
+        for row in conn.prepare("SELECT j.id FROM job j WHERE (j.state='done')<>EXISTS(SELECT 1 FROM extraction_run r WHERE r.job_id=j.id) UNION SELECT c.job_id FROM claim c WHERE NOT EXISTS(SELECT 1 FROM extraction_run r WHERE r.job_id=c.job_id AND r.source_id=c.source_id)")?.query_map([],|r|r.get::<_,String>(0))? {publication.fail(row?);}
+    }
+    let items = vec![
+        sqlite,
+        fks,
+        schema,
+        hashes,
+        targets,
+        triggers,
+        evidence,
+        publication,
+    ];
     Ok(IntegrityReport {
         ok: items.iter().all(|x| x.violations == 0),
         items,

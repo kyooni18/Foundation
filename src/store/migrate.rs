@@ -2,14 +2,21 @@ use super::{backup, conn, integrity};
 use crate::domain::*;
 use rusqlite::{Connection, TransactionBehavior, params};
 use std::path::Path;
+#[derive(Clone, Copy)]
 pub(crate) struct Migration {
     pub name: &'static str,
     pub sql: &'static str,
 }
-pub(crate) const MIGRATIONS: &[Migration] = &[Migration {
-    name: "0001_init",
-    sql: include_str!("migrations/0001_init.sql"),
-}];
+pub(crate) const MIGRATIONS: &[Migration] = &[
+    Migration {
+        name: "0001_init",
+        sql: include_str!("migrations/0001_init.sql"),
+    },
+    Migration {
+        name: "0002_extraction",
+        sql: include_str!("migrations/0002_extraction.sql"),
+    },
+];
 pub(crate) fn apply(conn: &mut Connection, path: &Path, migrations: &[Migration]) -> Result<()> {
     integrity::require_ok(&integrity::inspect_with(conn, migrations, true)?)?;
     let version: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
@@ -43,7 +50,7 @@ mod tests {
         domain::{Principal, PrincipalKind, RecordSource},
     };
     #[test]
-    fn t7_migration_history_and_pre_v2_restore() {
+    fn t7_migration_history_and_pre_next_restore() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("db");
         let p = Principal::for_local_cli(PrincipalKind::User, None, None);
@@ -60,28 +67,23 @@ mod tests {
             conn.query_row("SELECT count(*) FROM schema_migration", [], |r| r
                 .get::<_, u32>(0))
                 .unwrap(),
-            1
+            MIGRATIONS.len() as u32
         );
-        let migrations = [
-            Migration {
-                name: MIGRATIONS[0].name,
-                sql: MIGRATIONS[0].sql,
-            },
-            Migration {
-                name: "0002_test",
-                sql: "CREATE TABLE migration_probe(value TEXT) STRICT;",
-            },
-        ];
+        let mut migrations = MIGRATIONS.to_vec();
+        migrations.push(Migration {
+            name: "test_next",
+            sql: "CREATE TABLE migration_probe(value TEXT) STRICT;",
+        });
         apply(&mut conn, &path, &migrations).unwrap();
         assert_eq!(
             conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
                 .unwrap(),
-            2
+            migrations.len() as u32
         );
         drop(conn);
         assert!(matches!(
             App::open(&path),
-            Err(Error::SchemaTooNew { db: 2, binary: 1 })
+            Err(Error::SchemaTooNew { db: 3, binary: 2 })
         ));
         let backup = std::fs::read_dir(dir.path())
             .unwrap()
@@ -90,7 +92,7 @@ mod tests {
                 p.file_name()
                     .unwrap()
                     .to_string_lossy()
-                    .contains(".pre-v2.")
+                    .contains(".pre-v3.")
                     && p.extension().is_some_and(|s| s == "bak")
             })
             .unwrap();
@@ -104,7 +106,7 @@ mod tests {
             conn.query_row("SELECT count(*) FROM schema_migration", [], |r| r
                 .get::<_, u32>(0))
                 .unwrap(),
-            1
+            MIGRATIONS.len() as u32
         );
         conn.execute_batch(
             "DROP TRIGGER migration_no_update; UPDATE schema_migration SET checksum='tampered';",

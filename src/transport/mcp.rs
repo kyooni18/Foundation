@@ -90,7 +90,13 @@ pub fn tools() -> Value {
         {"name":"get","description":"Get one source inside the authenticated projection.","inputSchema":get},
         {"name":"list","description":"List visible sources with a credential-bound cursor.","inputSchema":schema(json!({"limit":{"type":"integer","minimum":1,"maximum":100,"default":50},"include_retracted":{"type":"boolean","default":false},"cursor":string}),&[])},
         {"name":"retract","description":"Retract a source when authorized.","inputSchema":transition},
-        {"name":"forget","description":"Hide a source while retaining its audit record, when authorized.","inputSchema":transition}
+        {"name":"forget","description":"Hide a source while retaining its audit record, when authorized.","inputSchema":transition},
+        {"name":"claim_get","description":"Read a visible current Claim.","inputSchema":schema(json!({"id":string,"include_retracted":{"type":"boolean"}}),&["id"])},
+        {"name":"claim_list","description":"List only visible current Claims.","inputSchema":schema(json!({"limit":{"type":"integer","minimum":1,"maximum":100},"cursor":string,"include_retracted":{"type":"boolean"}}),&[])},
+        {"name":"claim_retract","description":"Retract an authorized Claim.","inputSchema":transition},
+        {"name":"claim_forget","description":"Forget an authorized Claim.","inputSchema":transition},
+        {"name":"claim_confirm","description":"User endorsement of a Claim.","inputSchema":transition},
+        {"name":"claim_unconfirm","description":"Remove user endorsement of a Claim.","inputSchema":transition}
     ]})
 }
 struct Session {
@@ -146,7 +152,21 @@ impl Session {
                 let Some(name) = params["name"].as_str() else {
                     return Some(rpc_error(id, -32602, "invalid tool request"));
                 };
-                if !["record", "get", "list", "retract", "forget"].contains(&name) {
+                if ![
+                    "record",
+                    "get",
+                    "list",
+                    "retract",
+                    "forget",
+                    "claim_get",
+                    "claim_list",
+                    "claim_retract",
+                    "claim_forget",
+                    "claim_confirm",
+                    "claim_unconfirm",
+                ]
+                .contains(&name)
+                {
                     return Some(rpc_error(id, -32602, "unknown tool"));
                 }
                 let args = params.get("arguments").cloned().unwrap_or(json!({}));

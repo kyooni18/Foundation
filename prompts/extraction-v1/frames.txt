@@ -1,0 +1,19 @@
+Semantic test: can two independently ASSERTED parts vary in truth independently? Split them, repeating each governing condition/attribution. Do not split logical scope, relations, comparisons, disjunction, quantified statements, causal claims or counterfactuals into stronger propositions. Distinguish meaning-defining qualifiers from separately asserted facts. A report that a possibility has not been checked is one epistemically qualified possibility; inventing certainty is forbidden.
+
+Positive/negative examples (examples are not facts about the source):
+- '서버는 Rust로 작성됐고 SQLite를 쓰며 외부망에는 연결하지 않는다.' -> three Claims: Rust implementation; SQLite use; no external-network connection. Combining two for readability is wrong.
+- '서버가 꺼지면 작업이 멈추고 로그가 저장된다.' -> two conditionals, EACH retaining server-shutdown condition. Never assert shutdown happened.
+- 'A와 B가 모두 성공한 건 아니다.' -> retain not(A and B); neither 'A failed' nor 'B failed' is entailed.
+- '민수는 서버가 느리고 DB는 불안정하다고 말했다.' -> two reports attributed to 민수, not two verified facts.
+- '비가 오면 자전거로 출근하지 않는다.' -> one conditional negative habit, no claim that rain occurs.
+- '운동이 싫은 건 아닌데 시간이 없어서 못 간다.' -> not-disliking exercise, and reported inability to exercise due to insufficient time. No claim of loving exercise.
+- '아마 토너가 떨어진 것 같은데 확인은 못 했다.' -> preserve both suspicion and unverified status in text; do not assert toner depletion.
+- 'VPN 비밀번호 바뀌었나?' -> question about change, no asserted change.
+- '회의가 3시인 줄 알았는데 2시였다.' -> former mistaken belief about 3; corrected time 2. Neither two current facts nor omission of the correction history.
+- '목표 진짜 현실적이다.' without context -> report the evaluation while explicitly leaving sincere vs ironic intent unresolved. Do not force sarcasm from stereotypes.
+- '걔가 어제 또 늦었어.' -> unknown person referred to as '걔'; relative day resolved ONLY from authored_at. If authored_at absent use 미상 기준일 전날; never captured_at. Do not invent a friend/colleague.
+- 'A가 B보다 빠르다.' -> one comparison, not absolute claims of fast A/slow B.
+- 'If P had occurred, Q would have occurred.' -> one counterfactual relationship, not actual P or Q.
+
+For Korean: omitted subject is not automatically the user if context gives no license. Topic/subject particles, -지 않다, -건 아니다, -면/-다면, -더라도, -는데, -듯/-같다, -겠-, indirect -대/-라고, honorifics, nested quotations, ㅋㅋ and ironic ^^ affect meaning. Preserve quotation chains. Colloquial tense and code-switching must not license invented entities. Do not turn a suggestion into approval or a prediction into observation. Keep exact names, APIs, paths. Explicitly name unknown referents; essential interpretation cannot depend on adjacent Claims.
+Only authored_at grounds relative time. observed_at is separate. applies_from/to are nullable and must be explicit source-supported bounds, not inferred lifetimes. Corrections, extraction revisions and world changes are different. Remove semantic duplicates, not distinct information. Final audit must enumerate original propositions, map each to a Claim, and identify omissions, duplication, unsupported additions, scope changes and incompatible interpretations. Do not emit a guessed interpretation to satisfy schema.
