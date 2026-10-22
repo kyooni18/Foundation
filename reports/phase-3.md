@@ -17,7 +17,7 @@ No numerical semantic acceptance claim is made from unfinished experiments.
 
 Consequently this report does not claim that the prompts meet semantic acceptance,
 that reviewers improve quality, or that English intermediate processing helps Korean.
-All candidate batches remain quarantined until explicit local-user fidelity review.
+All publishable candidate batches remain quarantined until explicit local-user fidelity review.
 Approval is separate from confirmation/endorsement. There is no configuration switch
 that silently promotes model agreement into production acceptance.
 
@@ -36,7 +36,8 @@ backoff (10, 20, 40 seconds). Exhausted expired leases become failed. Provider f
 timeouts, structural errors, atomicity/fidelity/coverage rejection, unresolved review,
 and lifecycle refusal retain the original Source. Inspection includes attempts, budget,
 next eligible time, lease expiration, and sanitized failure codes. Provider messages and
-source excerpts are not copied into failure diagnostics.
+source excerpts are not copied into job failure codes. Bounded failed proposals and received
+reviews are retained separately as private, untrusted local inspection diagnostics (D-49).
 
 The first attempt freezes model configuration, prompt hash, and preceding accepted job.
 Retries cannot substitute a new model or edited prompt into that request. A changed plan
@@ -66,7 +67,8 @@ not evidence of statistically independent model errors. Self-reported confidence
 
 Even passing proposals become immutable `extraction_candidate` rows with an exact output
 hash and review responses. They create **no Claims**. Local-user approval must name that
-candidate and hash. It revalidates against original bytes and checks lifecycle and version
+candidate and hash. It checks that candidate’s own three successful reviews and frozen
+prompt hash, revalidates against original bytes, and checks lifecycle and version
 freshness before a single transaction inserts all Claims, mentions, declared dependencies,
 the extraction run, and the completion state. A failure rolls the entire publication back.
 Repeated approval returns the same sorted IDs, including successful empty extraction.
@@ -78,12 +80,13 @@ revision context, not source evidence. Default lists show the current run; agent
 non-forgotten historical Claims by ID. No factual contradiction or temporal supersession
 is inferred. Stale competing jobs cannot replace a newer accepted version.
 
-D-35–D-42 in `DECISIONS.md` document the migration, quarantine, revision, language, projection,
+D-35–D-50 in `DECISIONS.md` document the migration, quarantine, revision, language, projection,
 and lifecycle resolutions with alternatives. In particular:
 
-- A source with currently hidden historical Claims cannot publish a new extraction until
-  lifecycle is deliberately resolved; new IDs must not silently circumvent retract/forget.
-  The worker checks before sending prior Claim context, and publication checks again for races.
+- A Source with forgotten historical Claims cannot publish a new extraction. The worker
+  checks before sending prior context and publication checks again for races. A live Source
+  may be explicitly re-extracted to correct a retracted wrong interpretation (D-50), without
+  restoring the old Claim or its confirmation. Source retraction still blocks publication.
 - Dependencies are same-batch declarations with cycle rejection. Phase 4 validity propagation
   is not implemented. Such batches are conservatively absent from the user projection and
   marked `needs_revalidation` in the agent view, even if a Claim is confirmed.
@@ -145,102 +148,149 @@ restricted to local maintenance, not an agent tool. Existing five Source tools a
 
 ## Prompt research and evaluation design
 
-Prompt version: `extraction-v1`. Files under `prompts/extraction-v1/` are versioned in Git.
-Plan hashes cover extraction instructions, framing examples, review instructions, and
-provider/model configuration. The request stores the frozen hash; accepted Claim provenance
-includes provider, model, version, and hash. The evidence manifest records file hashes.
+The historical R1/R2 experiments in `~/Code/Foundation-Research/` were inspected before
+implementation. R2's downstream reader scored 0.667 on bare text, 0.869 with fields,
+0.935 on framed text and 0.952 with anchors, versus 0.964 on original text. These are
+historical reader-task scores, not Phase 3 atomicity measurements. R2 also documented
+Korean-to-English drift, literalized irony, unresolved references and validators sharing
+extractor errors. The original R2 prompt and summaries remain under `evaluation/phase3/`.
 
-Seven executable variants are provided:
+The seven initial strategies were actually exercised on the same development cases:
 
-| Variant | Experimental distinction | Fresh real-model results |
-|---|---|---|
-| single | Direct extraction with output contract, no framing examples | Not run |
-| r2-frame | Adapted historical R2 framing instructions | Not run |
-| decompose | Proposition enumeration, independence test, frame reconstruction | Not run |
-| english-intermediate | English intermediate decomposition; original-language final text | Not run |
-| atomicity-review | Decomposition plus separate atomicity review | Not run |
-| fidelity-review | Decomposition plus separate fidelity review | Not run |
-| audited | Decomposition plus atomicity, fidelity, and coverage reviews | Not run |
+| Strategy | Distinction |
+|---|---|
+| single | Contract-only direct extraction |
+| r2-frame | Historical framing adapted to the current output/language contract |
+| decompose | Proposition inventory, semantic independence and frame reconstruction |
+| english-intermediate | Instruction to reason through English; hidden processing is not observable |
+| atomicity-review | Decomposition plus one separate atomicity review |
+| fidelity-review | Decomposition plus one separate fidelity review |
+| audited | Decomposition plus atomicity, fidelity and whole-batch coverage reviews |
 
-`audited` is a provisional conservative operational strategy, **not an empirically selected
-winner**. Production still applies all three reviews to any selected extraction variant;
-the evaluation harness varies review stages to measure their incremental effect. Extraction
-and review prompts/payloads are shared between production and the harness. The baseline is
-explicitly adapted to Phase 3's output schema and language rule; its results must not be
-presented as a byte-identical replication of R2. The original R2 prompt is archived separately.
+The adapted R2 baseline is not a byte-identical R2 replication. Production always applies
+all three reviews; stage ablations are research conditions, not alternate authorization
+rules. No model confidence score or majority vote establishes correctness.
 
-The prompts include positive and negative examples: split independent Rust/SQLite/network
-properties; repeat the condition when splitting shutdown consequences; retain `not(A and B)`;
-retain each quotation's attribution; preserve uncertain toner depletion and an unverified
-status; preserve VPN password questions as questions; explicitly retain unknown referents
-and unresolved irony. Causal/comparative/counterfactual relationships are not split into
-unsupported independent events. Instructions embedded in Source text remain data.
+Prompt revisions are immutable assets, selected explicitly in the frozen plan:
 
-Historical evidence reviewed from `~/Code/Foundation-Research/`:
+- **v1:** direct/frame/decomposition comparisons with contrastive atomicity examples.
+- **v2:** response to observed counterfactual historical inventions, causal relationship
+  loss, correction duplication and false rejection of scope-preserving explanations.
+- **v3:** omitted subjects, quoted-instruction coverage, shorthand speech-act ambiguity,
+  and valid RFC 3339 instant fields instead of invented date-only bounds.
+- **v4:** response to a source audit finding unresolved first person, lost project context
+  and disconnected rationale. A further real output translated a Korean technical clause
+  into English despite three passing reviews; source checks v2 now reject that clear case.
+- **v5:** preserves unknown authored calendar timezone. UTC normalization preserves an
+  instant but cannot recover whether “yesterday” meant a UTC or Korean-calendar day.
+  Explicit source UTC/KST calendar references permit resolution; no inference from language.
+- **v6:** evidence-calibrated pragmatics distinguish supported praise, contextual irony and
+  unresolved isolated evaluations. Each derived date retains its calendar scope. Review
+  calibration distinguishes preserved source uncertainty from uncertain extraction fidelity.
+  The focused 20-case, two-run Luna Pro calibration produced 54 attempts, 37 terminal gate
+  passes and three exhausted runs. These are model diagnostics, not semantic acceptance.
 
-- R1 fidelity/schema comparisons and adversarial checks, plus R2 experiment D and its scripts.
-- R2's stronger downstream reader scored 0.667 on bare text, 0.869 on bare text plus fields,
-  0.935 on frame-preserving text, and 0.952 with anchors, versus 0.964 on original text.
-  These are **historical downstream multiple-choice scores**, not Phase 3 atomicity rates.
-- Concrete reported R2 failures included literalized ironic praise of a deployment process,
-  unresolved “걔가 어제 또 늦었다”, and confident interpretation of “이번 분기 목표 진짜
-  현실적이다” where intent was indeterminate. The ambiguous case failed in all 12 reader
-  observations, including original-source conditions.
-- R2 reported 55% English drift for one extractor's Korean notes (20/45 remained Korean).
-  Its validator caught none of the residual frame-preserving sarcasm/ambiguity errors.
+The live v1 negated-conjunction diagnostic is instructive: three reviewer calls rejected
+an apparently faithful explanation, then a separate diagnostic call to the same model
+called it faithful. Both outcomes are retained. Review agreement was not treated as proof.
 
-These findings justify explicit ambiguity and language guards, original-source verification,
-and the local review gate. They do **not** establish that the new prompts fix these defects.
-`evaluation/phase3/r2-evidence.json` preserves the relevant historical summaries.
+An additional **english-staged** research condition saves an actual English semantic draft,
+its exact source quotations and prompt hash, then reconstructs with the original source
+and explicitly untrusted draft. Final reviews always receive the original. This allows
+inspection of transformation errors, unlike an instruction to reason internally in English.
+It is evaluation-only; the production worker is not silently changed into this architecture.
+The initial JSON-mode request error and corrected pilot are retained separately.
 
-## Corpus and scoring
+Early runs used Sonnet 5.5/Gemini 3.8 Flash. After HTTP 402, the user replenished credits and
+requested cheap models. Subsequent runs use GPT-6 Luna and Claude Haiku 5.5. The inspected
+OpenRouter catalog quotes both at $0.10/M input and $0.50/M output for these payload sizes.
+A focused Luna Pro comparison uses the same catalog price, prompt and reviewer. No further
+expensive-model run is authorized by this selection. DeepSeek is not used on Korean inputs:
+D-24's English-only restriction still applies, including review context.
 
-There are now 104 cases (including eight long-form extensions), with no held-out examples copied into framing examples:
+Completed and ongoing raw experiments are retained under `reports/evidence/phase-3/`.
+The first pair completed a 36-extraction pilot, 448 v1 curated development runs, 192 v2
+curated runs and 32 v2 long-form runs. The cheap pair repeats the seven-way v1 comparison
+on 36 development sources twice, compares three v3 strategies on the same sources, and
+runs explicit English drafts and R1/R2 legacy comparisons. V4/V5 additionally measure
+up to three bounded attempts per independent run. Every attempt is retained; retry success
+does not erase the preceding failure. Terminal-only and full-attempt summaries are distinct.
+The final experiment manifest records completed counts rather than inferring success from
+an output file's existence.
 
-| Corpus | Development | Held-out | Annotation status |
+## Corpus, annotations and metrics
+
+There are **108 sources: 88 development and 20 held-out**:
+
+| Corpus | Development | Held-out | Reference status |
 |---|---:|---:|---|
-| Legacy R1/R2 | 48 (47 Korean, 1 English) | 0 | Original adversarial criteria/questions; proposition inventories need review |
-| New curated | 32 (28 Korean, 2 English, 2 mixed) | 16 (13 Korean, 2 English, 1 mixed) | Editorial draft semantic inventories; independent human adjudication pending |
+| Legacy R1/R2 | 48 | 0 | Original criteria plus assistant editorial proposition inventories |
+| New curated | 32 | 16 | Human-reviewable editorial semantic inventories |
+| Long form | 4 | 4 | 306–406 characters, mixed independent and dependent propositions |
+| Calendar controls | 4 | 0 | Reproducible UTC/KST normalization ambiguity and explicit-calendar cases |
 
-New cases include conjunction/disjunction scope, nested conditions/quotations, double
-negation, shared subjects, compound nouns, complex predicates, reports/beliefs, proposal vs
-decision, counterfactuals, corrections, historical scope, sarcasm, rhetorical language,
-figurative exaggeration, typos, mixed technical identifiers, long notes, repetition,
-contextual references, exceptions, prompt injection, and valid empty extraction.
-References describe propositions, required qualifiers, and unsupported interpretations;
-they are not exact-string answer keys. They were authored during implementation and are
-not independent gold labels. Legacy annotations also need explicit proposition inventories
-before using them as coverage denominators.
+The long-form extension addresses a measured gap: the original 96 sources were all shorter
+than 100 characters. Sources include shared subjects, conjunction/disjunction, negated
+conjunctions, nested conditions/quotations, uncertainty, suggestions/decisions, corrections,
+causality, temporal changes, sarcasm, exaggeration, shorthand, mixed technical notes,
+repetition, contextual references, injection and empty extraction. Development references
+were corrected where the initial labels themselves forced an unsupported interpretation;
+source bytes did not change. These inventories are not independently adjudicated gold.
+Held-out sources are not used as prompt examples or repair feedback.
 
-The harness defaults to three runs per variant on a selected split and writes each result
-immediately to a new 0600 JSONL file: model configuration, prompt/source hashes, case,
-raw output, structural validation, and raw review results. Human reviewers should annotate
-truth-condition equivalence against the **original source**, blinded to strategy where
-possible. Ambiguous/high-impact cases require a second independent reviewer and adjudication.
-No model confidence or majority vote substitutes for this process.
+`score.py` requires complete per-Claim boolean annotations, validates denominators, rejects
+duplicate run/attempt identities and keeps model, prompt version, source language and error
+category separate. Missing labels are unreviewed, never passes. It reports generated and
+eligible-output errors, meaningful coverage (rejected batches contribute zero), over-splits,
+unsupported assertions, framing, language, evidence, duplication and reviewer confusion.
+Lexical repeatability is measured separately from semantic equivalence. Translation-stage
+errors require inspecting the saved original/English/final triple; output disagreement
+alone cannot establish language-specific causation.
 
-`score.py` aggregates annotated rows by strategy, language, and category:
+The first complete **assistant source audit** covers all 64 v3 audited curated runs. Its
+labels and original outputs are retained in `luna-v3-assistant-audit.jsonl`, with metrics
+in `luna-v3-assistant-metrics.json` and readable source/output pairs in `luna-v3-review.md`.
+These are provisional assistant judgments, not independent human adjudication. Here
+“eligible” means the experimental three-review gate passed; it does not mean publication.
 
-- Accepted-Claim atomicity, unsupported assertion, fidelity, epistemic, language, anchor,
-  and duplication error rates, with numerator/denominator.
-- Meaning-changing over-splits per annotated decomposition.
-- End-to-end coverage: rejected batches contribute zero, preventing abstention from
-  disguising omissions. Annotation inventory supplies the denominator.
-- Translation-induced errors per reviewed intermediate-language candidate; attribution
-  requires comparing paired direct/intermediate outputs against the original.
-- Reviewer TP/FP/FN/TN against human labels, plus lexical output variation per case.
-  Lexical variation is a repeatability diagnostic, not semantic equivalence measurement.
+| v3 audit metric | Korean | English | Mixed |
+|---|---:|---:|---:|
+| Runs audited | 56 | 4 | 4 |
+| Generated Claims | 82 | 6 | 8 |
+| Known generated atomicity violations | 0/82 | 0/6 | 0/8 |
+| Known generated unsupported assertions | 0/82 | 0/6 | 0/8 |
+| Generated fidelity/context errors | 8/82 | 0/6 | 2/8 |
+| Generated epistemic/frame errors | 8/82 | 0/6 | 0/8 |
+| Generated language-label errors in this subset | 0/82 | 0/6 | 0/8 |
+| Exact-anchor/verbatim contract errors | 3/82 | 1/6 | 0/8 |
+| Known generated duplicate Claims | 0/82 | 0/6 | 0/8 |
+| Coverage before the experimental gate | 70/78 | 6/6 | 6/8 |
+| Coverage after the experimental gate | 41/78 | 4/6 | 6/8 |
+| Fidelity errors still eligible after the gate | 3/46 | 0/4 | 2/8 |
+| Meaning-changing over-splits among eligible decompositions | 1/10 | 0/1 | 0/4 |
 
-| Fresh Phase 3 semantic metric | Korean | English | Mixed |
-|---|---|---|---|
-| Atomicity / over-splitting / coverage / fidelity | Unmeasured | Unmeasured | Unmeasured |
-| Unsupported / epistemic / language / anchor errors | Unmeasured | Unmeasured | Unmeasured |
-| Translation errors / duplication / repeatability | Unmeasured | Unmeasured | Unmeasured |
-| Reviewer false positives / false negatives | Unmeasured | Unmeasured | Unmeasured |
+This audit **fails** the semantic acceptance target. Five gate-eligible Claims retained
+known context errors: first person, project ownership and shorthand rationale. No such
+experimental output was automatically published. Zero entries elsewhere are limited to
+this small provisional audit; they are not universal guarantees. English-intermediate
+causal error rates are not fabricated from the direct-run sample (their denominator is zero).
 
-There are zero fresh evaluated model batches, so the zero-known-error acceptance target
-is **unverified**, not a measured 0% error rate. Held-out results and per-category real-model
-failures are unavailable. No fresh failed output was suppressed or replaced with fake data.
+The audit also found false positives: a faithful password question was rejected as losing
+uncertainty, although it matches the user's positive example. Across its 58 structurally
+valid batches, provisional TP/FP/FN/TN counts were 2/8/6/42 for atomicity, 1/8/7/42 for
+fidelity, and 2/8/6/42 for coverage. The small, selected sample and correlated reviewer
+calls preclude population estimates. The important finding is concrete: both false
+acceptance and false rejection occur, so model agreement is not a publication authority.
+
+The separate synthetic reviewer controls contain six good/corrupted pairs, three stages
+and two repetitions, for 144 reviews across v1/v2. V1 returned 35 true negatives, 36 true
+positives and one provider error; v2 returned 36 true negatives and 36 true positives.
+These simple controls did not predict the natural-case errors above. They are diagnostic,
+not evidence that reviewer false-positive or false-negative rates are universally zero.
+
+Final revised-prompt, held-out and legacy audits remain subject to their actual run
+results. Neither a measured best strategy nor final zero-error acceptance is asserted
+before those comparisons and source audits finish.
 
 ## Reproduction and operational use
 
@@ -300,7 +350,8 @@ launched by their parent crash tests, not omitted acceptance work. Coverage incl
 - Schema/enum/field failures, Korean and combining-character UTF-8 anchors, exact evidence,
   dependency checks, missing artifact handling, and authority-field rejection.
 - Batch rollback after a later invalid revision, idempotent approval, historical preservation,
-  stale competing runs, and prevention of hidden-Claim resurrection.
+  stale competing runs, prevention of forgotten-Claim resurrection, and correction of a
+  retracted interpretation without restoring it. Cross-attempt approval cannot borrow reviews.
 - User/agent provenance, confirmation versus lifecycle, filtered counts, pagination isolation,
   cross-domain cursors, and actual nonempty HTTP/MCP Claim results/errors.
 - 20 original Source SIGKILL/restart cycles; leased-worker SIGKILL recovery; three process

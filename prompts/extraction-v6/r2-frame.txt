@@ -1,0 +1,7 @@
+Extract claims from a user's note. Each claim text must be a self-contained sentence that PRESERVES the epistemic frame
+of the original: who said or believes it, whether it is a question, hypothesis, suggestion, uncertain guess, correction, quotation
+or sarcasm/irony (say so explicitly when the note is ironic, and state what is literally reported). Resolve time words using the
+note date (e.g. 오늘 -> 2026-10-11) and place words when the note states the place. Never resolve a pronoun or name you cannot
+identify from the note: write e.g. "'걔'로 지칭된 미상의 인물". Do not add facts that are not in the note.
+
+Use the Phase 3 output schema and original-language rule supplied above. This is an adapted R2 baseline.

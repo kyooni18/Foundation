@@ -71,7 +71,7 @@ not be relabeled English. Script checks are necessary but cannot establish langu
 fidelity; model review and explicit local review remain required. Extending the language envelope
 requires a forward migration and measured fixtures. No claim of universal language validation is made.
 
-### D-42 — Re-extraction cannot resurrect hidden historical Claims
+### D-42 — Re-extraction cannot resurrect hidden historical Claims (retraction rule amended by D-50)
 A fresh interpretation can restate a forgotten/retracted proposition with a new ID, even
 if the model omits `revision_of`. Until an independently validated semantic mapping can
 establish which propositions inherit lifecycle restrictions, publication is blocked when
@@ -130,3 +130,100 @@ not silently change the production worker or make translation authoritative. Its
 request format failure (missing literal JSON in JSON-mode instructions) is preserved as
 a rejected experiment. Neither an internal-English instruction nor round-trip agreement
 establishes that a translation was faithful.
+
+
+### D-46 — Isolation and Korean-matrix checks follow observed v3/v4 failures
+A source audit of all 64 v3 curated development batches found prospective gate-eligible
+Claims with unresolved first person, lost project scope, and disconnected shorthand
+rationale. V4 adds contrastive isolation examples and matching review checks. This did
+not establish success: v4 also produced English Claims from a Korean technical clause
+(`PrimeRadiant의 record_source는 sync이고 ...`), approved by all three model reviews.
+That failed output is retained in evidence/language-drift-v4.json.
+
+The previous necessary script checks accepted Latin-heavy Korean as English because
+both anchor and text contained Latin letters. Source checks v2 additionally reject an
+English label where the anchor has multiple recognizable Korean grammatical endings
+attached to Latin identifiers, including a predicate/conjunction. This is a narrow,
+conservative check, not a general Korean parser or a character-count language classifier.
+English clauses containing Korean proper names remain supported and regression-tested.
+Ambiguous code-switching and anchors lacking such evidence still require source-grounded
+review and local fidelity approval. The existing original-anchor language contract is
+unchanged; no blanket ban on Korean names in English was introduced.
+
+The evaluation records its source-check version on new rows. Earlier raw results retain
+their original verdicts; retrospective revalidation must be reported separately rather
+than rewriting a historical model or validator outcome.
+
+### D-47 — Real-model bounded repair is measured separately from independent runs
+The manual evaluation harness can perform up to three attempts for each independent run.
+It uses the same source payload and sanitized previous-failure code as the worker, and
+keeps every failed full batch with attempt number and terminal status. A later success
+does not erase earlier failures. Experimental review-stage ablations remain diagnostic;
+production always requires all three stages. The harness does not simulate database
+leasing or wall-clock backoff; deterministic crash/lease tests cover those operations.
+Date-only values supplied to instant fields are schema failures, not provider outages.
+
+
+### D-48 — Authored instant does not prove an authored calendar timezone
+PHASE1_SPEC explicitly normalizes timestamp metadata to UTC before hashing/storage.
+The same stored instant 2026-10-22T18:30:00Z can originate as October 22 in UTC or
+October 23 at +09:00. The identical Korean source '어제 서울 사무실에 갔다' could then
+refer to October 21 or October 22. Neither language nor the normalized Z suffix can
+recover the writer's calendar intent. This is an information-loss counterexample,
+not an extraction-model confidence question.
+
+Preserve all existing timestamp storage/digest contracts. V5 keeps a relative period
+explicitly bound to the known original instant with an unknown calendar timezone unless
+the source supplies a legitimate calendar reference. Explicit source UTC/KST references
+allow resolution; no authored_at means an unknown original reference day. This applies
+the existing 'resolve only when supported' rule; it does not substitute captured_at or
+add a guessed timezone, day boundary, lifetime or user ID. Adding an optional timezone
+field was considered but is unnecessary to represent uncertainty safely and would require
+new recording/migration contracts. Four development controls demonstrate the distinction.
+The corpus now contains 108 sources: 88 development, 20 held-out.
+
+
+### D-49 — Failed proposals remain private diagnostics and cannot borrow approval
+The live research showed that a failure code alone cannot explain a stochastic semantic
+failure. The worker now retains bounded failed proposal text and received review responses
+in the existing immutable, untrusted candidate store. This creates no Claims or extraction
+run and never marks a failed batch review_required. Source/job completion remains atomic
+at the authoritative publication boundary. Oversized diagnostics and stale/hidden-source
+results are not retained. Provider credentials, headers and HTTP error bodies remain excluded.
+
+Review records include attempt, previous failure code and source-check version; legacy
+review arrays remain readable. The local inspection surface exposes these records only
+to its existing trusted user-maintenance role; no HTTP/MCP tool, projection, count or cursor
+exposes them. Approval now validates the selected candidate's own three successful reviews,
+current source checks and frozen prompt hash, in addition to the exact output hash and
+lifecycle/version fences. A rejected candidate cannot borrow another attempt's successful
+job state. The cross-attempt regression verifies this with two structurally valid proposals.
+This stores diagnostic proposals, not partially accepted knowledge; D-13's all-or-nothing
+Claim transaction is unchanged.
+
+
+### D-50 — Correcting an extraction must not require restoring a known wrong Claim
+DATA_CONTRACTS §5.2 says a better interpretation replaces the current representation,
+while an earlier wrong interpretation is separately retracted. D-42's blanket block on
+any retracted historical Claim made that workflow impossible: a regression with a Friday
+Source, an erroneous Thursday Claim and a retracted old interpretation failed with
+`extraction/lifecycle` before the correction could run. The before/after evidence is
+retained in the Phase 3 report artifacts.
+
+The barrier now distinguishes retraction from forgetting. A live Source may be explicitly
+re-extracted through the existing user-only request and exact-hash, user-only publication
+flow while its old wrong interpretation stays retracted. The new revision still requires
+its own source checks and three successful reviews. `revision_of` is a version link, not
+a premise that inherits old invalidity; no old lifecycle or confirmation is restored.
+Prior context labels the old lifecycle event and remains untrusted. Source retraction
+continues to block all publication. A forgotten historical Claim still blocks before
+provider invocation and at publication, and its revision ID is redacted from visible
+metadata. The regression verifies correction without revival, unchanged Source bytes,
+forgotten-record gating before any provider call, and revision-ID redaction.
+
+Requiring users to revive a known wrong interpretation was rejected because it contradicts
+§5.2. Removing the forgotten barrier was rejected because it could expose forgotten
+knowledge under new IDs. No agent receives re-extraction/publication authority and no
+Phase 4 dependency-validity propagation is introduced. Public Claim lifecycle fields now
+use the existing live/retracted/forgotten enum, consistently with Source responses;
+append-only status events retain retract/forget/restore action labels unchanged.

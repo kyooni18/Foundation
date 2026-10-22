@@ -389,6 +389,8 @@ fn claim_transport_equivalence_and_projection_isolation() {
         }
     }
     let user_page = server.call(0, "claim_list", json!({"limit":1}));
+    assert_eq!(user_page["result"]["claims"][0]["lifecycle"], "live");
+    assert_eq!(user_page["result"]["claims"][0]["source_lifecycle"], "live");
     assert_eq!(user_page["result"]["total"], 1);
     assert!(user_page["result"]["next_cursor"].is_null());
     assert!(!user_page.to_string().contains("hidden metadata"));

@@ -7,6 +7,7 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("inputs", nargs="+", type=Path)
+parser.add_argument("--current-validation", action="store_true", help="Use explicitly saved retrospective validation; preserve raw run results")
 args = parser.parse_args()
 rows = []
 for path in args.inputs:
@@ -39,12 +40,23 @@ for key, values in groups.items():
     per_case = collections.defaultdict(list)
     issues = collections.Counter()
     gate_passes = 0
+    recovered = 0
+    terminal_failures = 0
+    generated = 0
     for row in values:
         reviews = row.get("reviews", [])
-        gate_passes += bool(row.get("structural_valid") and len(reviews) == stages
-                            and all(review_pass(review, row["claim_count"]) for review in reviews))
+        gate = bool(row.get("structural_valid") and len(reviews) == stages
+                    and all(review_pass(review, row["claim_count"]) for review in reviews))
+        if args.current_validation:
+            if "revalidation" not in row:
+                raise ValueError("Explicit retrospective validation required for every row")
+            gate = row["revalidation"]["experimental_gate_eligible"]
+        gate_passes += gate
+        recovered += bool(gate and row.get("attempt", 1) > 1)
+        terminal_failures += bool(row.get("terminal", True) and not gate)
         try:
             texts = [claim["text"] for claim in json.loads(row["raw"])["claims"]]
+            generated += len(texts)
             per_case[row["case_id"]].append(texts)
         except (KeyError, TypeError, ValueError):
             pass
@@ -56,10 +68,12 @@ for key, values in groups.items():
             except (KeyError, TypeError, ValueError):
                 issues["provider_or_schema_error"] += 1
     output["groups"]["|".join(key)] = dict(
-        runs=len(values), structural_valid=sum(row.get("structural_valid") is True for row in values),
+        runs=len({(row['case_id'],row['run'],row['source_hash'],row['prompt_hash']) for row in values}),
+        attempt_rows=len(values), terminal_runs=sum(row.get('terminal',True) for row in values),
+        structural_valid=sum(row.get("structural_valid") is True for row in values),
         provider_failures=sum("provider_error" in row for row in values),
         experimental_gate_passes=gate_passes, reviewer_reported_issues=dict(issues),
-        generated_claims=sum(row.get("claim_count", 0) for row in values),
+        generated_claims=generated, recovered_after_retry=recovered, terminal_gate_failures=terminal_failures,
         repeatability={case: dict(runs=len(batches),
                                  distinct_text_sets=len({json.dumps(sorted(texts), ensure_ascii=False) for texts in batches}),
                                  min_count=min(map(len, batches)), max_count=max(map(len, batches)))

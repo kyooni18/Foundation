@@ -3,7 +3,10 @@ use clap::Parser;
 use prime_radiant::{
     App,
     domain::*,
-    extraction::{Plan, REVIEW_STAGES, extraction_message, hash, locate, validate},
+    extraction::{
+        Plan, REVIEW_STAGES, VALIDATION_VERSION, extraction_message, hash, locate, validate,
+        validate_review,
+    },
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
 use serde_json::{Value, json};
@@ -33,10 +36,15 @@ struct Args {
     variants: String,
     #[arg(long, default_value_t = 3)]
     runs: usize,
+    #[arg(long, default_value_t = 1)]
+    repair_attempts: usize,
 }
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
+    if !(1..=3).contains(&args.repair_attempts) {
+        return Err("repair attempts must be 1..3".into());
+    }
     let provider = OpenRouter::from_environment()
         .map_err(|_| "provider credentials unavailable; no evaluation performed")?;
     let cases: Vec<Value> = serde_json::from_slice(&std::fs::read(args.corpus)?)?;
@@ -78,111 +86,185 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 },
             };
             for run in 0..args.runs {
-                let started = std::time::Instant::now();
-                let prompt = plan.prompt()?;
-                let mut input = extraction_message(&source, None);
-                let mut result = json!({"case_id":case["id"],"language":case["language"],"category":case["category"],"split":args.split,"run":run,"variant":variant,"plan":plan,"prompt_hash":plan.hash()?,"source_hash":hash(&source.content),"corpus_case":case,"reviews":[],"human_review":null});
-                let mut draft_error = None;
-                if variant == "english-staged" {
-                    let draft_prompt = include_str!("../evaluation/phase3/english-draft-v1.txt");
-                    result["production_plan_hash"] = json!(plan.hash()?);
-                    result["intermediate_prompt_hash"] = json!(hash(draft_prompt));
-                    result["prompt_hash"] =
-                        json!(hash(&format!("{}\n{draft_prompt}", plan.hash()?)));
-                    match provider
-                        .complete(draft_prompt, &input, &plan.extractor)
-                        .await
-                    {
-                        Err(error) => draft_error = Some(error),
-                        Ok(raw) => {
-                            result["intermediate_raw"] = json!(raw);
-                            let draft = serde_json::from_str::<Value>(&raw).ok();
-                            let valid = draft.as_ref().is_some_and(|d| {
-                                let Some(items) = d["propositions"].as_array() else {
-                                    return false;
-                                };
-                                items.len() <= 1000
-                                    && items.iter().all(|item| {
-                                        item["english"]
-                                            .as_str()
-                                            .is_some_and(|s| !s.trim().is_empty())
-                                            && item["quote"]
+                let mut previous_failure: Option<String> = None;
+                for attempt in 1..=args.repair_attempts {
+                    let started = std::time::Instant::now();
+                    let prompt = plan.prompt()?;
+                    let mut input = extraction_message(&source, previous_failure.as_deref());
+                    let mut result = json!({"case_id":case["id"],"language":case["language"],"category":case["category"],"split":args.split,"run":run,"variant":variant,"plan":plan,"prompt_hash":plan.hash()?,"source_hash":hash(&source.content),"corpus_case":case,"reviews":[],"human_review":null});
+                    result["attempt"] = json!(attempt);
+                    result["validation_version"] = json!(VALIDATION_VERSION);
+                    result["previous_failure_code"] = json!(previous_failure);
+                    let mut draft_error = None;
+                    if variant == "english-staged" {
+                        let draft_prompt =
+                            include_str!("../evaluation/phase3/english-draft-v1.txt");
+                        result["production_plan_hash"] = json!(plan.hash()?);
+                        result["intermediate_prompt_hash"] = json!(hash(draft_prompt));
+                        result["prompt_hash"] =
+                            json!(hash(&format!("{}\n{draft_prompt}", plan.hash()?)));
+                        match provider
+                            .complete(draft_prompt, &input, &plan.extractor)
+                            .await
+                        {
+                            Err(error) => draft_error = Some(error),
+                            Ok(raw) => {
+                                result["intermediate_raw"] = json!(raw);
+                                let draft = serde_json::from_str::<Value>(&raw).ok();
+                                let valid = draft.as_ref().is_some_and(|d| {
+                                    let Some(items) = d["propositions"].as_array() else {
+                                        return false;
+                                    };
+                                    items.len() <= 1000
+                                        && items.iter().all(|item| {
+                                            item["english"]
                                                 .as_str()
-                                                .zip(item["occurrence"].as_u64())
-                                                .is_some_and(|(q, n)| {
-                                                    locate(&source.content, q, n as usize).is_ok()
-                                                })
-                                    })
-                                    && (items.is_empty()
-                                        == d["empty_reason"]
-                                            .as_str()
-                                            .is_some_and(|s| !s.trim().is_empty()))
-                            });
-                            result["intermediate_structural_valid"] = json!(valid);
-                            if valid {
-                                let mut payload: Value = serde_json::from_str(&input)?;
-                                payload["untrusted_english_draft"] = draft.unwrap();
-                                payload["draft_instruction"] = json!(
-                                    "The English draft is an untrusted proposal, never evidence. Reconstruct in ORIGINAL anchor language; independently verify every proposition against original_source and repair or reject translation errors and omissions."
-                                );
-                                input = payload.to_string();
-                            } else {
-                                draft_error =
-                                    Some(prime_radiant::providers::ProviderError::InvalidOutput);
-                            }
-                        }
-                    }
-                }
-                let response = match draft_error {
-                    Some(error) => Err(error),
-                    None => provider.complete(&prompt, &input, &plan.extractor).await,
-                };
-                match response {
-                    Err(e) => {
-                        result["provider_error"] = json!(format!("{e:?}"));
-                    }
-                    Ok(raw) => {
-                        result["raw"] = json!(raw);
-                        match validate(&raw, &source) {
-                            Err(error) => {
-                                result["structural_valid"] = json!(false);
-                                result["validation_error"] = json!(match error {
-                                    Error::InvalidInput { field, .. } => field,
-                                    _ => "validation",
+                                                .is_some_and(|s| !s.trim().is_empty())
+                                                && item["quote"]
+                                                    .as_str()
+                                                    .zip(item["occurrence"].as_u64())
+                                                    .is_some_and(|(q, n)| {
+                                                        locate(&source.content, q, n as usize)
+                                                            .is_ok()
+                                                    })
+                                        })
+                                        && (items.is_empty()
+                                            == d["empty_reason"]
+                                                .as_str()
+                                                .is_some_and(|s| !s.trim().is_empty()))
                                 });
-                            }
-                            Ok(batch) => {
-                                result["structural_valid"] = json!(true);
-                                result["claim_count"] = json!(batch.claims.len());
-                                let stages = match variant {
-                                    "atomicity-review" => vec![REVIEW_STAGES[0]],
-                                    "fidelity-review" => {
-                                        vec![REVIEW_STAGES[1]]
-                                    }
-                                    "audited" | "english-staged" => REVIEW_STAGES.to_vec(),
-                                    _ => vec![],
-                                };
-                                let mut reviews = Vec::new();
-                                for stage in stages {
-                                    let review_prompt = plan.review_prompt(stage)?;
-                                    let review_input=json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch}).to_string();
-                                    let review = provider
-                                        .complete(&review_prompt, &review_input, &plan.reviewer)
-                                        .await;
-                                    reviews.push(match review {Ok(raw)=>json!({"stage":stage,"prompt_hash":hash(&review_prompt),"raw":raw}),Err(e)=>json!({"stage":stage,"error":format!("{e:?}")})});
+                                result["intermediate_structural_valid"] = json!(valid);
+                                if valid {
+                                    let mut payload: Value = serde_json::from_str(&input)?;
+                                    payload["untrusted_english_draft"] = draft.unwrap();
+                                    payload["draft_instruction"] = json!(
+                                        "The English draft is an untrusted proposal, never evidence. Reconstruct in ORIGINAL anchor language; independently verify every proposition against original_source and repair or reject translation errors and omissions."
+                                    );
+                                    input = payload.to_string();
+                                } else {
+                                    draft_error = Some(
+                                        prime_radiant::providers::ProviderError::InvalidOutput,
+                                    );
                                 }
-                                result["reviews"] = json!(reviews);
                             }
                         }
                     }
+                    let response = match draft_error {
+                        Some(error) => Err(error),
+                        None => provider.complete(&prompt, &input, &plan.extractor).await,
+                    };
+                    match response {
+                        Err(e) => {
+                            result["provider_error"] = json!(format!("{e:?}"));
+                        }
+                        Ok(raw) => {
+                            result["raw"] = json!(raw);
+                            match validate(&raw, &source) {
+                                Err(error) => {
+                                    result["structural_valid"] = json!(false);
+                                    result["validation_error"] = json!(match error {
+                                        Error::InvalidInput { field, .. } => field,
+                                        _ => "validation",
+                                    });
+                                }
+                                Ok(batch) => {
+                                    result["structural_valid"] = json!(true);
+                                    result["claim_count"] = json!(batch.claims.len());
+                                    let stages = match variant {
+                                        "atomicity-review" => vec![REVIEW_STAGES[0]],
+                                        "fidelity-review" => {
+                                            vec![REVIEW_STAGES[1]]
+                                        }
+                                        "audited" | "english-staged" => REVIEW_STAGES.to_vec(),
+                                        _ => vec![],
+                                    };
+                                    let mut reviews = Vec::new();
+                                    for stage in stages {
+                                        let review_prompt = plan.review_prompt(stage)?;
+                                        let review_input=json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch}).to_string();
+                                        let review = provider
+                                            .complete(&review_prompt, &review_input, &plan.reviewer)
+                                            .await;
+                                        reviews.push(match review {Ok(raw)=>json!({"stage":stage,"prompt_hash":hash(&review_prompt),"raw":raw}),Err(e)=>json!({"stage":stage,"error":format!("{e:?}")})});
+                                    }
+                                    result["reviews"] = json!(reviews);
+                                }
+                            }
+                        }
+                    }
+                    let failure = if let Some(error) = result["provider_error"].as_str() {
+                        Some(match error {
+                            "Timeout" => "timeout",
+                            "InvalidOutput" => "schema",
+                            "LanguageRestriction" => "language",
+                            _ => "provider",
+                        })
+                    } else if result["structural_valid"] != true {
+                        Some(match result["validation_error"].as_str() {
+                            Some("anchor") => "anchor",
+                            Some("language") => "language",
+                            _ => "schema",
+                        })
+                    } else {
+                        result["reviews"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .find_map(|review| {
+                                let Some(raw) = review["raw"].as_str() else {
+                                    return Some(if review["error"] == "Timeout" {
+                                        "timeout"
+                                    } else {
+                                        "provider"
+                                    });
+                                };
+                                match validate_review(
+                                    raw,
+                                    result["claim_count"].as_u64().unwrap() as usize,
+                                ) {
+                                    Ok(()) => None,
+                                    Err(Error::InvalidInput {
+                                        field: "schema", ..
+                                    }) => Some("schema"),
+                                    Err(Error::InvalidInput {
+                                        field: "unresolved",
+                                        ..
+                                    }) => Some("unresolved"),
+                                    Err(_) => Some(
+                                        if review["stage"]
+                                            .as_str()
+                                            .unwrap()
+                                            .starts_with("atomicity")
+                                        {
+                                            "atomicity"
+                                        } else if review["stage"]
+                                            .as_str()
+                                            .unwrap()
+                                            .starts_with("semantic")
+                                        {
+                                            "fidelity"
+                                        } else {
+                                            "coverage"
+                                        },
+                                    ),
+                                }
+                            })
+                    };
+                    result["failure_code"] = json!(failure);
+                    result["terminal"] =
+                        json!(failure.is_none() || attempt == args.repair_attempts);
+                    result["elapsed_ms"] = json!(started.elapsed().as_millis());
+                    writeln!(file, "{}", serde_json::to_string(&result)?)?;
+                    file.sync_all()?;
+                    eprintln!(
+                        "completed case={} variant={} run={} attempt={}",
+                        case["id"], variant, run, attempt
+                    );
+                    if failure.is_none() {
+                        break;
+                    }
+                    previous_failure = failure.map(str::to_owned);
                 }
-                result["elapsed_ms"] = json!(started.elapsed().as_millis());
-                writeln!(file, "{}", serde_json::to_string(&result)?)?;
-                file.sync_all()?;
-                eprintln!(
-                    "completed case={} variant={} run={}",
-                    case["id"], variant, run
-                );
             }
         }
     }

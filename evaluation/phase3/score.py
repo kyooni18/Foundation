@@ -9,6 +9,7 @@ import argparse,collections,json,sys
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('input')
 parser.add_argument('--annotation-field', choices=['human_review','assistant_review'], default='human_review')
+parser.add_argument('--terminal-only', action='store_true', help='Score terminal attempts only; retain separate full-attempt metrics')
 args=parser.parse_args()
 annotation=args.annotation_field
 flags=['atomicity_violation','unsupported','fidelity_error','epistemic_error','language_error','anchor_error','duplicate']
@@ -47,9 +48,10 @@ def validate_review(row):
         require(h['covered_propositions'] == 0, 'empty output cannot cover propositions')
 
 rows=[json.loads(line) for line in open(args.input)]
+if args.terminal_only: rows=[row for row in rows if row.get('terminal',True)]
 seen=set()
 for row in rows:
-    identity=(row['case_id'],row['variant'],row['run'],row['prompt_hash'],row['source_hash'])
+    identity=(row['case_id'],row['variant'],row['run'],row.get('attempt',1),row['prompt_hash'],row['source_hash'])
     require(identity not in seen, 'duplicate evaluation run')
     seen.add(identity)
     validate_review(row)

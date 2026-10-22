@@ -1,0 +1,22 @@
+   Compiling prime_radiant v0.1.0 (/Users/kyooni18/Code/PrimeRadiant)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.06s
+     Running tests/extraction.rs (target/debug/deps/extraction-a81c3319dc0f51b4)
+
+running 1 test
+test reextraction_cannot_resurrect_forgotten_claims ... FAILED
+
+failures:
+
+---- reextraction_cannot_resurrect_forgotten_claims stdout ----
+
+thread 'reextraction_cannot_resurrect_forgotten_claims' (13075940) panicked at tests/extraction.rs:63:10:
+called `Result::unwrap()` on an `Err` value: InvalidInput { field: "extraction", reason: "lifecycle" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    reextraction_cannot_resurrect_forgotten_claims
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.07s
+
+error: test failed, to rerun pass `--test extraction`

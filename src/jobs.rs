@@ -87,6 +87,9 @@ impl App {
         // Diagnostics are fixed codes: never persist provider messages or source fragments.
         let allowed = [
             "provider",
+            "quota",
+            "request",
+            "rate_limit",
             "timeout",
             "schema",
             "anchor",

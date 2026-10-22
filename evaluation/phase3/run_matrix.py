@@ -23,11 +23,13 @@ def main():
     parser.add_argument("--review-max-output-tokens", type=int)
     parser.add_argument("--split", default="dev")
     parser.add_argument("--runs", type=int, default=2)
+    parser.add_argument("--repair-attempts", type=int, choices=[1, 2, 3], default=1)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--shard-size", type=int, default=8)
     parser.add_argument("--variants", default="single,r2-frame,decompose,english-intermediate,atomicity-review,fidelity-review,audited")
     args = parser.parse_args()
-    if not 1 <= args.workers <= 8 or not 1 <= args.runs <= 10:
-        parser.error("workers must be 1..8; runs must be 1..10")
+    if not 1 <= args.workers <= 8 or not 1 <= args.runs <= 10 or not 1 <= args.shard_size <= 32:
+        parser.error("workers must be 1..8; runs must be 1..10; shard-size must be 1..32")
     root = Path(__file__).resolve().parents[2]
     executable = root / "target/debug/examples/evaluate_extraction"
     args.output.mkdir(mode=0o700)
@@ -36,9 +38,9 @@ def main():
         parser.error("corpus must have unique IDs and a nonempty selected split")
     variants = args.variants.split(",")
     tasks = []
-    for part, start in enumerate(range(0, len(cases), 8)):
+    for part, start in enumerate(range(0, len(cases), args.shard_size)):
         corpus = args.output / f"corpus-{part}.json"
-        corpus.write_text(json.dumps(cases[start:start + 8], ensure_ascii=False, indent=2))
+        corpus.write_text(json.dumps(cases[start:start + args.shard_size], ensure_ascii=False, indent=2))
         for variant in variants:
             tasks.append((part, variant, corpus))
     manifest = vars(args).copy()
@@ -52,6 +54,7 @@ def main():
         cmd = [str(executable), "--corpus", str(corpus), "--output", str(stem) + ".jsonl",
                "--model", args.model, "--reviewer", args.reviewer,
                "--split", args.split, "--variants", variant, "--runs", str(args.runs)]
+        cmd += ["--repair-attempts", str(args.repair_attempts)]
         if args.prompt_version:
             cmd += ["--prompt-version", args.prompt_version]
         if args.max_output_tokens:
@@ -69,7 +72,7 @@ def main():
         raise SystemExit("Incomplete experiment; inspect shard logs")
     rows = [json.loads(line) for path in sorted(args.output.glob("*.jsonl"))
             for line in path.read_text().splitlines()]
-    if len(rows) != manifest["expected_rows"]:
+    if sum(row.get("terminal", True) for row in rows) != manifest["expected_rows"]:
         raise SystemExit("Incomplete row count")
     with (args.output / "results.jsonl").open("x") as output:
         for row in rows:

@@ -73,6 +73,10 @@ enum Command {
         extraction_reviewer: Option<String>,
         #[arg(long, requires = "extraction_model")]
         extraction_prompt_version: Option<String>,
+        #[arg(long, requires = "extraction_model")]
+        extraction_max_output_tokens: Option<u32>,
+        #[arg(long, requires = "extraction_model")]
+        extraction_review_max_output_tokens: Option<u32>,
     },
     /// Connect stdio MCP to the sole DB-owning server.
     Mcp {
@@ -187,6 +191,8 @@ fn run() -> Result<()> {
         extraction_model,
         extraction_reviewer,
         extraction_prompt_version,
+        extraction_max_output_tokens,
+        extraction_review_max_output_tokens,
     } = cli.command
     {
         let credentials = prime_radiant::authentication::Credentials::open(credentials)?;
@@ -201,12 +207,12 @@ fn run() -> Result<()> {
                         provider: "openrouter".into(),
                         variant: "audited".into(),
                         extractor: prime_radiant::providers::ModelConfig {
-                            max_output_tokens: None,
+                            max_output_tokens: extraction_max_output_tokens,
                             model,
                             timeout_seconds: 120,
                         },
                         reviewer: prime_radiant::providers::ModelConfig {
-                            max_output_tokens: None,
+                            max_output_tokens: extraction_review_max_output_tokens,
                             model: reviewer,
                             timeout_seconds: 120,
                         },

@@ -11,6 +11,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 pub const VERSION: &str = "extraction-v1";
+pub const VALIDATION_VERSION: &str = "source-checks-v2";
 const CONTRACT: &str = include_str!("../../prompts/extraction-v1/contract.txt");
 const FRAMES: &str = include_str!("../../prompts/extraction-v1/frames.txt");
 const REVIEW: &str = include_str!("../../prompts/extraction-v1/review.txt");
@@ -42,6 +43,21 @@ impl Plan {
                 include_str!("../../prompts/extraction-v3/contract.txt"),
                 include_str!("../../prompts/extraction-v3/frames.txt"),
                 include_str!("../../prompts/extraction-v3/review.txt"),
+            )),
+            "extraction-v4" => Ok((
+                include_str!("../../prompts/extraction-v4/contract.txt"),
+                include_str!("../../prompts/extraction-v4/frames.txt"),
+                include_str!("../../prompts/extraction-v4/review.txt"),
+            )),
+            "extraction-v5" => Ok((
+                include_str!("../../prompts/extraction-v5/contract.txt"),
+                include_str!("../../prompts/extraction-v5/frames.txt"),
+                include_str!("../../prompts/extraction-v5/review.txt"),
+            )),
+            "extraction-v6" => Ok((
+                include_str!("../../prompts/extraction-v6/contract.txt"),
+                include_str!("../../prompts/extraction-v6/frames.txt"),
+                include_str!("../../prompts/extraction-v6/review.txt"),
             )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
@@ -258,6 +274,7 @@ pub fn validate(raw: &str, source: &SourceView) -> Result<Batch> {
         // leave dominant-language adjudication to source-grounded and local review.
         if (c.lang == "ko" && (!korean(&c.anchor.quote) || !korean(&c.text)))
             || (c.lang == "en" && (!latin(&c.anchor.quote) || !latin(&c.text)))
+            || (c.lang == "en" && korean_matrix_evidence(&c.anchor.quote))
         {
             return Err(invalid("language", "anchor language mismatch"));
         }
@@ -327,7 +344,42 @@ pub fn validate(raw: &str, source: &SourceView) -> Result<Batch> {
     }
     Ok(batch)
 }
-fn review_valid(raw: &str, n: usize) -> Result<()> {
+/// Narrow grammatical evidence for Latin-heavy Korean clauses, not a general
+/// language detector. English clauses containing Korean names remain supported.
+fn korean_matrix_evidence(span: &str) -> bool {
+    let mut markers = 0;
+    let mut predicate = false;
+    for token in span.split_whitespace() {
+        let literal = token.trim_matches(|c: char| ".,;:!?()[]{}".contains(c));
+        if [('\'', '\''), ('"', '"'), ('‘', '’'), ('“', '”'), ('`', '`')]
+            .iter()
+            .any(|(open, close)| literal.starts_with(*open) && literal.ends_with(*close))
+        {
+            continue;
+        }
+        let token = token.trim_matches(|c: char| !c.is_alphanumeric() && c != '_');
+        if !token.chars().any(|c| c.is_ascii_alphabetic()) {
+            continue;
+        }
+        if ["이고", "이며", "이다", "하다", "한다", "했다", "다"]
+            .iter()
+            .any(|ending| token.ends_with(ending))
+        {
+            predicate = true;
+            markers += 1;
+        } else if [
+            "에서", "으로", "은", "는", "의", "이", "가", "을", "를", "에", "와", "과", "로", "도",
+            "만",
+        ]
+        .iter()
+        .any(|ending| token.ends_with(ending))
+        {
+            markers += 1;
+        }
+    }
+    predicate && markers >= 2
+}
+pub fn validate_review(raw: &str, n: usize) -> Result<()> {
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]
     struct Review {
@@ -381,12 +433,46 @@ pub struct Proposal {
     pub reviews: Vec<String>,
     pub prompt_hash: String,
 }
+#[derive(Default)]
+struct ProposalTrace {
+    raw: Option<String>,
+    reviews: Vec<String>,
+}
+pub(crate) fn stored_reviews(raw: &str) -> Result<Vec<String>> {
+    let value: Value =
+        serde_json::from_str(raw).map_err(|_| invalid("schema", "invalid review record"))?;
+    let reviews = if value.is_array() {
+        value
+    } else {
+        value["reviews"].clone()
+    };
+    serde_json::from_value(reviews).map_err(|_| invalid("schema", "invalid review record"))
+}
+fn review_record(
+    tx: &rusqlite::Transaction<'_>,
+    lease: &Lease,
+    reviews: &[String],
+) -> Result<String> {
+    let previous: Option<String> =
+        tx.query_row("SELECT last_error FROM job WHERE id=?1", [&lease.id], |r| {
+            r.get(0)
+        })?;
+    Ok(serde_json::json!({"reviews":reviews,"attempt":lease.attempt,"previous_failure_code":previous,"validation_version":VALIDATION_VERSION}).to_string())
+}
 pub async fn propose(
     provider: &dyn LlmProvider,
     plan: &Plan,
     source: &SourceView,
 ) -> Result<Proposal> {
-    propose_with_feedback(provider, plan, source, None, &[]).await
+    propose_with_feedback(
+        provider,
+        plan,
+        source,
+        None,
+        &[],
+        &mut ProposalTrace::default(),
+    )
+    .await
 }
 async fn propose_with_feedback(
     provider: &dyn LlmProvider,
@@ -394,6 +480,7 @@ async fn propose_with_feedback(
     source: &SourceView,
     feedback: Option<&str>,
     prior_claims: &[Value],
+    trace: &mut ProposalTrace,
 ) -> Result<Proposal> {
     if provider.identity() != plan.provider {
         return Err(invalid("provider", "configuration mismatch"));
@@ -413,6 +500,9 @@ async fn propose_with_feedback(
             "provider",
             match e {
                 ProviderError::Timeout => "timeout",
+                ProviderError::Quota => "quota",
+                ProviderError::InvalidRequest => "request",
+                ProviderError::RateLimited => "rate_limit",
                 ProviderError::LanguageRestriction => "language restriction",
                 _ => "unavailable or invalid output",
             },
@@ -422,6 +512,7 @@ async fn propose_with_feedback(
         .complete(&plan.prompt()?, &input, &plan.extractor)
         .await
         .map_err(call)?;
+    trace.raw = Some(raw.clone());
     let batch = validate(&raw, source)?;
     let mut reviews = Vec::new();
     for stage in REVIEW_STAGES {
@@ -431,7 +522,8 @@ async fn propose_with_feedback(
             .complete(&prompt, &input, &plan.reviewer)
             .await
             .map_err(call)?;
-        review_valid(&result, batch.claims.len()).map_err(|error| {
+        trace.reviews.push(result.clone());
+        validate_review(&result, batch.claims.len()).map_err(|error| {
             if matches!(
                 error,
                 Error::InvalidInput {
@@ -472,7 +564,7 @@ impl App {
         if source.lifecycle != Lifecycle::Live {
             return Err(Error::NotFound);
         }
-        let hidden:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM claim c WHERE c.source_id=?1 AND COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')<>'restore')",[&lease.source_id],|r|r.get(0))?;
+        let hidden:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM claim c WHERE c.source_id=?1 AND COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')='forget')",[&lease.source_id],|r|r.get(0))?;
         if hidden {
             return Err(Error::NotFound);
         }
@@ -521,7 +613,7 @@ impl App {
             return Err(invalid("semantic", "three reviews required"));
         }
         for review in &proposal.reviews {
-            review_valid(review, batch.claims.len())?;
+            validate_review(review, batch.claims.len())?;
         }
         let id = ulid::Ulid::new().to_string();
         tx.execute(
@@ -531,13 +623,44 @@ impl App {
                 lease.id,
                 proposal.raw,
                 hash(&proposal.raw),
-                serde_json::to_string(&proposal.reviews).expect("reviews"),
+                review_record(&tx, lease, &proposal.reviews)?,
                 Timestamp::now().as_str()
             ],
         )?;
         tx.execute("UPDATE job SET state='failed',last_error='review_required',lease_owner=NULL,lease_until=NULL,updated_at=?2 WHERE id=?1",params![lease.id,Timestamp::now().as_str()])?;
         tx.commit()?;
         Ok(id)
+    }
+    /// Untrusted diagnostics only: never transitions a job to review_required.
+    fn retain_failed_proposal(&self, lease: &Lease, trace: &ProposalTrace) -> Result<()> {
+        let Some(raw) = &trace.raw else {
+            return Ok(());
+        };
+        if raw.len() > 4 * 1024 * 1024
+            || trace.reviews.iter().map(String::len).sum::<usize>() > 4 * 1024 * 1024
+        {
+            return Ok(());
+        }
+        let mut writer = self.store.writer()?;
+        let tx = writer.transaction()?;
+        fenced(&tx, lease)?;
+        let source = crate::store::get(&tx, &lease.source_id.parse()?)?;
+        if source.lifecycle != Lifecycle::Live {
+            return Err(Error::NotFound);
+        }
+        tx.execute(
+            "INSERT INTO extraction_candidate VALUES(?1,?2,?3,?4,?5,?6)",
+            params![
+                ulid::Ulid::new().to_string(),
+                lease.id,
+                raw,
+                hash(raw),
+                review_record(&tx, lease, &trace.reviews)?,
+                Timestamp::now().as_str()
+            ],
+        )?;
+        tx.commit()?;
+        Ok(())
     }
 }
 
@@ -570,6 +693,7 @@ impl App {
         else {
             return Ok(None);
         };
+        let mut trace = ProposalTrace::default();
         let outcome = async {
             let source = self.extraction_input(&lease, plan)?;
             let previous: Option<String> = self.store.reader()?.query_row(
@@ -578,10 +702,17 @@ impl App {
                 |r| r.get(0),
             )?;
             let reader = self.store.reader()?;
-            let prior:Vec<Value>=reader.prepare("SELECT c.id,c.text FROM claim c JOIN extraction_request r ON c.job_id=r.base_job WHERE r.job_id=?1 ORDER BY c.id")?.query_map([&lease.id],|r|Ok(serde_json::json!({"id":r.get::<_,String>(0)?,"text":r.get::<_,String>(1)?})))?.collect::<std::result::Result<_,_>>()?;
+            let prior:Vec<Value>=reader.prepare("SELECT c.id,c.text,COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore') FROM claim c JOIN extraction_request r ON c.job_id=r.base_job WHERE r.job_id=?1 ORDER BY c.id")?.query_map([&lease.id],|r|Ok(serde_json::json!({"id":r.get::<_,String>(0)?,"text":r.get::<_,String>(1)?,"lifecycle_event":r.get::<_,String>(2)?})))?.collect::<std::result::Result<_,_>>()?;
             drop(reader);
-            let proposal =
-                propose_with_feedback(provider, plan, &source, previous.as_deref(), &prior).await?;
+            let proposal = propose_with_feedback(
+                provider,
+                plan,
+                &source,
+                previous.as_deref(),
+                &prior,
+                &mut trace,
+            )
+            .await?;
             self.quarantine_extraction(&lease, proposal)
         };
         match tokio::time::timeout(std::time::Duration::from_secs(budget), outcome).await {
@@ -593,11 +724,17 @@ impl App {
                     Ok(Err(Error::InvalidInput {
                         field: "provider",
                         reason,
-                    })) if reason == "timeout" => "timeout",
+                    })) => match reason.as_str() {
+                        "timeout" => "timeout",
+                        "quota" => "quota",
+                        "request" => "request",
+                        "rate_limit" => "rate_limit",
+                        _ => "provider",
+                    },
                     Ok(Err(Error::InvalidInput { field, .. })) => match field {
                         "anchor" => "anchor",
                         "language" => "language",
-                        "schema" => "schema",
+                        "schema" | "timestamp" => "schema",
                         "semantic" | "unresolved" => "unresolved",
                         "atomicity" => "atomicity",
                         "fidelity" => "fidelity",
@@ -606,6 +743,10 @@ impl App {
                     },
                     _ => "provider",
                 };
+                match self.retain_failed_proposal(&lease, &trace) {
+                    Ok(()) | Err(Error::NotFound) => {}
+                    Err(error) => return Err(error),
+                }
                 let now = OffsetDateTime::now_utc();
                 self.fail_extraction(
                     &lease,
@@ -623,7 +764,7 @@ impl App {
             return Err(Error::Forbidden);
         }
         let conn = self.store.reader()?;
-        let rows=conn.prepare("SELECT j.id,j.target_id,j.state,j.attempts,j.last_error,c.id,c.output_hash,c.output_json,j.max_attempts,j.run_after,j.lease_until FROM job j LEFT JOIN extraction_candidate c ON c.job_id=j.id ORDER BY j.created_at,j.id")?.query_map([],|r|Ok(serde_json::json!({"job":r.get::<_,String>(0)?,"source":r.get::<_,String>(1)?,"state":r.get::<_,String>(2)?,"attempts":r.get::<_,u32>(3)?,"failure":r.get::<_,Option<String>>(4)?,"candidate":r.get::<_,Option<String>>(5)?,"hash":r.get::<_,Option<String>>(6)?,"output":r.get::<_,Option<String>>(7)?,"max_attempts":r.get::<_,u32>(8)?,"run_after":r.get::<_,String>(9)?,"lease_until":r.get::<_,Option<String>>(10)?})))?.collect::<std::result::Result<Vec<_>,_>>()?;
+        let rows=conn.prepare("SELECT j.id,j.target_id,j.state,j.attempts,j.last_error,c.id,c.output_hash,c.output_json,j.max_attempts,j.run_after,j.lease_until,c.reviews_json,c.created_at FROM job j LEFT JOIN extraction_candidate c ON c.job_id=j.id ORDER BY j.created_at,j.id,c.created_at,c.id")?.query_map([],|r|Ok(serde_json::json!({"job":r.get::<_,String>(0)?,"source":r.get::<_,String>(1)?,"state":r.get::<_,String>(2)?,"attempts":r.get::<_,u32>(3)?,"failure":r.get::<_,Option<String>>(4)?,"candidate":r.get::<_,Option<String>>(5)?,"hash":r.get::<_,Option<String>>(6)?,"output":r.get::<_,Option<String>>(7)?,"max_attempts":r.get::<_,u32>(8)?,"run_after":r.get::<_,String>(9)?,"lease_until":r.get::<_,Option<String>>(10)?,"reviews":r.get::<_,Option<String>>(11)?,"candidate_created_at":r.get::<_,Option<String>>(12)?})))?.collect::<std::result::Result<Vec<_>,_>>()?;
         Ok(Value::Array(rows))
     }
 }

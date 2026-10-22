@@ -183,6 +183,33 @@ fn schema_language_anchors_and_dependencies_fail_closed() {
     let mut mixed = candidate("The 서울 service is idle.");
     mixed["lang"] = json!("en");
     assert!(validate(&output(vec![mixed]), &mixed_source).is_ok());
+    let named_id = app
+        .record_source(&user(), RecordSource::plain("The API의 name is 'panda다'."))
+        .unwrap()
+        .source_id;
+    let named_source = app.get_source(&user(), named_id).unwrap();
+    let mut named = candidate("The API의 name is 'panda다'.");
+    named["lang"] = json!("en");
+    assert!(validate(&output(vec![named]), &named_source).is_ok());
+    let technical_id = app
+        .record_source(
+            &user(),
+            RecordSource::plain("Aster의 worker는 idle이고 adapter는 async다."),
+        )
+        .unwrap()
+        .source_id;
+    let technical_source = app.get_source(&user(), technical_id).unwrap();
+    let mut translated = candidate("Aster's worker is idle.");
+    translated["lang"] = json!("en");
+    translated["basis"] = json!("paraphrase");
+    translated["anchor"] = json!({"quote":"Aster의 worker는 idle이고","occurrence":0});
+    assert!(matches!(
+        validate(&output(vec![translated]), &technical_source),
+        Err(Error::InvalidInput {
+            field: "language",
+            ..
+        })
+    ));
     let good = candidate("한글");
     assert!(validate(&output(vec![good.clone()]), &source).is_ok());
     for (key, value) in [
@@ -686,26 +713,50 @@ async fn invalid_revision_rolls_back_whole_publication() {
 async fn reextraction_cannot_resurrect_forgotten_claims() {
     let (_dir, app) = fixture();
     let source = app
-        .record_source(&user(), RecordSource::plain("기록은 남는다."))
+        .record_source(&user(), RecordSource::plain("회의는 금요일이다."))
         .unwrap()
         .source_id;
-    let raw = output(vec![candidate("기록은 남는다.")]);
+    // Simulate a historical extraction mistake, then preserve its retraction
+    // while publishing a corrected interpretation of the unchanged Source.
+    let mut wrong = candidate("회의는 목요일이다.");
+    wrong["basis"] = json!("paraphrase");
+    wrong["anchor"] = json!({"quote":"회의는 금요일이다.","occurrence":0});
+    let raw = output(vec![wrong]);
     let old = accept(&app, &raw, 1).await;
+    app.set_claim_status(&user(), &old[0], "retract").unwrap();
     app.request_extraction(&user(), source.clone(), "new")
         .unwrap();
-    let new = accept(&app, &raw, 1).await;
+    let mut corrected = candidate("회의는 금요일이다.");
+    corrected["revision_of"] = json!(old[0]);
+    let corrected_raw = output(vec![corrected]);
+    let new = accept(&app, &corrected_raw, 1).await;
     assert!(
-        app.get_claim(&p(PrincipalKind::Agent), &old[0])
+        app.get_claim_with_options(&p(PrincipalKind::Agent), &old[0], true)
             .unwrap()
             .provenance
             .is_some()
     );
     assert!(app.get_claim(&user(), &old[0]).is_err());
+    assert_eq!(
+        app.get_claim_with_options(&p(PrincipalKind::Agent), &old[0], true)
+            .unwrap()
+            .lifecycle,
+        Lifecycle::Retracted
+    );
     app.set_claim_status(&user(), &old[0], "forget").unwrap();
     assert!(app.get_claim(&p(PrincipalKind::Agent), &old[0]).is_err());
+    assert!(
+        app.get_claim(&p(PrincipalKind::Agent), &new[0])
+            .unwrap()
+            .provenance
+            .unwrap()["revision_of"]
+            .is_null()
+    );
     app.request_extraction(&user(), source, "after-forget")
         .unwrap();
-    assert!(app.work_once(&fake(&raw, 1), &plan()).await.is_err());
+    let blocked = fake(&raw, 1);
+    assert!(app.work_once(&blocked, &plan()).await.is_err());
+    assert_eq!(blocked.0.lock().unwrap().len(), 4);
     assert_eq!(row(&app)["failure"], "lifecycle");
     assert_eq!(app.list_claims(&user()).unwrap()[0].id, new[0]);
 }
@@ -770,16 +821,79 @@ async fn review_schema_semantic_and_provider_failures_are_distinct() {
    (Ok(json!({"verdict":"unresolved","issues":["ambiguity"],"checked":[0],"coverage_complete":false}).to_string()),"unresolved"),
    (Ok(json!({"verdict":"reject","issues":["atomicity"],"checked":[0],"coverage_complete":true}).to_string()),"atomicity"),
    (Err(ProviderError::LanguageRestriction),"language"),
+   (Err(ProviderError::Quota),"quota"),
+   (Err(ProviderError::InvalidRequest),"request"),
+   (Err(ProviderError::RateLimited),"rate_limit"),
  ];
     for (review, expected) in cases {
         let (_dir, app) = fixture();
         app.record_source(&user(), RecordSource::plain("원문은 보존된다."))
             .unwrap();
         let raw = output(vec![candidate("원문은 보존된다.")]);
-        let provider = FakeProvider(std::sync::Mutex::new([Ok(raw), review].into()));
+        let provider = FakeProvider(std::sync::Mutex::new([Ok(raw.clone()), review].into()));
         assert!(app.work_once(&provider, &plan()).await.is_err());
         assert_eq!(row(&app)["failure"], expected);
-        assert!(row(&app)["candidate"].is_null());
+        assert!(row(&app)["candidate"].is_string());
+        assert_eq!(row(&app)["output"], raw);
+        assert!(
+            app.approve_extraction(
+                &user(),
+                row(&app)["candidate"].as_str().unwrap(),
+                &hash(&raw)
+            )
+            .is_err()
+        );
         assert!(app.list_claims(&user()).unwrap().is_empty());
     }
+    let (_dir, app) = fixture();
+    app.record_source(&user(), RecordSource::plain("원문은 보존된다."))
+        .unwrap();
+    let mut claim = candidate("원문은 보존된다.");
+    claim["applies_from"] = json!("2026-11-01");
+    let provider = FakeProvider(std::sync::Mutex::new([Ok(output(vec![claim]))].into()));
+    assert!(app.work_once(&provider, &plan()).await.is_err());
+    assert_eq!(row(&app)["failure"], "schema");
+    assert!(app.list_claims(&user()).unwrap().is_empty());
+    // An earlier rejected proposal cannot borrow the successful reviews of a
+    // later attempt, even when both belong to the same review_required job.
+    let (retry_dir, retry_app) = fixture();
+    retry_app
+        .record_source(&user(), RecordSource::plain("원문은 보존된다."))
+        .unwrap();
+    let raw = output(vec![candidate("원문은 보존된다.")]);
+    let rejected_review =
+        json!({"verdict":"reject","issues":["atomicity"],"checked":[0],"coverage_complete":true})
+            .to_string();
+    let rejected_provider = FakeProvider(std::sync::Mutex::new(
+        [Ok(raw.clone()), Ok(rejected_review)].into(),
+    ));
+    assert!(
+        retry_app
+            .work_once(&rejected_provider, &plan())
+            .await
+            .is_err()
+    );
+    let rejected = row(&retry_app)["candidate"].as_str().unwrap().to_owned();
+    let rejected_hash = row(&retry_app)["hash"].as_str().unwrap().to_owned();
+    let conn = rusqlite::Connection::open(retry_dir.path().join("db")).unwrap();
+    conn.execute("UPDATE job SET run_after='2000-01-01T00:00:00.000Z'", [])
+        .unwrap();
+    let good = retry_app
+        .work_once(&fake(&raw, 1), &plan())
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(
+        retry_app
+            .approve_extraction(&user(), &rejected, &rejected_hash)
+            .is_err()
+    );
+    assert_eq!(
+        retry_app
+            .approve_extraction(&user(), &good, &hash(&raw))
+            .unwrap()
+            .len(),
+        1
+    );
+    assert!(retry_app.verify_integrity().unwrap().ok);
 }

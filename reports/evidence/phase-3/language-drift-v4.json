@@ -1,0 +1,74 @@
+{
+  "attempt": 1,
+  "case_id": "new-025",
+  "category": "mixed",
+  "claim_count": 2,
+  "corpus_case": {
+    "authored_at": null,
+    "category": "mixed",
+    "id": "new-025",
+    "language": "mixed",
+    "origin": "Phase3 independent editorial draft",
+    "reference": {
+      "annotation_status": "draft; independent human adjudication pending",
+      "equivalence": "Accept paraphrases preserving every truth condition, attribution, modality and scope; references are semantic inventories, not string-match gold.",
+      "propositions": [
+        "PrimeRadiant의 record_source는 sync다.",
+        "PrimeRadiant의 HTTP adapter는 async다."
+      ],
+      "required": [
+        "고유명 보존"
+      ],
+      "unsupported": [
+        "함수명 번역"
+      ]
+    },
+    "source": "PrimeRadiant의 record_source는 sync이고 HTTP adapter는 async다.",
+    "split": "dev"
+  },
+  "elapsed_ms": 16700,
+  "failure_code": null,
+  "human_review": null,
+  "language": "mixed",
+  "plan": {
+    "extractor": {
+      "max_output_tokens": 16384,
+      "model": "openai/gpt-6-luna",
+      "timeout_seconds": 180
+    },
+    "prompt_version": "extraction-v4",
+    "provider": "openrouter",
+    "reviewer": {
+      "max_output_tokens": 4096,
+      "model": "anthropic/claude-haiku-5.5",
+      "timeout_seconds": 180
+    },
+    "variant": "audited"
+  },
+  "previous_failure_code": null,
+  "prompt_hash": "0f90524cc30fe729733bff86a3f43d88258c3c9ac26d0e377b611ffddea05aba",
+  "raw": "{\"claims\":[{\"text\":\"PrimeRadiant's record_source is sync.\",\"lang\":\"en\",\"category\":\"Fact\",\"speaker\":\"unknown\",\"speaker_label\":null,\"basis\":\"paraphrase\",\"anchor\":{\"quote\":\"PrimeRadiant의 record_source는 sync이고\",\"occurrence\":0},\"tkind\":null,\"applies_from\":null,\"applies_to\":null,\"standing\":false,\"index_fields\":null,\"revision_of\":null,\"mentions\":[{\"surface\":\"PrimeRadiant\",\"occurrence\":0},{\"surface\":\"record_source\",\"occurrence\":0},{\"surface\":\"sync\",\"occurrence\":0}],\"dependencies\":[]},{\"text\":\"PrimeRadiant's HTTP adapter is async.\",\"lang\":\"en\",\"category\":\"Fact\",\"speaker\":\"unknown\",\"speaker_label\":null,\"basis\":\"paraphrase\",\"anchor\":{\"quote\":\"PrimeRadiant의 record_source는 sync이고 HTTP adapter는 async다.\",\"occurrence\":0},\"tkind\":null,\"applies_from\":null,\"applies_to\":null,\"standing\":false,\"index_fields\":null,\"revision_of\":null,\"mentions\":[{\"surface\":\"PrimeRadiant\",\"occurrence\":0},{\"surface\":\"HTTP adapter\",\"occurrence\":0},{\"surface\":\"async\",\"occurrence\":0}],\"dependencies\":[]}],\"empty_reason\":null}",
+  "reviews": [
+    {
+      "prompt_hash": "971d49ef3c6495eecb6e0c4054ad82d2b45c1234cdbeaba0fd32fc3f3231c39e",
+      "raw": "{\"verdict\":\"pass\",\"issues\":[],\"checked\":[0,1],\"coverage_complete\":true}",
+      "stage": "atomicity and independence"
+    },
+    {
+      "prompt_hash": "be9a8f72e78ae1f78e01b5e15662b67c91d7c84cbe6bba4f1724e109401e677f",
+      "raw": "{\"verdict\":\"pass\",\"issues\":[],\"checked\":[0,1],\"coverage_complete\":true}",
+      "stage": "semantic fidelity and epistemic framing"
+    },
+    {
+      "prompt_hash": "ffa956007febe527d2ced2124f7a7b1c957857e1d09292400a06fe89ac612f4a",
+      "raw": "{\"verdict\":\"pass\",\"issues\":[],\"checked\":[0,1],\"coverage_complete\":true}",
+      "stage": "whole-batch coverage, duplication and conflicting interpretation"
+    }
+  ],
+  "run": 0,
+  "source_hash": "ccd3589d0daaf5d38fe0716aa3e47aa4ea14addbf79da3ae4f4a91ef72620515",
+  "split": "dev",
+  "structural_valid": true,
+  "terminal": true,
+  "variant": "audited"
+}

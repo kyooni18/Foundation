@@ -6,6 +6,18 @@ use crate::{
 };
 use rusqlite::{OptionalExtension, params};
 use serde::Serialize;
+fn lifecycle(row: &rusqlite::Row<'_>, column: usize) -> rusqlite::Result<Lifecycle> {
+    match row.get::<_, String>(column)?.as_str() {
+        "restore" => Ok(Lifecycle::Live),
+        "retract" => Ok(Lifecycle::Retracted),
+        "forget" => Ok(Lifecycle::Forgotten),
+        _ => Err(rusqlite::Error::FromSqlConversionFailure(
+            column,
+            rusqlite::types::Type::Text,
+            Box::new(std::io::Error::other("invalid lifecycle event")),
+        )),
+    }
+}
 #[derive(Debug, Serialize)]
 pub struct ClaimView {
     pub id: String,
@@ -25,8 +37,8 @@ pub struct ClaimView {
     pub standing: bool,
     pub index_fields: Option<String>,
     pub created_at: String,
-    pub lifecycle: String,
-    pub source_lifecycle: String,
+    pub lifecycle: Lifecycle,
+    pub source_lifecycle: Lifecycle,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recorder: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -48,11 +60,11 @@ impl App {
         }
         let mut w = self.store.writer()?;
         let tx = w.transaction()?;
-        let (job, raw, digest): (String, String, String) = tx
+        let (job, raw, digest, reviews): (String, String, String, String) = tx
             .query_row(
-                "SELECT job_id,output_json,output_hash FROM extraction_candidate WHERE id=?1",
+                "SELECT job_id,output_json,output_hash,reviews_json FROM extraction_candidate WHERE id=?1",
                 [candidate_id],
-                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
             )
             .optional()?
             .ok_or(Error::NotFound)?;
@@ -86,16 +98,26 @@ impl App {
             return Err(invalid("approval", "stale extraction version"));
         }
         // A changed interpretation must never resurrect explicitly hidden knowledge.
-        let hidden:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM claim c WHERE c.source_id=?1 AND COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')<>'restore')",[&source_id],|r|r.get(0))?;
+        let hidden:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM claim c WHERE c.source_id=?1 AND COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')='forget')",[&source_id],|r|r.get(0))?;
         if hidden {
             return Err(invalid(
                 "approval",
-                "source has hidden historical claims; lifecycle review required",
+                "source has forgotten historical claims; lifecycle review required",
             ));
         }
         let batch = extraction::validate(&raw, &source)?;
+        let reviews = extraction::stored_reviews(&reviews)?;
+        if reviews.len() != 3 {
+            return Err(invalid("approval", "three successful reviews required"));
+        }
+        for review in reviews {
+            extraction::validate_review(&review, batch.claims.len())?;
+        }
         let plan: Plan = serde_json::from_str(&plan)
             .map_err(|_| invalid("plan", "invalid stored configuration"))?;
+        if plan.hash()? != prompt_hash {
+            return Err(invalid("plan", "frozen prompt hash mismatch"));
+        }
         let extractor = format!(
             "{}:{}:{}:{}",
             plan.provider,
@@ -229,8 +251,8 @@ impl App {
                         r.get(17)?
                     },
                     created_at: r.get(18)?,
-                    lifecycle: r.get(19)?,
-                    source_lifecycle: r.get(20)?,
+                    lifecycle: lifecycle(r,19)?,
+                    source_lifecycle: lifecycle(r,20)?,
                     recorder: if p.kind() == PrincipalKind::User {
                         None
                     } else {
