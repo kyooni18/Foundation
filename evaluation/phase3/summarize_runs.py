@@ -45,8 +45,9 @@ for key, values in groups.items():
     generated = 0
     for row in values:
         reviews = row.get("reviews", [])
-        gate = bool(row.get("structural_valid") and len(reviews) == stages
-                    and all(review_pass(review, row["claim_count"]) for review in reviews))
+        reader_count = row.get("claim_count", 0) if key[0] == "extraction-v11" and key[-2] in {"audited", "english-staged"} else 0
+        gate = bool(row.get("structural_valid") and len(reviews) == stages + reader_count
+                    and all(review_pass(review, 1 if review.get("stage", "").startswith("standalone") else row["claim_count"]) for review in reviews))
         if args.current_validation:
             if "revalidation" not in row:
                 raise ValueError("Explicit retrospective validation required for every row")

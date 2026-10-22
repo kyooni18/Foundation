@@ -6,4 +6,3 @@ running 1 test
 test claim_transport_equivalence_and_projection_isolation ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.68s
-

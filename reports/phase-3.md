@@ -64,15 +64,18 @@ sole database owner. Recording remains independent of provider success. `extract
 is a one-job offline maintenance runner. Without provider configuration, normal recording
 still queues durable work. Process shutdown may leave a lease, recovered by expiration.
 
-A successful model proposal undergoes deterministic validation and three separate calls:
-atomicity, original-source semantic fidelity, and whole-batch coverage/duplication audit.
-Every review must cover all candidate indices, return no issues, and pass coverage. An
-unresolved or failed review rejects the batch. These calls are logically separate reviews,
+A successful model proposal undergoes deterministic validation and three source-grounded
+calls: atomicity, semantic fidelity and whole-batch coverage/duplication. V11 additionally
+reviews each Claim text alone first, without Source, neighbors, anchors or speaker metadata,
+at bounded concurrency four. Original-source reviews still receive the complete original.
+All responses must pass their complete index protocol. An unresolved or failed review
+rejects the batch. Standalone coverage means its one provided text was fully reviewed;
+only the later original-source calls assess coverage of the Source. These calls are logically separate reviews,
 not evidence of statistically independent model errors. Self-reported confidence is unused.
 
 Even passing proposals become immutable `extraction_candidate` rows with an exact output
 hash and review responses. They create **no Claims**. Local-user approval must name that
-candidate and hash. It checks that candidate’s own three successful reviews and frozen
+candidate and hash. It checks that candidate’s own complete review protocol and frozen
 prompt hash, revalidates against original bytes, and checks lifecycle and version
 freshness before a single transaction inserts all Claims, mentions, declared dependencies,
 the extraction run, and the completion state. A failure rolls the entire publication back.
@@ -138,7 +141,8 @@ and lifecycle are independent axes: confirming a retracted Claim does not restor
 Only the user can confirm/unconfirm. Import cannot mutate lifecycle. Agent scope follows
 the existing Phase 2 role rule; labels never become authorization facts.
 
-User results omit raw anchor passages/offsets, free-text model metadata and extractor/job
+User results omit raw anchor passages/offsets, free-form applies_from/applies_to dates,
+free-text model metadata and extractor/job
 provenance. A broad anchor can contain unconfirmed adjacent text. Essential meaning must
 already be in the approved Claim. The agent/audit view retains evidence and provenance,
 with forgotten revision targets redacted. Counts and cursor continuation are computed
@@ -213,6 +217,10 @@ Prompt revisions are immutable assets, selected explicitly in the frozen plan:
   required indices to each review. V8 long-form reviews omitted the eleventh candidate;
   this is an enumeration aid, not automatic approval. Older frozen profiles retain their
   previous payload shape.
+- **v11:** adds the measured one-Claim-at-a-time isolation reader, followed by all three
+  original-source reviews. The reader prompt itself is included in provenance hashing.
+  A new profile preserves old request hashes and review protocols; real extraction
+  evaluation remains necessary before selection.
 
 The live v1 negated-conjunction diagnostic is instructive: three reviewer calls rejected
 an apparently faithful explanation, then a separate diagnostic call to the same model
@@ -375,7 +383,7 @@ cargo run --offline --example evaluate_extraction -- \
 ```
 
 Prompt selection must be explicit: omission retains v1 serialization for compatibility
-with previously frozen requests. V6 is a failed acceptance candidate; v7/v8 are subsequent
+with previously frozen requests. V6 is a failed acceptance candidate; v7–v11 are subsequent
 experiments, not accepted defaults. Current low-cost experiments use
 `openai/gpt-6-luna-pro` and `anthropic/claude-haiku-5.5`.
 
@@ -494,3 +502,25 @@ meaning in text. Agent/audit responses retain dates, now normalized to UTC milli
 on new publication as required by the existing data contract. Raw proposals and anchor
 bytes are unchanged. `date-projection-before.txt`, `date-normalization-before.txt` and
 `date-projection-after.txt` preserve the two reproduced failures and passing regression.
+
+
+### Standalone reader experiments
+Source-aware reference controls could accept an unresolved pronoun by filling its meaning
+from the Source or another candidate. A standalone reader instead receives only one text
+and structural index hints. Its 22 calibration controls, twice, yielded 24 TN/20 TP for each
+of Haiku, Luna Pro and Qwen. Some controls overlap prompt examples; this is calibration.
+On a separately authored 16-control reader held-out set, twice, all models rejected all
+16 deliberately bad instances. Valid-instance false rejections were 4/16 Haiku and 1/16
+each Luna Pro/Qwen. Those are editorial diagnostic judgments, not independent human gold
+or population rates. The prompts and input isolation changed together, so their individual
+causal contributions are not separated. A source-aware approval-target control also had
+potential duplication/atomicity confounds; its provisional “valid” label is not used as
+clean evidence of reviewer false positives. Independent Korean review remains requested.
+
+The opt-in v11 core protocol requires N standalone responses followed by three original-
+source responses. Missing standalone evidence prevents both quarantine approval and
+publication. Fake-provider tests inspect the actual context-free requests and verify
+rejection publishes no Claims while preserving the Source. Passing fake tests establishes
+orchestration only; the real v11 pilot remains a separate experiment. Reader calls share
+the existing worker-wide deadline, and total review bytes are bounded. Very large batches
+can still fail that explicit deadline rather than partially persist.

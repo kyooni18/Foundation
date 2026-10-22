@@ -464,6 +464,114 @@ async fn review_rejection_rolls_back_and_prompt_injection_remains_data() {
     let proposal = propose(&fake(&raw, 1), &plan(), &source).await.unwrap();
     assert_eq!(proposal.raw, raw);
     // A fake proves orchestration, not resistance of a real model to injection.
+
+    // The standalone protocol must physically omit Source/neighbor context.
+    struct Observed {
+        script: FakeProvider,
+        inputs: std::sync::Mutex<Vec<Value>>,
+    }
+    impl LlmProvider for Observed {
+        fn identity(&self) -> &str {
+            "fake"
+        }
+        fn complete<'a>(
+            &'a self,
+            system: &'a str,
+            input: &'a str,
+            config: &'a ModelConfig,
+        ) -> ProviderFuture<'a> {
+            self.inputs
+                .lock()
+                .unwrap()
+                .push(serde_json::from_str(input).unwrap());
+            self.script.complete(system, input, config)
+        }
+    }
+    let (_reader_dir, reader_app) = fixture();
+    let first = "서버는 로컬에서 실행된다.";
+    let second = "데이터베이스는 SQLite를 사용한다.";
+    reader_app
+        .record_source(
+            &user(),
+            RecordSource::plain(format!("{first} {second} HIDDEN_CONTEXT")),
+        )
+        .unwrap();
+    let reader_raw = output(vec![candidate(first), candidate(second)]);
+    let one =
+        json!({"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true}).to_string();
+    let all =
+        json!({"verdict":"pass","issues":[],"checked":[0,1],"coverage_complete":true}).to_string();
+    let observed = Observed {
+        script: FakeProvider(std::sync::Mutex::new(
+            [
+                Ok(reader_raw.clone()),
+                Ok(one.clone()),
+                Ok(one),
+                Ok(all.clone()),
+                Ok(all.clone()),
+                Ok(all.clone()),
+            ]
+            .into(),
+        )),
+        inputs: std::sync::Mutex::new(Vec::new()),
+    };
+    let mut standalone = plan();
+    standalone.prompt_version = Some("extraction-v11".into());
+    assert_ne!(standalone.hash().unwrap(), indexed.hash().unwrap());
+    assert!(validate_proposal_reviews(&standalone, &[all.clone(), all.clone(), all], 2).is_err());
+    let candidate_id = reader_app
+        .work_once(&observed, &standalone)
+        .await
+        .unwrap()
+        .unwrap();
+    {
+        let seen = observed.inputs.lock().unwrap();
+        assert_eq!(seen.len(), 6);
+        assert_eq!(seen[1]["claim_text"], first);
+        assert_eq!(seen[2]["claim_text"], second);
+        for input in &seen[1..3] {
+            assert_eq!(input["required_checked_indices"], json!([0]));
+            assert_eq!(input.as_object().unwrap().len(), 3);
+            assert!(input.get("original_source").is_none());
+            assert!(!input.to_string().contains("HIDDEN_CONTEXT"));
+        }
+        assert!(!seen[1].to_string().contains(second));
+        assert!(!seen[2].to_string().contains(first));
+        assert!(
+            seen[3..]
+                .iter()
+                .all(|input| input.get("original_source").is_some())
+        );
+    }
+    assert_eq!(
+        reader_app
+            .approve_extraction(&user(), &candidate_id, &hash(&reader_raw))
+            .unwrap()
+            .len(),
+        2
+    );
+    let (_denied_dir, denied_app) = fixture();
+    let source_id = denied_app
+        .record_source(&user(), RecordSource::plain(first))
+        .unwrap()
+        .source_id;
+    let denied_raw = output(vec![candidate(first)]);
+    let denied = FakeProvider(std::sync::Mutex::new([
+        Ok(denied_raw),
+        Ok(json!({"verdict":"reject","issues":["reference"],"checked":[0],"coverage_complete":true}).to_string())
+    ].into()));
+    assert!(denied_app.work_once(&denied, &standalone).await.is_err());
+    assert_eq!(row(&denied_app)["failure"], "atomicity");
+    assert!(
+        denied_app
+            .list_claims(&p(PrincipalKind::Agent))
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        denied_app.get_source(&user(), source_id).unwrap().content,
+        first
+    );
 }
 #[test]
 fn concurrent_workers_claim_each_job_once() {

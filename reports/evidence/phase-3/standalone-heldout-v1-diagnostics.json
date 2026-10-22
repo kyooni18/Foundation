@@ -1,0 +1,20 @@
+{
+  "warning": "Editorial held-out reader controls, not original-source extraction-quality acceptance or independent human gold.",
+  "counts": {
+    "haiku": {
+      "TP": 16,
+      "FP": 4,
+      "TN": 12
+    },
+    "pro": {
+      "TP": 16,
+      "TN": 15,
+      "FP": 1
+    },
+    "qwen": {
+      "TP": 16,
+      "TN": 15,
+      "FP": 1
+    }
+  }
+}

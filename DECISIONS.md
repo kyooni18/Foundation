@@ -330,3 +330,37 @@ Raw proposals/hashes, original text/anchors, historical immutable rows and Sourc
 remain unchanged. There is no migration or destructive rewrite. The original Phase 1 DDL
 and Phase 1/2 checkpoints are unchanged. The test is added to the existing transport test,
 not a new collection of compile-time tests.
+
+### D-56 — Measure isolation without Source or neighboring-Claim context
+Natural v10/reference controls showed that all three source-aware reviewers could accept
+a quoted unresolved reference by filling it from the Source or neighboring Claim. A
+research-only standalone reader saw just one Claim text, with no Source, neighbors,
+anchors, speaker metadata or original timestamps. On 22 editorial calibration controls
+twice, each of Haiku, Luna Pro and Qwen returned 24 true negatives and 20 true positives.
+Some controls overlap prompt examples, so those counts are diagnostic, not generalization.
+
+A separately authored 16-control reader held-out set, twice, kept the reader prompt frozen.
+Each model rejected all 16 deliberately bad instances. Haiku falsely rejected four of 16
+valid instances; Luna Pro and Qwen each falsely rejected one. The labels are editorial,
+not independent human gold. The quoted-pronoun interpretation has also been submitted to
+the user for independent Korean review. Focused instructions and physical input isolation
+changed together; these experiments do not isolate their individual causal effects.
+
+V11 adds this measured protocol as a new opt-in production profile: per-Claim standalone
+atomicity/isolation reviews, then the original three source-grounded reviews, then unchanged
+exact-hash local fidelity approval. Reader calls run at bounded concurrency four and
+never see another Claim or metadata. Reader coverage_complete refers to that one provided
+text; original-source coverage is still checked by the three later reviews. This does
+not prove source fidelity, statistical independence or universal semantic correctness.
+The same configured reviewer model is used; no provider-specific domain logic is added.
+
+Stored review arrays contain N standalone responses followed by three source-grounded
+responses. Quarantine and publication both require the complete protocol; each standalone
+response must explicitly cover its one index. Total review bytes are bounded for the new
+profile. Reader prompt bytes are included in the frozen plan hash. V1–V10 request hashes,
+review counts and payload shapes remain unchanged. Zero-Claim batches still require all
+three source-grounded reviews. Failed reader checks retain only private diagnostics and
+publish no Claims. New fake-provider assertions inspect the actual request payloads,
+verify physical context omission, reject missing reader evidence and verify failed-batch
+rollback without adding another top-level test. Real v11 extraction still requires
+separate empirical evaluation; this decision does not declare Phase 3 acceptance.

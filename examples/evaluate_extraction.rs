@@ -4,8 +4,8 @@ use prime_radiant::{
     App,
     domain::*,
     extraction::{
-        Plan, REVIEW_STAGES, VALIDATION_VERSION, extraction_message, hash, locate, review_message,
-        validate, validate_review,
+        Plan, REVIEW_STAGES, VALIDATION_VERSION, extraction_message, hash, locate, reader_message,
+        review_message, validate, validate_review,
     },
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
@@ -191,6 +191,34 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                         _ => vec![],
                                     };
                                     let mut reviews = Vec::new();
+                                    if let Some(prompt) = plan
+                                        .reader_prompt()
+                                        .filter(|_| matches!(variant, "audited" | "english-staged"))
+                                    {
+                                        let reader_provider = &provider;
+                                        let reader_config = &plan.reviewer;
+                                        for (part, chunk) in batch.claims.chunks(4).enumerate() {
+                                            let read_one = |slot: usize| async move {
+                                                let claim = chunk.get(slot)?;
+                                                let input = reader_message(&claim.text);
+                                                Some(
+                                                    reader_provider
+                                                        .complete(prompt, &input, reader_config)
+                                                        .await,
+                                                )
+                                            };
+                                            let (a, b, c, d) = tokio::join!(biased; read_one(0), read_one(1), read_one(2), read_one(3));
+                                            for (slot, review) in
+                                                [a, b, c, d].into_iter().flatten().enumerate()
+                                            {
+                                                let stage = format!(
+                                                    "standalone atomicity / candidate {}",
+                                                    part * 4 + slot
+                                                );
+                                                reviews.push(match review {Ok(raw)=>json!({"stage":stage,"prompt_hash":hash(prompt),"raw":raw}),Err(error)=>json!({"stage":stage,"error":format!("{error:?}")})});
+                                            }
+                                        }
+                                    }
                                     for stage in stages {
                                         let review_prompt = plan.review_prompt(stage)?;
                                         let review_input = review_message(&plan, &source, &batch);
@@ -223,10 +251,15 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                         review["error"].as_str().unwrap_or("Unavailable"),
                                     ));
                                 };
-                                match validate_review(
-                                    raw,
-                                    result["claim_count"].as_u64().unwrap() as usize,
-                                ) {
+                                let count = if review["stage"]
+                                    .as_str()
+                                    .is_some_and(|stage| stage.starts_with("standalone"))
+                                {
+                                    1
+                                } else {
+                                    result["claim_count"].as_u64().unwrap() as usize
+                                };
+                                match validate_review(raw, count) {
                                     Ok(()) => None,
                                     Err(Error::InvalidInput {
                                         field: "schema", ..
@@ -240,6 +273,10 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                             .as_str()
                                             .unwrap()
                                             .starts_with("atomicity")
+                                            || review["stage"]
+                                                .as_str()
+                                                .unwrap()
+                                                .starts_with("standalone")
                                         {
                                             "atomicity"
                                         } else if review["stage"]

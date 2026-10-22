@@ -54,13 +54,32 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             Some("atomicity-review" | "fidelity-review") => 1,
             _ => 0,
         };
+        let expected = expected
+            + if row["plan"]["prompt_version"] == "extraction-v11"
+                && matches!(row["variant"].as_str(), Some("audited" | "english-staged"))
+            {
+                count
+            } else {
+                0
+            };
         let eligible = valid
             && row["reviews"].as_array().is_some_and(|reviews| {
                 reviews.len() == expected
                     && reviews.iter().all(|review| {
-                        review["raw"]
-                            .as_str()
-                            .is_some_and(|raw| validate_review(raw, count).is_ok())
+                        review["raw"].as_str().is_some_and(|raw| {
+                            validate_review(
+                                raw,
+                                if review["stage"]
+                                    .as_str()
+                                    .is_some_and(|stage| stage.starts_with("standalone"))
+                                {
+                                    1
+                                } else {
+                                    count
+                                },
+                            )
+                            .is_ok()
+                        })
                     })
             });
         row["revalidation"] = json!({"version":VALIDATION_VERSION,"valid":valid,"error":field,"experimental_gate_eligible":eligible});

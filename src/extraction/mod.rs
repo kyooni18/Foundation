@@ -79,6 +79,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v10/frames.txt"),
                 include_str!("../../prompts/extraction-v10/review.txt"),
             )),
+            "extraction-v11" => Ok((
+                include_str!("../../prompts/extraction-v11/contract.txt"),
+                include_str!("../../prompts/extraction-v11/frames.txt"),
+                include_str!("../../prompts/extraction-v11/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -101,6 +106,10 @@ impl Plan {
             "{review}\n{frames}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
         ))
     }
+    pub fn reader_prompt(&self) -> Option<&'static str> {
+        (self.version() == "extraction-v11")
+            .then_some(include_str!("../../prompts/extraction-v11/reader.txt"))
+    }
     pub fn hash(&self) -> Result<String> {
         for config in [&self.extractor, &self.reviewer] {
             if config.model.trim().is_empty()
@@ -113,12 +122,17 @@ impl Plan {
             }
         }
         let (_, frames, review) = self.components()?;
-        Ok(hash(&format!(
+        let mut material = format!(
             "{}\n{}\n{review}\n{frames}\n{}",
             self.version(),
             self.prompt()?,
             serde_json::to_string(self).expect("plan")
-        )))
+        );
+        if let Some(reader) = self.reader_prompt() {
+            material.push('\n');
+            material.push_str(reader);
+        }
+        Ok(hash(&material))
     }
 }
 pub fn hash(s: &str) -> String {
@@ -403,12 +417,32 @@ fn korean_matrix_evidence(span: &str) -> bool {
 /// Older frozen profiles retain their original payload shape.
 pub fn review_message(plan: &Plan, source: &SourceView, batch: &Batch) -> String {
     let mut input = serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch});
-    if plan.version() == "extraction-v10" {
+    if matches!(plan.version(), "extraction-v10" | "extraction-v11") {
         input["candidate_count"] = serde_json::json!(batch.claims.len());
         input["required_checked_indices"] =
             serde_json::json!((0..batch.claims.len()).collect::<Vec<_>>());
     }
     input.to_string()
+}
+
+/// No Source, anchor, attribution metadata or other Claim is supplied here.
+pub fn reader_message(text: &str) -> String {
+    serde_json::json!({"claim_text":text,"candidate_count":1,"required_checked_indices":[0]})
+        .to_string()
+}
+
+pub fn validate_proposal_reviews(plan: &Plan, reviews: &[String], n: usize) -> Result<()> {
+    let readers = if plan.reader_prompt().is_some() { n } else { 0 };
+    if reviews.len() != readers + REVIEW_STAGES.len() {
+        return Err(invalid("semantic", "complete review protocol required"));
+    }
+    if readers > 0 && reviews.iter().map(String::len).sum::<usize>() > 4 * 1024 * 1024 {
+        return Err(invalid("schema", "review batch too large"));
+    }
+    for (i, review) in reviews.iter().enumerate() {
+        validate_review(review, if i < readers { 1 } else { n })?;
+    }
+    Ok(())
 }
 
 pub fn validate_review(raw: &str, n: usize) -> Result<()> {
@@ -470,6 +504,16 @@ struct ProposalTrace {
     raw: Option<String>,
     reviews: Vec<String>,
 }
+fn append_review_trace(plan: &Plan, trace: &mut ProposalTrace, raw: &str) -> Result<()> {
+    if plan.reader_prompt().is_some()
+        && trace.reviews.iter().map(String::len).sum::<usize>() + raw.len() > 4 * 1024 * 1024
+    {
+        return Err(invalid("schema", "review batch too large"));
+    }
+    trace.reviews.push(raw.to_owned());
+    Ok(())
+}
+
 pub(crate) fn stored_reviews(raw: &str) -> Result<Vec<String>> {
     let value: Value =
         serde_json::from_str(raw).map_err(|_| invalid("schema", "invalid review record"))?;
@@ -489,7 +533,19 @@ fn review_record(
         tx.query_row("SELECT last_error FROM job WHERE id=?1", [&lease.id], |r| {
             r.get(0)
         })?;
-    Ok(serde_json::json!({"reviews":reviews,"attempt":lease.attempt,"previous_failure_code":previous,"validation_version":VALIDATION_VERSION}).to_string())
+    let serialized: String = tx.query_row(
+        "SELECT plan_json FROM extraction_request WHERE job_id=?1",
+        [&lease.id],
+        |r| r.get(0),
+    )?;
+    let plan: Plan = serde_json::from_str(&serialized)
+        .map_err(|_| invalid("plan", "invalid stored configuration"))?;
+    let protocol = if plan.reader_prompt().is_some() {
+        "standalone-prefix-v1+source-grounded-v1"
+    } else {
+        "source-grounded-v1"
+    };
+    Ok(serde_json::json!({"reviews":reviews,"attempt":lease.attempt,"previous_failure_code":previous,"validation_version":VALIDATION_VERSION,"review_protocol":protocol}).to_string())
 }
 pub async fn propose(
     provider: &dyn LlmProvider,
@@ -547,6 +603,36 @@ async fn propose_with_feedback(
     trace.raw = Some(raw.clone());
     let batch = validate(&raw, source)?;
     let mut reviews = Vec::new();
+    if let Some(prompt) = plan.reader_prompt() {
+        // Bound concurrency and memory; every request contains one Claim only.
+        for chunk in batch.claims.chunks(4) {
+            let read_one = |slot: usize| async move {
+                let candidate = chunk.get(slot)?;
+                let input = reader_message(&candidate.text);
+                Some(provider.complete(prompt, &input, &plan.reviewer).await)
+            };
+            let (a, b, c, d) =
+                tokio::join!(biased; read_one(0), read_one(1), read_one(2), read_one(3));
+            for result in [a, b, c, d].into_iter().flatten() {
+                let raw = result.map_err(call)?;
+                append_review_trace(plan, trace, &raw)?;
+                validate_review(&raw, 1).map_err(|error| {
+                    if matches!(
+                        error,
+                        Error::InvalidInput {
+                            field: "schema" | "unresolved",
+                            ..
+                        }
+                    ) {
+                        error
+                    } else {
+                        invalid("atomicity", "standalone reader rejected")
+                    }
+                })?;
+                reviews.push(raw);
+            }
+        }
+    }
     for stage in REVIEW_STAGES {
         let prompt = plan.review_prompt(stage)?;
         let input = review_message(plan, source, &batch);
@@ -554,7 +640,7 @@ async fn propose_with_feedback(
             .complete(&prompt, &input, &plan.reviewer)
             .await
             .map_err(call)?;
-        trace.reviews.push(result.clone());
+        append_review_trace(plan, trace, &result)?;
         validate_review(&result, batch.claims.len()).map_err(|error| {
             if matches!(
                 error,
@@ -641,12 +727,7 @@ impl App {
             return Err(invalid("plan", "prompt hash mismatch"));
         }
         let batch = validate(&proposal.raw, &source)?;
-        if proposal.reviews.len() != 3 {
-            return Err(invalid("semantic", "three reviews required"));
-        }
-        for review in &proposal.reviews {
-            validate_review(review, batch.claims.len())?;
-        }
+        validate_proposal_reviews(&plan, &proposal.reviews, batch.claims.len())?;
         let id = ulid::Ulid::new().to_string();
         tx.execute(
             "INSERT INTO extraction_candidate VALUES(?1,?2,?3,?4,?5,?6)",

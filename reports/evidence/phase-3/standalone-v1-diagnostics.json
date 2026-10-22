@@ -1,0 +1,17 @@
+{
+  "warning": "Editorial diagnostic controls, some overlap prompt examples. Not held-out/general semantic acceptance. Prompt AND input isolation changed; causality is not separated.",
+  "counts": {
+    "haiku": {
+      "TN": 24,
+      "TP": 20
+    },
+    "pro": {
+      "TP": 20,
+      "TN": 24
+    },
+    "qwen": {
+      "TN": 24,
+      "TP": 20
+    }
+  }
+}

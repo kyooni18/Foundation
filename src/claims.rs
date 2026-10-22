@@ -107,14 +107,9 @@ impl App {
         }
         let batch = extraction::validate(&raw, &source)?;
         let reviews = extraction::stored_reviews(&reviews)?;
-        if reviews.len() != 3 {
-            return Err(invalid("approval", "three successful reviews required"));
-        }
-        for review in reviews {
-            extraction::validate_review(&review, batch.claims.len())?;
-        }
         let plan: Plan = serde_json::from_str(&plan)
             .map_err(|_| invalid("plan", "invalid stored configuration"))?;
+        extraction::validate_proposal_reviews(&plan, &reviews, batch.claims.len())?;
         if plan.hash()? != prompt_hash {
             return Err(invalid("plan", "frozen prompt hash mismatch"));
         }

@@ -1,0 +1,308 @@
+[
+  {
+    "id": "unknown-person-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 원문에서 ‘걔’로 지칭된 신원 미상의 인물이 또 늦은 일에 짜증난다고 표현했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "unknown-person-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 ‘걔’가 또 늦은 일에 짜증난다고 표현했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "policy-object-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "지수는 삭제에 관리자 승인을 요구하는 규칙이 번거롭다고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "policy-object-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "지수는 이 규칙이 번거롭다고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "component-reference-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "Sora 프로젝트의 API handler는 async다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "component-reference-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "그 구성요소는 async다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "quoted-properties-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "민수는 서버가 Rust로 작성되었다고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "quoted-properties-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "민수는 서버가 Rust로 작성되었고 데이터베이스는 SQLite를 사용한다고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "conditional-consequences-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "서버가 종료되면 작업이 중단된다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "conditional-consequences-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "서버가 종료되면 작업이 중단되고 로그가 저장된다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "question-frame-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 VPN 암호가 바뀌었는지 물었다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "question-frame-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "혹시 VPN 암호가 바뀌었나?"
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "logical-scope-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "A와 B가 모두 성공한 것은 아니다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "logical-scope-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "A는 실패했고 B는 실패했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "time-frame-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 날짜가 알려지지 않은 원문 발화일의 전날 대전에 있었다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "time-frame-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "나는 어제 대전에 있었다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "unverified-frame-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "Mina said the server might be down, although she had not checked it."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "unverified-frame-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "The machine uses SQLite and communicates over HTTP."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "weather-it-valid",
+    "expected": "pass",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "It rains in Oslo during the wet season."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "weather-it-invalid",
+    "expected": "reject",
+    "original_source": "Not supplied to this standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "It uses SQLite."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial control; unknown-person case independently human-reviewed only if user provides assessment"
+  },
+  {
+    "id": "bound-frame-valid-0",
+    "expected": "pass",
+    "original_source": "Not supplied.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "민수는 자신이 아파서 약속을 취소했다고 말했다."
+        }
+      ],
+      "empty_reason": null
+    }
+  },
+  {
+    "id": "bound-frame-valid-1",
+    "expected": "pass",
+    "original_source": "Not supplied.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "전원이 복구되면 기기를 재시작하되 점검 모드에서는 재시작하지 않는다."
+        }
+      ],
+      "empty_reason": null
+    }
+  }
+]

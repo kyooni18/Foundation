@@ -1,0 +1,258 @@
+[
+  {
+    "id": "descriptor-comparison-valid",
+    "expected": "pass",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문에서 R로 명명된 빨간 장비의 가격은 파란 장비 가격의 두 배다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "descriptor-comparison-invalid",
+    "expected": "reject",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "빨간 장비는 가볍고 충전이 느리다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "nested-condition-valid",
+    "expected": "pass",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문에서 출근 주체가 명시되지 않은 인물은 눈이 오는 경우 버스가 운행할 때만 출근한다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "nested-condition-invalid",
+    "expected": "reject",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "그 사람은 눈이 오는 경우 출근한다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "exclusive-alternative-valid",
+    "expected": "pass",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "Exactly one of the service or its backup is running."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "exclusive-alternative-invalid",
+    "expected": "reject",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "The service is running and its backup is stopped."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "named-reflexive-valid",
+    "expected": "pass",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "지수는 자신이 감기로 모임에 참석하지 못했다고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "named-reflexive-invalid",
+    "expected": "reject",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "지수는 그것이 모임에 참석하지 못한 이유라고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "nested-english-report-valid",
+    "expected": "pass",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "Leah said Arun considered the ticket unconfirmed."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "nested-english-report-invalid",
+    "expected": "reject",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "He said Arun considered it unconfirmed."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "original-time-valid",
+    "expected": "pass",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "The original speaker said that, at the unknown original statement time, they had not decided whether to travel."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "original-time-invalid",
+    "expected": "reject",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "I have not decided whether to travel yet."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "language-disjunction-valid",
+    "expected": "pass",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "참석자는 독일어 또는 프랑스어 중 적어도 하나를 구사해야 한다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "language-disjunction-invalid",
+    "expected": "reject",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "참석자는 독일어를 구사해야 하고 프랑스어를 구사해야 한다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "unverified-korean-valid",
+    "expected": "pass",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "태호는 직접 확인하지 않은 상태에서 배터리가 방전됐을 가능성을 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  },
+  {
+    "id": "unverified-korean-invalid",
+    "expected": "reject",
+    "split": "heldout",
+    "origin": "Standalone review controls authored after reader-v1 prompt and calibration outputs; prompt frozen before use",
+    "original_source": "Not supplied to standalone reviewer.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "태호는 배터리가 방전됐고 충전기가 고장 났다고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial diagnostic labels, not independently human-adjudicated gold"
+  }
+]

@@ -20,6 +20,7 @@ def main():
     parser.add_argument("--model", required=True)
     parser.add_argument("--runs", type=int, default=2)
     parser.add_argument("--versions", default="extraction-v1,extraction-v2")
+    parser.add_argument("--standalone-prompt", type=Path)
     parser.add_argument("--controls", type=Path, default=Path(__file__).with_name("reviewer-controls.json"))
     parser.add_argument("--max-output-tokens", type=int, default=4096)
     parser.add_argument("--workers", type=int, default=6)
@@ -33,20 +34,28 @@ def main():
         raise SystemExit("A canonical private 0600 credential file is required")
     key = credential.read_text().strip()
     controls = json.loads(args.controls.read_text())
-    stages = ["atomicity and independence", "semantic fidelity and epistemic framing",
-              "whole-batch coverage, duplication and conflicting interpretation"]
+    stages = (["standalone atomicity and isolation"] if args.standalone_prompt else
+              ["atomicity and independence", "semantic fidelity and epistemic framing",
+               "whole-batch coverage, duplication and conflicting interpretation"])
     tasks = [(version, control, stage, run) for version in args.versions.split(",")
              for control in controls for stage in stages for run in range(args.runs)]
 
     def evaluate(task):
         version, control, stage, run = task
-        folder = root / "prompts" / version
-        prompt = (folder / "review.txt").read_text() + "\n" + (folder / "frames.txt").read_text() + f"\nIndependent review responsibility: {stage}. Compare against original, never a translation."
-        source = {k: control[k] for k in ["original_source", "candidate_batch"]}
-        source["authored_at"] = control.get("authored_at")
-        if version == "extraction-v10":
-            source["candidate_count"] = len(source["candidate_batch"]["claims"])
-            source["required_checked_indices"] = list(range(source["candidate_count"]))
+        if args.standalone_prompt:
+            prompt = args.standalone_prompt.read_text()
+            claims = control["candidate_batch"]["claims"]
+            if len(claims) != 1:
+                raise ValueError("Standalone controls must contain exactly one Claim")
+            source = {"claim_text": claims[0]["text"], "candidate_count": 1, "required_checked_indices": [0]}
+        else:
+            folder = root / "prompts" / version
+            prompt = (folder / "review.txt").read_text() + "\n" + (folder / "frames.txt").read_text() + f"\nIndependent review responsibility: {stage}. Compare against original, never a translation."
+            source = {k: control[k] for k in ["original_source", "candidate_batch"]}
+            source["authored_at"] = control.get("authored_at")
+            if version == "extraction-v10":
+                source["candidate_count"] = len(source["candidate_batch"]["claims"])
+                source["required_checked_indices"] = list(range(source["candidate_count"]))
         payload = dict(model=args.model, temperature=0, max_tokens=args.max_output_tokens, response_format=dict(type="json_object"),
                        messages=[dict(role="system", content=prompt), dict(role="user", content=json.dumps(source, ensure_ascii=False))])
         result = dict(control=control, version=version, model=args.model, stage=stage, run=run,
