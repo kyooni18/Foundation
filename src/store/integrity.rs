@@ -9,6 +9,7 @@ pub fn sha256(bytes: &[u8]) -> String {
 #[derive(Debug, Serialize)]
 pub struct IntegrityItem {
     pub name: &'static str,
+    pub ok: bool,
     pub violations: usize,
     pub first_violation: Option<String>,
 }
@@ -16,11 +17,13 @@ impl IntegrityItem {
     fn new(name: &'static str) -> Self {
         Self {
             name,
+            ok: true,
             violations: 0,
             first_violation: None,
         }
     }
     fn fail(&mut self, id: impl Into<String>) {
+        self.ok = false;
         self.violations += 1;
         if self.first_violation.is_none() {
             self.first_violation = Some(id.into());

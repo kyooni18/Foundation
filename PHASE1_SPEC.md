@@ -131,6 +131,8 @@ writer 직렬화 때문에 UNIQUE 위반은 정상 경로에서 발생하지 않
 
 lifecycle 이벤트: `BEGIN IMMEDIATE` → 대상 조회(보이지 않으면 NotFound) → 권한 검사 → 현재 상태가 이미 목표 상태면 no-op → INSERT → COMMIT.
 
+구현 명확화(D-30): user lifecycle 관리 명령은 read projection과 달리 모든 기존 source를 대상으로 허용한다(망각 복원 포함). 비-user 명령에는 위 가시성 검사를 그대로 적용한다. `get_source`의 투영은 변경하지 않는다.
+
 ## 6. 무결성 검사 (`verify_integrity`, CLI `check`)
 1. `PRAGMA integrity_check` = ok, `PRAGMA foreign_key_check` 비어 있음.
 2. 모든 source에 대해 `sha256(content) == content_sha256`.
