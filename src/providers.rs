@@ -86,14 +86,7 @@ impl LlmProvider for OpenRouter {
             if !response.status().is_success() {
                 return Err(ProviderError::Unavailable);
             }
-            let body: serde_json::Value = response
-                .json()
-                .await
-                .map_err(|_| ProviderError::InvalidOutput)?;
-            body["choices"][0]["message"]["content"]
-                .as_str()
-                .map(String::from)
-                .ok_or(ProviderError::InvalidOutput)
+            read_completion(response).await
         })
     }
 }
@@ -118,5 +111,91 @@ impl LlmProvider for FakeProvider {
                 .pop_front()
                 .unwrap_or(Err(ProviderError::Unavailable))
         })
+    }
+}
+
+async fn read_completion(mut response: reqwest::Response) -> Result<String, ProviderError> {
+    // Bound bytes before JSON decoding; Content-Length is only an early hint.
+    const MAX_RESPONSE: usize = 8 * 1024 * 1024;
+    if response
+        .content_length()
+        .is_some_and(|n| n > MAX_RESPONSE as u64)
+    {
+        return Err(ProviderError::InvalidOutput);
+    }
+    let mut bytes = Vec::new();
+    while let Some(chunk) = response.chunk().await.map_err(|e| {
+        if e.is_timeout() {
+            ProviderError::Timeout
+        } else {
+            ProviderError::Unavailable
+        }
+    })? {
+        if chunk.len() > MAX_RESPONSE - bytes.len() {
+            return Err(ProviderError::InvalidOutput);
+        }
+        bytes.extend_from_slice(&chunk);
+    }
+    let body: serde_json::Value =
+        serde_json::from_slice(&bytes).map_err(|_| ProviderError::InvalidOutput)?;
+    body["choices"][0]["message"]["content"]
+        .as_str()
+        .map(String::from)
+        .ok_or(ProviderError::InvalidOutput)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    #[tokio::test]
+    async fn response_decoding_bounds_and_sanitized_errors() {
+        let valid = r#"{"choices":[{"message":{"content":"{\"claims\":[]}"}}]}"#;
+        let bodies = [
+            (
+                format!(
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    valid.len(),
+                    valid
+                ),
+                Ok("{\"claims\":[]}".to_owned()),
+            ),
+            (
+                "HTTP/1.1 200 OK\r\nContent-Length: 8388609\r\nConnection: close\r\n\r\n".into(),
+                Err(ProviderError::InvalidOutput),
+            ),
+            (
+                "HTTP/1.1 200 OK\r\nContent-Length: 6\r\nConnection: close\r\n\r\nsecret".into(),
+                Err(ProviderError::InvalidOutput),
+            ),
+            (
+                format!(
+                    "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n800001\r\n{}\r\n0\r\n\r\n",
+                    "x".repeat(8 * 1024 * 1024 + 1)
+                ),
+                Err(ProviderError::InvalidOutput),
+            ),
+        ];
+        for (wire, expected) in bodies {
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let addr = listener.local_addr().unwrap();
+            let task = tokio::spawn(async move {
+                let (mut socket, _) = listener.accept().await.unwrap();
+                let mut req = [0; 4096];
+                let _ = socket.read(&mut req).await;
+                let _ = socket.write_all(wire.as_bytes()).await;
+            });
+            let response = reqwest::Client::builder()
+                .no_proxy()
+                .build()
+                .unwrap()
+                .get(format!("http://{addr}"))
+                .timeout(Duration::from_secs(5))
+                .send()
+                .await
+                .unwrap();
+            assert_eq!(read_completion(response).await, expected);
+            task.await.unwrap();
+        }
     }
 }

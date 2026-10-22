@@ -287,30 +287,54 @@ pub fn validate(raw: &str, source: &SourceView) -> Result<Batch> {
     Ok(batch)
 }
 fn review_valid(raw: &str, n: usize) -> Result<()> {
-    let v: Value = serde_json::from_str(raw).map_err(|_| invalid("schema", "invalid review"))?;
-    keys(&v, &["verdict", "issues", "checked", "coverage_complete"])?;
-    if v["verdict"] == "unresolved" {
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Review {
+        verdict: String,
+        issues: Vec<String>,
+        checked: Vec<usize>,
+        coverage_complete: bool,
+    }
+    if raw.len() > 4 * 1024 * 1024 {
+        return Err(invalid("schema", "review too large"));
+    }
+    let mut review: Review =
+        serde_json::from_str(raw).map_err(|_| invalid("schema", "invalid review"))?;
+    choice(&review.verdict, &["pass", "reject", "unresolved"])?;
+    for issue in &review.issues {
+        choice(
+            issue,
+            &[
+                "atomicity",
+                "oversplit",
+                "unsupported",
+                "negation",
+                "attribution",
+                "uncertainty",
+                "condition",
+                "temporal",
+                "reference",
+                "language",
+                "coverage",
+                "duplicate",
+                "injection",
+                "ambiguity",
+            ],
+        )?;
+    }
+    review.checked.sort_unstable();
+    if review.checked != (0..n).collect::<Vec<_>>() {
+        return Err(invalid("schema", "review omitted or duplicated claims"));
+    }
+    if review.verdict == "unresolved" {
         return Err(invalid("unresolved", "review ambiguity"));
     }
-    if v["verdict"] != "pass"
-        || v["coverage_complete"] != true
-        || v["issues"] != serde_json::json!([])
-    {
-        return Err(invalid("semantic", "review rejected or unresolved"));
-    }
-    let mut checked = v["checked"]
-        .as_array()
-        .ok_or_else(|| invalid("schema", "review coverage"))?
-        .iter()
-        .map(|v| v.as_u64())
-        .collect::<Option<Vec<_>>>()
-        .ok_or_else(|| invalid("schema", "review indices"))?;
-    checked.sort_unstable();
-    if checked != (0..n as u64).collect::<Vec<_>>() {
-        return Err(invalid("schema", "review omitted claims"));
+    if review.verdict != "pass" || !review.coverage_complete || !review.issues.is_empty() {
+        return Err(invalid("semantic", "review rejected"));
     }
     Ok(())
 }
+
 pub struct Proposal {
     pub raw: String,
     pub reviews: Vec<String>,
@@ -338,6 +362,9 @@ async fn propose_with_feedback(
     input["prior_extraction_claims"] = serde_json::json!(prior_claims);
     let input = input.to_string();
     let call = |e: ProviderError| {
+        if e == ProviderError::LanguageRestriction {
+            return invalid("language", "provider language restriction");
+        }
         if e == ProviderError::InvalidOutput {
             return invalid("schema", "invalid provider output");
         }
@@ -367,7 +394,7 @@ async fn propose_with_feedback(
             if matches!(
                 error,
                 Error::InvalidInput {
-                    field: "unresolved",
+                    field: "unresolved" | "schema",
                     ..
                 }
             ) {

@@ -6,8 +6,48 @@ decompositions (int), translation_errors (int), translation_candidates (int).
 Independent human adjudication is required for acceptance; model reviews are diagnostic.
 """
 import collections,json,sys
-rows=[json.loads(line) for line in open(sys.argv[1])]
 flags=['atomicity_violation','unsupported','fidelity_error','epistemic_error','language_error','anchor_error','duplicate']
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+def validate_review(row):
+    h = row.get('human_review')
+    if h is None:
+        return
+    require(isinstance(h, dict), 'human_review must be an object')
+    require(isinstance(h.get('reviewer'), str) and h['reviewer'].strip(), 'reviewer required')
+    require(type(h.get('accepted')) is bool, 'accepted must be boolean')
+    for key in ['supported_propositions', 'covered_propositions', 'oversplits',
+                'decompositions', 'translation_errors', 'translation_candidates']:
+        require(type(h.get(key)) is int and h[key] >= 0, f'{key} must be a nonnegative integer')
+    for numerator, denominator in [('covered_propositions', 'supported_propositions'),
+                                   ('oversplits', 'decompositions'),
+                                   ('translation_errors', 'translation_candidates')]:
+        require(h[numerator] <= h[denominator], f'{numerator} exceeds denominator')
+    require(isinstance(h.get('claims'), list), 'per-claim annotations required')
+    try:
+        original_claims = json.loads(row.get('raw', 'null'))['claims']
+    except (ValueError, KeyError, TypeError):
+        original_claims = []
+    require(isinstance(original_claims, list), 'raw claims must be an array')
+    require(len(h['claims']) == len(original_claims), 'annotate every generated Claim exactly once, including rejected output')
+    for claim in h['claims']:
+        require(isinstance(claim, dict) and all(type(claim.get(f)) is bool for f in flags),
+                'every Claim needs all error flags as booleans')
+    if h['accepted']:
+        require(row.get('structural_valid') is True, 'structurally invalid output cannot be accepted')
+    if not h['claims']:
+        require(h['covered_propositions'] == 0, 'empty output cannot cover propositions')
+
+rows=[json.loads(line) for line in open(sys.argv[1])]
+seen=set()
+for row in rows:
+    identity=(row['case_id'],row['variant'],row['run'],row['prompt_hash'],row['source_hash'])
+    require(identity not in seen, 'duplicate evaluation run')
+    seen.add(identity)
+    validate_review(row)
 groups=collections.defaultdict(list)
 for row in rows:
     for key in [(row['variant'],row['language'],'all'),(row['variant'],row['language'],row['category'])]:
@@ -15,11 +55,6 @@ for row in rows:
 output={}
 for key,rs in groups.items():
     reviewed=[r for r in rs if r.get('human_review') is not None]
-    for r in reviewed:
-        h=r['human_review']
-        assert h.get('reviewer') and type(h['accepted']) is bool
-        assert all(type(c[f]) is bool for c in h['claims'] for f in flags)
-        assert 0<=h['covered_propositions']<=h['supported_propositions']
     accepted=[r for r in reviewed if r['human_review']['accepted']]
     claims=[c for r in accepted for c in r['human_review']['claims']]
     rate=lambda n,d: {'numerator':n,'denominator':d,'rate':n/d if d else None}

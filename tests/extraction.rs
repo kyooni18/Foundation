@@ -731,3 +731,26 @@ fn publication_kill_is_all_or_nothing_and_replayable() {
         assert_eq!(app.list_claims(&user()).unwrap().len(), 50);
     }
 }
+
+#[tokio::test]
+async fn review_schema_semantic_and_provider_failures_are_distinct() {
+    let cases=[
+   (Ok("not JSON".to_owned()),"schema"),
+   (Ok(json!({"verdict":"unresolved","issues":[],"checked":"not an array","coverage_complete":false}).to_string()),"schema"),
+   (Ok(json!({"verdict":"pass","issues":["invented-enum"],"checked":[0],"coverage_complete":true}).to_string()),"schema"),
+   (Ok(json!({"verdict":"unresolved","issues":["ambiguity"],"checked":[0],"coverage_complete":false}).to_string()),"unresolved"),
+   (Ok(json!({"verdict":"reject","issues":["atomicity"],"checked":[0],"coverage_complete":true}).to_string()),"atomicity"),
+   (Err(ProviderError::LanguageRestriction),"language"),
+ ];
+    for (review, expected) in cases {
+        let (_dir, app) = fixture();
+        app.record_source(&user(), RecordSource::plain("원문은 보존된다."))
+            .unwrap();
+        let raw = output(vec![candidate("원문은 보존된다.")]);
+        let provider = FakeProvider(std::sync::Mutex::new([Ok(raw), review].into()));
+        assert!(app.work_once(&provider, &plan()).await.is_err());
+        assert_eq!(row(&app)["failure"], expected);
+        assert!(row(&app)["candidate"].is_null());
+        assert!(app.list_claims(&user()).unwrap().is_empty());
+    }
+}
