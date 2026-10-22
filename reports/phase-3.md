@@ -205,6 +205,14 @@ Prompt revisions are immutable assets, selected explicitly in the frozen plan:
   decomposition. V6 long-form output had disconnected an exception from its rule and left
   a known policy referent unresolved. Matched controls and exposed regressions are under
   evaluation. The procedure is instructional, not an observed or trusted intermediate.
+- **v9:** adds an explicit behavioral counterexample distinguishing a positive IF rule
+  from a negative exception, and binds deictic time to the original statement. Matched
+  reviewer controls removed the known false passes in those narrow cases; false rejections
+  remain, and no population error rate is inferred.
+- **v10:** retains that semantic procedure and supplies host-computed candidate count and
+  required indices to each review. V8 long-form reviews omitted the eleventh candidate;
+  this is an enumeration aid, not automatic approval. Older frozen profiles retain their
+  previous payload shape.
 
 The live v1 negated-conjunction diagnostic is instructive: three reviewer calls rejected
 an apparently faithful explanation, then a separate diagnostic call to the same model
@@ -236,7 +244,7 @@ an output file's existence.
 
 ## Corpus, annotations and metrics
 
-There are **108 sources: 88 development and 20 held-out**:
+The original v6 round contains **108 sources: 88 development and 20 held-out**:
 
 | Corpus | Development | Held-out | Reference status |
 |---|---:|---:|---|
@@ -252,7 +260,14 @@ causality, temporal changes, sarcasm, exaggeration, shorthand, mixed technical n
 repetition, contextual references, injection and empty extraction. Development references
 were corrected where the initial labels themselves forced an unsupported interpretation;
 source bytes did not change. These inventories are not independently adjudicated gold.
-Held-out sources are not used as prompt examples or repair feedback.
+The v6 held-out run exposed semantic failures; all 20 of its sources are consequently
+regression material for subsequent revisions, not a fresh benchmark. Eight new attachment
+controls bring the next development/regression collection to 116 sources. A separate
+`heldout-v10.json` contains 20 newly authored cases (14 Korean, four English, two mixed),
+created after the v10 prompt assets were frozen and reserved until profile selection.
+There are therefore 136 unique corpus sources across rounds. Small paired reviewer-control
+fixtures are additional diagnostics, not counted as independent extraction sources.
+Every new reference remains an editorial draft; no independent human gold is fabricated.
 
 `score.py` requires complete per-Claim boolean annotations, validates denominators, rejects
 duplicate run/attempt identities and keeps model, prompt version, source language and error
@@ -304,9 +319,45 @@ positives and one provider error; v2 returned 36 true negatives and 36 true posi
 These simple controls did not predict the natural-case errors above. They are diagnostic,
 not evidence that reviewer false-positive or false-negative rates are universally zero.
 
-Final revised-prompt, held-out and legacy audits remain subject to their actual run
-results. Neither a measured best strategy nor final zero-error acceptance is asserted
-before those comparisons and source audits finish.
+The completed v6 comparison uses 88 development and 20 held-out sources, each twice, with
+matched cheap models/configuration for `r2-frame` and `audited`. It is a genuine held-out
+run for v6. Audited development produced 240 attempts for 176 terminal runs: 164 model-gate
+passes, 29 successes after repair and 12 exhausted runs. Audited held-out produced 75
+attempts for 40 terminal runs: 29 gate passes, nine repaired successes and 11 exhausted
+runs. Only three of eight long-form held-out runs passed. The adapted R2 structural-only
+condition passed 176/176 development and 40/40 held-out after anchor retries; it has no
+semantic reviews, and those structural pass counts do not establish fidelity. Held-out
+reviews also had nine InvalidOutput call failures and one Unavailable error. Earlier
+experimental repair feedback grouped such review errors as provider failures; the corrected
+harness distinguishes their production-equivalent sanitized classes without rewriting old
+rows. Detailed language/category diagnostics and every attempt are retained.
+
+Its exposed failures are regression material for v7/v8, **not** fresh held-out
+evidence for those later revisions. Concrete observed failures include:
+
+| Original requirement | Observed v6 audited output defect |
+|---|---|
+| `new-042`: tentative report explicitly unverified | Split report from lack of checking; both runs passed all model gates |
+| `new-047`: heard access allowed, no direct permission | Heard-permission Claim omitted the explicit lack of direct permission |
+| `long-007`: requeue rule with completed-work exception | Broad requeue Claim lost exception into a separate neighbor |
+| `long-007`: opinion about a described policy | “this policy” remained unresolved in the opinion Claim |
+| `new-043`: writing-time lack of current-system statement | “now” remained relative to the reader rather than the original statement |
+
+The adapted R2 baseline also invented dates from its historical example `오늘 -> 2026-10-11`
+when authored_at was null. The original example is preserved rather than silently fixed
+inside the baseline. This is prompt-example contamination, not legitimate temporal
+resolution. R2's user-note assumption also does not justify user identity for arbitrary
+new source material. These failures are visible in the raw comparison; the baseline is
+explicitly an adaptation with historical assumptions, not a production recommendation.
+
+Four new epistemic-attachment controls, each twice, reproduced v6's loss in all four
+same-target runs and preserved the correct split in all four unrelated-target runs.
+V7 retained the explicit frame in all four same-target runs without falsely attaching it
+in the unrelated-target controls. The complete paired outputs and provisional assistant
+labels are retained in `attachment-*.jsonl.gz` and `attachment-assistant-metrics.json`.
+The narrow result supports the targeted revision; it does not establish general quality.
+The broader v8 scope-binding experiment remains subject to its actual outputs and a fresh
+benchmark after prompt selection. No final zero-error acceptance is asserted.
 
 ## Reproduction and operational use
 
@@ -318,8 +369,15 @@ through an existing canonical 0600 file (`OPENROUTER_API_KEY_FILE`) or process e
 cargo run --offline --example evaluate_extraction -- \
   --corpus evaluation/phase3/curated.json --split dev \
   --model "$EXTRACTION_MODEL" --reviewer "$REVIEW_MODEL" \
-  --runs 3 --output /absolute/private/path/dev.jsonl
+  --prompt-version "$PROMPT_VERSION" --max-output-tokens 16384 \
+  --review-max-output-tokens 4096 --repair-attempts 3 \
+  --runs 2 --output /absolute/private/path/dev.jsonl
 ```
+
+Prompt selection must be explicit: omission retains v1 serialization for compatibility
+with previously frozen requests. V6 is a failed acceptance candidate; v7/v8 are subsequent
+experiments, not accepted defaults. Current low-cost experiments use
+`openai/gpt-6-luna-pro` and `anthropic/claude-haiku-5.5`.
 
 Run the same development comparison on `legacy.json`. Review concrete failures, revise
 prompts and draft annotations, and rerun affected development cases. Freeze the selected
@@ -329,7 +387,9 @@ variant before evaluating the held-out split against `r2-frame` with repeated ru
 cargo run --offline --example evaluate_extraction -- \
   --corpus evaluation/phase3/curated.json --split heldout \
   --model "$EXTRACTION_MODEL" --reviewer "$REVIEW_MODEL" \
-  --variants r2-frame,audited --runs 3 --output /absolute/private/path/heldout.jsonl
+  --prompt-version "$PROMPT_VERSION" --max-output-tokens 16384 \
+  --review-max-output-tokens 4096 --repair-attempts 3 \
+  --variants r2-frame,audited --runs 2 --output /absolute/private/path/heldout.jsonl
 python3 evaluation/phase3/score.py /absolute/private/path/adjudicated.jsonl
 ```
 

@@ -4,8 +4,8 @@ use prime_radiant::{
     App,
     domain::*,
     extraction::{
-        Plan, REVIEW_STAGES, VALIDATION_VERSION, extraction_message, hash, locate, validate,
-        validate_review,
+        Plan, REVIEW_STAGES, VALIDATION_VERSION, extraction_message, hash, locate, review_message,
+        validate, validate_review,
     },
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
@@ -38,6 +38,18 @@ struct Args {
     runs: usize,
     #[arg(long, default_value_t = 1)]
     repair_attempts: usize,
+}
+// Match production's sanitized retry classes; never include provider bodies.
+fn provider_code(error: &str) -> &'static str {
+    match error {
+        "Timeout" => "timeout",
+        "InvalidOutput" => "schema",
+        "LanguageRestriction" => "language",
+        "Quota" => "quota",
+        "InvalidRequest" => "request",
+        "RateLimited" => "rate_limit",
+        _ => "provider",
+    }
 }
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
@@ -181,7 +193,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                     let mut reviews = Vec::new();
                                     for stage in stages {
                                         let review_prompt = plan.review_prompt(stage)?;
-                                        let review_input=json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch}).to_string();
+                                        let review_input = review_message(&plan, &source, &batch);
                                         let review = provider
                                             .complete(&review_prompt, &review_input, &plan.reviewer)
                                             .await;
@@ -193,12 +205,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                         }
                     }
                     let failure = if let Some(error) = result["provider_error"].as_str() {
-                        Some(match error {
-                            "Timeout" => "timeout",
-                            "InvalidOutput" => "schema",
-                            "LanguageRestriction" => "language",
-                            _ => "provider",
-                        })
+                        Some(provider_code(error))
                     } else if result["structural_valid"] != true {
                         Some(match result["validation_error"].as_str() {
                             Some("anchor") => "anchor",
@@ -212,11 +219,9 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                             .iter()
                             .find_map(|review| {
                                 let Some(raw) = review["raw"].as_str() else {
-                                    return Some(if review["error"] == "Timeout" {
-                                        "timeout"
-                                    } else {
-                                        "provider"
-                                    });
+                                    return Some(provider_code(
+                                        review["error"].as_str().unwrap_or("Unavailable"),
+                                    ));
                                 };
                                 match validate_review(
                                     raw,

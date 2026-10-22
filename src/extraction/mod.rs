@@ -69,6 +69,16 @@ impl Plan {
                 include_str!("../../prompts/extraction-v8/frames.txt"),
                 include_str!("../../prompts/extraction-v8/review.txt"),
             )),
+            "extraction-v9" => Ok((
+                include_str!("../../prompts/extraction-v9/contract.txt"),
+                include_str!("../../prompts/extraction-v9/frames.txt"),
+                include_str!("../../prompts/extraction-v9/review.txt"),
+            )),
+            "extraction-v10" => Ok((
+                include_str!("../../prompts/extraction-v10/contract.txt"),
+                include_str!("../../prompts/extraction-v10/frames.txt"),
+                include_str!("../../prompts/extraction-v10/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -389,6 +399,18 @@ fn korean_matrix_evidence(span: &str) -> bool {
     }
     predicate && markers >= 2
 }
+/// Structural hints aid enumeration; the model must still explicitly review every Claim.
+/// Older frozen profiles retain their original payload shape.
+pub fn review_message(plan: &Plan, source: &SourceView, batch: &Batch) -> String {
+    let mut input = serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch});
+    if plan.version() == "extraction-v10" {
+        input["candidate_count"] = serde_json::json!(batch.claims.len());
+        input["required_checked_indices"] =
+            serde_json::json!((0..batch.claims.len()).collect::<Vec<_>>());
+    }
+    input.to_string()
+}
+
 pub fn validate_review(raw: &str, n: usize) -> Result<()> {
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]
@@ -527,7 +549,7 @@ async fn propose_with_feedback(
     let mut reviews = Vec::new();
     for stage in REVIEW_STAGES {
         let prompt = plan.review_prompt(stage)?;
-        let input=serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch}).to_string();
+        let input = review_message(plan, source, &batch);
         let result = provider
             .complete(&prompt, &input, &plan.reviewer)
             .await

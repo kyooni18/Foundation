@@ -1,0 +1,390 @@
+[
+  {
+    "id": "epistemic-valid",
+    "expected": "pass",
+    "original_source": "Mina said the server might be down, but she had not checked.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "Mina said the server might be down without having checked whether it was down.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "Mina said the server might be down, but she had not checked.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "rationale": "Preserve the explicit same-target evidential limitation in the report itself."
+  },
+  {
+    "id": "epistemic-invalid",
+    "expected": "reject",
+    "original_source": "Mina said the server might be down, but she had not checked.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "Mina said the server might be down.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "Mina said the server might be down, but she had not checked.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        },
+        {
+          "text": "Mina had not checked whether the server was down.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "Mina said the server might be down, but she had not checked.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "rationale": "Preserve the explicit same-target evidential limitation in the report itself."
+  },
+  {
+    "id": "exception-valid",
+    "expected": "pass",
+    "original_source": "전원이 복구되면 상태를 기록하고 기기를 재시작한다. 단, 점검 모드에서는 재시작하지 않는다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "전원이 복구되면 상태를 기록한다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "전원이 복구되면 상태를 기록하고 기기를 재시작한다. 단, 점검 모드에서는 재시작하지 않는다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        },
+        {
+          "text": "전원이 복구되면 기기를 재시작하되, 점검 모드에서는 재시작하지 않는다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "전원이 복구되면 상태를 기록하고 기기를 재시작한다. 단, 점검 모드에서는 재시작하지 않는다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "rationale": "An explicit prohibition in the exception case is stronger than only requiring action in the complement case."
+  },
+  {
+    "id": "exception-invalid",
+    "expected": "reject",
+    "original_source": "전원이 복구되면 상태를 기록하고 기기를 재시작한다. 단, 점검 모드에서는 재시작하지 않는다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "전원이 복구되면 상태를 기록한다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "전원이 복구되면 상태를 기록하고 기기를 재시작한다. 단, 점검 모드에서는 재시작하지 않는다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        },
+        {
+          "text": "전원이 복구되면 점검 모드가 아닌 경우 기기를 재시작한다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "전원이 복구되면 상태를 기록하고 기기를 재시작한다. 단, 점검 모드에서는 재시작하지 않는다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "rationale": "An explicit prohibition in the exception case is stronger than only requiring action in the complement case."
+  },
+  {
+    "id": "policy-valid",
+    "expected": "pass",
+    "original_source": "Deployments require passing tests. Ava called this policy cautious.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "Deployments require passing tests.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "Deployments require passing tests. Ava called this policy cautious.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        },
+        {
+          "text": "Ava called requiring passing tests before deployments cautious.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "Deployments require passing tests. Ava called this policy cautious.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "rationale": "Resolve the source-defined policy as the opinion object."
+  },
+  {
+    "id": "policy-invalid",
+    "expected": "reject",
+    "original_source": "Deployments require passing tests. Ava called this policy cautious.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "Deployments require passing tests.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "Deployments require passing tests. Ava called this policy cautious.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        },
+        {
+          "text": "Ava called this policy cautious.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "Deployments require passing tests. Ava called this policy cautious.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "rationale": "Resolve the source-defined policy as the opinion object."
+  },
+  {
+    "id": "time-valid",
+    "expected": "pass",
+    "original_source": "I used Debian in 2019; I have not stated what I use now.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "The original speaker used Debian in 2019.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "I used Debian in 2019; I have not stated what I use now.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        },
+        {
+          "text": "The original speaker has not stated what they use at the time of the original statement.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "I used Debian in 2019; I have not stated what I use now.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "rationale": "Bind now to the original writing time, not retrieval time."
+  },
+  {
+    "id": "time-invalid",
+    "expected": "reject",
+    "original_source": "I used Debian in 2019; I have not stated what I use now.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "The original speaker used Debian in 2019.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "I used Debian in 2019; I have not stated what I use now.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        },
+        {
+          "text": "The original speaker has not stated what they use now.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "I used Debian in 2019; I have not stated what I use now.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "rationale": "Bind now to the original writing time, not retrieval time."
+  }
+]

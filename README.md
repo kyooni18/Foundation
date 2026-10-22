@@ -147,8 +147,9 @@ tokens do not sandbox malicious processes running as that same OS user.
 
 Sources now enqueue durable extraction work. The optional OpenRouter worker proposes
 atomic, source-grounded Claims through separate atomicity, fidelity, and coverage reviews.
-All proposals remain quarantined for local user review because real-model quality has not
-been evaluated. There is **no phase-3 completion tag**. See [the Phase 3 report](reports/phase-3.md)
+All proposals remain quarantined for local user review. Real-model experiments have
+found both false acceptance and false rejection by model reviewers; semantic acceptance
+has not been established. There is **no phase-3 completion tag**. See [the Phase 3 report](reports/phase-3.md)
 for evidence, decisions, limitations, and the reproducible evaluation procedure.
 
 Provider credentials use `OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_FILE` (canonical path,
@@ -156,7 +157,8 @@ Provider credentials use `OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_FILE` (cano
 
 ```sh
 primeradiant --db /path/to/db extraction-backfill
-primeradiant --db /path/to/db extraction-work --model "$EXTRACTION_MODEL" --reviewer "$REVIEW_MODEL"
+primeradiant --db /path/to/db extraction-work --model "$EXTRACTION_MODEL" --reviewer "$REVIEW_MODEL" \
+  --prompt-version "$PROMPT_VERSION" --max-output-tokens 16384 --review-max-output-tokens 4096
 primeradiant --db /path/to/db extraction-inspect
 # Review the original Source and the entire exact candidate before approving fidelity:
 primeradiant --db /path/to/db extraction-approve CANDIDATE_ID OUTPUT_SHA256
@@ -164,7 +166,9 @@ primeradiant --db /path/to/db claims --principal user
 ```
 
 For continuous processing, `serve` accepts `--extraction-model` and
-`--extraction-reviewer`; the worker shares the sole database owner. Offline CLI maintenance
+`--extraction-reviewer`, `--extraction-prompt-version`, and corresponding
+`--extraction-max-output-tokens` / `--extraction-review-max-output-tokens` limits; the worker
+shares the sole database owner. Offline CLI maintenance
 requires stopping that server. HTTP/MCP also expose `claim_get`, `claim_list`,
 `claim_retract`, `claim_forget`, `claim_confirm`, and `claim_unconfirm`, all through the
 same core authorization. Extraction approval does not confer user endorsement.

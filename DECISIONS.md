@@ -268,3 +268,42 @@ splits. That small development result does not establish generalization. V8 is t
 against matched v6 controls and exposed held-out regressions. Exposed v6 held-out material
 cannot count as a fresh held-out benchmark for either revision. No schema, publication,
 authorization or Phase 4 semantics change is justified by this prompt experiment.
+
+### D-53 — An explicit negative exception is not merely a positive condition
+The v8 scope control generated a rule requiring restart only in the positive non-maintenance
+case, without preserving the source's explicit prohibition in maintenance mode. Haiku and
+Luna Pro each passed this deliberately weakened control in all six reviews; Qwen Flash
+also passed five times and returned one invalid completion. Agreement did not establish
+logical equivalence. A concrete behavioral counterexample (trigger=true, exception=true,
+action=true) satisfies the positive conditional alone but violates the explicit negative
+exception; the deterministic calculation is retained as evidence.
+
+V9 adds an IF-versus-ONLY-IF counterexample audit and explicit binding of deictic time to
+the original statement. Matched reviewer controls then rejected all 24 deliberately bad
+instances for each Haiku/Pro profile, while false rejections of valid controls remained
+(5/24 Haiku, 4/24 Pro). These are narrow editorial controls, not population error rates.
+The temporal controls are also editorial judgments about the self-contained-time contract;
+independent review remains important. No purely syntactic exception detector or universal
+natural-language theorem prover is claimed. Historical prompts/results remain unchanged.
+
+### D-54 — Structural review index hints do not authorize acceptance
+Both v8 long-form regression runs produced 11 candidates but received reviews listing
+only indices 0..9. The strict checker correctly rejected these batches. Supplying the
+correct count is preferable to weakening coverage validation or silently filling a model's
+missing indices. V10 uses v9's semantic procedure plus host-computed candidate_count and
+required_checked_indices in the review input, and a versioned instruction to review each
+index. These are structural hints, never evidence of fidelity or authorship. Every model
+response must still explicitly include every index exactly once and pass all other gates.
+
+Core and evaluation harness share the same review-message function. V1–V9 retain their
+previous payload shape and frozen hashes; only the new v10 profile adds hints. A regression
+inside the existing prompt/protocol test verifies the distinction and preserves the v1
+hash. No data schema, Claim visibility or publication authority changes.
+
+Reviewer max-output budgets remain explicit configuration. A focused complex-source
+budget comparison returned stop for all six reviews at 4,096 and all six at 8,192 tokens;
+it does not prove that a larger budget fixes prior invalid completions. The next profile
+uses the larger bound as headroom, with the actual bound frozen in provenance. Evaluation
+failure codes now match production's sanitized quota/request/rate-limit/schema classes;
+older saved rows retain the feedback codes actually used. Summary diagnostics separately
+include reviewer call failures rather than counting only extractor failures.

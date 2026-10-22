@@ -1,0 +1,499 @@
+[
+  {
+    "id": "fresh-001",
+    "split": "heldout",
+    "language": "ko",
+    "category": "compound",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "관측기는 Go로 작성됐고 파일을 압축하며 UDP를 사용하지 않는다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "관측기는 Go로 작성되었다.",
+        "관측기는 파일을 압축한다.",
+        "관측기는 UDP를 사용하지 않는다."
+      ],
+      "required": [
+        "one independent property per Claim",
+        "negation"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-002",
+    "split": "heldout",
+    "language": "ko",
+    "category": "exception",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "배터리가 낮으면 경고를 표시하고 촬영을 멈춘다. 단, 충전 중에는 촬영을 멈추지 않는다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "배터리가 낮으면 경고를 표시한다.",
+        "배터리가 낮으면 촬영을 멈추되 충전 중에는 촬영을 멈추지 않는다."
+      ],
+      "required": [
+        "exception retained inside governed action rule",
+        "warning does not inherit unrelated exception"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-003",
+    "split": "heldout",
+    "language": "ko",
+    "category": "negated_conjunction",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "지연과 유실이 둘 다 없었던 것은 아니다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "지연과 유실이 모두 없었다는 것은 부정된다."
+      ],
+      "required": [
+        "not(not delay and not loss)",
+        "do not independently assert either problem"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-004",
+    "split": "heldout",
+    "language": "ko",
+    "category": "concession_cause",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "새 책상을 싫어하는 건 아닌데 비싸서 사기가 망설여진다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "원문 화자는 새 책상을 싫어하는 것은 아니다.",
+        "원문 화자는 새 책상이 비싸서 구매를 망설인다."
+      ],
+      "required": [
+        "double negation",
+        "causal relationship",
+        "unknown original speaker, not inferred user"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-005",
+    "split": "heldout",
+    "language": "ko",
+    "category": "nested_report",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "혜진은 도윤이 결과가 조작됐을 수도 있다고 말했다고 전했다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "혜진은 도윤이 결과가 조작되었을 가능성을 말했다고 전했다."
+      ],
+      "required": [
+        "two attribution levels",
+        "possibility not verified manipulation"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-006",
+    "split": "heldout",
+    "language": "ko",
+    "category": "unverified",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "라희는 센서가 얼었을 가능성을 말했지만 직접 검사한 것은 아니다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "라희는 센서를 직접 검사하지 않은 상태에서 센서가 얼었을 가능성을 말했다."
+      ],
+      "required": [
+        "same-target unverified limitation stays in report"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-007",
+    "split": "heldout",
+    "language": "ko",
+    "category": "unapproved_proposal",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "매주 백업하자는 제안은 아직 승인하지 않았다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "원문 시점에는 매주 백업하자는 제안이 승인되지 않았다."
+      ],
+      "required": [
+        "proposal not decision",
+        "original time frame"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-008",
+    "split": "heldout",
+    "language": "ko",
+    "category": "question",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "혹시 캐시 때문에 화면이 멈춘 걸까? 아직 확인하지 못했다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "원문 화자는 확인하지 못한 상태에서 캐시 때문에 화면이 멈춘 것인지 질문했다."
+      ],
+      "required": [
+        "unverified causal question",
+        "do not assert cause or diagnosis"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-009",
+    "split": "heldout",
+    "language": "ko",
+    "category": "unknown_reference",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "그분은 이번에도 예약을 취소했다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "원문에서 그분으로 지칭된 신원 미상의 인물은 원문이 가리키는 이번 예약 건에서도 예약을 취소했다."
+      ],
+      "required": [
+        "unknown identity",
+        "repetition without invented count",
+        "original occasion"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-010",
+    "split": "heldout",
+    "language": "ko",
+    "category": "irony",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "와 테스트가 정말 철저하네. 실행하자마자 같은 오류가 세 번 났다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "원문 화자는 실행 직후 같은 오류가 세 번 난 점과 대비하여 테스트가 철저하다고 반어적으로 평가했다.",
+        "원문은 실행하자마자 같은 오류가 세 번 났다고 보고한다."
+      ],
+      "required": [
+        "context-supported ironic criticism",
+        "separate reported error occurrence"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-011",
+    "split": "heldout",
+    "language": "ko",
+    "category": "ambiguous_evaluation",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "이번 계획은 참 치밀하군.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "원문 화자는 원문에서 이번 계획으로 지칭한 내용 미상의 계획을 치밀하다고 평가했으며 진심인지 반어인지는 문맥만으로 확정되지 않는다."
+      ],
+      "required": [
+        "supported evaluation",
+        "unresolved sincerity/irony",
+        "original plan reference"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-012",
+    "split": "heldout",
+    "language": "ko",
+    "category": "correction",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "발표는 4일이야. 아니 5일로 정정.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "원문 화자는 발표 날짜에 관한 4일이라는 진술을 5일로 정정했다."
+      ],
+      "required": [
+        "textual correction relation",
+        "no invented month/year or actual rescheduling"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-013",
+    "split": "heldout",
+    "language": "ko",
+    "category": "calendar",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "이 노트의 날짜는 UTC 기준이다. 어제 기록기를 교체했다.",
+    "authored_at": "2024-02-29T03:00:00Z",
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "원문 노트의 날짜 기준은 UTC이다.",
+        "원문에서 주체가 명시되지 않은 인물은 UTC 달력 기준 2024-02-28에 기록기를 교체했다."
+      ],
+      "required": [
+        "authored instant 2024-02-29T03:00:00Z",
+        "UTC calendar on derived event",
+        "no invented day-boundary timestamp"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-014",
+    "split": "heldout",
+    "language": "ko",
+    "category": "past_scope",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "2017년에 운영하던 서버는 CentOS였다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "2017년에 운영하던 서버의 운영체제는 CentOS였다."
+      ],
+      "required": [
+        "historical scope",
+        "no present-day OS assertion"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-015",
+    "split": "heldout",
+    "language": "en",
+    "category": "exception",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "If the queue fills, pause intake and notify operators; never pause intake during emergency override.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "If the queue fills, pause intake except during emergency override, when intake must not be paused.",
+        "If the queue fills, notify operators."
+      ],
+      "required": [
+        "explicit negative exception",
+        "do not apply exception to notification"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-016",
+    "split": "heldout",
+    "language": "en",
+    "category": "nested_unverified",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "Lena reported that Omar suspected a coolant leak, but Omar had not checked whether there was a leak.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "Lena reported that Omar suspected a coolant leak without having checked whether there was one."
+      ],
+      "required": [
+        "nested attribution",
+        "same-holder unverified limitation",
+        "not an asserted leak"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-017",
+    "split": "heldout",
+    "language": "en",
+    "category": "reference_time",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "At the time of this note, I prefer tea; I have not said whether that preference will continue.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "At the time of the original note, its speaker preferred tea.",
+        "At the time of the original note, its speaker had not stated whether their tea preference would continue."
+      ],
+      "required": [
+        "original writing time, not retrieval now",
+        "no invented user identity",
+        "future continuity not asserted"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-018",
+    "split": "heldout",
+    "language": "en",
+    "category": "disjunction",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "Either the cable or the connector is faulty, but the note does not identify which.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "Either the cable or the connector is faulty, with the original note leaving which one unidentified."
+      ],
+      "required": [
+        "inclusive disjunction",
+        "no independently asserted fault identity",
+        "explicit unknown alternative"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-019",
+    "split": "heldout",
+    "language": "mixed",
+    "category": "project_scope",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "Sora 프로젝트의 ingest_worker는 blocking이고 API handler는 async다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "Sora 프로젝트의 ingest_worker는 blocking이다.",
+        "Sora 프로젝트의 API handler는 async다."
+      ],
+      "required": [
+        "same project on both properties",
+        "Korean anchor language with exact technical identifiers"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  },
+  {
+    "id": "fresh-020",
+    "split": "heldout",
+    "language": "mixed",
+    "category": "cross_span_reference",
+    "origin": "New editorial held-out round after v10 prompt assets frozen; not used for prompt tuning",
+    "source": "실패 횟수는 2다. That does not prove exactly-once processing.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "human-reviewable editorial draft; not independently human-adjudicated gold",
+      "propositions": [
+        "실패 횟수는 2다.",
+        "A failure count of two does not prove exactly-once processing."
+      ],
+      "required": [
+        "resolve That from original source",
+        "final text follows each anchor language",
+        "not a denial of actual exactly-once behavior"
+      ],
+      "unsupported": [
+        "invented identities, dates, authority or events",
+        "loss of negation, attribution, condition or evidential scope"
+      ],
+      "equivalence": "Semantic inventories, not exact strings or mandatory counts. Qualifiers can cover inventory items within a complete primary proposition; preserve all source-supported truth conditions and communicative acts."
+    }
+  }
+]

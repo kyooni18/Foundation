@@ -1,0 +1,11 @@
+{
+  "scope": "Behavioral compliance counterexample for an explicit negative exception; not an automatic natural-language parser.",
+  "state": {
+    "trigger": true,
+    "exception": true,
+    "action": true
+  },
+  "candidate_positive_conditional_satisfied": true,
+  "source_negative_exception_satisfied": false,
+  "conclusion": "A sufficient positive condition alone does not preserve the source explicit prohibition in the exception case."
+}

@@ -1,0 +1,656 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|audited|ko": {
+      "runs": 32,
+      "attempt_rows": 61,
+      "terminal_runs": 32,
+      "structural_valid": 59,
+      "provider_failures": 7,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {
+        "InvalidOutput": 9
+      },
+      "experimental_gate_passes": 22,
+      "reviewer_reported_issues": {
+        "reference": 28,
+        "uncertainty": 3,
+        "attribution": 10,
+        "temporal": 4,
+        "coverage": 25,
+        "ambiguity": 11,
+        "unsupported": 11,
+        "language": 2,
+        "atomicity": 1,
+        "duplicate": 1,
+        "negation": 2,
+        "provider_or_schema_error": 9
+      },
+      "generated_claims": 326,
+      "recovered_after_retry": 6,
+      "terminal_gate_failures": 10,
+      "repeatability": {
+        "new-033": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-034": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-035": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-036": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-037": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-038": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-039": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-040": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-041": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 4,
+          "max_count": 4
+        },
+        "new-045": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-046": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-047": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-048": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-005": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        },
+        "long-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 16
+        },
+        "long-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|audited|all": {
+      "runs": 40,
+      "attempt_rows": 75,
+      "terminal_runs": 40,
+      "structural_valid": 71,
+      "provider_failures": 8,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {
+        "InvalidOutput": 9,
+        "Unavailable": 1
+      },
+      "experimental_gate_passes": 29,
+      "reviewer_reported_issues": {
+        "reference": 29,
+        "uncertainty": 3,
+        "attribution": 11,
+        "temporal": 10,
+        "coverage": 29,
+        "ambiguity": 11,
+        "unsupported": 12,
+        "language": 2,
+        "atomicity": 2,
+        "duplicate": 3,
+        "negation": 2,
+        "provider_or_schema_error": 10
+      },
+      "generated_claims": 402,
+      "recovered_after_retry": 9,
+      "terminal_gate_failures": 11,
+      "repeatability": {
+        "new-033": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-034": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-035": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-036": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-037": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-038": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-039": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-040": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-041": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 4,
+          "max_count": 4
+        },
+        "new-042": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-043": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-044": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-045": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-046": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-047": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-048": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-005": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        },
+        "long-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 16
+        },
+        "long-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        },
+        "long-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|r2-frame|ko": {
+      "runs": 32,
+      "attempt_rows": 33,
+      "terminal_runs": 32,
+      "structural_valid": 32,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 32,
+      "reviewer_reported_issues": {},
+      "generated_claims": 133,
+      "recovered_after_retry": 1,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "new-033": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-034": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-035": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-036": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-037": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-038": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-039": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-040": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-041": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 5,
+          "max_count": 5
+        },
+        "new-045": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-046": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-047": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-048": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-005": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        },
+        "long-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 16
+        },
+        "long-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 15
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|r2-frame|all": {
+      "runs": 40,
+      "attempt_rows": 43,
+      "terminal_runs": 40,
+      "structural_valid": 40,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 40,
+      "reviewer_reported_issues": {},
+      "generated_claims": 197,
+      "recovered_after_retry": 3,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "new-033": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-034": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-035": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-036": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-037": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-038": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-039": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-040": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-041": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 5,
+          "max_count": 5
+        },
+        "new-042": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-043": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-044": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-045": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-046": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-047": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-048": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-005": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        },
+        "long-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 16
+        },
+        "long-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 13
+        },
+        "long-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 15
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|audited|en": {
+      "runs": 4,
+      "attempt_rows": 8,
+      "terminal_runs": 4,
+      "structural_valid": 8,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 4,
+      "reviewer_reported_issues": {
+        "unsupported": 1,
+        "attribution": 1,
+        "temporal": 6,
+        "reference": 1,
+        "coverage": 4
+      },
+      "generated_claims": 16,
+      "recovered_after_retry": 3,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "new-042": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-043": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|r2-frame|en": {
+      "runs": 4,
+      "attempt_rows": 4,
+      "terminal_runs": 4,
+      "structural_valid": 4,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 4,
+      "reviewer_reported_issues": {},
+      "generated_claims": 8,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "new-042": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-043": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|audited|mixed": {
+      "runs": 4,
+      "attempt_rows": 6,
+      "terminal_runs": 4,
+      "structural_valid": 4,
+      "provider_failures": 1,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {
+        "Unavailable": 1
+      },
+      "experimental_gate_passes": 3,
+      "reviewer_reported_issues": {
+        "duplicate": 2,
+        "atomicity": 1,
+        "provider_or_schema_error": 1
+      },
+      "generated_claims": 60,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 1,
+      "repeatability": {
+        "new-044": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|r2-frame|mixed": {
+      "runs": 4,
+      "attempt_rows": 6,
+      "terminal_runs": 4,
+      "structural_valid": 4,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 4,
+      "reviewer_reported_issues": {},
+      "generated_claims": 56,
+      "recovered_after_retry": 2,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "new-044": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 13
+        }
+      }
+    }
+  }
+}
