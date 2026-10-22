@@ -1,0 +1,36 @@
+# Prime Radiant — DECISIONS
+
+근거 표기: `FR/` = `~/Code/Foundation-Research/` (R1: `ARCHITECTURE.md`·`EXPERIMENTS.md`, R2: `*_R2.md`, R3: `*_R3.md`·`RETRIEVAL_DECISIONS.md`·`IMPLEMENTATION_READINESS.md`), `FM/` = 기존 Foundation-MCP 구현(`~/Code/Foundation`), `OB` = Obsidian 원 설계.
+상태: **Accepted** / **Provisional**(측정 전 기본값, 계약 아님) / **Rejected**.
+
+| # | 결정 | 상태 | 근거 | 기각된 대안 | 한계 | 재검토 조건 |
+|---|---|---|---|---|---|---|
+| D-01 | Rust 단일 프로세스 모듈형 모놀리스 + SQLite 단일 파일(WAL), rusqlite bundled | Accepted | R1 E5: 16스레드 멱등 created=1, SIGKILL 25회 무결성 위반 0, 2.6k tx/s | PostgreSQL/pgvector(FM), 별도 벡터/그래프/큐 서비스 | 다중 프로세스 쓰기 미검증 | 두 번째 머신/프로세스가 동시에 써야 할 때 |
+| D-02 | DB 소유 프로세스 하나. writer 연결 1 + reader pool, 쓰기는 `BEGIN IMMEDIATE` | Accepted | R1 E5 BUSY 0 | 다중 writer | — | writer 대기가 p99 목표를 넘을 때 |
+| D-03 | DB는 `~/Library/Application Support/PrimeRadiant/`. iCloud 경로 거부. `synchronous=FULL` 기본 | Accepted | R1 E5 한계(전원 손실, iCloud 미검증, SQLite 문서) | iCloud 경로, NORMAL 기본 | FULL의 처리량 비용 미측정 | Phase 8 벤치에서 FULL이 목표 미달이면 NORMAL + 문서화된 손실 창 |
+| D-04 | 사용자 ID 없음. `user`는 Principal 역할 | Accepted | R2 A15, 브리프 | 멀티테넌시 | — | 다중 사용자 요구가 실제로 생길 때 |
+| D-05 | HTTP/MCP는 같은 코어 함수 호출, 권한은 코어의 `Principal`에서만 | Accepted | FM: transport별 경로 분기가 scope 버그(v7→v8 수리)의 원인 중 하나 | transport별 권한 | — | — |
+| D-06 | 가시성은 서버 투영. user projection = user 기록 축자 Claim ∪ 사용자 확인 Claim, invalid 제외. 모든 집계는 투영 안에서 | Accepted | R2 A6, B2(텍스트로 의역/추론 구분 7/18–15/18), 누출 검사 6종 | basis/모델 선언 기반 가시성, 사후 필터 | 에이전트가 축자 인용해도 확인 전엔 숨김 → 사용자 UX 비용 | 서버가 사용자 발화를 직접 받는 경로가 생기면 그 경로는 recorder=user |
+| D-07 | `recorder`(서버) / `speaker`·`basis`(신고) / `artifact_ref` / `retention_request` 분리. "기억해줘"는 권한이지 저자 아님 | Accepted | R2 A5, A7; FM은 에이전트 기록을 `usercreated`로 저장(R2 B0) | 단일 `origin_kind`(R1), `author` 신고 | speaker/basis는 검증 불가 | — |
+| D-08 | 원문 불변·바이트 보존·정규화 금지, 원문 언어 Claim, 앵커 정확 일치 필수 검증 | Accepted | R2 A1, A2(언어 표류 55%), A4(279/280) | 영어 정규화, 원문 요약 저장 | 반어 등은 원문으로만 복구 | — |
+| D-09 | 의존은 언제든 추가 가능, 비순환은 삽입 시 도달성 검사로 강제. R2의 "이전 Claim만" 트리거 폐기 | Accepted | R2 E 차분 테스트(순환이 유일한 의미 불일치 → 순환만 막으면 됨); 늦은 의존·과거 가져오기는 rowid 순서와 무관 | rowid 순서 트리거(R2) | 깊은 그래프에서 검사 비용 미측정 | 삽입 p99가 목표 초과 시 위상 레벨 캐시 |
+| D-10 | 모델 판정(`model_judgment`, 불변 기록)과 단언 관계(`relation`) 분리. `potential_conflict`는 저장 라벨이 아니라 파생 투영 `possible_conflict`. `contradiction`/`not_conflicting`은 사용자만 | Accepted | R3 C: 정확도 0.65–0.78, 불일치 53%, 진짜 모순 3건 다수결 미검출, DeepSeek 번역 경유 치명 오류 3건; "any tension" recall 0.89 / precision 0.66 — 그러나 **허용 라벨 집합 기준**이므로 엄격 정밀도 아님 | R2 8라벨 relation 테이블, R3 `potential_conflict` 저장 행, 자동 contradiction | 관련·시간 변화 진술에 가능 충돌 플래그 과다 → 에이전트 노이즈 | IMPLEMENTATION_READINESS C-frontier 결정 규칙(정밀도 ≥0.95, 예측 모순 ≥20, 치명 0, 재현 ≥0.9) 충족 시에만 자동 *제안*을 늘림. 자동 단언은 여전히 금지 |
+| D-11 | 관계 어휘: `relation.kind` ∈ {supersedes, exception, backfill, contradiction, not_conflicting}. R2 `potential`, R3 `potential_conflict`, `temporal_change`, `related`, `insufficient`는 `model_judgment.raw_label` 힌트로만 | Accepted | R2/R3 어휘 불일치, R3 R8(판정기의 temporal_change는 대체 신호 아님) | 어휘 통합 단일 테이블 | — | — |
+| D-12 | 모델 출력은 제안. 검증 경계 통과 전 저장 안 함, 권위 기록 수정 불가, provider trait로 교체 가능 | Accepted | R1 A, R2 D, R3 C | 모델이 상태/관계 직접 기록 | — | — |
+| D-13 | 추출 결과는 원문(작업) 단위 전부-또는-전무 | Accepted | 부분 저장 시 결합된 틀(귀속+부정)의 일부만 남는 위험(R2 D) | Claim 단위 부분 수락 | 긴 원문 하나의 오류로 전체 재시도 | 실패율이 높으면 앵커 구간 단위 분할 작업 |
+| D-14 | 버전 교체(`revision_of`), 시간 대체(`supersedes`), 모순을 다른 개념으로 | Accepted | R1 원칙 1, R2 C | Claim UPDATE, `superseded` 상태 하나로 겸용(R1) | — | — |
+| D-15 | 유효성 3값(valid/needs_revalidation/invalid), 물질화 + 철회 tx 내 증분, 뷰 재계산은 오라클 | Accepted | R2 E: 하향 폐포 0.2 ms, 물질화로 197→77 ms | 거짓 표시, 비동기 갱신만 | — | — |
+| D-16 | 의존 종류 premise/restates/alternative/informed_by + `deps_unknown`(파생). 지지 = 원천 합집합 | Accepted | R1 B1/B2(결합 전제 반례), R2 A8/A9 | 원천 수/문서 수 | alternative는 실험 미검증(R1 E2는 결합만) | Phase 4 테스트에서 표현 불가 사례 발견 시 |
+| D-17 | 정체성: 불변 mention + 얇은 entity + append-only `identity_assertion`, 해소는 파생. 수동 교정은 권위 단언이라 재구축에 안전 | Accepted | R1 C4(파괴적 병합 복원 불가), R3 R9; IMPLEMENTATION_READINESS의 "entity_alias rebuildable"과 "manual correction 보존"이 한 테이블에서 충돌 → 분리로 해소 | alias 테이블을 권위+파생 겸용 | 수백 엔티티 규모 미검증 | Phase 4 규모 테스트 |
+| D-18 | 시간: authored/observed/captured/applies 분리, 명시된 범위만, 오래됨 ≠ 거짓 | Accepted | R2 C(상시 구간 추출 시 9/22↔19/22, 최대 6건 소실), FM 덮어쓰기 기본(과거 질의 2/10) | 유효 구간 강제, 최신만 반환 | — | — |
+| D-19 | 신선도 임계 60일/14일 | Provisional | R2 C 두 셋 9/10–11/12, 미조정 | — | — | 실데이터 |
+| D-20 | 의미 검색 = 원문 언어 Claim에 다국어 임베딩 1종(bge-m3 기준선), lexical fallback 필수 | Accepted(인터페이스) / Provisional(모델) | R3 B: bge-m3 R@5 47/48, 교차언어 1.00/0.92 — **캐시 임베딩, 194개, e2e 지연 미측정** | te3-small, 영어 정규화 | 소규모 합성 | Phase 6 측정 하네스(≥300 항목, 패러프레이즈)에서 R@5 <0.9 |
+| D-21 | lexical = FTS5 unicode61 over 문자 bigram + ASCII 단어 | Accepted | R3 B 동일언어 1.00, 조사 제거 0.78, trigram 0.56 | 형태소 분석, trigram | — | — |
+| D-22 | 결합(fusion)은 게이트형, plain RRF 금지. 게이트 임계값·후보 K·constraint-first 구성은 **설정값**이지 계약 아님 | Provisional | R3 B: RRF en>ko 0.08; A: constraint-first R@8 0.649 vs 임베딩 0.622(차이 1 target, 유의하지 않음) | plain RRF, 고정 K=8 계약 | 게이트 미보정 | Phase 6/7 보정 |
+| D-23 | 함의 확장 검색 없음, 기본 번역 없음(번역 행은 off 기본 파생) | Accepted | R3 A(1:1), B(번역 16% 결함) | — | — | R3 RETRIEVAL_DECISIONS R5/R6 조건 |
+| D-24 | DeepSeek V4.1 Flash 1017 사용 시 provider 어댑터가 영어 전용 입력을 강제(한글/가나/CJK 포함 시 호출 거부) | Accepted | R3 운영 제약(118 호출, 위반 0), 번역 경유 판정 치명 오류 | — | 판정기로는 비권장 | — |
+| D-25 | 마이그레이션: 전진 전용 번호 마이그레이션 + 적용 전 자동 온라인 백업. down 마이그레이션은 데이터 손실 없는 경우만 | Accepted | 실용성, FM v7 손상 → v8 수리 경험 | 모든 단계 down 필수 | — | — |
+| D-26 | 멱등 키 범위 = (recorder, idempotency_key), 같은 키 다른 내용 = 오류. 내용 해시 자동 중복 제거 없음 | Accepted | R1 E5, 같은 노트 재작성은 정당한 두 기록 | content-hash dedup | — | — |
+| D-27 | 엔티티 자동 병합 안 함, 모델 same_as는 저장하되 해소 미반영(기본) | Accepted | R1 C1/C2 | 표면형 자동 병합 | 재현율 비용 | — |
+| D-28 | 물리 삭제(purge) 계약 밖, `forget`은 숨김 + 보존 | Provisional | — | — | 사용자의 삭제 기대와 불일치 가능 | 사용자가 영구 삭제를 요구할 때 별도 결정(백업에서의 삭제 포함) |
+| D-29 | Phase 순서: 2(권한)를 3(추출)보다 먼저 | Accepted | Claim은 source의 recorder/권한을 상속 — 권한 없이 만든 Claim은 재분류 필요 | 추출 우선 | — | — |
