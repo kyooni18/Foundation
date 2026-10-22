@@ -1,5 +1,5 @@
 //! Values and pure validation. No SQL or filesystem operations.
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 use time::{OffsetDateTime, UtcOffset, format_description::well_known::Rfc3339};
 
@@ -10,6 +10,12 @@ pub enum Error {
     InvalidInput { field: &'static str, reason: String },
     #[error("idempotency conflict: {source_id}")]
     IdempotencyConflict { source_id: SourceId },
+    #[error("authentication failed")]
+    Unauthenticated,
+    #[error("credential file unavailable or insecure")]
+    Credentials,
+    #[error("invalid cursor")]
+    InvalidCursor,
     #[error("not found")]
     NotFound,
     #[error("forbidden")]
@@ -33,7 +39,7 @@ pub fn invalid(field: &'static str, reason: impl Into<String>) -> Error {
 }
 macro_rules! text_enum {
     ($name:ident { $($variant:ident => $value:literal),+ $(,)? }) => {
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
         pub enum $name { $(#[serde(rename = $value)] $variant),+ }
         impl $name { pub fn as_str(self) -> &'static str { match self { $(Self::$variant => $value),+ } } }
         impl fmt::Display for $name { fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.write_str(self.as_str()) } }
@@ -62,6 +68,7 @@ pub struct Principal {
     pub(crate) kind: PrincipalKind,
     pub(crate) label: Option<String>,
     pub(crate) session_id: Option<String>,
+    pub(crate) credential: Option<[u8; 32]>,
 }
 impl Principal {
     /// Explicit local developer CLI/test entry point; not a transport authentication API.
@@ -74,6 +81,7 @@ impl Principal {
             kind,
             label,
             session_id,
+            credential: None,
         }
     }
     pub fn kind(&self) -> PrincipalKind {

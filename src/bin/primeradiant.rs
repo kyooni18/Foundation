@@ -4,7 +4,7 @@ use std::{io::Read, path::PathBuf};
 #[derive(Parser)]
 #[command(
     version,
-    about = "Prime Radiant local persistence CLI (explicit local principal, no authentication)"
+    about = "Prime Radiant: authenticated transports and offline maintenance"
 )]
 struct Cli {
     #[arg(long, global = true)]
@@ -16,6 +16,31 @@ struct Cli {
 enum Command {
     Init,
     Migrate,
+    /// Provision one independent credential; no token is printed.
+    CredentialIssue {
+        #[arg(long)]
+        credentials: PathBuf,
+        #[arg(long)]
+        token_file: PathBuf,
+        #[arg(long)]
+        kind: PrincipalKind,
+        #[arg(long)]
+        label: Option<String>,
+    },
+    /// Own the DB and serve the authenticated loopback API.
+    Serve {
+        #[arg(long)]
+        credentials: PathBuf,
+        #[arg(long, default_value = "127.0.0.1:7823")]
+        bind: std::net::SocketAddr,
+    },
+    /// Connect stdio MCP to the sole DB-owning server.
+    Mcp {
+        #[arg(long)]
+        token_file: PathBuf,
+        #[arg(long, default_value = "http://127.0.0.1:7823")]
+        server: String,
+    },
     Record {
         #[arg(long)]
         principal: PrincipalKind,
@@ -77,6 +102,32 @@ fn output(value: impl serde::Serialize) {
 }
 fn run() -> Result<()> {
     let cli = Cli::parse();
+    match &cli.command {
+        Command::CredentialIssue {
+            credentials,
+            token_file,
+            kind,
+            label,
+        } => {
+            prime_radiant::authentication::Credentials::issue(
+                credentials,
+                token_file,
+                *kind,
+                label.clone(),
+            )?;
+            output(serde_json::json!({"issued":true}));
+            return Ok(());
+        }
+        Command::Mcp { token_file, server } => {
+            let client = prime_radiant::transport::mcp::Client::new(server, token_file.clone())?;
+            return tokio::runtime::Runtime::new()?.block_on(prime_radiant::transport::mcp::run(
+                client,
+                tokio::io::BufReader::new(tokio::io::stdin()),
+                tokio::io::stdout(),
+            ));
+        }
+        _ => (),
+    }
     let path = cli
         .db
         .or_else(|| {
@@ -89,6 +140,20 @@ fn run() -> Result<()> {
         App::restore_from(backup, path)?;
         output(serde_json::json!({"restored":true}));
         return Ok(());
+    }
+    if let Command::Serve { credentials, bind } = cli.command {
+        let credentials = prime_radiant::authentication::Credentials::open(credentials)?;
+        let service = prime_radiant::api::Service::new(App::open(path)?, credentials);
+        return tokio::runtime::Runtime::new()?.block_on(async move {
+            let listener = prime_radiant::transport::http::bind(bind).await?;
+            eprintln!("listening {}", listener.local_addr()?);
+            axum::serve(listener, prime_radiant::transport::http::router(service))
+                .with_graceful_shutdown(async {
+                    let _ = tokio::signal::ctrl_c().await;
+                })
+                .await?;
+            Ok(())
+        });
     }
     let app = App::open(path)?;
     match cli.command {
@@ -155,7 +220,10 @@ fn run() -> Result<()> {
             app.backup_to(path)?;
             output(serde_json::json!({"backed_up":true}));
         }
-        Command::Restore { .. } => unreachable!(),
+        Command::Restore { .. }
+        | Command::Serve { .. }
+        | Command::Mcp { .. }
+        | Command::CredentialIssue { .. } => unreachable!(),
     }
     Ok(())
 }

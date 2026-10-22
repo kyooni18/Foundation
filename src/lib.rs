@@ -1,4 +1,9 @@
+pub mod api;
+pub mod authentication;
 pub mod authz;
+mod list;
+pub mod transport;
+pub use list::{ListSources, SourcePage};
 pub mod domain;
 mod ingest;
 pub mod store;
@@ -7,16 +12,30 @@ use rusqlite::{TransactionBehavior, params};
 use std::path::Path;
 pub struct App {
     pub(crate) store: store::Store,
+    cursor_key: [u8; 32],
 }
 impl App {
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         Ok(Self {
             store: store::Store::open(path.as_ref())?,
+            cursor_key: authentication::random_bytes()?,
         })
     }
     pub fn get_source(&self, p: &Principal, id: SourceId) -> Result<SourceView> {
+        self.get_source_with_options(p, id, false)
+    }
+    pub fn get_source_with_options(
+        &self,
+        p: &Principal,
+        id: SourceId,
+        include_retracted: bool,
+    ) -> Result<SourceView> {
         let source = store::get(&self.store.reader()?, &id)?;
-        if authz::visible(p, &source) {
+        if authz::visible(p, &source)
+            && (p.kind() == PrincipalKind::User
+                || include_retracted
+                || source.lifecycle == Lifecycle::Live)
+        {
             Ok(source)
         } else {
             Err(Error::NotFound)

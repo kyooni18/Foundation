@@ -22,3 +22,12 @@ pub fn authorize_lifecycle(p: &Principal, source: &SourceView) -> Result<()> {
         Err(Error::Forbidden)
     }
 }
+
+/// SQL predicate over the source lifecycle projection; only trusted static fragments.
+pub(crate) fn source_predicate(p: &Principal, include_retracted: bool) -> &'static str {
+    match p.kind() {
+        PrincipalKind::User => "recorder='user' AND lifecycle_event='restore'",
+        _ if include_retracted => "lifecycle_event<>'forget'",
+        _ => "lifecycle_event='restore'",
+    }
+}
