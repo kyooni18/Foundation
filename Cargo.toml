@@ -1,0 +1,23 @@
+[package]
+name = "prime_radiant"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "primeradiant"
+path = "src/bin/primeradiant.rs"
+
+[dependencies]
+rusqlite = { version = "0.37", features = ["bundled", "backup"] }
+sha2 = "0.10"
+ulid = "1"
+time = { version = "0.3", features = ["formatting", "parsing"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+clap = { version = "4", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+[dev-dependencies]
+tempfile = "3"

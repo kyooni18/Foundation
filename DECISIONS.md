@@ -34,3 +34,8 @@
 | D-27 | 엔티티 자동 병합 안 함, 모델 same_as는 저장하되 해소 미반영(기본) | Accepted | R1 C1/C2 | 표면형 자동 병합 | 재현율 비용 | — |
 | D-28 | 물리 삭제(purge) 계약 밖, `forget`은 숨김 + 보존 | Provisional | — | — | 사용자의 삭제 기대와 불일치 가능 | 사용자가 영구 삭제를 요구할 때 별도 결정(백업에서의 삭제 포함) |
 | D-29 | Phase 순서: 2(권한)를 3(추출)보다 먼저 | Accepted | Claim은 source의 recorder/권한을 상속 — 권한 없이 만든 Claim은 재분류 필요 | 추출 우선 | — | — |
+
+## Phase 1 implementation clarifications
+
+- **D-30 — Accepted: lifecycle administration vs read projection.** `get_source(user)` remains user-recorded ∧ live. User lifecycle commands may address any existing source, including forgotten and agent/import sources. Otherwise §4's user-all-transitions and user-only forgotten restore are impossible under PHASE1_SPEC §5's literal read-visibility gate. Non-user lifecycle commands retain the visibility gate (`NotFound` before permission checks). This is a command authorization distinction, not a broader read projection.
+- Request digest encoding uses a big-endian u64 byte length per field, with `u64::MAX` for NULL (distinct from an empty string). Timestamp metadata is normalized to UTC milliseconds before hashing. Content bytes are untouched, including embedded NUL; the SQL nonempty check measures BLOB byte length.
