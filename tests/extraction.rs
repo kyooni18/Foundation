@@ -450,6 +450,17 @@ async fn review_rejection_rolls_back_and_prompt_injection_remains_data() {
     bounded.extractor.max_output_tokens = Some(0);
     assert!(bounded.hash().is_err());
     let raw = output(vec![candidate(text)]);
+    let checked = validate(&raw, &source).unwrap();
+    let legacy_input: Value =
+        serde_json::from_str(&review_message(&plan(), &source, &checked)).unwrap();
+    assert!(legacy_input.get("candidate_count").is_none());
+    let mut indexed = plan();
+    indexed.prompt_version = Some("extraction-v10".into());
+    let indexed_input: Value =
+        serde_json::from_str(&review_message(&indexed, &source, &checked)).unwrap();
+    assert_eq!(indexed_input["candidate_count"], 1);
+    assert_eq!(indexed_input["required_checked_indices"], json!([0]));
+    assert_ne!(indexed.hash().unwrap(), plan().hash().unwrap());
     let proposal = propose(&fake(&raw, 1), &plan(), &source).await.unwrap();
     assert_eq!(proposal.raw, raw);
     // A fake proves orchestration, not resistance of a real model to injection.

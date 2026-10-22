@@ -307,3 +307,26 @@ uses the larger bound as headroom, with the actual bound frozen in provenance. E
 failure codes now match production's sanitized quota/request/rate-limit/schema classes;
 older saved rows retain the feedback codes actually used. Summary diagnostics separately
 include reviewer call failures rather than counting only extractor failures.
+
+### D-55 — User Claim projection cannot expose unrelated temporal metadata
+The existing transport regression was extended with an agent Source containing an
+unconfirmed separate schedule and a Claim about local server execution. A simulated
+untrusted proposal copied that schedule into applies_from/applies_to. After explicit
+confirmation of the server Claim, those free-form date fields were exposed in user
+responses despite the schedule being absent from the confirmed text. The red/green
+HTTP/MCP regression demonstrates this direct metadata channel; semantic model reviews
+must not be an authorization boundary.
+
+The user Claim projection now returns null for applies_from/applies_to, like the already
+redacted broad anchors and free metadata in D-40. Every essential temporal qualifier must
+already be in Claim text. Agent/audit views retain the values. This changes presentation,
+not persisted dates, lifecycle, endorsements or authorship. It does not assert constant-time
+or arbitrary covert-channel noninterference.
+
+The same regression separately reproduced a storage-format defect: valid +09:00 Claim
+metadata was persisted verbatim rather than in DATA_CONTRACTS §0's UTC-millisecond format.
+Publication now normalizes new Claim date metadata through the existing Timestamp type.
+Raw proposals/hashes, original text/anchors, historical immutable rows and Source timestamps
+remain unchanged. There is no migration or destructive rewrite. The original Phase 1 DDL
+and Phase 1/2 checkpoints are unchanged. The test is added to the existing transport test,
+not a new collection of compile-time tests.

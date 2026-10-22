@@ -143,7 +143,19 @@ impl App {
             }
             let (start, end) =
                 extraction::locate(&source.content, &c.anchor.quote, c.anchor.occurrence)?;
-            tx.execute("INSERT INTO claim(id,source_id,revision_of,text,lang,category,speaker,speaker_label,basis,anchor_start,anchor_end,anchor_quote,tkind,applies_from,applies_to,standing,index_fields,extractor_id,job_id,created_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20)",params![id,source_id,c.revision_of,c.text,c.lang,c.category,c.speaker,c.speaker_label,c.basis,start,end,c.anchor.quote,c.tkind,c.applies_from,c.applies_to,c.standing,c.index_fields.as_ref().map(ValueString::json),extractor,job,Timestamp::now().as_str()])?;
+            // Metadata follows the same UTC-millisecond storage contract as Sources.
+            // Keep the raw proposal/hash and original anchor bytes unchanged.
+            let applies_from = c
+                .applies_from
+                .as_deref()
+                .map(str::parse::<Timestamp>)
+                .transpose()?;
+            let applies_to = c
+                .applies_to
+                .as_deref()
+                .map(str::parse::<Timestamp>)
+                .transpose()?;
+            tx.execute("INSERT INTO claim(id,source_id,revision_of,text,lang,category,speaker,speaker_label,basis,anchor_start,anchor_end,anchor_quote,tkind,applies_from,applies_to,standing,index_fields,extractor_id,job_id,created_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20)",params![id,source_id,c.revision_of,c.text,c.lang,c.category,c.speaker,c.speaker_label,c.basis,start,end,c.anchor.quote,c.tkind,applies_from.as_ref().map(Timestamp::as_str),applies_to.as_ref().map(Timestamp::as_str),c.standing,c.index_fields.as_ref().map(ValueString::json),extractor,job,Timestamp::now().as_str()])?;
             for m in &c.mentions {
                 let (a, b) = extraction::locate(&c.text, &m.surface, m.occurrence)?;
                 tx.execute(
@@ -242,8 +254,8 @@ impl App {
                         r.get(12)?
                     },
                     tkind: r.get(13)?,
-                    applies_from: r.get(14)?,
-                    applies_to: r.get(15)?,
+                    applies_from: if p.kind() == PrincipalKind::User { None } else { r.get(14)? },
+                    applies_to: if p.kind() == PrincipalKind::User { None } else { r.get(15)? },
                     standing: r.get(16)?,
                     index_fields: if p.kind() == PrincipalKind::User {
                         None

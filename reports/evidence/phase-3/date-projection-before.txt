@@ -1,0 +1,22 @@
+   Compiling prime_radiant v0.1.0 (/Users/kyooni18/Code/PrimeRadiant)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.34s
+     Running tests/transports.rs (target/debug/deps/transports-816a31d73a8574e6)
+
+running 1 test
+test claim_transport_equivalence_and_projection_isolation ... FAILED
+
+failures:
+
+---- claim_transport_equivalence_and_projection_isolation stdout ----
+
+thread 'claim_transport_equivalence_and_projection_isolation' (13425627) panicked at tests/transports.rs:404:5:
+assertion failed: user_page["result"]["claims"][0]["applies_from"].is_null()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    claim_transport_equivalence_and_projection_isolation
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.64s
+
+error: test failed, to rerun pass `--test transports`

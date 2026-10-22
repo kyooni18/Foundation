@@ -326,6 +326,9 @@ fn claim_transport_equivalence_and_projection_isolation() {
         extraction::{Plan, hash},
         providers::{FakeProvider, ModelConfig},
     };
+    let private_from = "2031-04-05T19:15:00+09:00";
+    let private_to = "2031-04-05T20:15:00+09:00";
+    let source_text = "서버는 로컬에서 실행된다. 비공개 추가 내용: 별도 일정 2031-04-05T19:15:00+09:00부터 2031-04-05T20:15:00+09:00까지.";
     let mut ids = Vec::new();
     let server = Server::start_with_setup(|root| {
         let app = App::open(root.join("db")).unwrap();
@@ -333,12 +336,15 @@ fn claim_transport_equivalence_and_projection_isolation() {
         let user = Principal::for_local_cli(PrincipalKind::User, None, None);
         for kind in [PrincipalKind::User, PrincipalKind::Agent] {
             let principal = Principal::for_local_cli(kind, None, None);
-            app.record_source(
-                &principal,
-                RecordSource::plain("서버는 로컬에서 실행된다. 비공개 추가 내용."),
-            )
-            .unwrap();
-            let raw=json!({"claims":[{"text":"서버는 로컬에서 실행된다.","lang":"ko","category":"Fact","speaker":"user","speaker_label":"hidden metadata","basis":"verbatim","anchor":{"quote":"서버는 로컬에서 실행된다.","occurrence":0},"tkind":null,"applies_from":null,"applies_to":null,"standing":false,"index_fields":null,"revision_of":null,"mentions":[],"dependencies":[]}],"empty_reason":null}).to_string();
+            app.record_source(&principal, RecordSource::plain(source_text))
+                .unwrap();
+            let mut value = json!({"claims":[{"text":"서버는 로컬에서 실행된다.","lang":"ko","category":"Fact","speaker":"user","speaker_label":"hidden metadata","basis":"verbatim","anchor":{"quote":"서버는 로컬에서 실행된다.","occurrence":0},"tkind":null,"applies_from":private_from,"applies_to":private_to,"standing":false,"index_fields":null,"revision_of":null,"mentions":[],"dependencies":[]}],"empty_reason":null});
+            if kind == PrincipalKind::Agent {
+                value["claims"][0]["basis"] = json!("paraphrase");
+                value["claims"][0]["anchor"]["quote"] = json!(source_text);
+            }
+            // Untrusted proposal metadata must not widen the confirmed text's scope.
+            let raw = value.to_string();
             let review =
                 json!({"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true})
                     .to_string();
@@ -392,6 +398,8 @@ fn claim_transport_equivalence_and_projection_isolation() {
     assert_eq!(user_page["result"]["claims"][0]["lifecycle"], "live");
     assert_eq!(user_page["result"]["claims"][0]["source_lifecycle"], "live");
     assert_eq!(user_page["result"]["total"], 1);
+    assert!(user_page["result"]["claims"][0]["applies_from"].is_null());
+    assert!(user_page["result"]["claims"][0]["applies_to"].is_null());
     assert!(user_page["result"]["next_cursor"].is_null());
     assert!(!user_page.to_string().contains("hidden metadata"));
     assert!(!user_page.to_string().contains("비공개 추가"));
@@ -408,6 +416,24 @@ fn claim_transport_equivalence_and_projection_isolation() {
         true
     );
     let mut mcp = server.mcp(0);
+    let confirmed = server.call(0, "claim_get", json!({"id":ids[1]}));
+    assert_eq!(confirmed, mcp.call("claim_get", json!({"id":ids[1]})));
+    assert!(confirmed["result"]["applies_from"].is_null());
+    assert!(confirmed["result"]["applies_to"].is_null());
+    assert!(!confirmed.to_string().contains("2031-04-05"));
+    assert!(!confirmed.to_string().contains("비공개 추가"));
+    let audited = server.call(1, "claim_get", json!({"id":ids[1]}));
+    assert_eq!(
+        audited["result"]["applies_from"],
+        "2031-04-05T10:15:00.000Z"
+    );
+    assert_eq!(audited["result"]["applies_to"], "2031-04-05T11:15:00.000Z");
+    assert!(
+        audited["result"]["anchor_quote"]
+            .as_str()
+            .unwrap()
+            .contains(private_from)
+    );
     assert_eq!(
         server.call(0, "claim_list", json!({})),
         mcp.call("claim_list", json!({}))

@@ -85,7 +85,7 @@ revision context, not source evidence. Default lists show the current run; agent
 non-forgotten historical Claims by ID. No factual contradiction or temporal supersession
 is inferred. Stale competing jobs cannot replace a newer accepted version.
 
-D-35–D-50 in `DECISIONS.md` document the migration, quarantine, revision, language, projection,
+D-35–D-55 in `DECISIONS.md` document the migration, quarantine, revision, language, projection,
 and lifecycle resolutions with alternatives. In particular:
 
 - A Source with forgotten historical Claims cannot publish a new extraction. The worker
@@ -484,3 +484,13 @@ Preserved checkpoints: `phase-1` = `50dbccb34fc3b5960fe02de2af56c8c33f7b5916`,
 `phase-2` = `ec11625f53f1bc12cb1f9e3e9849044f8e0d7d0d`. Implementation commits begin with
 `482a897` and `d641815`; the following documentation commit records this evidence. No
 completion tag should be created until real-model semantic acceptance is satisfied.
+
+
+### Additional metadata regression
+A simulated untrusted proposal copied a separate unconfirmed schedule into a confirmed
+server Claim's temporal metadata. The prior user HTTP/MCP response leaked that date;
+the updated projection returns null for both date fields while retaining all temporal
+meaning in text. Agent/audit responses retain dates, now normalized to UTC milliseconds
+on new publication as required by the existing data contract. Raw proposals and anchor
+bytes are unchanged. `date-projection-before.txt`, `date-normalization-before.txt` and
+`date-projection-after.txt` preserve the two reproduced failures and passing regression.

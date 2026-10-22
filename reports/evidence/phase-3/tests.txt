@@ -1,5 +1,5 @@
    Compiling prime_radiant v0.1.0 (/Users/kyooni18/Code/PrimeRadiant)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.16s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.26s
      Running unittests src/lib.rs (target/debug/deps/prime_radiant-6eb1fe363ac8eb08)
 
 running 2 tests
@@ -17,13 +17,13 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
      Running tests/authorization.rs (target/debug/deps/authorization-b60389975526df88)
 
 running 5 tests
-test credentials_fail_closed_and_revoke_independently ... ok
 test metadata_cannot_become_authority_with_forward_migration ... ok
-test lifecycle_filtering_and_live_cursor_recheck ... ok
+test credentials_fail_closed_and_revoke_independently ... ok
 test pagination_is_projection_scoped_and_credential_bound ... ok
+test lifecycle_filtering_and_live_cursor_recheck ... ok
 test complete_core_authorization_matrix ... ok
 
-test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
 
      Running tests/crash.rs (target/debug/deps/crash-b9b36e1db11d316e)
 
@@ -31,46 +31,46 @@ running 2 tests
 test crash_worker ... ignored, subprocess worker invoked by t6
 test t6_sigkill_twenty_restarts ... ok
 
-test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.43s
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.42s
 
      Running tests/extraction.rs (target/debug/deps/extraction-a81c3319dc0f51b4)
 
 running 17 tests
 test leased_crash_worker ... ignored, subprocess worker for extraction recovery
 test provider_file_permissions_and_deepseek_guard ... ok
-test review_rejection_rolls_back_and_prompt_injection_remains_data ... ok
-test concurrent_workers_claim_each_job_once ... ok
 test expired_leases_are_fenced_and_attempts_bounded ... ok
+test concurrent_workers_claim_each_job_once ... ok
 test invalid_revision_rolls_back_whole_publication ... ok
+test review_rejection_rolls_back_and_prompt_injection_remains_data ... ok
 test phase_two_database_migrates_losslessly_with_pre_migration_backup ... ok
 test failures_and_empty_success_are_distinct ... ok
 test agent_metadata_never_promotes_and_confirmations_are_user_only ... ok
 test schema_language_anchors_and_dependencies_fail_closed ... ok
-test sigkill_expired_worker_restart_has_no_duplicate_claims ... ok
-test pagination_dependencies_and_stale_publication ... ok
 test reextraction_cannot_resurrect_forgotten_claims ... ok
+test pagination_dependencies_and_stale_publication ... ok
 test batch_projection_lifecycle_and_revision_are_atomic ... ok
+test sigkill_expired_worker_restart_has_no_duplicate_claims ... ok
 test publication_kill_is_all_or_nothing_and_replayable ... ok
 test review_schema_semantic_and_provider_failures_are_distinct ... ok
 test timeout_releases_job_for_bounded_retry ... ok
 
-test result: ok. 16 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 4.30s
+test result: ok. 16 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 4.35s
 
      Running tests/persistence.rs (target/debug/deps/persistence-eaf1cbdfeee18fd3)
 
 running 10 tests
 test t12_cloud_paths_and_single_owner ... ok
-test t3_idempotency_scope_and_digest ... ok
 test t4_concurrent_duplicate ... ok
-test t2_authoritative_tables_are_immutable ... ok
+test t3_idempotency_scope_and_digest ... ok
 test t10_no_authorship_promotion ... ok
+test t2_authoritative_tables_are_immutable ... ok
 test t8_corruption_latches_writes_off ... ok
 test t11_lifecycle_permissions_and_noops ... ok
 test t1_exact_bytes_and_input_validation ... ok
 test t9_backup_restore_while_writing ... ok
 test t5_concurrent_mixed ... ok
 
-test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.42s
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.45s
 
      Running tests/transports.rs (target/debug/deps/transports-816a31d73a8574e6)
 
@@ -82,7 +82,7 @@ test network_lifecycle_matrix_and_filtered_history ... ok
 test six_source_projection_leakage_surfaces_and_error_cursor_isolation ... ok
 test actual_http_and_stdio_mcp_are_equivalent ... ok
 
-test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.81s
 
      Running unittests examples/evaluate_extraction.rs (target/debug/examples/evaluate_extraction-a743e63c65c1977d)
 
