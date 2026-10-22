@@ -1,0 +1,106 @@
+[
+  {
+    "id": "scope-attachment-001",
+    "split": "dev",
+    "language": "en",
+    "category": "scope_attachment",
+    "origin": "new development controls after v6 held-out scope failure",
+    "source": "When a session ends, free its buffer and upload the report. If the report was already uploaded, do not upload it again.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; human-reviewable, not independent human gold",
+      "propositions": [
+        "When a session ends, free its buffer.",
+        "When a session ends, upload its report unless it was already uploaded."
+      ],
+      "required": [
+        "exceptions retained in governed Claim",
+        "unrelated consequences do not inherit exception",
+        "resolve defined policy as opinion object"
+      ],
+      "unsupported": [
+        "broad exceptionless action",
+        "unresolved this-policy reference"
+      ],
+      "equivalence": "Accept equivalent isolated propositions retaining actual qualifier scope."
+    }
+  },
+  {
+    "id": "scope-attachment-002",
+    "split": "dev",
+    "language": "ko",
+    "category": "scope_attachment",
+    "origin": "new development controls after v6 held-out scope failure",
+    "source": "전원이 복구되면 상태를 기록하고 기기를 재시작한다. 단, 점검 모드에서는 재시작하지 않는다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; human-reviewable, not independent human gold",
+      "propositions": [
+        "전원이 복구되면 상태를 기록한다.",
+        "전원이 복구되면 점검 모드가 아닌 경우 기기를 재시작한다."
+      ],
+      "required": [
+        "exceptions retained in governed Claim",
+        "unrelated consequences do not inherit exception",
+        "resolve defined policy as opinion object"
+      ],
+      "unsupported": [
+        "broad exceptionless action",
+        "unresolved this-policy reference"
+      ],
+      "equivalence": "Accept equivalent isolated propositions retaining actual qualifier scope."
+    }
+  },
+  {
+    "id": "scope-attachment-003",
+    "split": "dev",
+    "language": "en",
+    "category": "scope_attachment",
+    "origin": "new development controls after v6 held-out scope failure",
+    "source": "Deployments require passing tests. Ava called this policy cautious.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; human-reviewable, not independent human gold",
+      "propositions": [
+        "Deployments require passing tests.",
+        "Ava called requiring passing tests before deployments cautious."
+      ],
+      "required": [
+        "exceptions retained in governed Claim",
+        "unrelated consequences do not inherit exception",
+        "resolve defined policy as opinion object"
+      ],
+      "unsupported": [
+        "broad exceptionless action",
+        "unresolved this-policy reference"
+      ],
+      "equivalence": "Accept equivalent isolated propositions retaining actual qualifier scope."
+    }
+  },
+  {
+    "id": "scope-attachment-004",
+    "split": "dev",
+    "language": "ko",
+    "category": "scope_attachment",
+    "origin": "new development controls after v6 held-out scope failure",
+    "source": "삭제하려면 관리자 승인이 필요하다. 지수는 이 규칙이 번거롭다고 말했다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; human-reviewable, not independent human gold",
+      "propositions": [
+        "삭제하려면 관리자 승인이 필요하다.",
+        "지수는 삭제에 관리자 승인을 요구하는 규칙이 번거롭다고 말했다."
+      ],
+      "required": [
+        "exceptions retained in governed Claim",
+        "unrelated consequences do not inherit exception",
+        "resolve defined policy as opinion object"
+      ],
+      "unsupported": [
+        "broad exceptionless action",
+        "unresolved this-policy reference"
+      ],
+      "equivalence": "Accept equivalent isolated propositions retaining actual qualifier scope."
+    }
+  }
+]

@@ -1,0 +1,1042 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v4|openai/gpt-6-luna|anthropic/claude-haiku-5.5|audited|ko": {
+      "runs": 62,
+      "attempt_rows": 95,
+      "terminal_runs": 62,
+      "structural_valid": 86,
+      "provider_failures": 0,
+      "experimental_gate_passes": 53,
+      "reviewer_reported_issues": {
+        "atomicity": 3,
+        "uncertainty": 6,
+        "negation": 1,
+        "attribution": 11,
+        "unsupported": 13,
+        "reference": 15,
+        "temporal": 7,
+        "coverage": 23,
+        "ambiguity": 5,
+        "language": 1,
+        "provider_or_schema_error": 3
+      },
+      "generated_claims": 354,
+      "recovered_after_retry": 14,
+      "terminal_gate_failures": 9,
+      "repeatability": {
+        "new-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-005": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-009": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-010": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-011": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-012": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-013": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-014": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-015": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-016": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-017": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-018": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-019": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-020": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-021": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-022": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-023": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-024": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-026": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-027": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-029": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 0,
+          "max_count": 0
+        },
+        "long-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 17,
+          "max_count": 17
+        },
+        "long-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 13
+        },
+        "long-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 15
+        }
+      }
+    },
+    "extraction-v4|openai/gpt-6-luna|anthropic/claude-haiku-5.5|audited|all": {
+      "runs": 72,
+      "attempt_rows": 115,
+      "terminal_runs": 72,
+      "structural_valid": 98,
+      "provider_failures": 0,
+      "experimental_gate_passes": 59,
+      "reviewer_reported_issues": {
+        "atomicity": 3,
+        "uncertainty": 6,
+        "negation": 1,
+        "attribution": 13,
+        "unsupported": 16,
+        "reference": 17,
+        "temporal": 7,
+        "coverage": 24,
+        "ambiguity": 9,
+        "language": 4,
+        "provider_or_schema_error": 3
+      },
+      "generated_claims": 465,
+      "recovered_after_retry": 18,
+      "terminal_gate_failures": 13,
+      "repeatability": {
+        "new-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-005": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-009": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-010": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-011": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-012": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-013": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-014": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-015": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-016": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-017": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-018": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-019": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-020": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-021": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-022": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-023": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-024": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-026": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-027": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-029": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 0,
+          "max_count": 0
+        },
+        "new-030": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-031": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-032": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 17,
+          "max_count": 17
+        },
+        "long-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 13
+        },
+        "long-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 15
+        },
+        "long-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 15
+        }
+      }
+    },
+    "extraction-v4|openai/gpt-6-luna|anthropic/claude-haiku-5.5|english-staged|ko": {
+      "runs": 62,
+      "attempt_rows": 89,
+      "terminal_runs": 62,
+      "structural_valid": 79,
+      "provider_failures": 0,
+      "experimental_gate_passes": 54,
+      "reviewer_reported_issues": {
+        "coverage": 17,
+        "unsupported": 12,
+        "reference": 13,
+        "uncertainty": 3,
+        "temporal": 10,
+        "condition": 4,
+        "atomicity": 3,
+        "ambiguity": 2,
+        "duplicate": 6,
+        "provider_or_schema_error": 2,
+        "attribution": 1
+      },
+      "generated_claims": 392,
+      "recovered_after_retry": 10,
+      "terminal_gate_failures": 8,
+      "repeatability": {
+        "new-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-005": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-007": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-009": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-010": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-011": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-012": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-013": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-014": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-015": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-016": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-017": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-018": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-019": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-020": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-021": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-022": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-023": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-024": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-026": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-027": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-029": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "long-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 16,
+          "max_count": 18
+        },
+        "long-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 13
+        },
+        "long-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 17
+        }
+      }
+    },
+    "extraction-v4|openai/gpt-6-luna|anthropic/claude-haiku-5.5|english-staged|all": {
+      "runs": 72,
+      "attempt_rows": 104,
+      "terminal_runs": 72,
+      "structural_valid": 92,
+      "provider_failures": 0,
+      "experimental_gate_passes": 62,
+      "reviewer_reported_issues": {
+        "coverage": 17,
+        "unsupported": 12,
+        "reference": 14,
+        "uncertainty": 3,
+        "temporal": 10,
+        "condition": 4,
+        "atomicity": 3,
+        "ambiguity": 2,
+        "duplicate": 8,
+        "provider_or_schema_error": 6,
+        "attribution": 1
+      },
+      "generated_claims": 496,
+      "recovered_after_retry": 11,
+      "terminal_gate_failures": 10,
+      "repeatability": {
+        "new-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-005": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-007": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-009": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-010": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-011": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-012": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-013": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-014": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-015": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-016": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-017": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-018": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-019": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-020": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-021": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-022": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-023": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-024": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-026": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-027": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-029": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-030": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-031": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-032": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 16,
+          "max_count": 18
+        },
+        "long-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 13
+        },
+        "long-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 17
+        },
+        "long-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 15
+        }
+      }
+    },
+    "extraction-v4|openai/gpt-6-luna|anthropic/claude-haiku-5.5|audited|mixed": {
+      "runs": 6,
+      "attempt_rows": 13,
+      "terminal_runs": 6,
+      "structural_valid": 7,
+      "provider_failures": 0,
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {
+        "ambiguity": 4,
+        "unsupported": 3,
+        "attribution": 2,
+        "language": 3,
+        "reference": 1,
+        "coverage": 1
+      },
+      "generated_claims": 100,
+      "recovered_after_retry": 1,
+      "terminal_gate_failures": 4,
+      "repeatability": {
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-032": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 15
+        }
+      }
+    },
+    "extraction-v4|openai/gpt-6-luna|anthropic/claude-haiku-5.5|audited|en": {
+      "runs": 4,
+      "attempt_rows": 7,
+      "terminal_runs": 4,
+      "structural_valid": 5,
+      "provider_failures": 0,
+      "experimental_gate_passes": 4,
+      "reviewer_reported_issues": {
+        "reference": 1
+      },
+      "generated_claims": 11,
+      "recovered_after_retry": 3,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "new-030": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-031": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    },
+    "extraction-v4|openai/gpt-6-luna|anthropic/claude-haiku-5.5|english-staged|mixed": {
+      "runs": 6,
+      "attempt_rows": 11,
+      "terminal_runs": 6,
+      "structural_valid": 9,
+      "provider_failures": 0,
+      "experimental_gate_passes": 4,
+      "reviewer_reported_issues": {
+        "reference": 1,
+        "provider_or_schema_error": 4,
+        "duplicate": 2
+      },
+      "generated_claims": 98,
+      "recovered_after_retry": 1,
+      "terminal_gate_failures": 2,
+      "repeatability": {
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-032": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 15
+        }
+      }
+    },
+    "extraction-v4|openai/gpt-6-luna|anthropic/claude-haiku-5.5|english-staged|en": {
+      "runs": 4,
+      "attempt_rows": 4,
+      "terminal_runs": 4,
+      "structural_valid": 4,
+      "provider_failures": 0,
+      "experimental_gate_passes": 4,
+      "reviewer_reported_issues": {},
+      "generated_claims": 6,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "new-030": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-031": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    }
+  }
+}

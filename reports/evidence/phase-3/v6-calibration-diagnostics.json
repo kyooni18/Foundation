@@ -1,0 +1,313 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|audited|ko": {
+      "runs": 36,
+      "attempt_rows": 50,
+      "terminal_runs": 36,
+      "structural_valid": 45,
+      "provider_failures": 0,
+      "experimental_gate_passes": 33,
+      "reviewer_reported_issues": {
+        "coverage": 17,
+        "attribution": 1,
+        "reference": 4,
+        "ambiguity": 2,
+        "temporal": 1
+      },
+      "generated_claims": 86,
+      "recovered_after_retry": 7,
+      "terminal_gate_failures": 3,
+      "repeatability": {
+        "new-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-015": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-018": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-024": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-026": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "calendar-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "calendar-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "calendar-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "calendar-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_deploy": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_meeting": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sincere_praise": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_self": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-joke_hyperbole": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-ambiguous_sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|audited|all": {
+      "runs": 40,
+      "attempt_rows": 54,
+      "terminal_runs": 40,
+      "structural_valid": 49,
+      "provider_failures": 0,
+      "experimental_gate_passes": 37,
+      "reviewer_reported_issues": {
+        "coverage": 17,
+        "attribution": 1,
+        "reference": 4,
+        "ambiguity": 2,
+        "temporal": 1
+      },
+      "generated_claims": 94,
+      "recovered_after_retry": 7,
+      "terminal_gate_failures": 3,
+      "repeatability": {
+        "new-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-015": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-018": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-024": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-026": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "calendar-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "calendar-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "calendar-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "calendar-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_deploy": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_meeting": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_en": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sincere_praise": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_self": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-joke_hyperbole": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-ambiguous_sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|audited|mixed": {
+      "runs": 2,
+      "attempt_rows": 2,
+      "terminal_runs": 2,
+      "structural_valid": 2,
+      "provider_failures": 0,
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {},
+      "generated_claims": 4,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v6|openai/gpt-6-luna-pro|anthropic/claude-haiku-5.5|audited|en": {
+      "runs": 2,
+      "attempt_rows": 2,
+      "terminal_runs": 2,
+      "structural_valid": 2,
+      "provider_failures": 0,
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {},
+      "generated_claims": 4,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "r2-sarcasm_en": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    }
+  }
+}

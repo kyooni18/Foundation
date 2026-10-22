@@ -1,0 +1,100 @@
+[
+  {
+    "id": "frame-attachment-001",
+    "split": "dev",
+    "language": "en",
+    "category": "epistemic_attachment",
+    "origin": "new development controls after v6 held-out framing failure; not held-out",
+    "source": "Evan suspects the drive might be failing, but he has not run diagnostics.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; human-reviewable, not independent human gold",
+      "propositions": [
+        "Evan suspects possible drive failure without having run diagnostics."
+      ],
+      "required": [
+        "keep same-target unverified limitation in report text",
+        "split unrelated target actions without inventing qualifier attachment"
+      ],
+      "unsupported": [
+        "asserted equipment failure",
+        "invented checking status"
+      ],
+      "equivalence": "Preserve scoped epistemic frames; wording may vary."
+    }
+  },
+  {
+    "id": "frame-attachment-002",
+    "split": "dev",
+    "language": "ko",
+    "category": "epistemic_attachment",
+    "origin": "new development controls after v6 held-out framing failure; not held-out",
+    "source": "수아는 냉장고가 고장 난 것 같다고 했지만 직접 확인한 것은 아니다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; human-reviewable, not independent human gold",
+      "propositions": [
+        "수아는 직접 확인하지 않은 상태에서 냉장고가 고장 난 것 같다고 말했다."
+      ],
+      "required": [
+        "keep same-target unverified limitation in report text",
+        "split unrelated target actions without inventing qualifier attachment"
+      ],
+      "unsupported": [
+        "asserted equipment failure",
+        "invented checking status"
+      ],
+      "equivalence": "Preserve scoped epistemic frames; wording may vary."
+    }
+  },
+  {
+    "id": "frame-attachment-003",
+    "split": "dev",
+    "language": "en",
+    "category": "epistemic_attachment",
+    "origin": "new development controls after v6 held-out framing failure; not held-out",
+    "source": "Evan suspects the drive might be failing. Separately, he has not tested the new keyboard.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; human-reviewable, not independent human gold",
+      "propositions": [
+        "Evan suspects possible drive failure.",
+        "Evan has not tested the new keyboard."
+      ],
+      "required": [
+        "keep same-target unverified limitation in report text",
+        "split unrelated target actions without inventing qualifier attachment"
+      ],
+      "unsupported": [
+        "asserted equipment failure",
+        "invented checking status"
+      ],
+      "equivalence": "Preserve scoped epistemic frames; wording may vary."
+    }
+  },
+  {
+    "id": "frame-attachment-004",
+    "split": "dev",
+    "language": "ko",
+    "category": "epistemic_attachment",
+    "origin": "new development controls after v6 held-out framing failure; not held-out",
+    "source": "수아는 냉장고가 고장 난 것 같다고 말했다. 별개로 수아는 새 청소기를 아직 시험하지 않았다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; human-reviewable, not independent human gold",
+      "propositions": [
+        "수아는 냉장고가 고장 난 것 같다고 말했다.",
+        "수아는 새 청소기를 아직 시험하지 않았다."
+      ],
+      "required": [
+        "keep same-target unverified limitation in report text",
+        "split unrelated target actions without inventing qualifier attachment"
+      ],
+      "unsupported": [
+        "asserted equipment failure",
+        "invented checking status"
+      ],
+      "equivalence": "Preserve scoped epistemic frames; wording may vary."
+    }
+  }
+]

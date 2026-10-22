@@ -1,25 +1,178 @@
 {
-  "status": "implementation checkpoint; semantic acceptance unverified",
-  "offline_tests_passed": 38,
+  "status": "implementation checkpoint; live semantic acceptance not established",
+  "implementation_commit": "65d35b1",
+  "offline_tests_passed": 40,
   "helper_tests": 2,
-  "real_model_requests": 0,
-  "provider_attempt": "blocked before request: credentials unavailable",
+  "provider_access": "working; existing OpenRouter credentials; cheap-model-only preference",
   "completion_tag_created": false,
+  "development_cases": 88,
+  "heldout_cases": 20,
+  "final_evaluations": "running; v6 GPT6LunaPro/Haiku5.5 compared with adapted R2 baseline",
+  "annotation_status": "editorial draft inventories; provisional assistant audits are not independent human adjudication",
+  "artifacts": {
+    "dev-v1.jsonl.gz": {
+      "sha256": "93e86fe65977057ccaa9439ecd98980461ac375871c9bb49b905b640d207f216",
+      "attempt_rows": 448,
+      "terminal_runs": 448,
+      "provider_error_rows": 0
+    },
+    "dev-v2.jsonl.gz": {
+      "sha256": "fdbe8aed541b81026f057c075182b77bab49a31bcd573530d9def9e9a93cf91e",
+      "attempt_rows": 192,
+      "terminal_runs": 192,
+      "provider_error_rows": 0
+    },
+    "dev-v3-reservation-failed.jsonl.gz": {
+      "sha256": "fdec3f24f26a85a2655c31104cbad28b183816aba05858bf1759bf6b05ae0927",
+      "attempt_rows": 216,
+      "terminal_runs": 216,
+      "provider_error_rows": 216
+    },
+    "english-staged-pilot.jsonl.gz": {
+      "sha256": "cd42174a673e0d980ce80105ba1e7911141e07b8e6029fc082e3555adb3f4f0d",
+      "attempt_rows": 2,
+      "terminal_runs": 2,
+      "provider_error_rows": 0
+    },
+    "english-staged-request-failed.jsonl.gz": {
+      "sha256": "d14152e54e0fdb37b51438ee3df0bf9acca68f433e7a5970f9aa29c38a682b0c",
+      "attempt_rows": 72,
+      "terminal_runs": 72,
+      "provider_error_rows": 72
+    },
+    "long-dev-v2.jsonl.gz": {
+      "sha256": "c26148b93e8dfba190b72d37664429aa72918440dfe80128797beeecc007c3aa",
+      "attempt_rows": 32,
+      "terminal_runs": 32,
+      "provider_error_rows": 2
+    },
+    "luna-dev-v1.jsonl.gz": {
+      "sha256": "8b7d6845965ad38371c355ba16597b3a0e00c5d5e2acd5631ecda29d0e33333a",
+      "attempt_rows": 504,
+      "terminal_runs": 504,
+      "provider_error_rows": 0
+    },
+    "luna-dev-v3.jsonl.gz": {
+      "sha256": "076a51167ff5cae31c2d43725862803934c295891307012e8f11a65d8b56fed7",
+      "attempt_rows": 216,
+      "terminal_runs": 216,
+      "provider_error_rows": 0
+    },
+    "luna-dev-v4-repair.jsonl.gz": {
+      "sha256": "01dbc6e548eaa09ac027653081125d1fcbc1ae9d120f73684ea203f5174d78ce",
+      "attempt_rows": 219,
+      "terminal_runs": 144,
+      "provider_error_rows": 0
+    },
+    "luna-dev-v5-repair.jsonl.gz": {
+      "sha256": "658f632cf8e290e9ddec922cdd9024c0185d3be5edc6389b4dc41b1ec996f5aa",
+      "attempt_rows": 119,
+      "terminal_runs": 80,
+      "provider_error_rows": 0
+    },
+    "luna-english-staged-v3.jsonl.gz": {
+      "sha256": "d45fc31d346bcc271e1c78ba0caf6c79f06c783a6577838274d8aceb80591cc9",
+      "attempt_rows": 72,
+      "terminal_runs": 72,
+      "provider_error_rows": 0
+    },
+    "luna-legacy-r2.jsonl.gz": {
+      "sha256": "e3b6badcafe25796f3162621c1d2e6a1b88acb3f5fbd000940ff96f170a60b05",
+      "attempt_rows": 96,
+      "terminal_runs": 96,
+      "provider_error_rows": 0
+    },
+    "luna-legacy-v3.jsonl.gz": {
+      "sha256": "ca830a6d55b216b7546c8c33c1c20685638beb6586db531904fbb3607c667697",
+      "attempt_rows": 96,
+      "terminal_runs": 96,
+      "provider_error_rows": 0
+    },
+    "luna-legacy-v5.jsonl.gz": {
+      "sha256": "14d209cbe7c90a6522242549e2e9a0f8311f50810174d73eb85d5a22023439e1",
+      "attempt_rows": 96,
+      "terminal_runs": 96,
+      "provider_error_rows": 0
+    },
+    "luna-pilot.jsonl.gz": {
+      "sha256": "1b082bfde7ba5b12665277062e9f97cb0b618b48346b79a1833b34f986b48e77",
+      "attempt_rows": 2,
+      "terminal_runs": 2,
+      "provider_error_rows": 0
+    },
+    "luna-pro-v5-controls.jsonl.gz": {
+      "sha256": "18a402339df3cf5876ec0b4cd95eb32a3b8ac0e307282d38f0c49e30d093ffa8",
+      "attempt_rows": 33,
+      "terminal_runs": 24,
+      "provider_error_rows": 0
+    },
+    "luna-pro-v5-pragmatics.jsonl.gz": {
+      "sha256": "b8b3e03ee90aa91c8740bb61a7f41c034eb11eb38701f51b2db5428022fa8d53",
+      "attempt_rows": 35,
+      "terminal_runs": 16,
+      "provider_error_rows": 0
+    },
+    "luna-pro-v6-calibration.jsonl.gz": {
+      "sha256": "ef0b5660874cd6d6f403d258b5758948f31e101d5fc6e5d8a4639a8ab9aed068",
+      "attempt_rows": 54,
+      "terminal_runs": 40,
+      "provider_error_rows": 0
+    },
+    "review-controls.jsonl.gz": {
+      "sha256": "d9b0ec908fd4a746780c4610ed4b464337fc731c5bd5c9532fd248627529ae53",
+      "attempt_rows": 144,
+      "terminal_runs": 144,
+      "provider_error_rows": 0
+    }
+  },
   "prompt_files": {
     "prompts/extraction-v1/contract.txt": "117e46250bef4d591d860dd3bbe061862e3c003c6698e7058da09b5443faa2b9",
     "prompts/extraction-v1/frames.txt": "7d8ee753679acb9a97c7b578e0c3d3701c3cf651f66a599ea0982faa4ad3219c",
     "prompts/extraction-v1/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
     "prompts/extraction-v1/review.txt": "846f929f77aeff8c9100d8bf88b34efdb5aaafa58648ab3fee64b98e286b3677",
-    "prompts/extraction-v1/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62"
+    "prompts/extraction-v1/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v2/contract.txt": "117e46250bef4d591d860dd3bbe061862e3c003c6698e7058da09b5443faa2b9",
+    "prompts/extraction-v2/frames.txt": "2e9c1b4707a3a674fdf61593ef0de82f63d97433c53ee07d4271146e09555b7e",
+    "prompts/extraction-v2/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v2/review.txt": "ebcd2b6c17983a3a08b710398e4f1a764a5819fb1b2cd16f0748ec44c876657e",
+    "prompts/extraction-v2/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v3/contract.txt": "afd31d8ad379963885b1c23f89da993900a625240b31b744c67b6965d81d03ff",
+    "prompts/extraction-v3/frames.txt": "d7edf917316c97a8015132dc0c51a7cb4ed5dd399b1611941f91556cbe4b8908",
+    "prompts/extraction-v3/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v3/review.txt": "ebcd2b6c17983a3a08b710398e4f1a764a5819fb1b2cd16f0748ec44c876657e",
+    "prompts/extraction-v3/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v4/contract.txt": "afd31d8ad379963885b1c23f89da993900a625240b31b744c67b6965d81d03ff",
+    "prompts/extraction-v4/frames.txt": "f435b94f974d6d5e23025c80777fd0f2b770de96ff904f870a0d9b620f39a2d3",
+    "prompts/extraction-v4/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v4/review.txt": "5bd7ec5959766e9e650bdda076c0ca980f75d424b248924f6a25df7172e062a0",
+    "prompts/extraction-v4/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v5/contract.txt": "afd31d8ad379963885b1c23f89da993900a625240b31b744c67b6965d81d03ff",
+    "prompts/extraction-v5/frames.txt": "5a07b17d6bb873a01f0c34049ac27a2893cc1e16ae329876dfa25d58b411556d",
+    "prompts/extraction-v5/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v5/review.txt": "4d391dd625cb90f88768f0bf39586c7e1ebb3b1c4afb878c4cc6522aca11bef3",
+    "prompts/extraction-v5/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v6/contract.txt": "afd31d8ad379963885b1c23f89da993900a625240b31b744c67b6965d81d03ff",
+    "prompts/extraction-v6/frames.txt": "06f28c29baaad7c178c554bba98f05ad33c288d00576ea5b1cbfeac2d6dc377c",
+    "prompts/extraction-v6/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v6/review.txt": "4bb9afd7ebec8cec351af3d3490046531836117896621fe27ffb075265fdb60e",
+    "prompts/extraction-v6/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62"
   },
   "datasets": {
     "evaluation/phase3/curated.json": {
       "cases": 48,
-      "sha256": "a54aed8925d13c1daf2dd480c304326cc60204b05e75c8365cfd1fcc7cda94c3"
+      "sha256": "72d4c3eeda587395f9c9372e2d96fccaa2c130bd91d53a44dd2de7727d243e3a"
     },
     "evaluation/phase3/legacy.json": {
       "cases": 48,
-      "sha256": "b6f00bfc7dbb7c2db1e9d03dd1a4c249ae305b4471d94986cee1a7c1eb2e5eaf"
+      "sha256": "698ef81b35268d6b84f1b20a0e649679f1f8f7b6feadbbce0c000e6c6b0cb612"
+    },
+    "evaluation/phase3/long-form.json": {
+      "cases": 8,
+      "sha256": "8b21dbf59074058b1c5ea4be618c2f6c9b6c6e4b19e8cd26697ba455aa81a845"
+    },
+    "evaluation/phase3/temporal-calendar.json": {
+      "cases": 4,
+      "sha256": "97670e01a7ae15ae37a87a187c8278a10a35fa9d88ea36fe9e8c8aea2b1093c7"
     }
   }
 }

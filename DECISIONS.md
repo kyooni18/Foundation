@@ -227,3 +227,44 @@ knowledge under new IDs. No agent receives re-extraction/publication authority a
 Phase 4 dependency-validity propagation is introduced. Public Claim lifecycle fields now
 use the existing live/retracted/forgotten enum, consistently with Source responses;
 append-only status events retain retract/forget/restore action labels unchanged.
+
+### D-51 — An evidential qualifier must survive retrieval of its report alone
+V6's held-out `new-042` source reports a possible server outage and explicitly states
+that its speaker had not checked. A three-review-passing output split that into a
+possibility report and a separate checking-status Claim. The draft reference inventory
+already required a single unverified report. Although the full set contains both phrases,
+retrieving only the report drops an explicitly communicated evidential limitation. This
+is a source-grounded failure of self-contained framing, not a schema or anchor failure.
+
+V7 explicitly tests qualifier attachment by target and discourse relation before splitting,
+with Korean and English contrastive examples. The counterexample separates a hypothesis
+about one device from a testing action about a different device; unrelated limitations
+must not be invented. Four new development controls compare v6/v7 with the same cheap
+extractor/reviewer. The original v6 run and held-out status remain recorded; after seeing
+this failure, those exposed cases are regression material for v7, not a fresh held-out
+benchmark. No automatic acceptance or new completion claim follows from the revision.
+Historical prompt assets and frozen request hashes remain unchanged; no data migration or
+authorship/visibility decision changes. This applies the existing self-contained Claim
+contract rather than requiring every epistemic qualifier to become an independent Claim.
+
+### D-52 — Scope binding precedes decomposition in the next prompt experiment
+V6's three-review-passing `long-007` held-out batch emitted a broad conditional requeue
+Claim and placed its completed-work exception in another Claim. It also reported an
+opinion about 'this policy' without resolving the policy described by the Source. Neither
+neighboring text nor valid anchors repairs retrieval of those Claims alone.
+
+V8 reorganizes the extraction prompt around proposition inventory, binding governing
+frames, decomposition, isolated reconstruction and a reverse source audit. This is an
+instructional procedure within the existing call, not an observable intermediate output
+or proof that the model followed it. Contrastive Korean/English development controls
+separate an exception's governed action from an unrelated consequence, and resolve a
+source-defined policy as an opinion's object. It retains logical-negation, causal,
+quotation, epistemic, language, pragmatic, temporal and injection contrasts. Review prompts
+apply the same binding tests independently against the original Source.
+
+V7 remains an immutable, narrower epistemic-attachment experiment; its paired control
+runs repaired four same-target framing losses while preserving four unrelated-target
+splits. That small development result does not establish generalization. V8 is tested
+against matched v6 controls and exposed held-out regressions. Exposed v6 held-out material
+cannot count as a fresh held-out benchmark for either revision. No schema, publication,
+authorization or Phase 4 semantics change is justified by this prompt experiment.

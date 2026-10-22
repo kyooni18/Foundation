@@ -39,6 +39,11 @@ next eligible time, lease expiration, and sanitized failure codes. Provider mess
 source excerpts are not copied into job failure codes. Bounded failed proposals and received
 reviews are retained separately as private, untrusted local inspection diagnostics (D-49).
 
+Retrospective validation retains the original live verdict and records the later check
+separately. Rechecking all saved v4 attempts with source checks v2 rejects two earlier
+structurally valid Korean-to-English drift batches; it adds no rejection in the saved v3
+or v6 calibration outputs. This is deterministic language evidence, not a full fidelity score.
+
 The first attempt freezes model configuration, prompt hash, and preceding accepted job.
 Retries cannot substitute a new model or edited prompt into that request. A changed plan
 requires a new re-extraction job. The previous failure code is supplied as bounded repair
@@ -167,7 +172,10 @@ The seven initial strategies were actually exercised on the same development cas
 | fidelity-review | Decomposition plus one separate fidelity review |
 | audited | Decomposition plus atomicity, fidelity and whole-batch coverage reviews |
 
-The adapted R2 baseline is not a byte-identical R2 replication. Production always applies
+The adapted R2 baseline is not a byte-identical R2 replication. R2 supplied date-only
+`note date` context; the adapted fixtures encode those dates as synthetic midnight-UTC
+reference instants. These are benchmark assumptions, not evidence of actual author clock
+time or calendar timezone. All compared strategies receive the same fixtures. Production always applies
 all three reviews; stage ablations are research conditions, not alternate authorization
 rules. No model confidence score or majority vote establishes correctness.
 
@@ -189,6 +197,14 @@ Prompt revisions are immutable assets, selected explicitly in the frozen plan:
   calibration distinguishes preserved source uncertainty from uncertain extraction fidelity.
   The focused 20-case, two-run Luna Pro calibration produced 54 attempts, 37 terminal gate
   passes and three exhausted runs. These are model diagnostics, not semantic acceptance.
+- **v7:** targeted response to held-out loss of an explicit unverified-status frame when
+  split from its report. Four same-target English/Korean control runs lost the frame under
+  v6; all four preserved it under v7. Four unrelated-target control runs remained correctly
+  split under both. These are narrow assistant source audits, not independent human gold.
+- **v8:** reorganizes the prompt around an inventory and frame-binding procedure before
+  decomposition. V6 long-form output had disconnected an exception from its rule and left
+  a known policy referent unresolved. Matched controls and exposed regressions are under
+  evaluation. The procedure is instructional, not an observed or trusted intermediate.
 
 The live v1 negated-conjunction diagnostic is instructive: three reviewer calls rejected
 an apparently faithful explanation, then a separate diagnostic call to the same model
@@ -370,6 +386,17 @@ Bugs found and fixed during verification: approval replay ID ordering; a test ac
 selecting a backup lock file rather than the `.bak`; credential test paths traversing the
 macOS `/var` symlink; broad-anchor metadata leakage; prompt/config provenance freezing;
 and re-extraction potentially bypassing historical lifecycle restrictions.
+
+A second live smoke exercise used `serve` with the v6 Luna Pro/Haiku worker, explicit
+16,384/4,096 output limits, and an agent-recorded Korean report attributing two statements
+to the user. Recording through HTTP queued work; before local fidelity approval there were
+zero Claims. After source inspection, exact-hash approval published two Claims and replay
+returned the same IDs. Both had `speaker=user`, but authoritative recorder remained agent
+and the user Claim count stayed zero. HTTP and actual stdio MCP matched; explicit user
+confirmation exposed one Claim, retraction filtered the other, and Source forgetting hid
+both. Database integrity checks passed. `live-http-mcp-v6-smoke.json` retains synthetic
+request/response evidence without credentials. This verifies interoperability and isolation,
+not corpus-wide semantic quality.
 
 ## Remaining acceptance work and limitations
 

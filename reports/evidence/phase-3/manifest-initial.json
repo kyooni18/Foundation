@@ -1,0 +1,25 @@
+{
+  "status": "implementation checkpoint; semantic acceptance unverified",
+  "offline_tests_passed": 38,
+  "helper_tests": 2,
+  "real_model_requests": 0,
+  "provider_attempt": "blocked before request: credentials unavailable",
+  "completion_tag_created": false,
+  "prompt_files": {
+    "prompts/extraction-v1/contract.txt": "117e46250bef4d591d860dd3bbe061862e3c003c6698e7058da09b5443faa2b9",
+    "prompts/extraction-v1/frames.txt": "7d8ee753679acb9a97c7b578e0c3d3701c3cf651f66a599ea0982faa4ad3219c",
+    "prompts/extraction-v1/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v1/review.txt": "846f929f77aeff8c9100d8bf88b34efdb5aaafa58648ab3fee64b98e286b3677",
+    "prompts/extraction-v1/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62"
+  },
+  "datasets": {
+    "evaluation/phase3/curated.json": {
+      "cases": 48,
+      "sha256": "a54aed8925d13c1daf2dd480c304326cc60204b05e75c8365cfd1fcc7cda94c3"
+    },
+    "evaluation/phase3/legacy.json": {
+      "cases": 48,
+      "sha256": "b6f00bfc7dbb7c2db1e9d03dd1a4c249ae305b4471d94986cee1a7c1eb2e5eaf"
+    }
+  }
+}

@@ -59,6 +59,16 @@ impl Plan {
                 include_str!("../../prompts/extraction-v6/frames.txt"),
                 include_str!("../../prompts/extraction-v6/review.txt"),
             )),
+            "extraction-v7" => Ok((
+                include_str!("../../prompts/extraction-v7/contract.txt"),
+                include_str!("../../prompts/extraction-v7/frames.txt"),
+                include_str!("../../prompts/extraction-v7/review.txt"),
+            )),
+            "extraction-v8" => Ok((
+                include_str!("../../prompts/extraction-v8/contract.txt"),
+                include_str!("../../prompts/extraction-v8/frames.txt"),
+                include_str!("../../prompts/extraction-v8/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }

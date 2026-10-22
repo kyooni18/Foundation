@@ -57,7 +57,8 @@ for key, values in groups.items():
         try:
             texts = [claim["text"] for claim in json.loads(row["raw"])["claims"]]
             generated += len(texts)
-            per_case[row["case_id"]].append(texts)
+            if row.get("terminal", True):
+                per_case[row["case_id"]].append(texts)
         except (KeyError, TypeError, ValueError):
             pass
         for review in reviews:
