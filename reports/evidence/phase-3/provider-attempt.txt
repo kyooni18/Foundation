@@ -1,0 +1,4 @@
+   Compiling prime_radiant v0.1.0 (/Users/kyooni18/Code/PrimeRadiant)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.85s
+     Running `target/debug/examples/evaluate_extraction --corpus evaluation/phase3/curated.json --output /tmp/prime-phase3-live.jsonl --model unconfigured --reviewer unconfigured`
+Error: "provider credentials unavailable; no evaluation performed"

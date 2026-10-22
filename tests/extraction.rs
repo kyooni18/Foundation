@@ -172,12 +172,21 @@ fn schema_language_anchors_and_dependencies_fail_closed() {
         let (a, b) = locate(&source.content, text, 0).unwrap();
         assert_eq!(&source.content[a..b], text);
     }
+    let mixed_id = app
+        .record_source(&user(), RecordSource::plain("The 서울 service is idle."))
+        .unwrap()
+        .source_id;
+    let mixed_source = app.get_source(&user(), mixed_id).unwrap();
+    let mut mixed = candidate("The 서울 service is idle.");
+    mixed["lang"] = json!("en");
+    assert!(validate(&output(vec![mixed]), &mixed_source).is_ok());
     let good = candidate("한글");
     assert!(validate(&output(vec![good.clone()]), &source).is_ok());
     for (key, value) in [
         ("lang", json!("en")),
         ("text", json!("unsupported")),
         ("speaker", json!("administrator")),
+        ("basis", json!("observed")),
         ("anchor", json!({"quote":"absent","occurrence":0})),
         ("dependencies", json!([{"parent":0,"kind":"premise"}])),
     ] {
@@ -667,12 +676,8 @@ async fn reextraction_cannot_resurrect_forgotten_claims() {
     assert!(app.get_claim(&p(PrincipalKind::Agent), &old[0]).is_err());
     app.request_extraction(&user(), source, "after-forget")
         .unwrap();
-    let c = app
-        .work_once(&fake(&raw, 1), &plan())
-        .await
-        .unwrap()
-        .unwrap();
-    assert!(app.approve_extraction(&user(), &c, &hash(&raw)).is_err());
+    assert!(app.work_once(&fake(&raw, 1), &plan()).await.is_err());
+    assert_eq!(row(&app)["failure"], "lifecycle");
     assert_eq!(app.list_claims(&user()).unwrap()[0].id, new[0]);
 }
 

@@ -179,7 +179,10 @@ pub fn validate(raw: &str, source: &SourceView) -> Result<Batch> {
         let outside = |text: &str| {
             text.chars().any(|ch|ch.is_alphabetic() && !(ch.is_ascii() || matches!(ch as u32,0xc0..=0x24f|0x1100..=0x11ff|0x3130..=0x318f|0xac00..=0xd7af)))
         };
-        if outside(&c.text) || outside(&c.anchor.quote) {
+        let unsupported = |text: &str| {
+            outside(text) && !korean(text) && !text.chars().any(|ch| ch.is_ascii_alphabetic())
+        };
+        if unsupported(&c.text) || unsupported(&c.anchor.quote) {
             return Err(invalid("language", "unsupported script"));
         }
         choice(&c.category, &["Fact", "View", "Intent", "Rule"])?;
@@ -209,9 +212,11 @@ pub fn validate(raw: &str, source: &SourceView) -> Result<Batch> {
             )?;
         }
         locate(&source.content, &c.anchor.quote, c.anchor.occurrence)?;
-        if (korean(&c.anchor.quote) && (c.lang != "ko" || !korean(&c.text)))
-            || (c.lang == "en" && korean(&c.text))
-            || (!korean(&c.anchor.quote) && c.lang == "ko")
+        let latin = |text: &str| text.chars().any(|ch| ch.is_ascii_alphabetic());
+        // Mixed spans cannot be classified by character counts: preserve names and
+        // leave dominant-language adjudication to source-grounded and local review.
+        if (c.lang == "ko" && (!korean(&c.anchor.quote) || !korean(&c.text)))
+            || (c.lang == "en" && (!latin(&c.anchor.quote) || !latin(&c.text)))
         {
             return Err(invalid("language", "anchor language mismatch"));
         }
@@ -333,6 +338,9 @@ async fn propose_with_feedback(
     input["prior_extraction_claims"] = serde_json::json!(prior_claims);
     let input = input.to_string();
     let call = |e: ProviderError| {
+        if e == ProviderError::InvalidOutput {
+            return invalid("schema", "invalid provider output");
+        }
         invalid(
             "provider",
             match e {
@@ -394,6 +402,10 @@ impl App {
         fenced(&tx, lease)?;
         let source = crate::store::get(&tx, &lease.source_id.parse()?)?;
         if source.lifecycle != Lifecycle::Live {
+            return Err(Error::NotFound);
+        }
+        let hidden:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM claim c WHERE c.source_id=?1 AND COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')<>'restore')",[&lease.source_id],|r|r.get(0))?;
+        if hidden {
             return Err(Error::NotFound);
         }
         let previous: Option<String> = tx

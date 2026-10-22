@@ -1,0 +1,96 @@
+{
+  "init": {
+    "schema_version": 2
+  },
+  "record": {
+    "source_id": "01M5HRYF3E7BZH1CRK6CT9AVZP",
+    "created": true
+  },
+  "get": {
+    "id": "01M5HRYF3E7BZH1CRK6CT9AVZP",
+    "recorder": "user",
+    "recorder_label": null,
+    "session_id": null,
+    "content": "서버는 Rust로 작성되었다.",
+    "content_sha256": "523e099fefe375c5edd59635bc1decb746a38ee9f0bede87451b70f46f797ff2",
+    "media_type": "text/plain",
+    "authored_at": null,
+    "observed_at": null,
+    "captured_at": "2026-10-22T12:21:33.934Z",
+    "artifact_ref": null,
+    "retention_request": "none",
+    "idempotency_key": null,
+    "request_digest": "5d1282cb1f27c3f22967dd7de9756ff6bf902957dffc9526ee85514556ca5dda",
+    "lifecycle": "live"
+  },
+  "backfill": 0,
+  "jobs": [
+    {
+      "attempts": 0,
+      "candidate": null,
+      "failure": null,
+      "hash": null,
+      "job": "01M5HRYF3ECM25GCEZWWWZ37YR",
+      "lease_until": null,
+      "max_attempts": 3,
+      "output": null,
+      "run_after": "2026-10-22T12:21:33.934Z",
+      "source": "01M5HRYF3E7BZH1CRK6CT9AVZP",
+      "state": "pending"
+    }
+  ],
+  "claims": [],
+  "check": {
+    "ok": true,
+    "items": [
+      {
+        "name": "sqlite",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "foreign_keys",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "migrations",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "source_hashes",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "status_targets",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "triggers",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "claim_evidence",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "extraction_publication",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      }
+    ]
+  }
+}

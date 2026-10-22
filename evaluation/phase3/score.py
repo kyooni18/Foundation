@@ -36,7 +36,7 @@ for key,rs in groups.items():
     item['distinct_outputs_per_case']={k:len(v) for k,v in per_case.items()}
     confusion=collections.Counter()
     for r in reviewed:
-        bad=any(any(c[f] for f in flags) for c in r['human_review']['claims']) or r['human_review']['covered_propositions']<r['human_review']['supported_propositions']
+        bad=r['human_review']['oversplits']>0 or any(any(c[f] for f in flags) for c in r['human_review']['claims']) or r['human_review']['covered_propositions']<r['human_review']['supported_propositions']
         for review in r.get('reviews',[]):
             try: rejects=json.loads(review['raw'])['verdict']!='pass'
             except (KeyError,ValueError): continue

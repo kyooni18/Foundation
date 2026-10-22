@@ -142,3 +142,29 @@ revoke a credential, remove its entry from the private registry while preserving
 `credential-issue`. There is no automatic expiry or remote credential management.
 Files accessible to the same OS user are within the trusted local boundary;
 tokens do not sandbox malicious processes running as that same OS user.
+
+## Phase 3 implementation checkpoint (acceptance pending)
+
+Sources now enqueue durable extraction work. The optional OpenRouter worker proposes
+atomic, source-grounded Claims through separate atomicity, fidelity, and coverage reviews.
+All proposals remain quarantined for local user review because real-model quality has not
+been evaluated. There is **no phase-3 completion tag**. See [the Phase 3 report](reports/phase-3.md)
+for evidence, decisions, limitations, and the reproducible evaluation procedure.
+
+Provider credentials use `OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_FILE` (canonical path,
+0600, same owner, no symlinks). Model and reviewer names must be supplied explicitly.
+
+```sh
+primeradiant --db /path/to/db extraction-backfill
+primeradiant --db /path/to/db extraction-work --model "$EXTRACTION_MODEL" --reviewer "$REVIEW_MODEL"
+primeradiant --db /path/to/db extraction-inspect
+# Review the original Source and the entire exact candidate before approving fidelity:
+primeradiant --db /path/to/db extraction-approve CANDIDATE_ID OUTPUT_SHA256
+primeradiant --db /path/to/db claims --principal user
+```
+
+For continuous processing, `serve` accepts `--extraction-model` and
+`--extraction-reviewer`; the worker shares the sole database owner. Offline CLI maintenance
+requires stopping that server. HTTP/MCP also expose `claim_get`, `claim_list`,
+`claim_retract`, `claim_forget`, `claim_confirm`, and `claim_unconfirm`, all through the
+same core authorization. Extraction approval does not confer user endorsement.
