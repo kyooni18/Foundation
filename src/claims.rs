@@ -99,7 +99,7 @@ impl App {
         let extractor = format!(
             "{}:{}:{}:{}",
             plan.provider,
-            extraction::VERSION,
+            plan.version(),
             plan.extractor.model,
             prompt_hash
         );

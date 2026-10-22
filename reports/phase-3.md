@@ -1,12 +1,19 @@
-# Phase 3 — implementation checkpoint; semantic acceptance blocked
+# Phase 3 — implementation checkpoint; live semantic evaluation in progress
 
-Status: **not accepted; no `phase-3` tag**. The durable pipeline, strict validation,
-review quarantine, Claim persistence/projections, provider adapter, evaluation harness,
-and offline regression coverage are implemented. Real-model extraction quality has **not**
-been established. No OpenRouter, OpenAI, or Anthropic credentials were available in this
-process; `OPENROUTER_API_KEY_FILE` was also absent. A provider/model and credential path
-were requested. The evaluation entry point was executed and failed before any model
-request with `provider credentials unavailable; no evaluation performed`.
+Status: **not accepted; no `phase-3` tag**. Provider access was restored on
+2026-10-23 using the existing OpenRouter credential identified by the user. The
+credential is never included in evidence. Live evaluations are now in progress;
+the earlier missing-credential result below is historical, not a current blocker.
+
+The first live pilot completed 36 extractions (12 development cases × 3 variants)
+with `anthropic/claude-sonnet-5.5` and independent reviews by
+`google/gemini-3.8-flash`. Raw outputs are in
+`reports/evidence/phase-3/live-v1/pilot.jsonl`. A diagnostic disagreement is preserved
+in `negation-diagnostic.json`: three review stages rejected a faithful negated
+conjunction, while a separate diagnostic request to the same reviewer called it
+faithful. This is evidence of inconsistent judgment, not proof from model agreement.
+The broader repeated development matrix and revised prompts are still being audited.
+No numerical semantic acceptance claim is made from unfinished experiments.
 
 Consequently this report does not claim that the prompts meet semantic acceptance,
 that reviewers improve quality, or that English intermediate processing helps Korean.

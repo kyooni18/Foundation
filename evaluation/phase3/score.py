@@ -5,7 +5,12 @@ covered_propositions, claims (list of per-claim bool flags below), oversplits (i
 decompositions (int), translation_errors (int), translation_candidates (int).
 Independent human adjudication is required for acceptance; model reviews are diagnostic.
 """
-import collections,json,sys
+import argparse,collections,json,sys
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('input')
+parser.add_argument('--annotation-field', choices=['human_review','assistant_review'], default='human_review')
+args=parser.parse_args()
+annotation=args.annotation_field
 flags=['atomicity_violation','unsupported','fidelity_error','epistemic_error','language_error','anchor_error','duplicate']
 
 def require(condition, message):
@@ -13,7 +18,7 @@ def require(condition, message):
         raise ValueError(message)
 
 def validate_review(row):
-    h = row.get('human_review')
+    h = row.get(annotation)
     if h is None:
         return
     require(isinstance(h, dict), 'human_review must be an object')
@@ -41,7 +46,7 @@ def validate_review(row):
     if not h['claims']:
         require(h['covered_propositions'] == 0, 'empty output cannot cover propositions')
 
-rows=[json.loads(line) for line in open(sys.argv[1])]
+rows=[json.loads(line) for line in open(args.input)]
 seen=set()
 for row in rows:
     identity=(row['case_id'],row['variant'],row['run'],row['prompt_hash'],row['source_hash'])
@@ -54,16 +59,20 @@ for row in rows:
         groups[key].append(row)
 output={}
 for key,rs in groups.items():
-    reviewed=[r for r in rs if r.get('human_review') is not None]
-    accepted=[r for r in reviewed if r['human_review']['accepted']]
-    claims=[c for r in accepted for c in r['human_review']['claims']]
+    reviewed=[r for r in rs if r.get(annotation) is not None]
+    accepted=[r for r in reviewed if r[annotation]['accepted']]
+    claims=[c for r in accepted for c in r[annotation]['claims']]
+    generated=[c for r in reviewed for c in r[annotation]['claims']]
     rate=lambda n,d: {'numerator':n,'denominator':d,'rate':n/d if d else None}
-    item={'runs':len(rs),'reviewed':len(reviewed),'accepted_batches':len(accepted),'unreviewed':len(rs)-len(reviewed)}
-    for f in flags:item[f]=rate(sum(c[f] for c in claims),len(claims))
+    item={'annotation_source':annotation,'runs':len(rs),'reviewed':len(reviewed),'accepted_batches':len(accepted),'unreviewed':len(rs)-len(reviewed)}
+    for f in flags:
+        item[f]=rate(sum(c[f] for c in claims),len(claims))
+        item['generated_'+f]=rate(sum(c[f] for c in generated),len(generated))
     # End-to-end coverage includes rejected batches as zero, rather than hiding failures.
-    item['coverage']=rate(sum(r['human_review']['covered_propositions'] if r['human_review']['accepted'] else 0 for r in reviewed),sum(r['human_review']['supported_propositions'] for r in reviewed))
-    item['oversplit']=rate(sum(r['human_review']['oversplits'] for r in accepted),sum(r['human_review']['decompositions'] for r in accepted))
-    item['translation_errors']=rate(sum(r['human_review']['translation_errors'] for r in reviewed),sum(r['human_review']['translation_candidates'] for r in reviewed))
+    item['coverage']=rate(sum(r[annotation]['covered_propositions'] if r[annotation]['accepted'] else 0 for r in reviewed),sum(r[annotation]['supported_propositions'] for r in reviewed))
+    item['generated_coverage']=rate(sum(r[annotation]['covered_propositions'] for r in reviewed),sum(r[annotation]['supported_propositions'] for r in reviewed))
+    item['oversplit']=rate(sum(r[annotation]['oversplits'] for r in accepted),sum(r[annotation]['decompositions'] for r in accepted))
+    item['translation_errors']=rate(sum(r[annotation]['translation_errors'] for r in reviewed),sum(r[annotation]['translation_candidates'] for r in reviewed))
     # Lexical repeatability is diagnostic only; human semantic comparison remains required.
     per_case=collections.defaultdict(set)
     for r in rs:
@@ -71,7 +80,7 @@ for key,rs in groups.items():
     item['distinct_outputs_per_case']={k:len(v) for k,v in per_case.items()}
     confusion=collections.Counter()
     for r in reviewed:
-        bad=r['human_review']['oversplits']>0 or any(any(c[f] for f in flags) for c in r['human_review']['claims']) or r['human_review']['covered_propositions']<r['human_review']['supported_propositions']
+        bad=r[annotation]['oversplits']>0 or any(any(c[f] for f in flags) for c in r[annotation]['claims']) or r[annotation]['covered_propositions']<r[annotation]['supported_propositions']
         for review in r.get('reviews',[]):
             try: rejects=json.loads(review['raw'])['verdict']!='pass'
             except (KeyError,ValueError): continue

@@ -1,0 +1,426 @@
+[
+  {
+    "id": "negated-conjunction-valid",
+    "original_source": "P와 Q가 모두 완료된 건 아니다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "P와 Q가 모두 완료된 것은 아니다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "P와 Q가 모두 완료된 건 아니다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": true,
+    "defect": null,
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "negated-conjunction-invalid",
+    "original_source": "P와 Q가 모두 완료된 건 아니다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "P는 완료되지 않았다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "P와 Q가 모두 완료된 건 아니다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        },
+        {
+          "text": "Q는 완료되지 않았다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "P와 Q가 모두 완료된 건 아니다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": false,
+    "defect": "negation",
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "condition-valid",
+    "original_source": "전원이 꺼지면 로그가 저장된다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "전원이 꺼지면 로그가 저장된다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "전원이 꺼지면 로그가 저장된다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": true,
+    "defect": null,
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "condition-invalid",
+    "original_source": "전원이 꺼지면 로그가 저장된다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "로그가 저장된다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "전원이 꺼지면 로그가 저장된다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": false,
+    "defect": "condition",
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "attribution-valid",
+    "original_source": "수진은 장비가 불안정하다고 말했다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "수진은 장비가 불안정하다고 말했다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "수진은 장비가 불안정하다고 말했다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": true,
+    "defect": null,
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "attribution-invalid",
+    "original_source": "수진은 장비가 불안정하다고 말했다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "장비가 불안정하다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "수진은 장비가 불안정하다고 말했다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": false,
+    "defect": "attribution",
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "counterfactual-valid",
+    "original_source": "예비 전원이 있었다면 장비를 계속 켰을 텐데.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "화자는 예비 전원이 있었다면 장비를 계속 켰을 것이라는 반사실적 판단을 표현했다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "예비 전원이 있었다면 장비를 계속 켰을 텐데.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": true,
+    "defect": null,
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "counterfactual-invalid",
+    "original_source": "예비 전원이 있었다면 장비를 계속 켰을 텐데.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "예비 전원이 없어서 장비가 꺼졌다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "예비 전원이 있었다면 장비를 계속 켰을 텐데.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": false,
+    "defect": "unsupported",
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "uncertainty-valid",
+    "original_source": "토너가 떨어진 듯하지만 확인은 못 했다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "화자는 확인하지 못한 상태에서 토너 소진 가능성을 추측했다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "토너가 떨어진 듯하지만 확인은 못 했다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": true,
+    "defect": null,
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "uncertainty-invalid",
+    "original_source": "토너가 떨어진 듯하지만 확인은 못 했다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "토너가 떨어졌다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "토너가 떨어진 듯하지만 확인은 못 했다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": false,
+    "defect": "uncertainty",
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "atomicity-valid",
+    "original_source": "장비는 가볍고 비싸다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "장비는 가볍다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "장비는 가볍고 비싸다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        },
+        {
+          "text": "장비는 비싸다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "장비는 가볍고 비싸다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": true,
+    "defect": null,
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  },
+  {
+    "id": "atomicity-invalid",
+    "original_source": "장비는 가볍고 비싸다.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "장비는 가볍고 비싸다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "장비는 가볍고 비싸다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "expected_pass": false,
+    "defect": "atomicity",
+    "annotation": "assistant-authored logical control; not independent human adjudication or held-out data"
+  }
+]

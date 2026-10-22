@@ -82,3 +82,17 @@ would make forget/retract ineffective; automatically copying endorsement onto re
 text was rejected because approval of extraction is not endorsement of truth. Prior
 same-source Claim IDs/text are supplied as untrusted revision context, never as evidence.
 This is a conservative availability restriction, not Phase 4 validity propagation.
+
+
+### D-43 — Reproducible prompt revisions preserve frozen v1 requests
+Live development experiments exposed unsupported Korean counterfactual outcomes,
+causal relationship loss, correction duplication, and reviewer false rejection of
+scope-preserving explanatory text. Prompt v2 adds contrastive reconstruction examples
+and reviewer calibration; it is experimental until held-out validation, not a declared
+winner. V1 assets remain unchanged. Plans may name an explicit `prompt_version`; an
+omitted field means v1 and stays omitted on serialization, preserving existing request
+JSON and provenance hashes (checked against an actual v1 live-run hash). The version
+selects both extraction and review instructions. Unknown versions fail closed. Stored
+extractor identifiers use the frozen plan's version. No migration, authority change,
+or implicit upgrade of pending jobs is introduced. Editing v1 in place was rejected
+because it would prevent reproducible replays and could strand frozen requests.

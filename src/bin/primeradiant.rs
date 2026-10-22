@@ -188,6 +188,7 @@ fn run() -> Result<()> {
                     let provider = prime_radiant::providers::OpenRouter::from_environment()
                         .map_err(|_| invalid("provider", "credential unavailable"))?;
                     let plan = prime_radiant::extraction::Plan {
+                        prompt_version: None,
                         provider: "openrouter".into(),
                         variant: "audited".into(),
                         extractor: prime_radiant::providers::ModelConfig {
@@ -259,6 +260,7 @@ fn run() -> Result<()> {
             let provider = prime_radiant::providers::OpenRouter::from_environment()
                 .map_err(|_| invalid("provider", "credential unavailable"))?;
             let plan = prime_radiant::extraction::Plan {
+                prompt_version: None,
                 provider: "openrouter".into(),
                 variant,
                 extractor: prime_radiant::providers::ModelConfig {

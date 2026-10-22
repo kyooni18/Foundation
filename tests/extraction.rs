@@ -8,6 +8,7 @@ fn user() -> Principal {
 }
 fn plan() -> Plan {
     Plan {
+        prompt_version: None,
         provider: "fake".into(),
         variant: "audited".into(),
         extractor: ModelConfig {
@@ -394,6 +395,26 @@ async fn review_rejection_rolls_back_and_prompt_injection_remains_data() {
     let mut changed = plan();
     changed.extractor.model = "other".into();
     assert_ne!(plan().hash().unwrap(), changed.hash().unwrap());
+    // A new prompt must not reinterpret existing frozen v1 requests or their hashes.
+    let old: Plan = serde_json::from_value(json!({
+        "provider":"openrouter", "variant":"audited",
+        "extractor":{"model":"anthropic/claude-sonnet-5.5","timeout_seconds":180},
+        "reviewer":{"model":"google/gemini-3.8-flash","timeout_seconds":180}
+    }))
+    .unwrap();
+    assert_eq!(
+        old.hash().unwrap(),
+        "06c3509c12dd25deb14e4f1ad0017f2f7999df318bbff789bba9b377ef71a16a"
+    );
+    let mut revised = old.clone();
+    revised.prompt_version = Some("extraction-v2".into());
+    assert_ne!(old.hash().unwrap(), revised.hash().unwrap());
+    assert_ne!(
+        old.review_prompt(REVIEW_STAGES[0]).unwrap(),
+        revised.review_prompt(REVIEW_STAGES[0]).unwrap()
+    );
+    revised.prompt_version = Some("unrecognized".into());
+    assert!(revised.hash().is_err());
     let raw = output(vec![candidate(text)]);
     let proposal = propose(&fake(&raw, 1), &plan(), &source).await.unwrap();
     assert_eq!(proposal.raw, raw);

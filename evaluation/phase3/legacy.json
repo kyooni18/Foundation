@@ -12,8 +12,10 @@
         "사용자가 그곳에서 먹었다고 날조하지 않음(직접 경험 단정)",
         "사용자가 도쿄에 있었다고 날조하지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 도쿄 파이어볼 파스타집이 맛있는 듯하다고 잠정 평가한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "tentative_eval"
   },
@@ -29,8 +31,10 @@
         "구조조정이 사용자 단정 사실로 저장되지 않음",
         "발화자 민수 보존"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "민수의 전언에 따르면 원문 기준 다음 달 회사 구조조정이 있을 것이라고 한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "quote_other"
   },
@@ -45,8 +49,10 @@
       "criteria": [
         "비밀번호 변경을 사실로 저장하지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 원문 기준 지난주 서버 비밀번호 변경 여부를 질문한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "question"
   },
@@ -62,8 +68,10 @@
         "아키텍처 교체를 결정/사실로 무조건 저장하지 않음",
         "조건(loss 0.1) 보존"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "이번 실험의 loss가 0.1 아래로 떨어지지 않으면 화자는 아키텍처를 전면 변경할 의향이 있다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "hypothetical"
   },
@@ -79,8 +87,11 @@
         "SQLite 결정 존재",
         "PostgreSQL이 결정으로 저장되지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "팀장이 PostgreSQL 사용을 제안했다.",
+        "화자가 속한 집단은 결국 SQLite를 사용하기로 결정했다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "decision_vs_proposal"
   },
@@ -95,8 +106,11 @@
       "criteria": [
         "회의 참석으로 반전되지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 원문 기준 전날 회의에 가지 않았다.",
+        "화자는 원문 기준 전날 회의에 가는 대신 집에서 논문을 읽었다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "negated_past"
   },
@@ -111,8 +125,11 @@
       "criteria": [
         "지시대상을 특정 인물로 날조하지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "원문에서 걔로 지칭한 신원 미상의 인물이 또 늦었다.",
+        "화자는 그 인물의 반복 지각에 짜증을 표현한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "ambiguous_ref"
   },
@@ -127,8 +144,10 @@
       "criteria": [
         "Helios 프로젝트 속성 날조 없음(목적/기술 등)"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "Helios 프로젝트의 캐시 실험이 실패했다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "missing_project"
   },
@@ -144,8 +163,11 @@
         "배포 프로세스가 완벽하다고 저장하지 않음",
         "롤백 3회 사실 보존"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 배포 프로세스가 완벽하다는 말을 반복 롤백과 대비하여 반어적으로 표현한다.",
+        "화자가 속한 팀은 원문 기준 당일에도 세 번 롤백했다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "sarcasm"
   },
@@ -160,8 +182,10 @@
       "criteria": [
         "만리장성 가시성을 사실로 저장하지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 만리장성이 지구에서 맨눈으로 보인다고 믿었으나 그렇지 않다는 전언을 접했다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "belief_wrong"
   },
@@ -176,8 +200,10 @@
       "criteria": [
         "부산 방문을 확정 계획/사실로 저장하지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 원문 기준 다음 주쯤 부산에 갈지 생각 중이다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "future_plan_tentative"
   },
@@ -193,8 +219,11 @@
         "영어 커밋 규칙",
         "예외 조건 보존"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 앞으로 커밋 메시지를 영어로 작성해 달라고 요청한다.",
+        "화자는 문서 파일에는 한국어를 허용한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "rule"
   },
@@ -210,8 +239,11 @@
         "원인 추정이 확정 사실로 저장되지 않음",
         "타임아웃 관측 보존"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "에이전트가 테스트 로그에서 test_auth의 3회 연속 타임아웃을 관찰했다고 보고한다.",
+        "에이전트는 해당 타임아웃의 원인이 네트워크 문제일 가능성을 추측한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "agent_inference"
   },
@@ -227,8 +259,10 @@
         "감정 보존",
         "발표가 실패했다는 날조 없음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 발표가 끝난 후 다소 허무함을 느꼈다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "emotion"
   },
@@ -244,8 +278,10 @@
         "목요일 3시 존재",
         "화요일 미팅이 현재 사실로 저장되지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 앞서 말한 미팅 일정을 화요일에서 목요일 3시로 정정한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "correction"
   },
@@ -261,8 +297,11 @@
         "'새롭지 않다'가 사실로 저장되지 않음",
         "사용자 반대 의견 보존"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "교수님은 리뷰어 2가 화자 집단의 방법이 새롭지 않다고 말했다고 전했다.",
+        "화자는 해당 새롭지 않다는 평가에 동의하지 않는다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "nested_quote"
   },
@@ -277,8 +316,10 @@
       "criteria": [
         "주식 구매를 사실로 저장하지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 당시 지칭된 미상 주식을 샀다면 원문 시점에 두 배가 되었을 것이라는 반사실적 판단을 한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "counterfactual"
   },
@@ -293,8 +334,10 @@
       "criteria": [
         "시간 범위 무근거 영구화 금지(항상/always 아님)"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 원문 기준 최근 매일 아침 6시에 일어나는 습관이 있다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "habitual_temporal"
   },
@@ -310,8 +353,12 @@
         "김치찌개 보존",
         "저녁 스킵 보존(먹었다로 반전 없음)"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 원문 기준 당일 점심이 김치찌개라고 메모했다.",
+        "화자는 원문 기준 당일 저녁을 거른다고 메모했다.",
+        "화자는 원문 기준 당일 커피 세 잔을 메모했다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "list_compound"
   },
@@ -326,8 +373,10 @@
       "criteria": [
         "지민이 화났다고 단정하지 않음"
       ],
-      "propositions": null,
-      "annotation_status": "legacy criteria; proposition inventory requires review"
+      "propositions": [
+        "화자는 지민이 자신에게 화난 듯하다고 추측하지만 그 이유는 모른다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "speculation_other_mind"
   },
@@ -346,8 +395,11 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 반복 롤백과 대비하여 배포 프로세스가 완벽하다고 반어적으로 표현한다.",
+        "원문 기준 이번 주에만 세 번 롤백했다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "sarcasm_deploy"
   },
@@ -366,8 +418,11 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 결론 없는 장시간 회의와 대비해 당일 회의가 유익했다고 반어적으로 표현한다.",
+        "원문 기준 당일 회의에서는 세 시간 동안 결론이 하나도 나지 않았다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "sarcasm_meeting"
   },
@@ -386,8 +441,11 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "A supposedly quick migration took the whole weekend.",
+        "The speaker expresses ironic frustration about the supposedly quick migration taking the whole weekend."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "sarcasm_en"
   },
@@ -406,8 +464,11 @@
         "unknown"
       ],
       "answer": "yes",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 새 CI가 매우 빠르다고 평가한다.",
+        "새 CI의 빌드 시간은 12분에서 3분으로 줄었다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "sincere_praise"
   },
@@ -427,8 +488,10 @@
         "unknown"
       ],
       "answer": "hearsay_from_jisu",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "지수의 전언에 따르면 원문 기준 다음 달 사무실을 판교로 옮긴다고 한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "quote_other"
   },
@@ -448,8 +511,10 @@
         "unknown"
       ],
       "answer": "ceo_via_team_lead",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "팀장의 전언에 따르면 대표가 원문 기준 해당 연도 안에는 상장이 없다고 말했다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "nested_quote"
   },
@@ -468,8 +533,10 @@
         "unknown_user_asked"
       ],
       "answer": "unknown_user_asked",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 원문 기준 지난주 VPN 비밀번호 변경 여부를 질문한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "question_pw"
   },
@@ -488,8 +555,10 @@
         "unknown_user_asked"
       ],
       "answer": "unknown_user_asked",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 해당 릴리스에 다크모드가 포함되지 않는다는 것이 맞는지 확인 질문한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "question_neg"
   },
@@ -508,8 +577,10 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "Helios 캐시 레이어에 결국 Redis를 사용하지 않기로 결정했다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "negation"
   },
@@ -528,8 +599,11 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 운동을 싫어하는 것은 아니라고 말한다.",
+        "화자는 시간이 부족하여 운동하러 가지 못한다고 말한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "double_neg"
   },
@@ -548,8 +622,10 @@
         "denied"
       ],
       "answer": "suspected_unconfirmed",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 확인하지 못한 상태에서 프린터 토너 소진 가능성을 추측한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "uncertain_belief"
   },
@@ -568,8 +644,10 @@
         "only_if_investment_fails"
       ],
       "answer": "only_if_investment_fails",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 이번 투자를 받지 못하면 팀을 절반으로 줄여야 할 것이라고 예상한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "hypothetical"
   },
@@ -588,8 +666,10 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 당시 Postgres 대신 SQLite를 사용했다면 운영이 훨씬 편했을 것이라는 반사실적 평가를 한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "counterfactual"
   },
@@ -608,8 +688,10 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 어머니에게 해당 추석에는 내려가지 못한다고 말씀드렸다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "indirect_speech"
   },
@@ -628,8 +710,10 @@
         "unknown"
       ],
       "answer": "2pm",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 회의가 3시라는 이전 믿음을 2시로 정정한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "wrong_belief"
   },
@@ -648,8 +732,10 @@
         "rejected"
       ],
       "answer": "on_hold",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "민준이의 Kafka 사용 제안은 일단 보류되었다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "suggestion_vs_decision"
   },
@@ -667,8 +753,10 @@
         "no_unresolved"
       ],
       "answer": "no_unresolved",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "원문에서 걔로 지칭한 미상 인물은 원문 기준 전날에도 늦었으며 해당 지각은 세 번째였다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "pronoun"
   },
@@ -687,8 +775,10 @@
         "unknown"
       ],
       "answer": "2026-10-12",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 원문 기준 다음 날 오전 치과 예약이 있다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "indexical_time"
   },
@@ -707,8 +797,10 @@
         "unknown"
       ],
       "answer": "onion_cafe_seongsu",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 성수동 카페 어니언의 와이파이가 매우 느리다고 평가한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "indexical_place"
   },
@@ -727,8 +819,12 @@
         "unknown"
       ],
       "answer": "not_done",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 원문 기준 이번 주 할 일인 세금 신고를 완료했다.",
+        "화자는 원문 기준 이번 주 할 일인 차 정비는 예약만 했다.",
+        "화자는 원문 기준 이번 주 할 일인 여권 갱신을 아직 하지 않았다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "mixed_list"
   },
@@ -747,8 +843,10 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 비가 오는 날을 제외하고 자전거로 출근한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "conditional_rule"
   },
@@ -767,8 +865,11 @@
         "denied"
       ],
       "answer": "user_impression",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 서연이 최근 자신에게 화난 것 같다고 추측한다.",
+        "화자는 서연의 답장이 짧다고 말한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "other_mind"
   },
@@ -787,8 +888,11 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 마감 중복과 대비해 자신이 일정 관리의 천재라고 반어적으로 표현한다.",
+        "화자는 마감 세 개를 같은 날로 잡았다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "sarcasm_self"
   },
@@ -807,8 +911,11 @@
         "unknown"
       ],
       "answer": "no",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "준호는 Rust가 과대평가됐다고 말한다.",
+        "화자는 Rust가 과대평가됐다는 준호의 의견에 동의하지 않는다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "quoted_disagree"
   },
@@ -827,8 +934,10 @@
         "unknown"
       ],
       "answer": "500",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 앞서 회의록에 적은 예산 5천을 5백으로 정정한다. 단위는 원문에 없다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "retraction"
   },
@@ -847,8 +956,10 @@
         "unknown"
       ],
       "answer": "no_hyperbole",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 당일 커피를 백 잔은 마신 듯하다고 웃음 표시를 곁들여 과장하여 표현한다. 정확한 음용량은 제시되지 않는다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "joke_hyperbole"
   },
@@ -867,8 +978,10 @@
         "unknown"
       ],
       "answer": "recent_habit_as_of_2026_10_15",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 원문 기준 최근에는 점심을 거의 거른다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "habit_scope"
   },
@@ -887,8 +1000,10 @@
         "cannot_tell"
       ],
       "answer": "cannot_tell",
-      "propositions": null,
-      "annotation_status": "legacy downstream question; inventory requires review"
+      "propositions": [
+        "화자는 해당 분기 목표를 현실적이라고 표현하나 진심인지 반어인지는 원문만으로 확정되지 않는다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
     },
     "category": "ambiguous_sarcasm"
   }

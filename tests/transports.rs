@@ -352,6 +352,7 @@ fn claim_transport_equivalence_and_projection_isolation() {
                 .into(),
             ));
             let plan = Plan {
+                prompt_version: None,
                 provider: "fake".into(),
                 variant: "audited".into(),
                 extractor: ModelConfig {

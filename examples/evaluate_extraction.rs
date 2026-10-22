@@ -3,7 +3,7 @@ use clap::Parser;
 use prime_radiant::{
     App,
     domain::*,
-    extraction::{Plan, REVIEW_STAGES, extraction_message, hash, review_prompt, validate},
+    extraction::{Plan, REVIEW_STAGES, extraction_message, hash, validate},
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
 use serde_json::{Value, json};
@@ -18,6 +18,8 @@ struct Args {
     model: String,
     #[arg(long)]
     reviewer: String,
+    #[arg(long)]
+    prompt_version: Option<String>,
     #[arg(long, default_value = "dev")]
     split: String,
     #[arg(
@@ -52,6 +54,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         let source = app.get_source(&user, id)?;
         for variant in args.variants.split(',') {
             let plan = Plan {
+                prompt_version: args.prompt_version.clone(),
                 provider: "openrouter".into(),
                 variant: variant.into(),
                 extractor: ModelConfig {
@@ -64,6 +67,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 },
             };
             for run in 0..args.runs {
+                let started = std::time::Instant::now();
                 let prompt = plan.prompt()?;
                 let input = extraction_message(&source, None);
                 let response = provider.complete(&prompt, &input, &plan.extractor).await;
@@ -75,7 +79,13 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     Ok(raw) => {
                         result["raw"] = json!(raw);
                         match validate(&raw, &source) {
-                            Err(_) => result["structural_valid"] = json!(false),
+                            Err(error) => {
+                                result["structural_valid"] = json!(false);
+                                result["validation_error"] = json!(match error {
+                                    Error::InvalidInput { field, .. } => field,
+                                    _ => "validation",
+                                });
+                            }
                             Ok(batch) => {
                                 result["structural_valid"] = json!(true);
                                 result["claim_count"] = json!(batch.claims.len());
@@ -89,7 +99,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                 };
                                 let mut reviews = Vec::new();
                                 for stage in stages {
-                                    let review_prompt = review_prompt(stage);
+                                    let review_prompt = plan.review_prompt(stage)?;
                                     let review_input=json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch}).to_string();
                                     let review = provider
                                         .complete(&review_prompt, &review_input, &plan.reviewer)
@@ -101,6 +111,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                         }
                     }
                 }
+                result["elapsed_ms"] = json!(started.elapsed().as_millis());
                 writeln!(file, "{}", serde_json::to_string(&result)?)?;
                 file.sync_all()?;
                 eprintln!(

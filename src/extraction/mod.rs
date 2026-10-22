@@ -19,12 +19,30 @@ const VARIANTS: &str = include_str!("../../prompts/extraction-v1/variants.json")
 #[serde(deny_unknown_fields)]
 pub struct Plan {
     pub provider: String,
+    /// Omitted v1 field preserves existing frozen request serialization and hashes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prompt_version: Option<String>,
     pub variant: String,
     pub extractor: ModelConfig,
     pub reviewer: ModelConfig,
 }
 impl Plan {
+    pub fn version(&self) -> &str {
+        self.prompt_version.as_deref().unwrap_or(VERSION)
+    }
+    fn components(&self) -> Result<(&'static str, &'static str, &'static str)> {
+        match self.version() {
+            "extraction-v1" => Ok((CONTRACT, FRAMES, REVIEW)),
+            "extraction-v2" => Ok((
+                include_str!("../../prompts/extraction-v2/contract.txt"),
+                include_str!("../../prompts/extraction-v2/frames.txt"),
+                include_str!("../../prompts/extraction-v2/review.txt"),
+            )),
+            _ => Err(invalid("version", "unknown prompt version")),
+        }
+    }
     pub fn prompt(&self) -> Result<String> {
+        let (contract, frames, _) = self.components()?;
         let variants: Value = serde_json::from_str(VARIANTS).expect("embedded variants");
         let strategy = variants[&self.variant]
             .as_str()
@@ -32,13 +50,21 @@ impl Plan {
         let examples = match self.variant.as_str() {
             "single" => "",
             "r2-frame" => include_str!("../../prompts/extraction-v1/r2-frame.txt"),
-            _ => FRAMES,
+            _ => frames,
         };
-        Ok(format!("{CONTRACT}\n{examples}\n{strategy}"))
+        Ok(format!("{contract}\n{examples}\n{strategy}"))
+    }
+    pub fn review_prompt(&self, stage: &str) -> Result<String> {
+        let (_, frames, review) = self.components()?;
+        Ok(format!(
+            "{review}\n{frames}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
+        ))
     }
     pub fn hash(&self) -> Result<String> {
+        let (_, frames, review) = self.components()?;
         Ok(hash(&format!(
-            "{VERSION}\n{}\n{REVIEW}\n{FRAMES}\n{}",
+            "{}\n{}\n{review}\n{frames}\n{}",
+            self.version(),
             self.prompt()?,
             serde_json::to_string(self).expect("plan")
         )))
@@ -384,7 +410,7 @@ async fn propose_with_feedback(
     let batch = validate(&raw, source)?;
     let mut reviews = Vec::new();
     for stage in REVIEW_STAGES {
-        let prompt = review_prompt(stage);
+        let prompt = plan.review_prompt(stage)?;
         let input=serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch}).to_string();
         let result = provider
             .complete(&prompt, &input, &plan.reviewer)
