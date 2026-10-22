@@ -1,0 +1,1501 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v10|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko": {
+      "runs": 204,
+      "attempt_rows": 291,
+      "terminal_runs": 204,
+      "structural_valid": 284,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 186,
+      "reviewer_reported_issues": {
+        "temporal": 76,
+        "reference": 34,
+        "unsupported": 31,
+        "attribution": 42,
+        "coverage": 39,
+        "duplicate": 20,
+        "atomicity": 23,
+        "ambiguity": 6,
+        "condition": 9,
+        "negation": 2,
+        "uncertainty": 10,
+        "oversplit": 2,
+        "language": 3
+      },
+      "generated_claims": 818,
+      "recovered_after_retry": 37,
+      "terminal_gate_failures": 18,
+      "repeatability": {
+        "r1-tentative_eval": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-quote_other": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-question": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-hypothetical": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-sarcasm_deploy": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_meeting": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sincere_praise": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-quote_other": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-nested_quote": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-question_pw": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-question_neg": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-negation": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-double_neg": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-uncertain_belief": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-hypothetical": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-counterfactual": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-indirect_speech": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-wrong_belief": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-suggestion_vs_decision": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-pronoun": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        },
+        "r2-indexical_time": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-indexical_place": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-mixed_list": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "r1-decision_vs_proposal": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-negated_past": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-conditional_rule": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-other_mind": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_self": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-quoted_disagree": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-retraction": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-joke_hyperbole": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-habit_scope": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-ambiguous_sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-005": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-009": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-010": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-011": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-012": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-ambiguous_ref": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-missing_project": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-013": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-014": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-015": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-016": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-017": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-018": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        },
+        "new-019": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-020": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-021": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-022": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-023": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-024": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-026": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-027": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-029": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 0,
+          "max_count": 0
+        },
+        "r1-sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-belief_wrong": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-033": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-034": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-035": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-036": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-037": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-038": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-039": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-040": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-041": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 4,
+          "max_count": 4
+        },
+        "new-045": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-046": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-047": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        },
+        "new-048": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 15
+        },
+        "long-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 12,
+          "max_count": 13
+        },
+        "long-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 16
+        },
+        "r1-future_plan_tentative": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-rule": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "long-005": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 13
+        },
+        "long-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 15
+        },
+        "long-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        },
+        "calendar-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "calendar-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "calendar-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "calendar-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "frame-attachment-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "frame-attachment-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-004": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-agent_inference": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-emotion": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-correction": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-nested_quote": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-counterfactual": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-habitual_temporal": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-list_compound": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "r1-speculation_other_mind": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v10|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|all": {
+      "runs": 232,
+      "attempt_rows": 328,
+      "terminal_runs": 232,
+      "structural_valid": 315,
+      "provider_failures": 1,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {
+        "Timeout": 1
+      },
+      "experimental_gate_passes": 212,
+      "reviewer_reported_issues": {
+        "temporal": 80,
+        "reference": 37,
+        "unsupported": 31,
+        "attribution": 42,
+        "coverage": 41,
+        "duplicate": 21,
+        "atomicity": 24,
+        "ambiguity": 6,
+        "condition": 9,
+        "negation": 2,
+        "uncertainty": 10,
+        "oversplit": 2,
+        "language": 3,
+        "provider_or_schema_error": 1
+      },
+      "generated_claims": 998,
+      "recovered_after_retry": 42,
+      "terminal_gate_failures": 20,
+      "repeatability": {
+        "r1-tentative_eval": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-quote_other": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-question": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-hypothetical": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-sarcasm_deploy": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_meeting": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_en": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sincere_praise": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-quote_other": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-nested_quote": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-question_pw": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-question_neg": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-negation": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-double_neg": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-uncertain_belief": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-hypothetical": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-counterfactual": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-indirect_speech": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-wrong_belief": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-suggestion_vs_decision": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-pronoun": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        },
+        "r2-indexical_time": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-indexical_place": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-mixed_list": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "r1-decision_vs_proposal": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-negated_past": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-conditional_rule": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-other_mind": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-sarcasm_self": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-quoted_disagree": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-retraction": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r2-joke_hyperbole": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-habit_scope": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r2-ambiguous_sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-005": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-009": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-010": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-011": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-012": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-ambiguous_ref": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-missing_project": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-013": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-014": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-015": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-016": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-017": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-018": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        },
+        "new-019": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-020": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-021": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-022": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-023": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-024": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-026": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-027": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-029": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 0,
+          "max_count": 0
+        },
+        "new-030": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-031": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-032": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-belief_wrong": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-033": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-034": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-035": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-036": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-037": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-038": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-039": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-040": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-041": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 4,
+          "max_count": 4
+        },
+        "new-042": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-043": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-044": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-045": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-046": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-047": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        },
+        "new-048": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 15
+        },
+        "long-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 12,
+          "max_count": 13
+        },
+        "long-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 16
+        },
+        "long-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 15
+        },
+        "r1-future_plan_tentative": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-rule": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "long-005": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 13,
+          "max_count": 13
+        },
+        "long-006": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 15,
+          "max_count": 15
+        },
+        "long-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 12,
+          "max_count": 13
+        },
+        "long-008": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 14
+        },
+        "calendar-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "calendar-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "calendar-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "calendar-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "frame-attachment-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "frame-attachment-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "frame-attachment-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "frame-attachment-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-004": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-agent_inference": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-emotion": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-correction": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-nested_quote": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-counterfactual": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-habitual_temporal": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-list_compound": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "r1-speculation_other_mind": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v10|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|en": {
+      "runs": 18,
+      "attempt_rows": 21,
+      "terminal_runs": 18,
+      "structural_valid": 18,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 18,
+      "reviewer_reported_issues": {},
+      "generated_claims": 36,
+      "recovered_after_retry": 3,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "r2-sarcasm_en": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-030": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-031": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-042": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-043": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "frame-attachment-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "frame-attachment-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v10|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|mixed": {
+      "runs": 10,
+      "attempt_rows": 16,
+      "terminal_runs": 10,
+      "structural_valid": 13,
+      "provider_failures": 1,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {
+        "Timeout": 1
+      },
+      "experimental_gate_passes": 8,
+      "reviewer_reported_issues": {
+        "reference": 3,
+        "duplicate": 1,
+        "temporal": 4,
+        "provider_or_schema_error": 1,
+        "atomicity": 1,
+        "coverage": 2
+      },
+      "generated_claims": 144,
+      "recovered_after_retry": 2,
+      "terminal_gate_failures": 2,
+      "repeatability": {
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-032": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-044": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 14,
+          "max_count": 15
+        },
+        "long-007": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 12,
+          "max_count": 13
+        }
+      }
+    }
+  }
+}

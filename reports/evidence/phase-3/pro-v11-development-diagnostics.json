@@ -1,0 +1,283 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v11|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko": {
+      "runs": 204,
+      "attempt_rows": 567,
+      "terminal_runs": 204,
+      "structural_valid": 47,
+      "provider_failures": 525,
+      "extractor_provider_failures": 520,
+      "reviewer_provider_error_calls": {
+        "Quota": 16
+      },
+      "experimental_gate_passes": 25,
+      "reviewer_reported_issues": {
+        "reference": 11,
+        "temporal": 19,
+        "provider_or_schema_error": 16,
+        "coverage": 6,
+        "atomicity": 8,
+        "attribution": 4,
+        "unsupported": 3,
+        "uncertainty": 1
+      },
+      "generated_claims": 71,
+      "recovered_after_retry": 5,
+      "terminal_gate_failures": 179,
+      "repeatability": {
+        "r1-tentative_eval": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-quote_other": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-question": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-hypothetical": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-decision_vs_proposal": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-negated_past": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-ambiguous_ref": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-missing_project": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-belief_wrong": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-future_plan_tentative": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-agent_inference": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-emotion": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-correction": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-nested_quote": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-counterfactual": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    },
+    "extraction-v11|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|all": {
+      "runs": 232,
+      "attempt_rows": 651,
+      "terminal_runs": 232,
+      "structural_valid": 48,
+      "provider_failures": 608,
+      "extractor_provider_failures": 603,
+      "reviewer_provider_error_calls": {
+        "Quota": 16
+      },
+      "experimental_gate_passes": 25,
+      "reviewer_reported_issues": {
+        "reference": 12,
+        "temporal": 19,
+        "provider_or_schema_error": 16,
+        "coverage": 6,
+        "atomicity": 8,
+        "attribution": 4,
+        "unsupported": 3,
+        "uncertainty": 1
+      },
+      "generated_claims": 73,
+      "recovered_after_retry": 5,
+      "terminal_gate_failures": 207,
+      "repeatability": {
+        "r1-tentative_eval": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-quote_other": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-question": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-hypothetical": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-decision_vs_proposal": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-negated_past": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-ambiguous_ref": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-missing_project": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-sarcasm": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-belief_wrong": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-future_plan_tentative": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-agent_inference": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-emotion": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-correction": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-nested_quote": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-counterfactual": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    },
+    "extraction-v11|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|en": {
+      "runs": 18,
+      "attempt_rows": 54,
+      "terminal_runs": 18,
+      "structural_valid": 1,
+      "provider_failures": 53,
+      "extractor_provider_failures": 53,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 0,
+      "reviewer_reported_issues": {
+        "reference": 1
+      },
+      "generated_claims": 2,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 18,
+      "repeatability": {}
+    },
+    "extraction-v11|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|mixed": {
+      "runs": 10,
+      "attempt_rows": 30,
+      "terminal_runs": 10,
+      "structural_valid": 0,
+      "provider_failures": 30,
+      "extractor_provider_failures": 30,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 0,
+      "reviewer_reported_issues": {},
+      "generated_claims": 0,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 10,
+      "repeatability": {}
+    }
+  }
+}

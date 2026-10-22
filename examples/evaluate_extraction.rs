@@ -293,15 +293,24 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                             })
                     };
                     result["failure_code"] = json!(failure);
-                    result["terminal"] =
-                        json!(failure.is_none() || attempt == args.repair_attempts);
+                    result["terminal"] = json!(
+                        failure.is_none()
+                            || failure == Some("quota")
+                            || attempt == args.repair_attempts
+                    );
                     result["elapsed_ms"] = json!(started.elapsed().as_millis());
+                    if failure == Some("quota") {
+                        result["evaluation_aborted"] = json!("quota");
+                    }
                     writeln!(file, "{}", serde_json::to_string(&result)?)?;
                     file.sync_all()?;
                     eprintln!(
                         "completed case={} variant={} run={} attempt={}",
                         case["id"], variant, run, attempt
                     );
+                    if failure == Some("quota") {
+                        return Err("evaluation interrupted: provider quota exhausted".into());
+                    }
                     if failure.is_none() {
                         break;
                     }

@@ -1,6 +1,6 @@
 {
-  "implementation_commit": "64fc74c",
-  "checked_at_utc": "2026-10-22T20:05:21.005458+00:00",
+  "implementation_commit": "3edf6a3",
+  "checked_at_utc": "2026-10-22T22:14:38.032100+00:00",
   "commands": [
     {
       "command": "cargo fmt --check",
@@ -19,8 +19,9 @@
     {
       "command": "python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'",
       "exit": 0,
-      "passed": 1
+      "passed": 2
     }
   ],
-  "real_model_quality_acceptance": false
+  "real_model_quality_acceptance": false,
+  "working_tree_additions": "quota fail-fast example and Python runner regression; final checkpoint commit follows"
 }

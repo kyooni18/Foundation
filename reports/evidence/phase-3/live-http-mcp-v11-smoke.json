@@ -1,0 +1,390 @@
+{
+  "source": "사용자는 서버가 Rust로 작성됐고 SQLite를 사용한다고 말했다.",
+  "record": {
+    "ok": true,
+    "result": {
+      "created": true,
+      "source_id": "01M5JSVW0R3XC8QWE4MFJJFTJD"
+    }
+  },
+  "user_source_get": {
+    "ok": false,
+    "error": {
+      "code": "not_found",
+      "message": "not found"
+    }
+  },
+  "user_claims_before": {
+    "ok": true,
+    "result": {
+      "claims": [],
+      "next_cursor": null,
+      "total": 0
+    }
+  },
+  "job_state": [
+    "failed",
+    "review_required",
+    1
+  ],
+  "claims_before_approval": 0,
+  "review_note": "Assistant inspected both reported statements against original source; approval acknowledges extraction fidelity only, not truth or user endorsement.",
+  "candidate": {
+    "attempts": 1,
+    "candidate": "01M5JSXKJBFQH4Q5Q98AAAKSJ3",
+    "candidate_created_at": "2026-10-22T21:57:48.748Z",
+    "failure": "review_required",
+    "hash": "b556422e31970d99458b79c05ddb8d06e5cd21250a4efc488138c653a0f58885",
+    "job": "01M5JSVW0RTHKS87JB7W0EQW8T",
+    "lease_until": null,
+    "max_attempts": 3,
+    "output": "{\"claims\":[{\"text\":\"사용자는 서버가 Rust로 작성되었다고 말했다.\",\"lang\":\"ko\",\"category\":\"Fact\",\"speaker\":\"unknown\",\"speaker_label\":null,\"basis\":\"paraphrase\",\"anchor\":{\"quote\":\"사용자는 서버가 Rust로 작성됐고 SQLite를 사용한다고 말했다.\",\"occurrence\":0},\"tkind\":null,\"applies_from\":null,\"applies_to\":null,\"standing\":false,\"index_fields\":null,\"revision_of\":null,\"mentions\":[{\"surface\":\"사용자\",\"occurrence\":0},{\"surface\":\"서버\",\"occurrence\":0},{\"surface\":\"Rust\",\"occurrence\":0}],\"dependencies\":[]},{\"text\":\"사용자는 서버가 SQLite를 사용한다고 말했다.\",\"lang\":\"ko\",\"category\":\"Fact\",\"speaker\":\"unknown\",\"speaker_label\":null,\"basis\":\"paraphrase\",\"anchor\":{\"quote\":\"사용자는 서버가 Rust로 작성됐고 SQLite를 사용한다고 말했다.\",\"occurrence\":0},\"tkind\":null,\"applies_from\":null,\"applies_to\":null,\"standing\":false,\"index_fields\":null,\"revision_of\":null,\"mentions\":[{\"surface\":\"사용자\",\"occurrence\":0},{\"surface\":\"서버\",\"occurrence\":0},{\"surface\":\"SQLite\",\"occurrence\":0}],\"dependencies\":[]}],\"empty_reason\":null}",
+    "reviews": "{\"attempt\":1,\"previous_failure_code\":null,\"review_protocol\":\"standalone-prefix-v1+source-grounded-v1\",\"reviews\":[\"{\\\"verdict\\\":\\\"pass\\\",\\\"issues\\\":[],\\\"checked\\\":[0],\\\"coverage_complete\\\":true}\",\"{\\\"verdict\\\":\\\"pass\\\",\\\"issues\\\":[],\\\"checked\\\":[0],\\\"coverage_complete\\\":true}\",\"{\\\"verdict\\\":\\\"pass\\\",\\\"issues\\\":[],\\\"checked\\\":[0,1],\\\"coverage_complete\\\":true}\",\"{\\\"verdict\\\":\\\"pass\\\",\\\"issues\\\":[],\\\"checked\\\":[0,1],\\\"coverage_complete\\\":true}\",\"{\\\"verdict\\\":\\\"pass\\\",\\\"issues\\\":[],\\\"checked\\\":[0,1],\\\"coverage_complete\\\":true}\"],\"validation_version\":\"source-checks-v2\"}",
+    "run_after": "2026-10-22T21:56:51.864Z",
+    "source": "01M5JSVW0R3XC8QWE4MFJJFTJD",
+    "state": "failed"
+  },
+  "published_ids": [
+    "01M5JTAV6JG81C2YZ5BQ04E9FN",
+    "01M5JTAV6JMWV6WVWJVK1K8WV3"
+  ],
+  "equivalence_checks": [
+    {
+      "role": "agent",
+      "operation": "claim_list",
+      "args": {},
+      "response": {
+        "ok": true,
+        "result": {
+          "claims": [
+            {
+              "anchor_end": 80,
+              "anchor_quote": "사용자는 서버가 Rust로 작성됐고 SQLite를 사용한다고 말했다.",
+              "anchor_start": 0,
+              "applies_from": null,
+              "applies_to": null,
+              "basis": "paraphrase",
+              "category": "Fact",
+              "confirmed": false,
+              "created_at": "2026-10-22T22:05:02.546Z",
+              "id": "01M5JTAV6JG81C2YZ5BQ04E9FN",
+              "index_fields": null,
+              "lang": "ko",
+              "lifecycle": "live",
+              "needs_revalidation": false,
+              "provenance": {
+                "extractor_id": "openrouter:extraction-v11:openai/gpt-6-luna-pro:47aba6073824b6431b2901aa182930b434cfb9478060856c3897bc50cf78e480",
+                "job_id": "01M5JSVW0RTHKS87JB7W0EQW8T",
+                "revision_of": null
+              },
+              "recorder": "agent",
+              "source_id": "01M5JSVW0R3XC8QWE4MFJJFTJD",
+              "source_lifecycle": "live",
+              "speaker": "unknown",
+              "speaker_label": null,
+              "standing": false,
+              "text": "사용자는 서버가 SQLite를 사용한다고 말했다.",
+              "tkind": null
+            },
+            {
+              "anchor_end": 80,
+              "anchor_quote": "사용자는 서버가 Rust로 작성됐고 SQLite를 사용한다고 말했다.",
+              "anchor_start": 0,
+              "applies_from": null,
+              "applies_to": null,
+              "basis": "paraphrase",
+              "category": "Fact",
+              "confirmed": false,
+              "created_at": "2026-10-22T22:05:02.546Z",
+              "id": "01M5JTAV6JMWV6WVWJVK1K8WV3",
+              "index_fields": null,
+              "lang": "ko",
+              "lifecycle": "live",
+              "needs_revalidation": false,
+              "provenance": {
+                "extractor_id": "openrouter:extraction-v11:openai/gpt-6-luna-pro:47aba6073824b6431b2901aa182930b434cfb9478060856c3897bc50cf78e480",
+                "job_id": "01M5JSVW0RTHKS87JB7W0EQW8T",
+                "revision_of": null
+              },
+              "recorder": "agent",
+              "source_id": "01M5JSVW0R3XC8QWE4MFJJFTJD",
+              "source_lifecycle": "live",
+              "speaker": "unknown",
+              "speaker_label": null,
+              "standing": false,
+              "text": "사용자는 서버가 Rust로 작성되었다고 말했다.",
+              "tkind": null
+            }
+          ],
+          "next_cursor": null,
+          "total": 2
+        }
+      }
+    },
+    {
+      "role": "user",
+      "operation": "claim_list",
+      "args": {},
+      "response": {
+        "ok": true,
+        "result": {
+          "claims": [],
+          "next_cursor": null,
+          "total": 0
+        }
+      }
+    },
+    {
+      "role": "user",
+      "operation": "claim_confirm",
+      "args": {
+        "id": "01M5JTAV6JG81C2YZ5BQ04E9FN"
+      },
+      "response": {
+        "ok": true,
+        "result": {}
+      }
+    },
+    {
+      "role": "user",
+      "operation": "claim_list",
+      "args": {},
+      "response": {
+        "ok": true,
+        "result": {
+          "claims": [
+            {
+              "anchor_end": null,
+              "anchor_quote": null,
+              "anchor_start": null,
+              "applies_from": null,
+              "applies_to": null,
+              "basis": "paraphrase",
+              "category": "Fact",
+              "confirmed": true,
+              "created_at": "2026-10-22T22:05:02.546Z",
+              "id": "01M5JTAV6JG81C2YZ5BQ04E9FN",
+              "index_fields": null,
+              "lang": "ko",
+              "lifecycle": "live",
+              "needs_revalidation": false,
+              "source_id": "01M5JSVW0R3XC8QWE4MFJJFTJD",
+              "source_lifecycle": "live",
+              "speaker": "unknown",
+              "speaker_label": null,
+              "standing": false,
+              "text": "사용자는 서버가 SQLite를 사용한다고 말했다.",
+              "tkind": null
+            }
+          ],
+          "next_cursor": null,
+          "total": 1
+        }
+      }
+    },
+    {
+      "role": "agent",
+      "operation": "claim_retract",
+      "args": {
+        "id": "01M5JTAV6JMWV6WVWJVK1K8WV3"
+      },
+      "response": {
+        "ok": true,
+        "result": {}
+      }
+    },
+    {
+      "role": "agent",
+      "operation": "claim_list",
+      "args": {},
+      "response": {
+        "ok": true,
+        "result": {
+          "claims": [
+            {
+              "anchor_end": 80,
+              "anchor_quote": "사용자는 서버가 Rust로 작성됐고 SQLite를 사용한다고 말했다.",
+              "anchor_start": 0,
+              "applies_from": null,
+              "applies_to": null,
+              "basis": "paraphrase",
+              "category": "Fact",
+              "confirmed": true,
+              "created_at": "2026-10-22T22:05:02.546Z",
+              "id": "01M5JTAV6JG81C2YZ5BQ04E9FN",
+              "index_fields": null,
+              "lang": "ko",
+              "lifecycle": "live",
+              "needs_revalidation": false,
+              "provenance": {
+                "extractor_id": "openrouter:extraction-v11:openai/gpt-6-luna-pro:47aba6073824b6431b2901aa182930b434cfb9478060856c3897bc50cf78e480",
+                "job_id": "01M5JSVW0RTHKS87JB7W0EQW8T",
+                "revision_of": null
+              },
+              "recorder": "agent",
+              "source_id": "01M5JSVW0R3XC8QWE4MFJJFTJD",
+              "source_lifecycle": "live",
+              "speaker": "unknown",
+              "speaker_label": null,
+              "standing": false,
+              "text": "사용자는 서버가 SQLite를 사용한다고 말했다.",
+              "tkind": null
+            }
+          ],
+          "next_cursor": null,
+          "total": 1
+        }
+      }
+    },
+    {
+      "role": "user",
+      "operation": "forget",
+      "args": {
+        "id": "01M5JSVW0R3XC8QWE4MFJJFTJD"
+      },
+      "response": {
+        "ok": true,
+        "result": {}
+      }
+    },
+    {
+      "role": "agent",
+      "operation": "claim_list",
+      "args": {},
+      "response": {
+        "ok": true,
+        "result": {
+          "claims": [],
+          "next_cursor": null,
+          "total": 0
+        }
+      }
+    },
+    {
+      "role": "user",
+      "operation": "claim_list",
+      "args": {},
+      "response": {
+        "ok": true,
+        "result": {
+          "claims": [],
+          "next_cursor": null,
+          "total": 0
+        }
+      }
+    },
+    {
+      "role": "agent",
+      "operation": "claim_get",
+      "args": {
+        "id": "01M5JTAV6JG81C2YZ5BQ04E9FN"
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "not_found",
+          "message": "not found"
+        }
+      }
+    },
+    {
+      "role": "agent",
+      "operation": "claim_get",
+      "args": {
+        "id": "01M5JTAV6JMWV6WVWJVK1K8WV3"
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "not_found",
+          "message": "not found"
+        }
+      }
+    },
+    {
+      "role": "user",
+      "operation": "claim_get",
+      "args": {
+        "id": "01M5JTAV6JG81C2YZ5BQ04E9FN"
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "not_found",
+          "message": "not found"
+        }
+      }
+    },
+    {
+      "role": "user",
+      "operation": "claim_get",
+      "args": {
+        "id": "01M5JTAV6JMWV6WVWJVK1K8WV3"
+      },
+      "response": {
+        "ok": false,
+        "error": {
+          "code": "not_found",
+          "message": "not found"
+        }
+      }
+    }
+  ],
+  "actual_speaker_values": [
+    "unknown",
+    "unknown"
+  ],
+  "integrity": {
+    "ok": true,
+    "items": [
+      {
+        "name": "sqlite",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "foreign_keys",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "migrations",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "source_hashes",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "status_targets",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "triggers",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "claim_evidence",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      },
+      {
+        "name": "extraction_publication",
+        "ok": true,
+        "violations": 0,
+        "first_violation": null
+      }
+    ]
+  }
+}

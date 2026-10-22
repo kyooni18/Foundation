@@ -364,3 +364,22 @@ publish no Claims. New fake-provider assertions inspect the actual request paylo
 verify physical context omission, reject missing reader evidence and verify failed-batch
 rollback without adding another top-level test. Real v11 extraction still requires
 separate empirical evaluation; this decision does not declare Phase 3 acceptance.
+
+### D-57 — Distinguish permission-grant status from epistemic verification
+The draft `new-047` reference expected one merged Claim for “접근해도 된다고 들었지만 직접
+허가를 받은 건 아니다.” Applying the independence test gives two source-supported
+propositions: the original speaker heard a report allowing access; the original speaker
+has not received direct permission for that access. Either can vary independently. The
+hearsay Claim must remain reported hearing, not an asserted permission; the status Claim
+must name the access target. Merely saying “permission” without its known access scope
+is not self-contained.
+
+Unlike a source's unverified hypothesis, receipt of direct permission is a separate
+normative act/status, not verification that a hearing occurred or that its reported
+content is objectively true. Treating every denial of authority as an epistemic qualifier
+would merge independent facts and undermine strict atomicity. The initial overmerged
+editorial inventory is corrected; historical run snapshots and Source bytes are retained.
+One reported, explicitly unverified possibility remains a complete qualified proposition
+under the user's positive example. No production code, per-case rule or authorization
+change follows from this annotation resolution. Models and hearsay never grant actual
+application permissions; only authenticated Principal and core policy do so.

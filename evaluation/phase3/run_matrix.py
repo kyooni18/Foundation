@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import threading
 
 
 def main():
@@ -48,7 +49,11 @@ def main():
                     git_commit=subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip())
     (args.output / "manifest.json").write_text(json.dumps(manifest, default=str, indent=2))
 
+    stopped = threading.Event()
+
     def run(task):
+        if stopped.is_set():
+            return None
         part, variant, corpus = task
         stem = args.output / f"{part}-{variant}"
         cmd = [str(executable), "--corpus", str(corpus), "--output", str(stem) + ".jsonl",
@@ -63,13 +68,19 @@ def main():
             cmd += ["--review-max-output-tokens", str(args.review_max_output_tokens)]
         with open(str(stem) + ".log", "x") as log:
             status = subprocess.run(cmd, stdout=log, stderr=log, env=os.environ).returncode
+        if status != 0:
+            stopped.set()
         print(f"completed shard={part} variant={variant} exit={status}", flush=True)
         return status
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
         statuses = list(pool.map(run, tasks))
-    if any(statuses):
-        raise SystemExit("Incomplete experiment; inspect shard logs")
+    manifest.update(status="incomplete", succeeded_shards=statuses.count(0),
+                    failed_shards=sum(s is not None and s != 0 for s in statuses),
+                    skipped_shards=statuses.count(None))
+    (args.output / "manifest.json").write_text(json.dumps(manifest, default=str, indent=2))
+    if any(s is None or s != 0 for s in statuses):
+        raise SystemExit("Incomplete experiment; inspect retained shard logs")
     rows = [json.loads(line) for path in sorted(args.output.glob("*.jsonl"))
             for line in path.read_text().splitlines()]
     if sum(row.get("terminal", True) for row in rows) != manifest["expected_rows"]:
@@ -77,6 +88,8 @@ def main():
     with (args.output / "results.jsonl").open("x") as output:
         for row in rows:
             output.write(json.dumps(row, ensure_ascii=False) + "\n")
+    manifest["status"] = "complete"
+    (args.output / "manifest.json").write_text(json.dumps(manifest, default=str, indent=2))
     print(f"Saved {len(rows)} results; semantic adjudication still required", flush=True)
 
 

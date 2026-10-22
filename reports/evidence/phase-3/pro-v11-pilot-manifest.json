@@ -1,0 +1,19 @@
+{
+  "corpus": "/tmp/phase3-v11-pilot-corpus.json",
+  "output": "/tmp/phase3-pro-v11-pilot",
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "prompt_version": "extraction-v11",
+  "max_output_tokens": 16384,
+  "review_max_output_tokens": 8192,
+  "split": "dev",
+  "runs": 2,
+  "repair_attempts": 3,
+  "workers": 6,
+  "shard_size": 1,
+  "variants": "audited",
+  "expected_rows": 40,
+  "git_commit": "3edf6a3d306feace82ecb1331b8e0a95c8b5e0d7",
+  "funding_status": "HTTP 402 / account credit depleted; no further model calls launched",
+  "semantic_acceptance": false
+}

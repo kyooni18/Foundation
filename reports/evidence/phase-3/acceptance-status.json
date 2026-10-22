@@ -1,0 +1,16 @@
+{
+  "status": "not accepted; no completion tag",
+  "provider_key": "valid; credential content excluded",
+  "provider_failure": "HTTP 402; account credits depleted, not a configured per-key cap",
+  "further_model_calls": "stopped pending replenishment and an explicit additional evaluation budget",
+  "fresh_extraction_heldout": "evaluation/phase3/heldout-v10.json reserved; not run",
+  "independent_korean_review": "two concrete questions pending; no human answers fabricated",
+  "implementation_commit": "3edf6a3",
+  "completed_offline_commands": [
+    "cargo fmt --check",
+    "cargo test --offline --all-targets",
+    "cargo clippy --offline --all-targets -- -D warnings"
+  ],
+  "offline_top_level_passed": 40,
+  "live_worker_http_mcp_v11": "passed on two synthetic reported Claims; no semantic corpus-wide acceptance inference"
+}

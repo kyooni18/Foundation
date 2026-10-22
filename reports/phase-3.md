@@ -1,9 +1,14 @@
-# Phase 3 — implementation checkpoint; live semantic evaluation in progress
+# Phase 3 — implementation checkpoint; semantic acceptance blocked
 
-Status: **not accepted; no `phase-3` tag**. Provider access was restored on
-2026-10-23 using the existing OpenRouter credential identified by the user. The
-credential is never included in evidence. Live evaluations are now in progress;
-the earlier missing-credential result below is historical, not a current blocker.
+Status: **not accepted; no `phase-3` tag**. The implementation and offline regression
+suite are complete as a reviewable checkpoint. Real OpenRouter experiments were run
+and prompts revised through v11. Provider access is currently blocked by HTTP 402
+(account credits exhausted; the key is valid and has no configured per-key cap).
+Further model calls have stopped pending replenishment and an additional evaluation
+budget. Only cheap models were used after the user requested that restriction.
+The fresh 20-source extraction benchmark has not been run; independent Korean review
+is also pending. Neither fake-provider tests nor reviewer agreement establishes
+semantic acceptance. The historical experiments below remain reproducible evidence.
 
 The first live pilot completed 36 extractions (12 development cases × 3 variants)
 with `anthropic/claude-sonnet-5.5` and independent reviews by
@@ -12,7 +17,7 @@ with `anthropic/claude-sonnet-5.5` and independent reviews by
 in `negation-diagnostic.json`: three review stages rejected a faithful negated
 conjunction, while a separate diagnostic request to the same reviewer called it
 faithful. This is evidence of inconsistent judgment, not proof from model agreement.
-The broader repeated development matrix and revised prompts are still being audited.
+The broader repeated matrices and concrete failures are documented below.
 No numerical semantic acceptance claim is made from unfinished experiments.
 
 Consequently this report does not claim that the prompts meet semantic acceptance,
@@ -346,7 +351,7 @@ evidence for those later revisions. Concrete observed failures include:
 | Original requirement | Observed v6 audited output defect |
 |---|---|
 | `new-042`: tentative report explicitly unverified | Split report from lack of checking; both runs passed all model gates |
-| `new-047`: heard access allowed, no direct permission | Heard-permission Claim omitted the explicit lack of direct permission |
+| `new-047`: heard access allowed, no direct permission | Initial one-Claim reference was overmerged; separate hearsay and direct-access-permission status are acceptable (D-57) |
 | `long-007`: requeue rule with completed-work exception | Broad requeue Claim lost exception into a separate neighbor |
 | `long-007`: opinion about a described policy | “this policy” remained unresolved in the opinion Claim |
 | `new-043`: writing-time lack of current-system statement | “now” remained relative to the reader rather than the original statement |
@@ -524,3 +529,48 @@ rejection publishes no Claims while preserving the Source. Passing fake tests es
 orchestration only; the real v11 pilot remains a separate experiment. Reader calls share
 the existing worker-wide deadline, and total review bytes are bounded. Very large batches
 can still fail that explicit deadline rather than partially persist.
+
+
+### Reference correction: permission is not verification
+The draft `new-047` inventory initially merged “접근해도 된다고 들었지만 직접 허가를 받은 건
+아니다.” into one Claim. Review using the operational independence test distinguishes a
+reported hearing from the independent receipt of direct permission. Two Claims are
+acceptable when each keeps the original speaker and the access target, and the first
+remains hearsay rather than an asserted permission. Absence of a permission-grant act is
+not automatically an epistemic limitation on whether the hearing occurred. This differs
+from the user's explicitly unverified-hypothesis example. The source bytes and historical
+run/reference snapshots remain unchanged; only the editorial inventory is corrected.
+No source-specific production exception was added. A bare “permission was not received”
+still loses the known access scope and must not borrow it from a neighboring Claim.
+
+
+### Final v11 checkpoint and interrupted evaluation
+The 20-case, two-run v11 pilot produced 66 attempts: 29 automated gate passes, three
+atomicity failures, one fidelity failure, one timeout, and six quota terminations.
+The 116-case, two-run development/regression matrix produced 651 attempts before
+completion of its scheduled rows: 25 gate passes, one fidelity failure, and 206
+quota terminations. These are operational outcomes, not semantic accuracy rates.
+A terminal quota row does not mean its Source was evaluated. Raw outputs, frozen
+manifests and diagnostics are retained in `pro-v11-*.jsonl.gz` and adjacent files.
+
+The runner previously retried quota failures and continued scheduling later shards.
+It now saves the quota diagnostic, stops that shard immediately, stops dispatching
+pending shards after any failed child, and marks the matrix incomplete. Already
+running shards can finish and preserve their artifacts. No aggregate success file is
+created for an incomplete matrix. A deterministic Python regression verifies that
+one failed shard prevents the remaining queued work from launching. Production job
+retry/lease semantics are unchanged. No new paid calls were used for this regression.
+
+`live-http-mcp-v11-smoke.json` records the actual optional HTTP extraction worker,
+quarantine, exact-hash approval, idempotent publication, HTTP/MCP equivalence, explicit
+confirmation, retraction, Source forgetting and integrity checks on two synthetic
+reported Claims. The authenticated agent remained the recorder; neither Claim was
+visible in the user projection before confirmation. This validates integration and
+authorization, not corpus-wide semantic correctness.
+
+To finish acceptance: replenish access with a bounded additional evaluation budget;
+resume the interrupted development cases as a separate preserved experiment; audit
+concrete outputs and resolve outstanding Korean judgments; freeze the selected
+strategy; run the reserved fresh benchmark and repeated comparison; record metrics
+and any failures. If these checks expose a general defect, revise and regress before
+considering the completion tag. All historical evidence and prior Git tags remain.

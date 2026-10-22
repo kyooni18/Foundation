@@ -1,0 +1,310 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v11|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|en": {
+      "runs": 12,
+      "attempt_rows": 17,
+      "terminal_runs": 12,
+      "structural_valid": 17,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 11,
+      "reviewer_reported_issues": {
+        "atomicity": 1,
+        "reference": 6
+      },
+      "generated_claims": 29,
+      "recovered_after_retry": 3,
+      "terminal_gate_failures": 1,
+      "repeatability": {
+        "frame-attachment-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-043": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "frame-attachment-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-042": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    },
+    "extraction-v11|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|all": {
+      "runs": 40,
+      "attempt_rows": 66,
+      "terminal_runs": 40,
+      "structural_valid": 47,
+      "provider_failures": 18,
+      "extractor_provider_failures": 17,
+      "reviewer_provider_error_calls": {
+        "Quota": 18
+      },
+      "experimental_gate_passes": 29,
+      "reviewer_reported_issues": {
+        "atomicity": 21,
+        "reference": 15,
+        "coverage": 3,
+        "unsupported": 2,
+        "temporal": 6,
+        "attribution": 2,
+        "provider_or_schema_error": 18,
+        "ambiguity": 1
+      },
+      "generated_claims": 169,
+      "recovered_after_retry": 4,
+      "terminal_gate_failures": 11,
+      "repeatability": {
+        "frame-attachment-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "frame-attachment-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-043": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-038": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-047": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        },
+        "r1-ambiguous_ref": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-005": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 13,
+          "max_count": 13
+        },
+        "long-006": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 15,
+          "max_count": 15
+        },
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "frame-attachment-003": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "frame-attachment-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-001": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-004": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-042": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    },
+    "extraction-v11|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko": {
+      "runs": 24,
+      "attempt_rows": 41,
+      "terminal_runs": 24,
+      "structural_valid": 28,
+      "provider_failures": 13,
+      "extractor_provider_failures": 12,
+      "reviewer_provider_error_calls": {
+        "Quota": 18
+      },
+      "experimental_gate_passes": 16,
+      "reviewer_reported_issues": {
+        "reference": 9,
+        "coverage": 3,
+        "unsupported": 2,
+        "temporal": 6,
+        "atomicity": 20,
+        "attribution": 2,
+        "provider_or_schema_error": 18,
+        "ambiguity": 1
+      },
+      "generated_claims": 123,
+      "recovered_after_retry": 1,
+      "terminal_gate_failures": 8,
+      "repeatability": {
+        "frame-attachment-002": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "new-038": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "new-047": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 1,
+          "max_count": 2
+        },
+        "r1-ambiguous_ref": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "long-005": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 13,
+          "max_count": 13
+        },
+        "long-006": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 15,
+          "max_count": 15
+        },
+        "new-028": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 3,
+          "max_count": 3
+        },
+        "new-003": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "frame-attachment-004": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-002": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "scope-attachment-004": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v11|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|mixed": {
+      "runs": 4,
+      "attempt_rows": 8,
+      "terminal_runs": 4,
+      "structural_valid": 2,
+      "provider_failures": 5,
+      "extractor_provider_failures": 5,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {},
+      "generated_claims": 17,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 2,
+      "repeatability": {
+        "new-025": {
+          "runs": 2,
+          "distinct_text_sets": 2,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    }
+  }
+}

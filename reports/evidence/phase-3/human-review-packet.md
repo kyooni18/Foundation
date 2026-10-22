@@ -33,4 +33,3 @@ Case `r1-ambiguous_ref`, run 1, prompt `extraction-v10`.
 
 The second Claim uses quoted 걔 without naming the unknown referent in that text. Is that sufficiently self-contained under the explicit unknown-reference contract?
 Human assessment: pending.
-

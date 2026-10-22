@@ -1043,16 +1043,20 @@
     "authored_at": null,
     "reference": {
       "propositions": [
-        "화자는 직접 허가를 받지 않은 상태에서 접근해도 된다고 전해 들었다."
+        "원문 화자는 접근해도 된다고 전해 들었다.",
+        "원문 화자는 해당 접근에 대한 직접 허가를 받지 않았다."
       ],
       "required": [
-        "전언과 직접 허가 부재"
+        "retain hearsay rather than asserted access permission",
+        "retain separate direct-access-permission status with its access target",
+        "do not confuse a permission-grant event with epistemic verification"
       ],
       "unsupported": [
         "접근 권한 부여"
       ],
       "equivalence": "Accept paraphrases preserving every truth condition, attribution, modality and scope; references are semantic inventories, not string-match gold.",
-      "annotation_status": "draft; independent human adjudication pending"
+      "annotation_status": "draft; independent human adjudication pending",
+      "annotation_note": "Editorial resolution D-57: hearing a report and receiving direct permission are independent acts/statuses. This is not the same as a same-proposition unverified hypothesis. Source bytes unchanged; older run snapshots retain their original draft reference."
     }
   },
   {

@@ -1,128 +1,402 @@
 {
   "status": "implementation checkpoint; live semantic acceptance not established",
-  "implementation_commit": "65d35b1",
+  "implementation_commit": "3edf6a3",
   "offline_tests_passed": 40,
   "helper_tests": 2,
-  "provider_access": "working; existing OpenRouter credentials; cheap-model-only preference",
+  "provider_access": "HTTP 402; valid key, exhausted account credits; model calls stopped",
   "completion_tag_created": false,
-  "development_cases": 88,
+  "development_cases": 116,
   "heldout_cases": 20,
-  "final_evaluations": "running; v6 GPT6LunaPro/Haiku5.5 compared with adapted R2 baseline",
-  "annotation_status": "editorial draft inventories; provisional assistant audits are not independent human adjudication",
+  "final_evaluations": "v11 development quota-interrupted; fresh heldout-v10.json not run",
+  "annotation_status": "editorial draft inventories; assistant audits are not independent human adjudication",
   "artifacts": {
+    "acceptance-status.json": {
+      "sha256": "9963e0bc05923ae84df526916d89067375848266c065b300885c10d542b051b6"
+    },
+    "attachment-assistant-audit.jsonl": {
+      "sha256": "d1d6ad6fbf9857ebe28388d7162d56a2ed2104c323f97dade55cff3a28d13f0d"
+    },
+    "attachment-assistant-metrics.json": {
+      "sha256": "16ca025701ce4694a896be227bd41f6f1805233fb5267c1cbb7e100a998ac56e"
+    },
+    "attachment-v6.jsonl.gz": {
+      "sha256": "e4816219e279fee32d6d96a9356229eb5b16e48cfe00fbc18517bc19e2532a9c",
+      "rows": 11,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "attachment-v7.jsonl.gz": {
+      "sha256": "8194b3a1e7cceec241d22efed1e820a9a9d172cf57b546790327e6c846b98b76",
+      "rows": 8,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "attachment-v8.jsonl.gz": {
+      "sha256": "76e3d0b6b3cca6278a30c76ed6ba097f459a677cffc31e3a28238a29d3ae99bb",
+      "rows": 20,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "attachment-v9.jsonl.gz": {
+      "sha256": "315e85f4f2115655a7abba60a5972328898f0ca9a4e9e32cf83069e405d57560",
+      "rows": 20,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "build.txt": {
+      "sha256": "b58d4d52c9da463d71366a65d4a4dd458aed043f90eeca0825cf160e03dd63fb"
+    },
+    "cli-smoke.json": {
+      "sha256": "4aeae6c8d1d3c0542916c70a0d416ae7923bc390a5a3b558b3b010eeed1bc2b7"
+    },
+    "clippy.txt": {
+      "sha256": "11dd44ce39733396ae11578a79196c036ae68f05c7ced55e6b2b17baff4c4588"
+    },
+    "correction-after.txt": {
+      "sha256": "0ed6ed27196baf6a88e6d9c5c5474fd780163558d008e9c0fcd0fe53363ede40"
+    },
+    "correction-before.txt": {
+      "sha256": "4fc42cab3bc05a608f0a3444f658c7ea78d7279adf98ce4aa6514c063ded55dc"
+    },
+    "date-normalization-before.txt": {
+      "sha256": "5e8b6f4bfe9b84b41a587ff065b0da5a5cfd688e645da157706f732cdc8c7eb0"
+    },
+    "date-projection-after.txt": {
+      "sha256": "750259165b82a7c208c5c5f44264f6b8ca8fcaf73516996f505c48f57f049c3d"
+    },
+    "date-projection-before.txt": {
+      "sha256": "c68269dabffb2b508478066c6944959bf07663269acc0d6351855ba5311418a0"
+    },
     "dev-v1.jsonl.gz": {
       "sha256": "93e86fe65977057ccaa9439ecd98980461ac375871c9bb49b905b640d207f216",
-      "attempt_rows": 448,
-      "terminal_runs": 448,
-      "provider_error_rows": 0
+      "rows": 448,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "dev-v2.jsonl.gz": {
       "sha256": "fdbe8aed541b81026f057c075182b77bab49a31bcd573530d9def9e9a93cf91e",
-      "attempt_rows": 192,
-      "terminal_runs": 192,
-      "provider_error_rows": 0
+      "rows": 192,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "dev-v3-reservation-failed.jsonl.gz": {
       "sha256": "fdec3f24f26a85a2655c31104cbad28b183816aba05858bf1759bf6b05ae0927",
-      "attempt_rows": 216,
-      "terminal_runs": 216,
-      "provider_error_rows": 216
+      "rows": 216,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "english-request-error.json": {
+      "sha256": "ac8d7c84bdb2a1411cd5b96a024f60da6adc67b8cdae32cf5a6ba127e9aced5f"
     },
     "english-staged-pilot.jsonl.gz": {
       "sha256": "cd42174a673e0d980ce80105ba1e7911141e07b8e6029fc082e3555adb3f4f0d",
-      "attempt_rows": 2,
-      "terminal_runs": 2,
-      "provider_error_rows": 0
+      "rows": 2,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "english-staged-request-failed.jsonl.gz": {
       "sha256": "d14152e54e0fdb37b51438ee3df0bf9acca68f433e7a5970f9aa29c38a682b0c",
-      "attempt_rows": 72,
-      "terminal_runs": 72,
-      "provider_error_rows": 72
+      "rows": 72,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "fmt.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "human-review-packet.json": {
+      "sha256": "ac5df19d1f55ddad870c9e4e689c313536fec4a266c51fbdef1952cfb05e0e5a"
+    },
+    "human-review-packet.md": {
+      "sha256": "06185e037a75a7887e08d9837538525f14cd662add94819efdd7d55e74a56970"
+    },
+    "language-drift-v4.json": {
+      "sha256": "5a3622784e8736c508f65770b8d20773ad89a444d32c509cee223e494e7e522d"
+    },
+    "live-cli-smoke.json": {
+      "sha256": "d1526be4e8dc5eb04361e15a20905586ee5d48a5337a421668e00421082f314b"
+    },
+    "live-diagnostics.json": {
+      "sha256": "d3085b5db78e6d02805211a2b80d60b0d15b17e2fddaf815d67f91428dcf2b3b"
+    },
+    "live-http-mcp-v11-smoke.json": {
+      "sha256": "44a0004f301b9fafb59d45d04c32b58583554eeb92433fe1f2ae7e0ecbd0a922"
+    },
+    "live-http-mcp-v6-smoke.json": {
+      "sha256": "48d29acc45b32d00203447534d9549e59d17f18af4b7fde8b6bc9637230befb0"
+    },
+    "live-v1/negation-diagnostic.json": {
+      "sha256": "7020c0cf86b42fd166499f704ebc8adaa212b37372d5bb1b78f849a2ccd8a626"
+    },
+    "live-v1/pilot.jsonl": {
+      "sha256": "e039c1011dd1390cea832c7ecc4f4dd59bfc74a67244b765ba4377337a28cdd3"
     },
     "long-dev-v2.jsonl.gz": {
       "sha256": "c26148b93e8dfba190b72d37664429aa72918440dfe80128797beeecc007c3aa",
-      "attempt_rows": 32,
-      "terminal_runs": 32,
-      "provider_error_rows": 2
+      "rows": 32,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-dev-v1.jsonl.gz": {
       "sha256": "8b7d6845965ad38371c355ba16597b3a0e00c5d5e2acd5631ecda29d0e33333a",
-      "attempt_rows": 504,
-      "terminal_runs": 504,
-      "provider_error_rows": 0
+      "rows": 504,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "luna-dev-v3-revalidated.jsonl.gz": {
+      "sha256": "21bfab849fcd31702d7ae877af3825b4126dcd4e2ffc5bc6f6499310c97cb371",
+      "rows": 216,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-dev-v3.jsonl.gz": {
       "sha256": "076a51167ff5cae31c2d43725862803934c295891307012e8f11a65d8b56fed7",
-      "attempt_rows": 216,
-      "terminal_runs": 216,
-      "provider_error_rows": 0
+      "rows": 216,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "luna-dev-v4-repair-revalidated.jsonl.gz": {
+      "sha256": "db652eb3359dc72fb37b204b16d2706be938d5deb6e8a29de4c5558eac4cb115",
+      "rows": 219,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-dev-v4-repair.jsonl.gz": {
       "sha256": "01dbc6e548eaa09ac027653081125d1fcbc1ae9d120f73684ea203f5174d78ce",
-      "attempt_rows": 219,
-      "terminal_runs": 144,
-      "provider_error_rows": 0
+      "rows": 219,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-dev-v5-repair.jsonl.gz": {
       "sha256": "658f632cf8e290e9ddec922cdd9024c0185d3be5edc6389b4dc41b1ec996f5aa",
-      "attempt_rows": 119,
-      "terminal_runs": 80,
-      "provider_error_rows": 0
+      "rows": 119,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-english-staged-v3.jsonl.gz": {
       "sha256": "d45fc31d346bcc271e1c78ba0caf6c79f06c783a6577838274d8aceb80591cc9",
-      "attempt_rows": 72,
-      "terminal_runs": 72,
-      "provider_error_rows": 0
+      "rows": 72,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-legacy-r2.jsonl.gz": {
       "sha256": "e3b6badcafe25796f3162621c1d2e6a1b88acb3f5fbd000940ff96f170a60b05",
-      "attempt_rows": 96,
-      "terminal_runs": 96,
-      "provider_error_rows": 0
+      "rows": 96,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-legacy-v3.jsonl.gz": {
       "sha256": "ca830a6d55b216b7546c8c33c1c20685638beb6586db531904fbb3607c667697",
-      "attempt_rows": 96,
-      "terminal_runs": 96,
-      "provider_error_rows": 0
+      "rows": 96,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-legacy-v5.jsonl.gz": {
       "sha256": "14d209cbe7c90a6522242549e2e9a0f8311f50810174d73eb85d5a22023439e1",
-      "attempt_rows": 96,
-      "terminal_runs": 96,
-      "provider_error_rows": 0
+      "rows": 96,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-pilot.jsonl.gz": {
       "sha256": "1b082bfde7ba5b12665277062e9f97cb0b618b48346b79a1833b34f986b48e77",
-      "attempt_rows": 2,
-      "terminal_runs": 2,
-      "provider_error_rows": 0
+      "rows": 2,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-pro-v5-controls.jsonl.gz": {
       "sha256": "18a402339df3cf5876ec0b4cd95eb32a3b8ac0e307282d38f0c49e30d093ffa8",
-      "attempt_rows": 33,
-      "terminal_runs": 24,
-      "provider_error_rows": 0
+      "rows": 33,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-pro-v5-pragmatics.jsonl.gz": {
       "sha256": "b8b3e03ee90aa91c8740bb61a7f41c034eb11eb38701f51b2db5428022fa8d53",
-      "attempt_rows": 35,
-      "terminal_runs": 16,
-      "provider_error_rows": 0
+      "rows": 35,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "luna-pro-v6-calibration-revalidated.jsonl.gz": {
+      "sha256": "67b4abdaaf74d44bd917889f7914f4e084cf4bff6750a893137573512eb55089",
+      "rows": 54,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "luna-pro-v6-calibration.jsonl.gz": {
       "sha256": "ef0b5660874cd6d6f403d258b5758948f31e101d5fc6e5d8a4639a8ab9aed068",
-      "attempt_rows": 54,
-      "terminal_runs": 40,
-      "provider_error_rows": 0
+      "rows": 54,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "luna-v3-assistant-audit.jsonl": {
+      "sha256": "6e54e4d2b7acc1616dee40c590627e5c851860529fd81c5ecb61af946b095476"
+    },
+    "luna-v3-assistant-metrics.json": {
+      "sha256": "222f1e0e65d176e4a424a4699490204de7a3b93c987b7fb4954895131e7da26f"
+    },
+    "luna-v3-review.md": {
+      "sha256": "5bc3c461358e56fca41ab31d782cf68ec991bedb45f4b5d5acad4163f07f0eb5"
+    },
+    "manifest-initial.json": {
+      "sha256": "a61d0d63a96af3157062331c117130fd364560ab025d9922cc510aab46e3966e"
+    },
+    "model-catalog.json": {
+      "sha256": "31b0ab997e40ee92a4255d19b1f6eaede2d3ba90c6294ad10c32053fb42f3fff"
+    },
+    "negative-exception-counterexample.json": {
+      "sha256": "5c7b7333f60de1877676eeb0bd2437ec9e98d529de45fe9dfd00bf9d312037cc"
+    },
+    "pro-v10-development-diagnostics.json": {
+      "sha256": "90bdda4f34978013c62a8ca6189f695fb19874d50ff1d034021941b4a31dadf8"
+    },
+    "pro-v10-development.jsonl.gz": {
+      "sha256": "3b3014f66dec6c76e08f2218b79fb91e2bedb4028ed4c0278b325b0d3e6b647e",
+      "rows": 328,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "pro-v11-development-diagnostics.json": {
+      "sha256": "5282aefe1cba2794aeadf5720a38cfe21c70ee0afe41b296a30210b3f732dc89"
+    },
+    "pro-v11-development-quota-limited-manifest.json": {
+      "sha256": "4f24408ca3a468457983f6ce294253015ca8a1a1ff06e7615ba3c0ab71edbb55"
+    },
+    "pro-v11-development-quota-limited.jsonl.gz": {
+      "sha256": "1461376d6c1bf82967238b13a5cb818b64ee6f0374f2e7f409f9d78f48f9e2b9",
+      "rows": 651,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "pro-v11-pilot-diagnostics.json": {
+      "sha256": "b8aed0d3979631702009e93418d9ca53fab85dad68ca87d04dc66811b917d7e1"
+    },
+    "pro-v11-pilot-manifest.json": {
+      "sha256": "4b8a571750bba3c22b0eae1f92f8535684b43bcfa9da088e0cdf7c07534f6746"
+    },
+    "pro-v11-pilot.jsonl.gz": {
+      "sha256": "a8d69d79f37dcfe07eb809d9c6d341a3b8633a6ed3ad3c8eeb5a645f4be2d3e7",
+      "rows": 66,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "pro-v6-development-diagnostics.json": {
+      "sha256": "209af1a595dc7721c05dca9add32c980e36d75fdb6c0a48500122c2dce66857b"
+    },
+    "pro-v6-development.jsonl.gz": {
+      "sha256": "ccb558eab641386ea23e18d647926414d3af39d98bb4721a5921dff8962716f1",
+      "rows": 423,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "pro-v6-heldout-diagnostics.json": {
+      "sha256": "612d0796d13d0b422c09f3c7400875629129afeb59287d538bfb10c81de39a7a"
+    },
+    "pro-v6-heldout.jsonl.gz": {
+      "sha256": "11a5fe65b62125659cfec2872ea167e64e46fec4ec8ad4f0c62d914db719aab1",
+      "rows": 118,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "provider-attempt.txt": {
+      "sha256": "0b35175f470b23f7e65ebbca093e7e9dca079c16b29088b9752ef77aab7a0c60"
+    },
+    "provider-reservation-error.json": {
+      "sha256": "5d07040bea625b7bf174662a44a948cab34d06aa1e86279fca3341e9519b80f9"
+    },
+    "review-budget-4096.jsonl.gz": {
+      "sha256": "b5983ce8d654641ca93d8e9b071d07b1129df1980403b75264ee8f76c77b9555",
+      "rows": 6,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "review-budget-8192.jsonl.gz": {
+      "sha256": "53b7c4852f9110bb4742582975ed36e1931b2154b26b580be94fa213a341cb2f",
+      "rows": 6,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     },
     "review-controls.jsonl.gz": {
       "sha256": "d9b0ec908fd4a746780c4610ed4b464337fc731c5bd5c9532fd248627529ae53",
-      "attempt_rows": 144,
-      "terminal_runs": 144,
-      "provider_error_rows": 0
+      "rows": 144,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "review-reference-v1-haiku.jsonl.gz": {
+      "sha256": "c103950f675a9fdd991f6c35a48447fc6d51987063549af7a46b19a657bf2e9a",
+      "rows": 24,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "review-reference-v1-pro.jsonl.gz": {
+      "sha256": "c45f7a3167a5ef3525d605663d497cedb6a981a9fbfbf75fdddd4a5c4b2a1637",
+      "rows": 24,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "review-reference-v1-qwen.jsonl.gz": {
+      "sha256": "dd0265f4aa04a6ff491121a1b2a67f5049d5180399022e2da1cafe6195e27218",
+      "rows": 24,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "review-scope-v8-haiku.jsonl.gz": {
+      "sha256": "0500b79fc2976e3ca0d70209a43b23e043318d690405e9b40028be18b2b9fdca",
+      "rows": 48,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "review-scope-v8-pro.jsonl.gz": {
+      "sha256": "b14cd821bfa1d10b9bece25580f59cdd92213fd0c1a1643dff20a2325cbfd6fb",
+      "rows": 48,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "review-scope-v8-qwen.jsonl.gz": {
+      "sha256": "5e084493b11586a9eb55c216b9ddf89766c34662b316cac5c03e9bc468c81e05",
+      "rows": 48,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "review-scope-v9-haiku.jsonl.gz": {
+      "sha256": "2801a9c81ce9708055eba26cda12f8f64f05b59dbab1d59b0439ac8a8272a96f",
+      "rows": 48,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "review-scope-v9-pro.jsonl.gz": {
+      "sha256": "a114a75b2b376b65e67171cd95439f95a7d20069d569f08869ff22c335869be8",
+      "rows": 48,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "scope-assistant-audit.jsonl": {
+      "sha256": "5c69c18becec690ef8e495f0d8956bc45bc7480aceb6203e66b5c90f3f27a058"
+    },
+    "scope-assistant-metrics.json": {
+      "sha256": "30a0bed125356829d42ac9e00bfdbaa2612a23c141b4c2d5d6e5551acabf05cf"
+    },
+    "scope-v6.jsonl.gz": {
+      "sha256": "057380cb66a2f1822572af8431df26035f1ac23c05809befcf974b1afd1426e1",
+      "rows": 12,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "standalone-heldout-v1-diagnostics.json": {
+      "sha256": "6a52e5baaa468f91a0cd8612dd841c09a47e9695342778ab981d2c0c60ba3319"
+    },
+    "standalone-heldout-v1-haiku.jsonl.gz": {
+      "sha256": "ab3863db0d6cb00aa270b9e5a851715497e40c976b2b10a7f9302030127f014f",
+      "rows": 32,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "standalone-heldout-v1-pro.jsonl.gz": {
+      "sha256": "0aebca0a1f6847246da87b0f72cbf921ccab0a7d3ce70e4c2a6a150d5202cfda",
+      "rows": 32,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "standalone-heldout-v1-qwen.jsonl.gz": {
+      "sha256": "8cd7dbc414c8765e892873f8c39bcefc09236288cfb624499d42e5d549f33da0",
+      "rows": 32,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "standalone-v1-diagnostics.json": {
+      "sha256": "683bf480a95243fa0539af46330e45fb3b334d2297a04bd9546c673e312936d8"
+    },
+    "standalone-v1-haiku.jsonl.gz": {
+      "sha256": "f671194478951cca325f1ac01aa8a2509ced10e86e2aad1ae828bf9cacfd0e2f",
+      "rows": 44,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "standalone-v1-pro.jsonl.gz": {
+      "sha256": "e8e3ba38f52c67cd2edf2eb2bc52e1f040191b7bc7d42ded8d742b32d9c29e68",
+      "rows": 44,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "standalone-v1-qwen.jsonl.gz": {
+      "sha256": "77d683cc1a8de3ce6b9eaaf39c0f9fa56df4faecf6f3ea7ec961655bd289dac3",
+      "rows": 44,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "tests.txt": {
+      "sha256": "0c89f8cc022b4d8a3397d25e8eb6a7c2b33fda0bf648dfebef70a26071da6a3f"
+    },
+    "v10-development-corpus.json.gz": {
+      "sha256": "2c07e296139ea54ebd513262d0561b0269eaddd6c0cf2f85b767dded34b56e5c"
+    },
+    "v10-reference-example.json": {
+      "sha256": "65876719c0e49ef0ccd7857a8dff61d6de61f21fcdd13001f5391138801176b3"
+    },
+    "v4-retrospective-diagnostics.json": {
+      "sha256": "4ed56ef0ab65e465fde2fb24f1d7fcdb668990dc06c181210a91871a4d77f437"
+    },
+    "v6-calibration-diagnostics.json": {
+      "sha256": "43cb98ea4edce0d36b73087a8f186d07b4953df5a5650049a52cca0d33842cd1"
+    },
+    "v8-exposed-regressions.jsonl.gz": {
+      "sha256": "0b503e8bd426769d92f800e941b21d5b153c8fb87a9c400e711282fc795c4be2",
+      "rows": 21,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+    },
+    "v9-exposed-regressions.jsonl.gz": {
+      "sha256": "909e994789aa6d0c03324b1c2ca60a0b33bcb1cac321ee0d5080dc0a5284d002",
+      "rows": 17,
+      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
     }
   },
   "prompt_files": {
@@ -131,6 +405,17 @@
     "prompts/extraction-v1/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
     "prompts/extraction-v1/review.txt": "846f929f77aeff8c9100d8bf88b34efdb5aaafa58648ab3fee64b98e286b3677",
     "prompts/extraction-v1/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v10/contract.txt": "afd31d8ad379963885b1c23f89da993900a625240b31b744c67b6965d81d03ff",
+    "prompts/extraction-v10/frames.txt": "6de703a13fa3056435716761892ca8b3176d738a8ef323317c63c96244264d21",
+    "prompts/extraction-v10/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v10/review.txt": "60d4f510a2101a64cbfa97e0e71c7ac8a4fa2a762e35b578f1bccee35fde598f",
+    "prompts/extraction-v10/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v11/contract.txt": "afd31d8ad379963885b1c23f89da993900a625240b31b744c67b6965d81d03ff",
+    "prompts/extraction-v11/frames.txt": "672fa82afc98167688ea6b960f53546f27f5df5e0f9738eff8fd3b9c043ec82e",
+    "prompts/extraction-v11/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v11/reader.txt": "689b45cf5985963c1d8d2cad8009a12a573a936826c965b2e38c0e7c8d17f1d7",
+    "prompts/extraction-v11/review.txt": "60d4f510a2101a64cbfa97e0e71c7ac8a4fa2a762e35b578f1bccee35fde598f",
+    "prompts/extraction-v11/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
     "prompts/extraction-v2/contract.txt": "117e46250bef4d591d860dd3bbe061862e3c003c6698e7058da09b5443faa2b9",
     "prompts/extraction-v2/frames.txt": "2e9c1b4707a3a674fdf61593ef0de82f63d97433c53ee07d4271146e09555b7e",
     "prompts/extraction-v2/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
@@ -155,24 +440,52 @@
     "prompts/extraction-v6/frames.txt": "06f28c29baaad7c178c554bba98f05ad33c288d00576ea5b1cbfeac2d6dc377c",
     "prompts/extraction-v6/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
     "prompts/extraction-v6/review.txt": "4bb9afd7ebec8cec351af3d3490046531836117896621fe27ffb075265fdb60e",
-    "prompts/extraction-v6/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62"
+    "prompts/extraction-v6/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v7/contract.txt": "afd31d8ad379963885b1c23f89da993900a625240b31b744c67b6965d81d03ff",
+    "prompts/extraction-v7/frames.txt": "9f4e9f5cbb7f9631fbcda89f6f1c7220881ce0360991ed07bf3e1d93c3585f4f",
+    "prompts/extraction-v7/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v7/review.txt": "1fee43ab6f69e21a6d2db6ad56366b60c235363d12a19fb2ea0462e392db5b5d",
+    "prompts/extraction-v7/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v8/contract.txt": "afd31d8ad379963885b1c23f89da993900a625240b31b744c67b6965d81d03ff",
+    "prompts/extraction-v8/frames.txt": "9a6d71a6619f850d4b443fb41710d6f2f245648b7594b93c16d5ac4d31ffbee8",
+    "prompts/extraction-v8/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v8/review.txt": "b402d34f63c079cfe52a47e3a5ab72a27b3b443f463a628f4e3bc26e29737801",
+    "prompts/extraction-v8/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62",
+    "prompts/extraction-v9/contract.txt": "afd31d8ad379963885b1c23f89da993900a625240b31b744c67b6965d81d03ff",
+    "prompts/extraction-v9/frames.txt": "6de703a13fa3056435716761892ca8b3176d738a8ef323317c63c96244264d21",
+    "prompts/extraction-v9/r2-frame.txt": "86a18fd88d902374f8eedc9a1bce0da2c4e0dad14a1cdd9b587f0c61d1842957",
+    "prompts/extraction-v9/review.txt": "8db11f2b4722c787bfa96f7ad30c8a0cd191e549137833cd9ccbf0ed0cc345dd",
+    "prompts/extraction-v9/variants.json": "713d74e607b31bf8a8997933b1ec9c3e0d358e1b77a7f76e5591eb1ea727da62"
   },
   "datasets": {
     "evaluation/phase3/curated.json": {
-      "cases": 48,
-      "sha256": "72d4c3eeda587395f9c9372e2d96fccaa2c130bd91d53a44dd2de7727d243e3a"
+      "sha256": "62500aac1f9af4561e7e931bb654eae2c73522ac886822a5e2402faa624dca68",
+      "cases": 48
     },
     "evaluation/phase3/legacy.json": {
-      "cases": 48,
-      "sha256": "698ef81b35268d6b84f1b20a0e649679f1f8f7b6feadbbce0c000e6c6b0cb612"
+      "sha256": "698ef81b35268d6b84f1b20a0e649679f1f8f7b6feadbbce0c000e6c6b0cb612",
+      "cases": 48
     },
     "evaluation/phase3/long-form.json": {
-      "cases": 8,
-      "sha256": "8b21dbf59074058b1c5ea4be618c2f6c9b6c6e4b19e8cd26697ba455aa81a845"
+      "sha256": "8b21dbf59074058b1c5ea4be618c2f6c9b6c6e4b19e8cd26697ba455aa81a845",
+      "cases": 8
     },
     "evaluation/phase3/temporal-calendar.json": {
-      "cases": 4,
-      "sha256": "97670e01a7ae15ae37a87a187c8278a10a35fa9d88ea36fe9e8c8aea2b1093c7"
+      "sha256": "97670e01a7ae15ae37a87a187c8278a10a35fa9d88ea36fe9e8c8aea2b1093c7",
+      "cases": 4
+    },
+    "evaluation/phase3/epistemic-attachment.json": {
+      "sha256": "e0955ef4f5952772aab4cb2826104ba9376da6769632e842a6961511fb5c56e4",
+      "cases": 4
+    },
+    "evaluation/phase3/scope-attachment.json": {
+      "sha256": "ad58c06412e6cf05a1b6572bc7d55c4311b693a3f2625ff44454124558fc1431",
+      "cases": 4
+    },
+    "evaluation/phase3/heldout-v10.json": {
+      "sha256": "8d67aa2e41d564e1819e003de671879b349e8dc7c7796cdb77b196436e52b01d",
+      "cases": 20
     }
-  }
+  },
+  "working_tree_additions": "quota fail-fast harness, reference correction and final evidence; see following Git checkpoint"
 }
