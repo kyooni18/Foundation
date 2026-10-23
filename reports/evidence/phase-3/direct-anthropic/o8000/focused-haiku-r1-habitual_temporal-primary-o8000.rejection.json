@@ -1,0 +1,1 @@
+{"anchoring":[{"anchored":[0,19],"index":0,"kind":"claim","model":[0,13],"quote":"요즘 매일 아침 6시에 일어나는 중"},{"anchored":[0,19],"index":0,"kind":"inventory","model":[0,13],"quote":"요즘 매일 아침 6시에 일어나는 중"}],"failed_check":"assert not judgment['uncertainty_flags']","model_verdict":"pass","production_approval":false,"semantic_acceptance":null,"status":"protocol_invalid"}

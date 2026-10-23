@@ -166,6 +166,19 @@ class DirectClaudeTest(unittest.TestCase):
         self.dispatcher().dispatch(self.packet)
         self.assertEqual(len(list((self.root/'evidence').glob('*.anchoring.json'))),1)
 
+    def test_pass_verdict_with_uncertainty_is_recorded_not_coerced(self):
+        self.judgment['verdict']='pass'
+        for c in self.judgment['claims']:
+            c['checks']={k:dict(status='pass',reason='synthetic') for k in g.focused.CHECKS}
+        for r in self.judgment['inventory']:
+            r.update(status='pass',claim_indices=[0])
+        self.response['content'][0]['text']=json.dumps(self.judgment,ensure_ascii=False)
+        with self.assertRaisesRegex(ValueError,'protocol-invalid'):
+            self.dispatcher().dispatch(self.packet)
+        rejection=json.loads(next((self.root/'evidence').glob('*.rejection.json')).read_text())
+        self.assertEqual((rejection['model_verdict'],rejection['semantic_acceptance']),('pass',None))
+        self.assertFalse(list((self.root/'evidence').glob('*.judgment.json')))
+
     def test_long_prompt_tier_and_us_inference_are_not_underpriced(self):
         small=a.conservative_usage(dict(usage=dict(input_tokens=100000,output_tokens=0)))
         large=a.conservative_usage(dict(usage=dict(input_tokens=100001,output_tokens=0)))

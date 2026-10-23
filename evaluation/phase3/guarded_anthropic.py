@@ -15,6 +15,7 @@ from decimal import Decimal
 import json
 import os
 from pathlib import Path
+import traceback
 import urllib.request
 
 import focused_review as focused
@@ -151,7 +152,8 @@ def anchor_evidence(judgment, source):
         for e in evidence:
             q = e.get('quote')
             if (not isinstance(q, str) or not q or type(e.get('start')) is not int or
-                    type(e.get('end')) is not int or source[e['start']:e['end']] == q):
+                    type(e.get('end')) is not int or
+                    (0 <= e['start'] < e['end'] <= len(source) and source[e['start']:e['end']] == q)):
                 continue
             position = source.find(q)
             if position >= 0 and source.find(q, position + 1) < 0:
@@ -237,7 +239,17 @@ class Dispatcher(existing.Dispatcher):
         judgment = focused.parse_judgment(next(block['text'] for block in blocks
                                                 if block.get('type') == 'text'))
         judgment, anchoring = anchor_evidence(judgment, packet['case']['source'])
-        focused.validate_judgment(judgment,packet)
+        try:
+            focused.validate_judgment(judgment,packet)
+        except (AssertionError, KeyError, TypeError) as error:
+            # Never coerce an inconsistent verdict (e.g. pass with uncertainty flags).
+            failed = traceback.extract_tb(error.__traceback__)[-1].line
+            existing.immutable(self.evidence / (ident + '.rejection.json'),
+                               dict(status='protocol_invalid', failed_check=failed,
+                                    model_verdict=judgment.get('verdict') if isinstance(judgment, dict) else None,
+                                    anchoring=anchoring, semantic_acceptance=None,
+                                    production_approval=False))
+            raise ValueError('protocol-invalid judgment: ' + str(failed)) from error
         if anchoring:
             existing.immutable(self.evidence / (ident + '.anchoring.json'), anchoring)
         existing.immutable(self.evidence / (ident + '.judgment.json'), judgment)
