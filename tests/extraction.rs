@@ -139,6 +139,7 @@ async fn agent_metadata_never_promotes_and_confirmations_are_user_only() {
     let spoofed = output(vec![candidate("사용자는 Rust를 선호한다.")]);
     assert!(validate(&spoofed, &source).is_err());
     assert!(app.work_once(&fake(&spoofed, 1), &plan()).await.is_err());
+    assert_eq!(row(&app)["failure"], "unresolved");
     assert!(app.list_claims(&agent).unwrap().is_empty());
     rusqlite::Connection::open(_dir.path().join("db"))
         .unwrap()

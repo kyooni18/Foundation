@@ -948,7 +948,7 @@ impl App {
                         "anchor" => "anchor",
                         "language" => "language",
                         "schema" | "timestamp" => "schema",
-                        "semantic" | "unresolved" => "unresolved",
+                        "semantic" | "unresolved" | "provenance" => "unresolved",
                         "atomicity" => "atomicity",
                         "fidelity" => "fidelity",
                         "coverage" => "coverage",
