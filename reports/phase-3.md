@@ -701,3 +701,20 @@ For v16, all 16 untouched cases are retained and four new Korean editorial cases
 a 20-source held-out set. Selection is based on exposure, not favorable results. This
 set is not independently human-blinded. Its sources, references and origin annotations
 are saved separately in `evaluation/phase3/heldout-v16.json`.
+
+V16's eight paired controls, repeated twice, completed with 14 gate passes and two
+exhausted atomicity/isolation failures. Both Min-su routine outputs now bind 요즘 to
+Min-su's own utterance; the dated speech controls preserve statement/directive ambiguity.
+One faithful habitual self-report still exhausted retries on standalone reference
+false positives. Another rejected batch weakened -대 hearsay to generic narrator
+reporting; rejection prevented publication, but the semantic weakness still warrants a
+prompt correction. V17 adds explicit hearsay contrasts and a reader clarification for
+internally bound original-speaker/time frames. Its 42 paired reader controls repeated
+twice produced 46 correct passes and 38 correct rejections, with no errors in that
+calibration set. These figures measure editorial controls, not natural-source fidelity.
+
+An attempted v16 launch before the rebuilt example was ready failed immediately with
+unknown prompt version and made no provider calls. The subsequent built run above is
+separate. Offline v16 validation passed all 40 Rust tests, three Python tests, formatting
+and clippy. No compile-time test count was increased. Account usage increase before
+v17 continuation was $2.97002132, leaving a guarded $1.979978 plus the $0.05 margin.

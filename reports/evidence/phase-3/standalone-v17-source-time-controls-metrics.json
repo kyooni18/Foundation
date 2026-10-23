@@ -1,0 +1,8 @@
+{
+  "rows": 84,
+  "confusion": {
+    "TP": 38,
+    "TN": 46
+  },
+  "scope": "editorial paired calibration; overlaps instructions; not held-out or human acceptance"
+}

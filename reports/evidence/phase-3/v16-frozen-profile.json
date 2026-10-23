@@ -1,0 +1,12 @@
+{
+  "implementation_commit": "4827991e412367a418c1d3e95909a4aab0fc9df6",
+  "files": {
+    "src/extraction/mod.rs": "37cf7e237df738b0c1d7c4c823b8506dd79a04d1e9350a80d832eb4cd545be12",
+    "examples/evaluate_extraction.rs": "0a063efcfa25d59f03cdcb2a575cada72258e8c7d7601a4011b2ada96e7eebd5",
+    "prompts/extraction-v16/frames.txt": "3c514ed59ef9e70a2a7c0b20f54c3ecc1638cef81d50c5a9231eb521b04e3ed6",
+    "prompts/extraction-v16/review.txt": "3eb144335ca35535913d0ba06feebd49c18b4daeb057fa761cbf8f9d5ac7adb9",
+    "prompts/extraction-v14/reader.txt": "a5e057823df954786fa2d6332c2e3fd9d95daf3f0ddec94a9c97af7ef055f15d",
+    "target/debug/examples/evaluate_extraction": "28683d68fcad772495a60e49b8e2bb65cd973dd60e03633c5491292171a2a30d"
+  },
+  "note": "Frozen v16 evaluator and prompt components before live controls. Shared v12 contract and v14 reader are intentional."
+}

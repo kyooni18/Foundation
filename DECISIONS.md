@@ -486,3 +486,25 @@ frame. This clarifies existing temporal fidelity rather than changing timestamp 
 or allowing capture-time substitution. Prior v15 outputs remain archived as known
 reviewer misses. The v15 reserved benchmark began before this discovery; any exposed
 cases cannot subsequently serve as untouched held-out evidence for v16.
+
+### D-65 — Correct editorial references when source grammar does not justify them
+The quoted-time controls used bare “내일 출발해” inside speech. Their draft reference
+assumed a first-person departure plan, but the Korean ending also permits a directive.
+A v16 output correctly retained unresolved speech-act interpretation while resolving
+내일 from the explicitly dated inner utterance. The reference now allows that ambiguity
+and does not require invented speaker departure intent. Source bytes and model outputs
+are unchanged; prior annotations remain in Git. This is a reference correction justified
+by Korean grammar, not a relaxation of fidelity or an exact-output exception.
+
+### D-66 — Calibrate bound source-time reading and preserve Korean hearsay layers
+V16 exhausted one faithful habitual self-report after standalone “reference” rejections,
+although its actor and relative time were explicitly bound to the original speaker's
+statement. V17's reader distinguishes that internal binding from unframed first-person
+or third-party references. Across 42 editorial controls repeated twice, it returned
+all expected passes/rejections; these overlapping calibration controls are not held-out
+semantic acceptance. Source-aware reviewers still check the actual temporal viewpoint.
+The named-person -대 control also exposed a candidate reducing hearsay to a generic
+narrator report. That batch failed another gate and remained unpublished. V17 explicitly
+preserves the further hearsay layer without inventing an informant or adding hearsay
+to plain assertions. This is a general morphology/frame rule, not a fixture-specific
+exception. Source bytes, authoritative authorship and strict schema checks are unchanged.

@@ -78,7 +78,7 @@ def main():
             prompt = (review_folder / "review.txt").read_text() + "\n" + (folder / "frames.txt").read_text() + f"\nIndependent review responsibility: {stage}. Compare against original, never a translation."
             source = {k: control[k] for k in ["original_source", "candidate_batch"]}
             source["authored_at"] = control.get("authored_at")
-            if version in {"extraction-v10", "extraction-v11", "extraction-v12", "extraction-v13", "extraction-v14", "extraction-v15", "extraction-v16"}:
+            if version in {"extraction-v10", "extraction-v11", "extraction-v12", "extraction-v13", "extraction-v14", "extraction-v15", "extraction-v16", "extraction-v17"}:
                 source["candidate_count"] = len(source["candidate_batch"]["claims"])
                 source["required_checked_indices"] = list(range(source["candidate_count"]))
         payload = dict(model=args.model, temperature=0, max_tokens=args.max_output_tokens, response_format=dict(type="json_object"),
