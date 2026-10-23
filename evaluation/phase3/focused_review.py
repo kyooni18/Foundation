@@ -49,6 +49,20 @@ def evidence_valid(evidence, source):
         and source[e['start']:e['end']] == e.get('quote') for e in evidence)
 
 
+def parse_judgment(raw):
+    """Conflicting JSON members must not be collapsed into a convenient verdict."""
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('duplicate judgment member')
+            result[key] = value
+        return result
+    def invalid_constant(value):
+        raise ValueError('nonfinite judgment value')
+    return json.loads(raw, object_pairs_hook=unique, parse_constant=invalid_constant)
+
+
 def validate_judgment(judgment, packet):
     """Protocol validation only. A well-formed verdict is NOT semantic acceptance."""
     source = packet['case']['source']
@@ -66,6 +80,8 @@ def validate_judgment(judgment, packet):
         # not a way to turn an unmeasured core requirement into a passing verdict.
         for required in ('atomicity', 'entailment', 'unsupported_assertions'):
             assert checked['checks'][required]['status'] != 'not_applicable'
+        if packet['case'].get('language') in {'ko', 'mixed'} or claim.get('lang') == 'ko':
+            assert checked['checks']['korean_meaning']['status'] != 'not_applicable'
         assert isinstance(checked['uncertainty_flags'], list)
         for check in checked['checks'].values():
             assert check['status'] in STATUSES and check['reason'].strip()

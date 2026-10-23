@@ -206,3 +206,13 @@ class GuardedHaikuTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'budget blocked'):
             self.dispatcher().dispatch(g.packets()[1][1])
         self.assertEqual(len(self.calls), calls)
+
+    def test_duplicate_judgment_members_are_billed_but_never_admitted(self):
+        content = json.dumps(self.judgment)
+        self.response['choices'][0]['message']['content'] = '{"verdict":"pass",' + content[1:]
+        with self.assertRaisesRegex(ValueError, 'duplicate judgment member'):
+            self.dispatcher().dispatch(self.packet)
+        with self.connection() as conn:
+            self.assertEqual(conn.execute('SELECT actual FROM request').fetchone()[0], 1000000)
+        self.assertFalse(list((self.root / 'evidence').glob('*.judgment.json')))
+        self.assertEqual(len(list((self.root / 'evidence').glob('*.response.json'))), 1)

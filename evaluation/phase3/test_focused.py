@@ -6,7 +6,7 @@ import focused_review as focused
 
 class FocusedTest(unittest.TestCase):
     def fixture(self):
-        packet = {'case': {'source': '한글 source', 'reference': {'propositions': ['one']}},
+        packet = {'case': {'source': '한글 source', 'language': 'ko', 'reference': {'propositions': ['one']}},
                   'candidate': {'claims': [{'text': 'one'}]}}
         evidence = [{'start': 0, 'end': 2, 'quote': '한글'}]
         judgment = {'claims': [{'index': 0, 'text': 'one', 'evidence': evidence,
@@ -34,6 +34,7 @@ class FocusedTest(unittest.TestCase):
             lambda j: j['claims'][0]['checks']['atomicity'].update(status='unknown'),
             lambda j: j['claims'][0]['checks']['atomicity'].update(status='not_applicable'),
             lambda j: j['claims'][0]['checks']['entailment'].update(status='not_applicable'),
+            lambda j: j['claims'][0]['checks']['korean_meaning'].update(status='not_applicable'),
             lambda j: j['claims'][0]['checks']['atomicity'].update(status='fail'),
             lambda j: j['claims'][0]['checks']['atomicity'].update(status='unresolved'),
             lambda j: j.update(inventory=[]),

@@ -203,7 +203,7 @@ class Dispatcher:
                     ('focused-haiku-' + case + '-primary',)).fetchone(), 'primary not settled')
                 primary = self.evidence / ('focused-haiku-' + case + '-primary.judgment.json')
                 require(primary.is_file(), 'primary valid judgment unavailable')
-                focused.validate_judgment(json.loads(primary.read_text()), packet)
+                focused.validate_judgment(focused.parse_judgment(primary.read_text()), packet)
             catalog = self.transport('GET', '/models', None)
             endpoints = self.transport('GET', '/models/' + MODEL + '/endpoints', None)
             # Use the precise serialized message byte lengths, plus the quote envelope margin.
@@ -240,7 +240,7 @@ class Dispatcher:
             conn.commit()
             require(actual <= q['estimate'], 'price overrun; stop')
             require(response['choices'][0]['finish_reason'] == 'stop', 'incomplete judgment')
-            judgment = json.loads(response['choices'][0]['message']['content'])
+            judgment = focused.parse_judgment(response['choices'][0]['message']['content'])
             # Validator currently uses assertions; refuse optimized Python rather than bypass it.
             require(__debug__, 'optimized Python unsupported')
             focused.validate_judgment(judgment, packet)
@@ -249,7 +249,7 @@ class Dispatcher:
             if repeat:
                 primary = self.evidence / ('focused-haiku-' + case + '-primary.judgment.json')
                 require(primary.is_file(), 'primary valid judgment unavailable')
-                judgments.insert(0, json.loads(primary.read_text()))
+                judgments.insert(0, focused.parse_judgment(primary.read_text()))
             immutable(self.evidence / (request_id + '.comparison.json'),
                       reconcile(packet, judgments, historical_disagreement=case == 'r1-ambiguous_ref',
                                 editorial_contested=case in {'r1-ambiguous_ref', 'v23-fresh-003'}))
