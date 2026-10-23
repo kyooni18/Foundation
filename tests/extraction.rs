@@ -134,13 +134,19 @@ async fn agent_metadata_never_promotes_and_confirmations_are_user_only() {
     let agent = p(PrincipalKind::Agent);
     let mut record = RecordSource::plain("사용자는 Rust를 선호한다.");
     record.retention_request = RetentionRequest::UserRequested;
-    app.record_source(&agent, record).unwrap();
-    let ids = accept(
-        &app,
-        &output(vec![candidate("사용자는 Rust를 선호한다.")]),
-        1,
-    )
-    .await;
+    let source_id = app.record_source(&agent, record).unwrap().source_id;
+    let source = app.get_source(&agent, source_id).unwrap();
+    let spoofed = output(vec![candidate("사용자는 Rust를 선호한다.")]);
+    assert!(validate(&spoofed, &source).is_err());
+    assert!(app.work_once(&fake(&spoofed, 1), &plan()).await.is_err());
+    assert!(app.list_claims(&agent).unwrap().is_empty());
+    rusqlite::Connection::open(_dir.path().join("db"))
+        .unwrap()
+        .execute("UPDATE job SET run_after='2000-01-01T00:00:00.000Z'", [])
+        .unwrap();
+    let mut assertion = candidate("사용자는 Rust를 선호한다.");
+    assertion["speaker"] = json!("agent");
+    let ids = accept(&app, &output(vec![assertion]), 1).await;
     assert!(app.list_claims(&user()).unwrap().is_empty());
     assert_eq!(app.list_claims(&agent).unwrap().len(), 1);
     assert!(matches!(

@@ -11,7 +11,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 pub const VERSION: &str = "extraction-v1";
-pub const VALIDATION_VERSION: &str = "source-checks-v2";
+pub const VALIDATION_VERSION: &str = "source-checks-v3";
 const CONTRACT: &str = include_str!("../../prompts/extraction-v1/contract.txt");
 const FRAMES: &str = include_str!("../../prompts/extraction-v1/frames.txt");
 const REVIEW: &str = include_str!("../../prompts/extraction-v1/review.txt");
@@ -353,6 +353,14 @@ pub fn validate(raw: &str, source: &SourceView) -> Result<Batch> {
         }
         choice(&c.category, &["Fact", "View", "Intent", "Rule"])?;
         choice(&c.speaker, &["user", "agent", "external", "unknown"])?;
+        // Speaker labels cannot manufacture a user citation. Cross-source citation
+        // verification is not implemented in this phase, so defer these proposals.
+        if c.speaker == "user" && source.recorder != PrincipalKind::User {
+            return Err(invalid(
+                "provenance",
+                "user attribution requires a verified user source",
+            ));
+        }
         choice(
             &c.basis,
             &[

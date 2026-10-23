@@ -340,6 +340,7 @@ fn claim_transport_equivalence_and_projection_isolation() {
                 .unwrap();
             let mut value = json!({"claims":[{"text":"서버는 로컬에서 실행된다.","lang":"ko","category":"Fact","speaker":"user","speaker_label":"hidden metadata","basis":"verbatim","anchor":{"quote":"서버는 로컬에서 실행된다.","occurrence":0},"tkind":null,"applies_from":private_from,"applies_to":private_to,"standing":false,"index_fields":null,"revision_of":null,"mentions":[],"dependencies":[]}],"empty_reason":null});
             if kind == PrincipalKind::Agent {
+                value["claims"][0]["speaker"] = json!("agent");
                 value["claims"][0]["basis"] = json!("paraphrase");
                 value["claims"][0]["anchor"]["quote"] = json!(source_text);
             }
