@@ -1,5 +1,7 @@
 """Operational regression: exhausted shards must not dispatch the remaining matrix."""
 import concurrent.futures
+import contextlib
+import io
 import json
 import os
 from pathlib import Path
@@ -22,12 +24,16 @@ class RunnerTest(unittest.TestCase):
             argv = ['run_matrix', '--corpus', str(corpus), '--output', str(output),
                     '--model', 'fake', '--reviewer', 'fake', '--workers', '1',
                     '--shard-size', '1', '--variants', 'audited']
-            with patch.object(sys, 'argv', argv), \
+            diagnostic = io.StringIO()
+            with contextlib.redirect_stdout(diagnostic), \
+                    patch.object(sys, 'argv', argv), \
                     patch.object(run_matrix.subprocess, 'check_output', return_value='checkpoint'), \
                     patch.object(run_matrix.subprocess, 'run') as execute:
                 execute.return_value.returncode = 1
-                with self.assertRaises(SystemExit):
+                with self.assertRaisesRegex(SystemExit, 'Incomplete experiment'):
                     run_matrix.main()
+            # This is an intentionally injected offline failure, not an API run.
+            self.assertIn('variant=audited exit=1', diagnostic.getvalue())
             self.assertEqual(execute.call_count, 1)
             manifest = json.loads((output / 'manifest.json').read_text())
             self.assertEqual(manifest['status'], 'incomplete')

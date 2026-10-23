@@ -32,6 +32,8 @@ class FocusedTest(unittest.TestCase):
             lambda j: j['claims'][0].update(evidence=[{'start': 0, 'end': 6, 'quote': '한글'}]),
             lambda j: j['claims'][0]['checks'].pop('atomicity'),
             lambda j: j['claims'][0]['checks']['atomicity'].update(status='unknown'),
+            lambda j: j['claims'][0]['checks']['atomicity'].update(status='not_applicable'),
+            lambda j: j['claims'][0]['checks']['entailment'].update(status='not_applicable'),
             lambda j: j['claims'][0]['checks']['atomicity'].update(status='fail'),
             lambda j: j['claims'][0]['checks']['atomicity'].update(status='unresolved'),
             lambda j: j.update(inventory=[]),

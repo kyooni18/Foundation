@@ -61,6 +61,10 @@ def validate_judgment(judgment, packet):
         assert checked['text'] == claim['text']
         assert evidence_valid(checked['evidence'], source)
         assert set(checked['checks']) == set(CHECKS)
+        # Every nonempty Claim has atomicity and entailment obligations. N/A is
+        # not a way to turn an unmeasured core requirement into a passing verdict.
+        for required in ('atomicity', 'entailment', 'unsupported_assertions'):
+            assert checked['checks'][required]['status'] != 'not_applicable'
         assert isinstance(checked['uncertainty_flags'], list)
         for check in checked['checks'].values():
             assert check['status'] in STATUSES and check['reason'].strip()

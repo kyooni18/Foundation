@@ -1,0 +1,34 @@
+{
+  "ledger": ".local/openrouter-phase2-phase3.sqlite",
+  "access": "SQLite mode=ro, PRAGMA query_only=ON, read transaction rolled back",
+  "unit": "integer nano-USD",
+  "queries": {
+    "budget": "SELECT id, ceiling, prior FROM budget ORDER BY id",
+    "requests": "SELECT COUNT(*), COALESCE(SUM(actual),0), COALESCE(SUM(CASE WHEN actual IS NULL THEN estimate ELSE 0 END),0), COUNT(*) FILTER (WHERE actual IS NULL) FROM request"
+  },
+  "results": {
+    "budget": [
+      [
+        1,
+        4500000000,
+        4782653350
+      ]
+    ],
+    "requests": [
+      [
+        0,
+        0,
+        0,
+        0
+      ]
+    ]
+  },
+  "db_sha256_before": "36c1b1413343da0f15f62e9171360358898d8fd0d65dbcbc9f868c465d1af260",
+  "db_sha256_after": "36c1b1413343da0f15f62e9171360358898d8fd0d65dbcbc9f868c465d1af260",
+  "byte_unchanged": true,
+  "confirmed_new_paid_requests": 0,
+  "confirmed_new_paid_spend_nano_usd": 0,
+  "spendable_headroom_nano_usd": 0,
+  "absolute_ceiling_arithmetic_remainder_nano_usd": 217346650,
+  "authorization": "None permits spending. Explicit in-place revision of the existing $4.50 budget ceiling/policy is required; retain all prior accounting and request rows, do not change accounts/keys/ledgers. Maximum $0.10 continuation, strictly below $5 cumulative, conservative reservations and uncertain charges included. Any provider cap amendment also requires explicit authorization. Pricing-tier and reasoning-compatible adapter remains a separate prerequisite."
+}
