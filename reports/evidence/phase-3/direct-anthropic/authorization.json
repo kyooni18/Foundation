@@ -1,0 +1,8 @@
+{
+  "provider": "anthropic_direct",
+  "explicit_user_authorization": true,
+  "authorization_reference": "User's October 24, 2026 instruction in the current Prime Radiant conversation: Claude API use is permitted",
+  "additional_limit_nanos": 100000000,
+  "strict_total_below_nanos": 5000000000,
+  "approved_scope": "Use direct Claude API instead of OpenRouter only for the existing frozen Phase 3 Haiku semantic evaluation. Preserve the original ledger and cumulative spending below $5. No additional model extraction or scope expansion is implied."
+}

@@ -1,0 +1,1 @@
+{"new_model_judgment":false,"production_approval":false,"reason":"Single authorized test exhausted max_output_tokens; never accept truncated semantic review","retry_performed":false,"semantic_acceptance":null,"status":"incomplete","stop_reason":"max_tokens"}

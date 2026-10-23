@@ -1,0 +1,270 @@
+"""Direct Claude API evaluation of frozen v23 packets, with shared durable accounting.
+
+This is NOT an extraction worker or a publication/approval interface. There is no
+network action without --execute, a direct Claude API key, a recorded authorization,
+and a reservation in the existing Prime Radiant spending ledger.
+
+Anthropic Messages reports tokens, not billed USD. Ledger `actual` for these calls
+is deliberately a CONSERVATIVE UPPER BOUND derived from usage (not a billed amount).
+The exact bill remains unknown without the separate Anthropic Cost API. Sidecar
+receipts distinguish this from OpenRouter's reported actual cost.
+"""
+import argparse
+from datetime import date
+from decimal import Decimal
+import json
+import os
+from pathlib import Path
+import urllib.request
+
+import focused_review as focused
+import guarded_haiku as existing
+
+MODEL = 'claude-haiku-5-5'
+BASE = 'https://api.anthropic.com'
+VERSION = '2026-10-21'
+PRICE_CHECK_DATE = date(2026, 10, 24)
+# Source: https://platform.claude.com/docs/en/about-claude/pricing (re-read 2026-10-24).
+# Haiku 5.5 is priced by prompt length. Each tier uses its highest input-side rate
+# (1h cache write), in USD per million tokens. The request enables no caching or tools.
+TIER_THRESHOLD = 100_000
+LOW_INPUT_RATE, LOW_OUTPUT_RATE = Decimal('0.20'), Decimal('0.50')
+MAX_INPUT_RATE, MAX_OUTPUT_RATE = Decimal('1.00'), Decimal('2.50')
+# The frozen 2400-token profile truncated r1-nested_quote (1101 thinking tokens,
+# incomplete JSON). The o8000 attempt profile is a recorded deviation with its own
+# request identities; the original attempt and evidence remain unchanged.
+MAX_OUTPUT_TOKENS = 8000
+ATTEMPT = 'o8000'
+OVERHEAD_TOKENS = 4096
+
+
+def rates(input_tokens):
+    return ((LOW_INPUT_RATE, LOW_OUTPUT_RATE) if input_tokens <= TIER_THRESHOLD
+            else (MAX_INPUT_RATE, MAX_OUTPUT_RATE))
+MAX_PRICE_AGE_DAYS = 7
+
+
+def judgment_schema():
+    evidence = dict(type='object', additionalProperties=False,
+                    properties=dict(start=dict(type='integer'), end=dict(type='integer'),
+                                    quote=dict(type='string')),
+                    required=['start', 'end', 'quote'])
+    dimension = dict(type='object', additionalProperties=False,
+                     properties=dict(status=dict(type='string', enum=sorted(focused.STATUSES)),
+                                     reason=dict(type='string')),
+                     required=['status', 'reason'])
+    checks = dict(type='object', additionalProperties=False,
+                  properties={k: dimension for k in focused.CHECKS}, required=list(focused.CHECKS))
+    claim = dict(type='object', additionalProperties=False,
+                 properties=dict(index=dict(type='integer'), text=dict(type='string'),
+                                 evidence=dict(type='array', items=evidence),
+                                 uncertainty_flags=dict(type='array', items=dict(type='string')),
+                                 checks=checks),
+                 required=['index', 'text', 'evidence', 'uncertainty_flags', 'checks'])
+    inventory = dict(type='object', additionalProperties=False,
+                     properties=dict(reference_index=dict(type='integer'),
+                                     status=dict(type='string', enum=['pass','fail','unresolved']),
+                                     claim_indices=dict(type='array', items=dict(type='integer')),
+                                     evidence=dict(type='array', items=evidence),
+                                     reason=dict(type='string')),
+                     required=['reference_index', 'status', 'claim_indices', 'evidence', 'reason'])
+    return dict(type='object', additionalProperties=False,
+                properties=dict(verdict=dict(type='string', enum=['pass','fail','unresolved']),
+                                uncertainty_flags=dict(type='array', items=dict(type='string')),
+                                claims=dict(type='array', items=claim),
+                                inventory=dict(type='array', items=inventory)),
+                required=['verdict','uncertainty_flags','claims','inventory'])
+
+
+def request_body(packet):
+    protocol = (focused.ROOT / 'evaluation/phase3/focused-protocol.txt').read_text()
+    content = focused.canonical(dict(source=packet['case'], candidate=packet['candidate'])).decode()
+    existing.require(len(protocol.encode()) + len(content.encode()) <= 256 * 1024,
+                     'oversized review context')
+    return dict(model=MODEL, max_tokens=MAX_OUTPUT_TOKENS, system=protocol,
+                messages=[dict(role='user', content=content)],
+                output_config=dict(effort='low', format=dict(type='json_schema', schema=judgment_schema())),
+                service_tier='standard_only')
+
+
+def quote(body, today=None):
+    """A twofold reserve using upper-tier pricing and one token per UTF-8 byte."""
+    today = today or date.today()
+    existing.require(0 <= (today - PRICE_CHECK_DATE).days <= MAX_PRICE_AGE_DAYS,
+                     'pricing must be re-verified against the official Claude API rate card')
+    size = len(focused.canonical(body))
+    # One token per UTF-8 byte bounds the prompt, so the bound also selects the tier.
+    inp, out = rates(size + OVERHEAD_TOKENS)
+    estimated = existing.nanos(Decimal(2) * (
+        (Decimal(size + OVERHEAD_TOKENS) * inp +
+         Decimal(MAX_OUTPUT_TOKENS) * out) / Decimal(1_000_000)))
+    existing.require(0 < estimated <= existing.CONTINUATION, 'request exceeds reserved budget')
+    return dict(estimate=estimated, input_byte_bound=size + OVERHEAD_TOKENS,
+                output_token_bound=MAX_OUTPUT_TOKENS, worst_input_per_mtok=str(inp),
+                worst_output_per_mtok=str(out), price_checked=PRICE_CHECK_DATE.isoformat(),
+                charge_type='conservative_upper_bound_not_provider_billed_cost')
+
+
+def conservative_usage(response):
+    usage = response['usage']
+    allowed = {'input_tokens', 'output_tokens', 'cache_creation_input_tokens',
+               'cache_read_input_tokens', 'cache_creation', 'output_tokens_details',
+               'inference_geo', 'server_tool_use', 'service_tier', 'speed'}
+    existing.require(isinstance(usage, dict) and set(usage) <= allowed,
+                     'unknown usage component; retain reservation')
+    existing.require(usage.get('speed', 'standard') == 'standard' and
+                     usage.get('service_tier', 'standard') == 'standard' and
+                     usage.get('inference_geo', 'global') == 'global',
+                     'unpriced service tier or region; retain reservation')
+    for name in ('input_tokens', 'output_tokens'):
+        existing.require(type(usage.get(name)) is int and usage[name] >= 0,
+                         'invalid usage; retain reservation')
+    for name in ('cache_creation_input_tokens','cache_read_input_tokens'):
+        value = usage.get(name, 0)
+        existing.require(type(value) is int and value >= 0,
+                         'invalid cached usage; retain reservation')
+    tool = usage.get('server_tool_use')
+    existing.require(not tool or (isinstance(tool, dict) and all(v == 0 for v in tool.values())),
+                     'unpriced tool usage; retain reservation')
+    input_tokens = sum(usage.get(n,0) for n in
+        ('input_tokens','cache_creation_input_tokens','cache_read_input_tokens'))
+    output_tokens = usage['output_tokens']  # Includes billed thinking tokens.
+    inp, out = rates(input_tokens)
+    upper = existing.nanos((Decimal(input_tokens) * inp +
+                            Decimal(output_tokens) * out) / Decimal(1_000_000))
+    return dict(input_tokens=input_tokens, output_tokens=output_tokens,
+                conservative_upper_nanos=upper, billed_cost_usd=None)
+
+
+class Dispatcher(existing.Dispatcher):
+    """Shares the exact ledger, local ceiling, request IDs, and $0.10 continuation."""
+    def __init__(self, ledger, evidence, transport, authorization):
+        existing.require(authorization.get('provider') == 'anthropic_direct',
+                         'direct Claude API provider authorization missing')
+        super().__init__(ledger, evidence, transport, authorization)
+
+    def dispatch(self, packet, repeat=False):
+        manifest, frozen = existing.packets()
+        existing.require(packet in frozen, 'not a frozen verified packet')
+        case = packet['case']['id']
+        existing.require(not repeat or case in manifest['repeated_cases'], 'repeat not designated')
+        ident = 'focused-haiku-' + case + ('-repeat-' if repeat else '-primary-') + ATTEMPT
+        conn = self.connection()
+        try:
+            self.check(conn, 1)
+            existing.require(conn.execute('SELECT 1 FROM request WHERE id=?',(ident,)).fetchone() is None,
+                             'already attempted; no retry')
+            if repeat:
+                parent = 'focused-haiku-' + case + '-primary-' + ATTEMPT
+                existing.require(conn.execute('SELECT 1 FROM request WHERE id=? AND actual IS NOT NULL',
+                                              (parent,)).fetchone(), 'primary not settled')
+                primary = self.evidence / (parent + '.judgment.json')
+                existing.require(primary.is_file(), 'primary valid judgment unavailable')
+                focused.validate_judgment(focused.parse_judgment(primary.read_text()),packet)
+            body = request_body(packet)
+            q = quote(body)
+            self.check(conn, q['estimate'])
+            # Read-only authenticated model check; no alternate model or fallback.
+            model = self.transport('GET', '/v1/models/' + MODEL, None)
+            existing.require(model.get('id') == MODEL, 'unexpected model identity')
+            conn.execute('BEGIN IMMEDIATE')
+            _, cumulative = self.check(conn, q['estimate'])
+            conn.execute('INSERT INTO request(id,model,created_at,estimate,cumulative) '
+                         "VALUES(?,?,datetime('now'),?,?)",
+                         (ident, 'anthropic/' + MODEL, q['estimate'], cumulative))
+            existing.immutable(self.evidence / (ident + '.request.json'),
+                               dict(id=ident, provider='anthropic_direct', payload=body,
+                                    packet_sha256=focused.sha(focused.canonical(packet)), quote=q,
+                                    model_info=model, authorization=self.authorization))
+            conn.commit()
+            response = self.transport('POST', '/v1/messages', body)
+            existing.immutable(self.evidence / (ident + '.response.json'), response)
+            usage = conservative_usage(response)
+            existing.require(isinstance(response.get('id'),str) and
+                             0 < len(response['id']) <= 256, 'invalid response ID')
+            conn.execute('BEGIN IMMEDIATE')
+            changed = conn.execute('UPDATE request SET actual=?,provider_id=?,settled_at=datetime(\'now\'),'
+                                   'prompt_tokens=?,completion_tokens=? WHERE id=? AND actual IS NULL',
+                                   (usage['conservative_upper_nanos'], 'anthropic:upper:' + response['id'],
+                                    usage['input_tokens'],usage['output_tokens'],ident)).rowcount
+            existing.require(changed == 1, 'already settled')
+            conn.execute('UPDATE request SET cumulative=(SELECT prior FROM budget) + '
+                         '(SELECT SUM(COALESCE(actual,estimate)) FROM request) WHERE id=?',(ident,))
+            conn.commit()
+            existing.immutable(self.evidence / (ident + '.accounting.json'),usage)
+            existing.require(usage['conservative_upper_nanos'] <= q['estimate'],
+                             'billed-usage bound exceeds reservation; stop')
+            existing.require(response.get('type') == 'message' and response.get('model') == MODEL
+                             and response.get('stop_reason') == 'end_turn', 'incomplete model response')
+            blocks = response.get('content')
+            existing.require(isinstance(blocks,list) and
+                             all(isinstance(block,dict) and block.get('type') in {'text', 'thinking'}
+                                 for block in blocks) and
+                             sum(block.get('type') == 'text' for block in blocks) == 1,
+                             'unexpected output format')
+            existing.require(__debug__, 'optimized Python unsupported')
+            judgment = focused.parse_judgment(next(block['text'] for block in blocks
+                                                    if block.get('type') == 'text'))
+            focused.validate_judgment(judgment,packet)
+            existing.immutable(self.evidence / (ident + '.judgment.json'), judgment)
+            judgments = [judgment]
+            if repeat:
+                parent = self.evidence / ('focused-haiku-' + case + '-primary-' + ATTEMPT + '.judgment.json')
+                judgments.insert(0, focused.parse_judgment(parent.read_text()))
+            existing.immutable(self.evidence / (ident + '.comparison.json'),
+                               existing.reconcile(packet,judgments,
+                                   historical_disagreement=case=='r1-ambiguous_ref',
+                                   editorial_contested=case in {'r1-ambiguous_ref','v23-fresh-003'}))
+            return judgment
+        finally:
+            conn.close()
+
+
+def transport(key):
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, *args, **kwargs):
+            return None
+    opener = urllib.request.build_opener(NoRedirect())
+    def call(method,path,body):
+        existing.require(path in {'/v1/models/' + MODEL, '/v1/messages'},'unsupported endpoint')
+        request = urllib.request.Request(BASE + path,method=method,
+            data=None if body is None else focused.canonical(body),
+            headers={'x-api-key':key, 'anthropic-version':VERSION,
+                     'content-type':'application/json'})
+        with opener.open(request,timeout=120) as response:
+            data = response.read(4 * 1024 * 1024 + 1)
+        existing.require(len(data) <= 4 * 1024 * 1024,'oversized API response')
+        return json.loads(data)
+    return call
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--execute',action='store_true')
+    parser.add_argument('--authorization',type=Path)
+    parser.add_argument('--evidence',type=Path)
+    parser.add_argument('--case',help='exactly one frozen case per paid invocation')
+    parser.add_argument('--repeat',action='store_true')
+    args=parser.parse_args()
+    manifest,selected=existing.packets()
+    if not args.execute:
+        print(json.dumps(dict(status='offline only',provider='anthropic_direct',model=MODEL,
+                              prepared_primaries=len(selected),missing=12-len(selected),
+                              maximum_calls=15,spend_limit_nanos=existing.CONTINUATION)))
+        return
+    existing.require(args.authorization and args.evidence and __debug__,
+                     'authorization/evidence required')
+    key = os.environ.get('ANTHROPIC_API_KEY')
+    existing.require(key and len(key) < 1024 and '\n' not in key and '\r' not in key,
+                     'ANTHROPIC_API_KEY not configured')
+    dispatcher = Dispatcher(existing.LEDGER,args.evidence,transport(key),
+                            json.loads(args.authorization.read_text()))
+    # One explicit sequential call per invocation; no batch loop, retry or fallback.
+    chosen = [p for p in selected if p['case']['id'] == args.case]
+    existing.require(len(chosen) == 1, 'select exactly one prepared case')
+    print(json.dumps(dict(case=args.case, repeat=args.repeat,
+                          verdict=dispatcher.dispatch(chosen[0], repeat=args.repeat)['verdict'])))
+
+
+if __name__=='__main__':
+    main()
