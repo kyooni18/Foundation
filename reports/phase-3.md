@@ -652,3 +652,32 @@ On the separate exposed reader regression set, v13 rejects all 16 deliberately b
 instances, accepts 15 of 16 valid instances, and falsely rejects one nested English
 report with a generic ticket reference. These are editorial judgments on repeated
 controls; no extraction held-out result or independent human gold is implied.
+
+### Continuation: Korean omitted-subject adjudication and v15 (2026-10-23)
+The user adjudicated the isolated habitual self-report “요즘 매일 아침 6시에
+일어나는 중”: use the original speaker. Both v14 runs instead used an unidentified
+actor and passed all model gates. These are **known fidelity weakenings**, not valid
+acceptance outputs. The v14 development continuation was stopped, retaining 156
+attempt rows and 90 terminal outcomes: 70 model-gate passes, 11 atomicity failures,
+one schema failure and eight quota-class outcomes (including deliberate local guard
+stops). It did not complete the planned 232 non-quota outcomes. No semantic success
+rate may be inferred from its gate-pass count.
+
+V15 adds Korean pragmatic subject binding for conversational habits, intentions,
+preferences and experiences, with named discourse subjects and quoted speakers as
+counterexamples. Linguistic narrator binding never grants user authorship or changes
+recorder identity. Explicit unresolved third-person 걔 remains unidentified in every
+relevant Claim. Six paired development cases are repeated twice with real cheap-model
+calls; these are calibration/regression controls, not independently blinded gold.
+
+The evaluation harness also exposed a repair-context mismatch: it previously supplied
+all review envelopes, whereas the application core stops at the first failed review.
+New rows marked `repair_input_protocol=core-prefix-v1` normalize both representations
+to the identical prefix. Earlier repaired runs remain archived, but are not presented
+as proof of identical production retry behavior. An existing deterministic test checks
+payload equality; no additional Rust test macro was added.
+
+After all superseded paid processes exited, account usage had increased by $2.40734207
+against the user's $5 additional ceiling. A shared locked ledger limited the remaining
+v15 allowance to $2.542657, retaining a $0.05 safety margin. This is an account usage
+delta, not a claim of exact per-request billing attribution.

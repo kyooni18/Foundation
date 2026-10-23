@@ -1,0 +1,13 @@
+{
+  "attempts": 156,
+  "terminal": 90,
+  "outcomes": {
+    "gate_pass": 70,
+    "quota": 8,
+    "atomicity": 11,
+    "schema": 1
+  },
+  "status": "incomplete; stopped after user adjudicated a gate-passing subject-resolution error",
+  "expected_terminal": 232,
+  "acceptance": false
+}

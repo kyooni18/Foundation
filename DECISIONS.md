@@ -454,3 +454,23 @@ instructions, while retaining all strict output, anchor and authorship checks. I
 also clarifies that an explicitly unidentified technical component can be a subject
 when the Source gives no instance identity. Existing Source-provided names remain
 mandatory. These changes require empirical evaluation; they do not declare acceptance.
+
+### D-62 — Align evaluation repair inputs with application-core retry behavior
+The manual evaluation harness collected every independent review, while the core
+stopped at its first failed review. Passing the richer host envelopes to repair was
+not equivalent to production. Normalize both representations to the same ordered
+prefix through the first failed review. Existing core string inputs retain their
+behavior; a regression assertion compares both payloads. New evaluation rows mark
+`repair_input_protocol=core-prefix-v1`. Earlier repaired outputs remain evidence of
+those experiments, not proof of identical production retry behavior.
+
+### D-63 — Korean omitted subjects can identify the original speaker linguistically
+For isolated “요즘 매일 아침 6시에 일어나는 중”, the user explicitly adjudicated
+“Use the original speaker.” The previous blanket unknown-actor fallback weakened a
+speaker-oriented habitual self-report. V15 resolves such omissions using Korean
+pragmatics, checking named discourse subjects and quotation scope first. Explicit
+third-person 걔 remains unidentified when unresolved (D-58). Linguistic narrator
+resolution does not establish authenticated user authorship, recorder identity or
+privileges. This prompt correction changes no stored Source, authorization rule or
+schema. Paired controls cover self-report, named third party, quotation and unresolved
+third person; empirical quality acceptance remains required.

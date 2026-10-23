@@ -94,6 +94,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v14/frames.txt"),
                 include_str!("../../prompts/extraction-v12/review.txt"),
             )),
+            "extraction-v15" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v15/frames.txt"),
+                include_str!("../../prompts/extraction-v15/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -121,7 +126,9 @@ impl Plan {
             "extraction-v11" => Some(include_str!("../../prompts/extraction-v11/reader.txt")),
             "extraction-v12" => Some(include_str!("../../prompts/extraction-v12/reader.txt")),
             "extraction-v13" => Some(include_str!("../../prompts/extraction-v13/reader.txt")),
-            "extraction-v14" => Some(include_str!("../../prompts/extraction-v14/reader.txt")),
+            "extraction-v14" | "extraction-v15" => {
+                Some(include_str!("../../prompts/extraction-v14/reader.txt"))
+            }
             _ => None,
         }
     }
@@ -439,6 +446,7 @@ pub fn review_message(plan: &Plan, source: &SourceView, batch: &Batch) -> String
             | "extraction-v12"
             | "extraction-v13"
             | "extraction-v14"
+            | "extraction-v15"
     ) {
         input["candidate_count"] = serde_json::json!(batch.claims.len());
         input["required_checked_indices"] =
@@ -602,7 +610,7 @@ async fn propose_with_feedback(
     input["prior_extraction_claims"] = serde_json::json!(prior_claims);
     if matches!(
         plan.version(),
-        "extraction-v12" | "extraction-v13" | "extraction-v14"
+        "extraction-v12" | "extraction-v13" | "extraction-v14" | "extraction-v15"
     ) && let Some(repair) = repair
     {
         input["untrusted_previous_attempt"] = repair.clone();
@@ -848,7 +856,7 @@ impl App {
             let reader = self.store.reader()?;
             let repair_row: Option<(String, String)> = if matches!(
                 plan.version(),
-                "extraction-v12" | "extraction-v13" | "extraction-v14"
+                "extraction-v12" | "extraction-v13" | "extraction-v14" | "extraction-v15"
             ) {
                 reader.query_row("SELECT output_json,reviews_json FROM extraction_candidate WHERE job_id=?1 AND json_extract(reviews_json,'$.attempt')=?2 ORDER BY created_at DESC,id DESC LIMIT 1", params![lease.id,lease.attempt.saturating_sub(1)], |r| Ok((r.get(0)?,r.get(1)?))).optional()?
             } else {
@@ -935,23 +943,31 @@ pub fn repair_context(raw: &str, reports: &[Value]) -> Option<Value> {
     }
     let candidate: Value = serde_json::from_str(raw).ok()?;
     let n = candidate["claims"].as_array()?.len();
-    let reports: Vec<Value> = reports
-        .iter()
-        .enumerate()
-        .filter_map(|(i, r)| {
-            if let Some(text) = r.as_str() {
-                let report: Value = serde_json::from_str(text).ok()?;
-                let stage = if i < n {
-                    format!("standalone candidate {i}")
-                } else {
-                    REVIEW_STAGES.get(i - n)?.to_string()
-                };
-                Some(serde_json::json!({"stage":stage,"report":report}))
-            } else {
-                Some(r.clone())
-            }
-        })
-        .collect();
+    let mut normalized = Vec::new();
+    for (i, envelope) in reports.iter().enumerate() {
+        // Core traces contain raw strings; the evaluation harness retains envelopes.
+        // Both must produce exactly the same repair payload, ending at the first
+        // failed review. Later research-only reviews never enrich a core retry.
+        let Some(raw) = envelope.as_str().or_else(|| envelope["raw"].as_str()) else {
+            break;
+        };
+        let Ok(report) = serde_json::from_str::<Value>(raw) else {
+            break;
+        };
+        let stage = if i < n {
+            format!("standalone candidate {i}")
+        } else {
+            let Some(stage) = REVIEW_STAGES.get(i - n) else {
+                break;
+            };
+            stage.to_string()
+        };
+        normalized.push(serde_json::json!({"stage":stage,"report":report}));
+        if validate_review(raw, if i < n { 1 } else { n }).is_err() {
+            break;
+        }
+    }
+    let reports = normalized;
     let result = serde_json::json!({"candidate_batch":candidate,"review_reports":reports,"authority":"untrusted diagnostic only; original_source remains authoritative"});
     (result.to_string().len() <= 4 * 1024 * 1024).then_some(result)
 }

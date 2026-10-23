@@ -561,7 +561,7 @@ async fn review_rejection_rolls_back_and_prompt_injection_remains_data() {
         Ok(json!({"verdict":"reject","issues":["reference"],"checked":[0],"coverage_complete":true}).to_string())
     ].into()));
     let mut repair_plan = standalone.clone();
-    repair_plan.prompt_version = Some("extraction-v14".into());
+    repair_plan.prompt_version = Some("extraction-v15".into());
     assert_ne!(repair_plan.hash().unwrap(), standalone.hash().unwrap());
     assert!(denied_app.work_once(&denied, &repair_plan).await.is_err());
     assert_eq!(row(&denied_app)["failure"], "atomicity");
@@ -611,6 +611,22 @@ async fn review_rejection_rolls_back_and_prompt_injection_remains_data() {
         hint["review_reports"][0]["report"]["issues"],
         json!(["reference"])
     );
+    let failed_review =
+        json!({"verdict":"reject","issues":["reference"],"checked":[0],"coverage_complete":true})
+            .to_string();
+    let previous_raw = serde_json::to_string(&hint["candidate_batch"]).unwrap();
+    let from_core = repair_context(&previous_raw, &[json!(failed_review)]).unwrap();
+    let from_harness = repair_context(
+        &previous_raw,
+        &[
+            json!({"stage":"untrusted external label","raw":failed_review}),
+            json!({"stage":"later research review","raw":"{}"}),
+        ],
+    )
+    .unwrap();
+    assert_eq!(from_core, from_harness);
+    assert_eq!(from_harness["review_reports"].as_array().unwrap().len(), 1);
+
     assert!(inputs[1].get("untrusted_previous_attempt").is_none());
     assert!(
         denied_app

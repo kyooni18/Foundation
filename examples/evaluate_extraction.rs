@@ -112,8 +112,17 @@ impl LlmProvider for EvaluationProvider {
                     }
                     Ok(cost)
                 };
-                reservation =
-                    reserve().map_err(|_| prime_radiant::providers::ProviderError::Quota)?;
+                reservation = reserve().map_err(|error| {
+                    eprintln!(
+                        "evaluation reservation refused: {}",
+                        if error.to_string() == "local evaluation budget exhausted" {
+                            "ceiling"
+                        } else {
+                            "accounting/configuration"
+                        }
+                    );
+                    prime_radiant::providers::ProviderError::Quota
+                })?;
             }
             let (text, usage) = self
                 .inner
@@ -151,7 +160,11 @@ impl LlmProvider for EvaluationProvider {
                     file.sync_all()?;
                     Ok(())
                 };
-                settle().map_err(|_| prime_radiant::providers::ProviderError::Quota)?;
+                settle().map_err(|error| {
+                    eprintln!("evaluation settlement refused: prompt_tokens={} completion_tokens={} reserved_micro_usd={} reason={}", usage.prompt_tokens, usage.completion_tokens, reservation,
+                        if error.to_string() == "usage exceeds reservation" { "usage_bound" } else { "ledger" });
+                    prime_radiant::providers::ProviderError::Quota
+                })?;
             }
             Ok(text)
         })
@@ -216,7 +229,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     let mut input = extraction_message(&source, previous_failure.as_deref());
                     if matches!(
                         plan.version(),
-                        "extraction-v12" | "extraction-v13" | "extraction-v14"
+                        "extraction-v12" | "extraction-v13" | "extraction-v14" | "extraction-v15"
                     ) && let Some(previous) = &previous_attempt
                     {
                         let mut payload: Value = serde_json::from_str(&input)?;
@@ -226,6 +239,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     let mut result = json!({"case_id":case["id"],"language":case["language"],"category":case["category"],"split":args.split,"run":run,"variant":variant,"plan":plan,"prompt_hash":plan.hash()?,"source_hash":hash(&source.content),"corpus_case":case,"reviews":[],"human_review":null});
                     result["attempt"] = json!(attempt);
                     result["validation_version"] = json!(VALIDATION_VERSION);
+                    result["repair_input_protocol"] = json!("core-prefix-v1");
                     result["previous_failure_code"] = json!(previous_failure);
                     let mut draft_error = None;
                     if variant == "english-staged" {
@@ -339,14 +353,34 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                             }
                                         }
                                     }
-                                    for stage in stages {
+                                    // Independent source reviewers share no responses. Preserve
+                                    // their logical proof order while overlapping network waits.
+                                    let prompts = stages
+                                        .iter()
+                                        .map(|stage| plan.review_prompt(stage))
+                                        .collect::<prime_radiant::domain::Result<Vec<_>>>()?;
+                                    let review_input = review_message(&plan, &source, &batch);
+                                    let prompts_ref = &prompts;
+                                    let input_ref = &review_input;
+                                    let provider_ref = &provider;
+                                    let config_ref = &plan.reviewer;
+                                    let review_one = |slot: usize| async move {
+                                        let prompt = prompts_ref.get(slot)?;
+                                        Some(
+                                            provider_ref
+                                                .complete(prompt, input_ref, config_ref)
+                                                .await,
+                                        )
+                                    };
+                                    let (a, b, c) = tokio::join!(biased; review_one(0), review_one(1), review_one(2));
+                                    for (stage, review) in
+                                        stages.into_iter().zip([a, b, c].into_iter().flatten())
+                                    {
                                         let review_prompt = plan.review_prompt(stage)?;
-                                        let review_input = review_message(&plan, &source, &batch);
-                                        let review = provider
-                                            .complete(&review_prompt, &review_input, &plan.reviewer)
-                                            .await;
                                         reviews.push(match review {Ok(raw)=>json!({"stage":stage,"prompt_hash":hash(&review_prompt),"raw":raw}),Err(e)=>json!({"stage":stage,"error":format!("{e:?}")})});
                                     }
+                                    result["source_review_execution"] =
+                                        json!("parallel-independent-v1");
                                     result["reviews"] = json!(reviews);
                                 }
                             }
@@ -429,7 +463,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                         case["id"], variant, run, attempt
                     );
                     if failure == Some("quota") {
-                        return Err("evaluation interrupted: provider quota exhausted".into());
+                        return Err("evaluation interrupted: provider quota or local budget/accounting refusal".into());
                     }
                     if failure.is_none() {
                         break;

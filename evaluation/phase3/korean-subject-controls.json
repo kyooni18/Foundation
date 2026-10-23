@@ -1,0 +1,127 @@
+[
+  {
+    "id": "r1-ambiguous_ref",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "걔가 또 늦었어. 진짜 짜증나.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "지시대상을 특정 인물로 날조하지 않음"
+      ],
+      "propositions": [
+        "원문에서 걔로 지칭한 신원 미상의 인물이 또 늦었다.",
+        "화자는 그 인물의 반복 지각에 짜증을 표현한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+    },
+    "category": "ambiguous_ref"
+  },
+  {
+    "id": "r1-habitual_temporal",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "요즘 매일 아침 6시에 일어나는 중",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "시간 범위 무근거 영구화 금지(항상/always 아님)"
+      ],
+      "propositions": [
+        "화자는 원문 기준 최근 매일 아침 6시에 일어나는 습관이 있다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+    },
+    "category": "habitual_temporal"
+  },
+  {
+    "id": "korean-subject-001",
+    "split": "dev",
+    "language": "ko",
+    "category": "omitted_subject",
+    "origin": "editorial paired controls after human habitual-subject adjudication; not held-out",
+    "source": "매주 토요일에 수영 배우는 중.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft except separate user-adjudicated legacy case",
+      "propositions": [
+        "원문 화자는 발화 시기에 매주 토요일 수영을 배우고 있다고 밝혔다."
+      ],
+      "required": [
+        "source-language subject binding; original reference time unknown; no Principal inference"
+      ],
+      "unsupported": [
+        "assign named third party to narrator",
+        "replace supported narrator with unknown actor"
+      ]
+    }
+  },
+  {
+    "id": "korean-subject-002",
+    "split": "dev",
+    "language": "ko",
+    "category": "omitted_subject",
+    "origin": "editorial paired controls after human habitual-subject adjudication; not held-out",
+    "source": "지수는 야간 근무 중이다. 요즘 매일 아침 6시에 퇴근한대.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft except separate user-adjudicated legacy case",
+      "propositions": [
+        "지수의 야간 근무와 지수가 발화 시기 매일 아침 6시에 퇴근한다는 전언은 별개이다."
+      ],
+      "required": [
+        "source-language subject binding; original reference time unknown; no Principal inference"
+      ],
+      "unsupported": [
+        "assign named third party to narrator",
+        "replace supported narrator with unknown actor"
+      ]
+    }
+  },
+  {
+    "id": "korean-subject-003",
+    "split": "dev",
+    "language": "ko",
+    "category": "omitted_subject",
+    "origin": "editorial paired controls after human habitual-subject adjudication; not held-out",
+    "source": "민수가 “요즘 매일 새벽에 달리는 중”이라고 했다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft except separate user-adjudicated legacy case",
+      "propositions": [
+        "민수의 발화 시기 매일 새벽 달리기 자기 보고이며 원문 화자의 습관이 아니다."
+      ],
+      "required": [
+        "source-language subject binding; original reference time unknown; no Principal inference"
+      ],
+      "unsupported": [
+        "assign named third party to narrator",
+        "replace supported narrator with unknown actor"
+      ]
+    }
+  },
+  {
+    "id": "korean-subject-004",
+    "split": "dev",
+    "language": "ko",
+    "category": "omitted_subject",
+    "origin": "editorial paired controls after human habitual-subject adjudication; not held-out",
+    "source": "다음 달부터 수영 배울까 생각 중이야.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft except separate user-adjudicated legacy case",
+      "propositions": [
+        "원문 화자가 미정인 미래 수영 학습을 고려하고 있으며 승인된 결정이 아니다."
+      ],
+      "required": [
+        "source-language subject binding; original reference time unknown; no Principal inference"
+      ],
+      "unsupported": [
+        "assign named third party to narrator",
+        "replace supported narrator with unknown actor"
+      ]
+    }
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "additional_budget_usd": 5,
+  "account_usage_increase_usd": 1.14225739,
+  "next_reservation_ceiling_usd": 3.807742,
+  "safety_margin_usd": 0.05,
+  "no_inflight_requests_at_reconciliation": true
+}
