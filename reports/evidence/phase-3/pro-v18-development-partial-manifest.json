@@ -1,0 +1,13 @@
+{
+  "attempt_rows": 84,
+  "terminal_outcomes_including_quota": {
+    "gate_pass": 25,
+    "atomicity": 4,
+    "quota": 21,
+    "schema": 1
+  },
+  "non_quota_terminal_sources": 30,
+  "expected_sources": 116,
+  "acceptance": false,
+  "status": "stopped after same-target qualifier loss and independent-rule split failure; remaining budget reserved for revised strategy and held-out evaluation"
+}

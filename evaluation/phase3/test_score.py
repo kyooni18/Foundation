@@ -34,12 +34,21 @@ class ScoringTests(unittest.TestCase):
         group = json.loads(result.stdout)[GROUP]
         self.assertEqual(group["coverage"], dict(numerator=0, denominator=2, rate=0.0))
         self.assertIsNone(group["atomicity_violation"]["rate"])
+        scoped = copy.deepcopy(row)
+        scoped['reviews'] = [dict(stage='standalone', raw=json.dumps(dict(verdict='pass'))),
+                             dict(stage='fidelity', raw=json.dumps(dict(verdict='reject')))]
+        scoped['human_review']['expected_reviews'] = {'standalone': 'pass', 'fidelity': 'reject'}
+        group = json.loads(self.run_score([scoped]).stdout)[GROUP]
+        self.assertEqual(group['reviewer_confusion_stage_specific'],
+                         {'standalone:TN': 1, 'fidelity:TP': 1})
+        self.assertEqual(group['unscored_stage_reviews'], 0)
         missing = copy.deepcopy(row)
         missing["human_review"] = None
         group = json.loads(self.run_score([missing]).stdout)[GROUP]
         self.assertEqual(group["unreviewed"], 1)
         self.assertIsNone(group["coverage"]["rate"])
         mutations = [
+            lambda r: r["human_review"].update(expected_reviews={"standalone": "unknown"}),
             lambda r: r["human_review"].update(claims=[]),
             lambda r: r["human_review"].update(covered_propositions=3),
             lambda r: r["human_review"].update(oversplits=-1),

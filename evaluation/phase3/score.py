@@ -25,6 +25,8 @@ def validate_review(row):
     require(isinstance(h, dict), 'human_review must be an object')
     require(isinstance(h.get('reviewer'), str) and h['reviewer'].strip(), 'reviewer required')
     require(type(h.get('accepted')) is bool, 'accepted must be boolean')
+    expected = h.get('expected_reviews', {})
+    require(isinstance(expected, dict) and all(isinstance(stage, str) and verdict in ['pass', 'reject'] for stage, verdict in expected.items()), 'expected_reviews must map stages to pass/reject')
     for key in ['supported_propositions', 'covered_propositions', 'oversplits',
                 'decompositions', 'translation_errors', 'translation_candidates']:
         require(type(h.get(key)) is int and h[key] >= 0, f'{key} must be a nonnegative integer')
@@ -83,12 +85,23 @@ for key,rs in groups.items():
         if 'raw' in r: per_case[r['case_id']].add(r['raw'])
     item['distinct_outputs_per_case']={k:len(v) for k,v in per_case.items()}
     confusion=collections.Counter()
+    stage_confusion=collections.Counter()
+    unscored_stage_reviews=0
     for r in reviewed:
         bad=r[annotation]['oversplits']>0 or any(any(c[f] for f in flags) for c in r[annotation]['claims']) or r[annotation]['covered_propositions']<r[annotation]['supported_propositions']
         for review in r.get('reviews',[]):
             try: rejects=json.loads(review['raw'])['verdict']!='pass'
             except (KeyError,ValueError): continue
             confusion[f"{review['stage']}:{'TP' if bad and rejects else 'FN' if bad else 'FP' if rejects else 'TN'}"]+=1
+            expected=r[annotation].get('expected_reviews', {}).get(review['stage'])
+            if expected is None:
+                unscored_stage_reviews+=1
+            else:
+                expected_reject=expected=='reject'
+                stage_confusion[f"{review['stage']}:{'TP' if expected_reject and rejects else 'FN' if expected_reject else 'FP' if rejects else 'TN'}"]+=1
     item['reviewer_confusion']=dict(confusion)
+    item['reviewer_confusion_scope']='legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy'
+    item['reviewer_confusion_stage_specific']=dict(stage_confusion)
+    item['unscored_stage_reviews']=unscored_stage_reviews
     output['|'.join(key)]=item
 print(json.dumps(output,ensure_ascii=False,indent=2))

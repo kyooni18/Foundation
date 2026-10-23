@@ -114,6 +114,16 @@ impl Plan {
                 include_str!("../../prompts/extraction-v18/frames.txt"),
                 include_str!("../../prompts/extraction-v18/review.txt"),
             )),
+            "extraction-v19" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v19/frames.txt"),
+                include_str!("../../prompts/extraction-v19/review.txt"),
+            )),
+            "extraction-v20" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v20/frames.txt"),
+                include_str!("../../prompts/extraction-v20/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -146,6 +156,8 @@ impl Plan {
             }
             "extraction-v17" => Some(include_str!("../../prompts/extraction-v17/reader.txt")),
             "extraction-v18" => Some(include_str!("../../prompts/extraction-v18/reader.txt")),
+            "extraction-v19" => Some(include_str!("../../prompts/extraction-v19/reader.txt")),
+            "extraction-v20" => Some(include_str!("../../prompts/extraction-v20/reader.txt")),
             _ => None,
         }
     }
@@ -467,6 +479,8 @@ pub fn review_message(plan: &Plan, source: &SourceView, batch: &Batch) -> String
             | "extraction-v16"
             | "extraction-v17"
             | "extraction-v18"
+            | "extraction-v19"
+            | "extraction-v20"
     ) {
         input["candidate_count"] = serde_json::json!(batch.claims.len());
         input["required_checked_indices"] =
@@ -637,6 +651,8 @@ async fn propose_with_feedback(
             | "extraction-v16"
             | "extraction-v17"
             | "extraction-v18"
+            | "extraction-v19"
+            | "extraction-v20"
     ) && let Some(repair) = repair
     {
         input["untrusted_previous_attempt"] = repair.clone();
@@ -889,6 +905,8 @@ impl App {
                     | "extraction-v16"
                     | "extraction-v17"
                     | "extraction-v18"
+                    | "extraction-v19"
+                    | "extraction-v20"
             ) {
                 reader.query_row("SELECT output_json,reviews_json FROM extraction_candidate WHERE job_id=?1 AND json_extract(reviews_json,'$.attempt')=?2 ORDER BY created_at DESC,id DESC LIMIT 1", params![lease.id,lease.attempt.saturating_sub(1)], |r| Ok((r.get(0)?,r.get(1)?))).optional()?
             } else {

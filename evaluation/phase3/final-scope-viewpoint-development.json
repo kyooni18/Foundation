@@ -1,0 +1,127 @@
+[
+  {
+    "id": "r1-rule",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "앞으로 커밋 메시지는 무조건 영어로 써줘. 단, 문서 파일은 한국어 허용.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "영어 커밋 규칙",
+        "예외 조건 보존"
+      ],
+      "propositions": [
+        "화자는 앞으로 커밋 메시지를 영어로 작성해 달라고 요청한다.",
+        "화자는 문서 파일에는 한국어를 허용한다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+    },
+    "category": "rule"
+  },
+  {
+    "id": "r1-nested_quote",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "'새롭지 않다'가 사실로 저장되지 않음",
+        "사용자 반대 의견 보존"
+      ],
+      "propositions": [
+        "교수님은 리뷰어 2가 화자 집단의 방법이 새롭지 않다고 말했다고 전했다.",
+        "화자는 해당 새롭지 않다는 평가에 동의하지 않는다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+    },
+    "category": "nested_quote"
+  },
+  {
+    "id": "r1-speculation_other_mind",
+    "split": "dev",
+    "origin": "R1 synthetic",
+    "language": "ko",
+    "source": "지민이 나한테 화난 것 같은데 이유를 모르겠다.",
+    "authored_at": null,
+    "reference": {
+      "criteria": [
+        "지민이 화났다고 단정하지 않음"
+      ],
+      "propositions": [
+        "화자는 지민이 자신에게 화난 듯하다고 추측하지만 그 이유는 모른다."
+      ],
+      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+    },
+    "category": "speculation_other_mind"
+  },
+  {
+    "id": "scope-limit-pair-001",
+    "split": "dev",
+    "language": "ko",
+    "category": "target_scope_and_epistemic_attachment",
+    "origin": "new editorial paired development control after v18 source audit; not held-out",
+    "source": "모든 문서는 영어로 작성하되 법률 인용문에는 원문 한국어를 허용한다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft, not independent human gold",
+      "propositions": [
+        "문서 영어 작성 규칙에는 법률 인용문의 원문 한국어 허용 예외가 포함된다."
+      ],
+      "required": [
+        "preserve target-specific scope, epistemic qualifiers, and single-object assessment"
+      ],
+      "unsupported": [
+        "invented cross-target qualifier attachment",
+        "independent policies merged as exception"
+      ]
+    }
+  },
+  {
+    "id": "scope-limit-pair-002",
+    "split": "dev",
+    "language": "ko",
+    "category": "target_scope_and_epistemic_attachment",
+    "origin": "new editorial paired development control after v18 source audit; not held-out",
+    "source": "민수는 커밋 영어/문서 한국어라는 정책이 일관적이라고 평가했다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft, not independent human gold",
+      "propositions": [
+        "민수는 하나의 명시된 복합 정책의 일관성을 평가했다."
+      ],
+      "required": [
+        "preserve target-specific scope, epistemic qualifiers, and single-object assessment"
+      ],
+      "unsupported": [
+        "invented cross-target qualifier attachment",
+        "independent policies merged as exception"
+      ]
+    }
+  },
+  {
+    "id": "speech-viewpoint-direct",
+    "split": "dev",
+    "language": "ko",
+    "category": "direct_vs_indirect_perspective",
+    "origin": "editorial paired control after indirect report ownership failure",
+    "source": "리뷰어 2가 “우리 방법은 새롭지 않다”라고 말했다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; not independent human gold",
+      "propositions": [
+        "리뷰어 2는 리뷰어 2가 속한 집단의 구체적 내용이 밝혀지지 않은 방법이 새롭지 않다고 말했다."
+      ],
+      "required": [
+        "direct quoted 우리 belongs to reviewer group",
+        "not original narrator group",
+        "do not assert actual lack of novelty"
+      ],
+      "unsupported": [
+        "relocate method ownership to narrator"
+      ]
+    }
+  }
+]

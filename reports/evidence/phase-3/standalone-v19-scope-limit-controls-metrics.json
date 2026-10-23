@@ -1,0 +1,15 @@
+{
+  "rows": 112,
+  "unconfounded_rows": 108,
+  "unconfounded_expected_matches": 108,
+  "confounded_control_ids": [
+    "scope-and-limit-007",
+    "scope-and-limit-008"
+  ],
+  "confounded_outcomes": {
+    "pass": 1,
+    "temporal_rejection": 2,
+    "local_budget": 1
+  },
+  "note": "Editorial calibration overlaps instructions. Unbound-intent positive controls corrected under new IDs for v20; temporal rejections not asserted to be false positives."
+}

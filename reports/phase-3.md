@@ -728,3 +728,35 @@ binds explicitly ongoing states to the original utterance while preserving timel
 conditionals and generic properties. This is a faithful paraphrase and does not gain
 verbatim projection eligibility. The current guarded allowance before v18 was $1.843651
 ($3.10634897 account usage increase against the $5 ceiling, plus $0.05 margin).
+
+### V18 broad-run failures and final funded revision
+The v18 broad development attempt retained 84 attempt rows and 30 non-quota terminal
+Sources out of 116 planned. Across all terminal rows, including interrupted attempts,
+there were 25 gate passes, four atomicity failures, one schema failure and 21 quota-class
+stops. This is incomplete evaluation, not a 116-source success rate. Its gate-passing
+anger assessment lost its same-target unknown-reason qualifier when split; a rejected
+nested report also relocated the narrator's “our method” to Reviewer 2. The run was
+stopped to preserve budget for corrections and held-out measurement.
+
+V19 contrasts independent target domains with true exceptions and keeps unknown reasons
+attached to the same uncertain assessment. V20 additionally distinguishes direct and
+indirect speech perspective, preserving whose method/person/time is described rather
+than creating quotations or shifting every reference to the innermost speaker.
+The user independently confirmed that ongoing states require original-statement-time
+binding and that “이번 실험” must become an explicitly unidentified experiment. Those
+previous gate passes are now known defects (D-71), not unresolved equivalent wording.
+
+The scorer now labels its historical whole-batch reviewer agreement as an association,
+not responsibility-aligned diagnostic accuracy. An isolated reader cannot detect a
+qualifier missing from an unseen Source. Optional per-stage expected decisions support
+proper stage-specific confusion counts; unlabeled decisions remain unscored. The same
+existing Python regression tests this distinction.
+
+V19's 112 reader-control outcomes include 108 unconfounded expected matches. Two new
+positive controls had unbound present-tense intent, confounding their reference-only
+purpose: their four outcomes were one pass, two temporal rejections and one local-budget
+refusal. Revised v20 controls use new IDs and bind the intent explicitly. These temporal
+rejections are not labeled false positives. Original controls and outputs remain saved.
+Before v20, the account usage increase was $4.01856285, leaving a guarded $0.931437 plus
+the $0.05 safety margin. The remaining evaluation therefore cannot be presented as a
+complete rerun of every earlier corpus/profile combination.

@@ -520,3 +520,45 @@ substring ban or a requirement to date every generic property. Timeless conditio
 containing an ongoing-state condition do not assert that the condition actually holds.
 Adding a frame makes the result paraphrase rather than verbatim; existing projection
 and explicit-confirmation rules continue to apply without an authorship exception.
+
+### D-68 — Compare semantic targets and attach same-target epistemic limitations
+The v18 development run repeatedly combined the English commit-message requirement
+and Korean-document permission despite their different target domains. Those batches
+were rejected. More seriously, a gate-passing batch split uncertain anger attribution
+from the speaker's ignorance of its reason. The latter limitation must remain in the
+same independently retrievable assessment. V19 adds paired target-domain/true-subset
+exception contrasts, same-target/different-target epistemic attachment contrasts, and
+explicit unidentified-reference handling. Not knowing WHY is not equivalent to lacking
+evidence or failing to verify WHETHER. No schema, authorization or lifecycle rule changes.
+
+### D-69 — Preserve perspective in indirect versus direct reported speech
+A rejected v18 nested-report batch attributed the narrator's unquoted 우리 방법 to
+Reviewer 2 as though Reviewer 2 had used the quotation “our method.” This relocates
+ownership. V20 preserves the original narrator's group in indirect speech, while a
+first-person expression inside an actual direct quotation belongs to that quotation's
+speaker. The same grammatical/discourse analysis governs temporal perspective; do not
+blanket-shift every unquoted relative expression to the innermost reported speaker.
+Unknown group members or method contents remain explicit without inventing identity.
+This corrects extraction framing and does not identify a Principal or change authorship.
+
+### D-70 — Separate batch-quality agreement from responsibility-aligned review metrics
+An isolated reader cannot detect a qualifier omitted from an unseen original Source.
+The scorer's historical reviewer_confusion table compared every reviewer with whole-
+batch quality and therefore must not be interpreted as stage-specific diagnostic
+accuracy. It remains labeled as that legacy association; new expected_reviews labels
+permit responsibility-aligned confusion counts, leaving unlabeled decisions unscored.
+The existing metric regression covers this distinction without adding a test method.
+Two new synthetic expected-pass controls also contained unbound present-tense intent,
+confounding their reference-only purpose. Their v19 outputs remain archived. New v20
+focused controls bind the intent to the original utterance and use new IDs. This is a
+control correction, not evidence that the prior temporal rejections were false positives.
+
+### D-71 — Independent user adjudication of ongoing time and unidentified experiments
+The user explicitly required “원문 발화 시점에 지수는 야간 근무 중이었다” for the
+undated ongoing-state Source, confirming D-67 rather than the unframed verbatim form.
+The user also required the experiment to be explicitly unidentified in the conditional
+loss/architecture Source; merely quoting “이번 실험” is insufficient. These independent
+judgments confirm the conservative source-time and unidentified-reference handling in
+the current profile. V17's unframed state and v18's source-relative experiment label are
+known gate-passing defects, not acceptable equivalent formulations. Neither correction
+establishes user Principal identity or authorizes any model-proposed metadata.
