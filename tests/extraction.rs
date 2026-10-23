@@ -924,6 +924,174 @@ async fn provider_file_permissions_and_deepseek_guard() {
     );
 }
 struct Stalled;
+/// Scripted transport only: demonstrates explicit routing, not Korean model quality.
+struct KoreanRouteFixture {
+    calls: std::sync::Mutex<Vec<(String, String)>>,
+    raw: String,
+    fail_at: Option<usize>,
+}
+impl LlmProvider for KoreanRouteFixture {
+    fn identity(&self) -> &str {
+        "explicit-korean-fixture"
+    }
+    fn complete<'a>(
+        &'a self,
+        _: &'a str,
+        input: &'a str,
+        config: &'a ModelConfig,
+    ) -> ProviderFuture<'a> {
+        Box::pin(async move {
+            let mut calls = self.calls.lock().unwrap();
+            let index = calls.len();
+            calls.push((config.model.clone(), input.into()));
+            if self.fail_at == Some(index) {
+                return Err(ProviderError::Unavailable);
+            }
+            if index == 0 {
+                Ok(self.raw.clone())
+            } else {
+                Ok(
+                    json!({"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true})
+                        .to_string(),
+                )
+            }
+        })
+    }
+}
+
+#[tokio::test]
+async fn explicit_korean_route_preserves_source_and_fails_closed_without_fallback() {
+    let text = "민수는 비가 오면 내일 서울에 가지 않을 수도 있다고 말했다.";
+    for fail_at in [None, Some(0), Some(1), Some(2), Some(3), Some(4)] {
+        let (_dir, app) = fixture();
+        let source_id = app
+            .record_source(&user(), RecordSource::plain(text))
+            .unwrap()
+            .source_id;
+        let mut config = plan();
+        config.provider = "explicit-korean-fixture".into();
+        config.prompt_version = Some("extraction-v23".into());
+        config.extractor.model = "explicit/korean-extractor-fixture".into();
+        config.reviewer.model = "explicit/korean-reviewer-fixture".into();
+        let provider = KoreanRouteFixture {
+            calls: std::sync::Mutex::new(Vec::new()),
+            raw: output(vec![candidate(text)]),
+            fail_at,
+        };
+        let result = app.work_once(&provider, &config).await;
+        let calls = provider.calls.lock().unwrap();
+        assert_eq!(calls[0].0, config.extractor.model);
+        assert!(calls[0].1.contains(text));
+        for (model, _) in &calls[1..] {
+            assert_eq!(model, &config.reviewer.model);
+            assert_ne!(model, DEFAULT_GENERAL_MODEL);
+        }
+        if let Some(index) = fail_at {
+            assert!(result.is_err());
+            assert_eq!(calls.len(), index + 1); // No fallback or in-call retry.
+            assert_eq!(row(&app)["failure"], "provider");
+        } else {
+            assert_eq!(calls.len(), 5); // Extractor, isolated reader, three source reviews.
+            for (_, input) in &calls[2..] {
+                assert!(input.contains(text));
+            }
+            let id = result.unwrap().unwrap();
+            let packet = app.extraction_review_packet(&user(), &id).unwrap();
+            assert_eq!(packet["source"]["content"], text);
+            assert_eq!(packet["raw_output"], provider.raw);
+            let conn = rusqlite::Connection::open(_dir.path().join("db")).unwrap();
+            let stored: String = conn
+                .query_row(
+                    "SELECT plan_json FROM extraction_request LIMIT 1",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap();
+            let frozen: Plan = serde_json::from_str(&stored).unwrap();
+            assert_eq!(frozen.hash().unwrap(), config.hash().unwrap());
+        }
+        assert_eq!(app.get_source(&user(), source_id).unwrap().content, text);
+        assert!(app.list_claims(&user()).unwrap().is_empty());
+        assert!(
+            app.list_claims(&p(PrincipalKind::Agent))
+                .unwrap()
+                .is_empty()
+        );
+    }
+    let (_dir, app) = fixture();
+    app.record_source(&user(), RecordSource::plain(text))
+        .unwrap();
+    let provider = KoreanRouteFixture {
+        calls: std::sync::Mutex::new(Vec::new()),
+        raw: output(vec![candidate(text)]),
+        fail_at: None,
+    };
+    assert!(app.work_once(&provider, &plan()).await.is_err());
+    assert!(provider.calls.lock().unwrap().is_empty()); // Provider identity mismatch.
+}
+
+#[test]
+fn cross_source_ids_never_supply_user_authority_even_for_matching_live_user_text() {
+    let (_dir, app) = fixture();
+    let text = "사용자는 Rust를 선호한다.";
+    let matching = app
+        .record_source(&user(), RecordSource::plain(text))
+        .unwrap()
+        .source_id;
+    let unrelated = app
+        .record_source(&user(), RecordSource::plain("서버는 Python을 사용한다."))
+        .unwrap()
+        .source_id;
+    let foreign = app
+        .record_source(&p(PrincipalKind::Agent), RecordSource::plain(text))
+        .unwrap()
+        .source_id;
+    let retracted = app
+        .record_source(&user(), RecordSource::plain(text))
+        .unwrap()
+        .source_id;
+    app.set_source_lifecycle(&user(), retracted.clone(), LifecycleEvent::Retract, None)
+        .unwrap();
+    let forgotten = app
+        .record_source(&user(), RecordSource::plain(text))
+        .unwrap()
+        .source_id;
+    app.set_source_lifecycle(&user(), forgotten.clone(), LifecycleEvent::Forget, None)
+        .unwrap();
+    for role in [PrincipalKind::Agent, PrincipalKind::Import] {
+        let id = app
+            .record_source(&p(role), RecordSource::plain(text))
+            .unwrap()
+            .source_id;
+        let source = app.get_source(&p(role), id).unwrap();
+        // Even perfect local byte support does not establish user authorship.
+        assert!(matches!(
+            validate(&output(vec![candidate(text)]), &source),
+            Err(Error::InvalidInput {
+                field: "provenance",
+                ..
+            })
+        ));
+        for cited in [&matching, &unrelated, &foreign, &retracted, &forgotten] {
+            let mut claim = candidate(text);
+            claim["source_citation"] = json!({"source_id":cited,"quote":text,"start":0,"end":text.chars().count(),"recorder":"user"});
+            assert!(matches!(
+                validate(&output(vec![claim]), &source),
+                Err(Error::InvalidInput {
+                    field: "schema",
+                    ..
+                })
+            ));
+        }
+    }
+    assert!(
+        app.list_claims(&p(PrincipalKind::Agent))
+            .unwrap()
+            .is_empty()
+    );
+    assert!(app.verify_integrity().unwrap().ok);
+}
+
 impl LlmProvider for Stalled {
     fn identity(&self) -> &str {
         "fake"
