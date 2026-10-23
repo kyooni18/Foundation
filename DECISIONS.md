@@ -586,3 +586,21 @@ profile behavior and prompt hashes are unchanged. Offline revalidation of 18 sav
 rows verified all 18 plan hashes and retained the same 16 terminal gate-eligible runs.
 This verifies protocol bookkeeping, not semantic acceptance. Existing tests were extended
 without increasing Rust/Python test-method counts.
+
+### D-74 — Preserve assertion layers when splitting verification limitations
+The user independently requires separate nodes for the held-out Lena/Omar report and
+the narrator's statement that Omar had not checked for a leak, explicitly retaining
+an unidentified leak target. V21 and the editorial reference moved the narrator's
+verification assertion into Lena's report. This is a confirmed framing failure despite
+model agreement. Assertion-layer ownership takes precedence over mechanical attachment
+of every verification limitation. V22 distinguishes outside-narrator assertions from
+limitations inside reported speech, preserving both without inventing a causal or
+additional temporal “since” relationship absent from the original. The user's example
+wording is treated as a splitting/unknown-target adjudication, not new source evidence.
+The direct unchecked-toner example and D72 independent-cause rule remain intact.
+V21 prompts, held-out references and outputs stay frozen; subsequent v22 tests of these
+now-exposed cases are regression tests, not held-out acceptance. No storage/schema/auth
+contract changes; no default prompt promotion. V22 also clarifies that an unidentified
+alternative in a disjunction and an explicitly unverified question are governing frames,
+responding to reproducible isolated-review false rejections. These changes require fresh
+real-model evaluation and cannot retroactively turn v21 failures into passes.

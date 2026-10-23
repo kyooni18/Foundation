@@ -1,0 +1,160 @@
+[
+  {
+    "id": "v22-fresh-001",
+    "split": "heldout",
+    "language": "ko",
+    "category": "reported_scope",
+    "origin": "New editorial benchmark constructed after v22 prompt assets were frozen; not independent human gold",
+    "source": "현우는 나래가 배터리 고장을 의심한다고 전했다. 나래는 배터리 상태를 측정하지 않았다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial inventory; not independently adjudicated",
+      "propositions": [
+        "현우의 나래 의심 전언",
+        "원문 화자의 나래 미측정 진술; 현우의 발언으로 이동 금지"
+      ],
+      "unsupported": [
+        "invented identities, causal links, dates, certainty or shifted attribution"
+      ],
+      "equivalence": "Source truth conditions, not exact strings or mandatory count"
+    }
+  },
+  {
+    "id": "v22-fresh-002",
+    "split": "heldout",
+    "language": "ko",
+    "category": "unverified_question",
+    "origin": "New editorial benchmark constructed after v22 prompt assets were frozen; not independent human gold",
+    "source": "원문 화자는 “전원 장치가 고장 난 건가?”라고 물었다. 고장 여부는 확인하지 못한 상태에서 한 질문이다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial inventory; not independently adjudicated",
+      "propositions": [
+        "미확인 상태의 전원 장치 고장 여부 질문"
+      ],
+      "unsupported": [
+        "invented identities, causal links, dates, certainty or shifted attribution"
+      ],
+      "equivalence": "Source truth conditions, not exact strings or mandatory count"
+    }
+  },
+  {
+    "id": "v22-fresh-003",
+    "split": "heldout",
+    "language": "ko",
+    "category": "negated_quantifier",
+    "origin": "New editorial benchmark constructed after v22 prompt assets were frozen; not independent human gold",
+    "source": "검사한 모든 센서가 정상인 것은 아니다. 어느 센서가 비정상인지는 적혀 있지 않다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial inventory; not independently adjudicated",
+      "propositions": [
+        "전체 정상의 부정, 개별 센서 상태 미지정"
+      ],
+      "unsupported": [
+        "invented identities, causal links, dates, certainty or shifted attribution"
+      ],
+      "equivalence": "Source truth conditions, not exact strings or mandatory count"
+    }
+  },
+  {
+    "id": "v22-fresh-004",
+    "split": "heldout",
+    "language": "ko",
+    "category": "comparison",
+    "origin": "New editorial benchmark constructed after v22 prompt assets were frozen; not independent human gold",
+    "source": "유나는 같은 설정에서 Cedar가 Maple보다 지연 시간이 짧다고 추측했다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial inventory; not independently adjudicated",
+      "propositions": [
+        "유나의 조건부 비교 추측; 두 시스템 개별 절대속도 날조 금지"
+      ],
+      "unsupported": [
+        "invented identities, causal links, dates, certainty or shifted attribution"
+      ],
+      "equivalence": "Source truth conditions, not exact strings or mandatory count"
+    }
+  },
+  {
+    "id": "v22-fresh-005",
+    "split": "heldout",
+    "language": "en",
+    "category": "nested_quote",
+    "origin": "New editorial benchmark constructed after v22 prompt assets were frozen; not independent human gold",
+    "source": "Ravi said that Mei had said, “I might leave tomorrow.” The date of Mei’s statement is unknown.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial inventory; not independently adjudicated",
+      "propositions": [
+        "Ravi report of Mei tentative departure relative to Mei utterance",
+        "unknown Mei utterance date"
+      ],
+      "unsupported": [
+        "invented identities, causal links, dates, certainty or shifted attribution"
+      ],
+      "equivalence": "Source truth conditions, not exact strings or mandatory count"
+    }
+  },
+  {
+    "id": "v22-fresh-006",
+    "split": "heldout",
+    "language": "en",
+    "category": "conditional_exception",
+    "origin": "New editorial benchmark constructed after v22 prompt assets were frozen; not independent human gold",
+    "source": "When storage is full, suspend uploads unless a recovery token is present; send an alert whenever storage is full.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial inventory; not independently adjudicated",
+      "propositions": [
+        "conditional upload suspension with token exception",
+        "independent full-storage alert"
+      ],
+      "unsupported": [
+        "invented identities, causal links, dates, certainty or shifted attribution"
+      ],
+      "equivalence": "Source truth conditions, not exact strings or mandatory count"
+    }
+  },
+  {
+    "id": "v22-fresh-007",
+    "split": "heldout",
+    "language": "mixed",
+    "category": "technical_properties",
+    "origin": "New editorial benchmark constructed after v22 prompt assets were frozen; not independent human gold",
+    "source": "Nori 서비스는 SQLite를 쓴다. Its retry limit is three; this does not establish lossless delivery.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial inventory; not independently adjudicated",
+      "propositions": [
+        "Nori SQLite use",
+        "Nori retry limit three",
+        "retry limit does not establish lossless delivery"
+      ],
+      "unsupported": [
+        "invented identities, causal links, dates, certainty or shifted attribution"
+      ],
+      "equivalence": "Source truth conditions, not exact strings or mandatory count"
+    }
+  },
+  {
+    "id": "v22-fresh-008",
+    "split": "heldout",
+    "language": "ko",
+    "category": "ambiguous_irony",
+    "origin": "New editorial benchmark constructed after v22 prompt assets were frozen; not independent human gold",
+    "source": "새 배포 정책 참 대단하네. 다른 설명은 없다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial inventory; not independently adjudicated",
+      "propositions": [
+        "내용 미상 새 배포 정책에 대한 평가; 진심과 반어 미확정",
+        "추가 설명 부재"
+      ],
+      "unsupported": [
+        "invented identities, causal links, dates, certainty or shifted attribution"
+      ],
+      "equivalence": "Source truth conditions, not exact strings or mandatory count"
+    }
+  }
+]
