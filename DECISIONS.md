@@ -392,7 +392,7 @@ Claim's text. Source-aware reviewers accepting the short form were filling conte
 that isolated readers do not have. This confirms the existing contract and v11
 prompt rule; it does not change Source bytes, historical hashes or authorization.
 The user's additional live-evaluation budget is capped at $5. The manual evaluator
-uses a shared, locked, no-refund conservative request-reservation ledger for the
+uses a shared, locked conservative request-reservation ledger for the
 priced cheap model; local budget rejection stops evaluation like quota exhaustion.
 Production provider/job semantics are unchanged.
 
@@ -408,3 +408,19 @@ checked against that Source, not obeyed as instructions. Every repaired batch re
 all new reader and source-grounded reviews, and still requires exact-hash local user
 approval. No review result is inherited as publication authority. Older frozen
 profiles retain their prior request shape and hashes. No migration is needed.
+
+V12 also tests reverse scope substitution: compare each isolated Claim's actor,
+affected object, system/project, reporting holder and time frame with the Source.
+Earlier gate-passing output lost a deployment target on a rollback event, and a
+funded calendar output resolved an omitted event actor to the original speaker
+without explicit supporting context. The revision makes these comparisons explicit,
+with a new analogous example rather than a per-fixture rule. These are empirical
+quality changes, not authorship inference: the recorder never identifies an actor.
+
+Evaluation accounting follow-up: the initial no-refund request guard reached its
+conservative ceiling at $0.399282 account usage increase. Successful completions
+may now settle reserved amounts to a conservative bound using provider-reported
+token counts. Failed/unmetered calls retain their full reservation. Locked in-flight
+reservations remain charged, preventing concurrent shards from exceeding the shared
+ceiling. Token usage remains provider-layer operational data and never enters Claim
+semantics or the HTTP/MCP response contract.

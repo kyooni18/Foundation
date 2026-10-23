@@ -54,7 +54,8 @@ fn provider_code(error: &str) -> &'static str {
 // Manual-evaluation guard only. Reserve conservatively before every request, including
 // failed calls, using $0.50/M input and $1/M output tokens (above all frozen cheap-model
 // catalog rates). UTF-8 byte length plus 4096 envelopes upper-bounds input tokens.
-// Reservations are never refunded; file locking shares the ceiling across shards.
+// Failed/unmetered calls keep their reservation. Successful metered calls settle to
+// a conservative token-cost bound; file locking shares the ceiling across shards.
 struct EvaluationProvider {
     inner: OpenRouter,
     ledger: Option<PathBuf>,
@@ -70,8 +71,9 @@ impl LlmProvider for EvaluationProvider {
         config: &'a ModelConfig,
     ) -> prime_radiant::providers::ProviderFuture<'a> {
         Box::pin(async move {
+            let mut reservation = 0;
             if let Some(path) = &self.ledger {
-                let reserve = || -> std::result::Result<(), Box<dyn std::error::Error>> {
+                let reserve = || -> std::result::Result<u64, Box<dyn std::error::Error>> {
                     use std::io::{Read, Seek, SeekFrom};
                     if config.model != "openai/gpt-6-luna-pro" {
                         return Err("budget guard requires the priced evaluation model".into());
@@ -108,13 +110,50 @@ impl LlmProvider for EvaluationProvider {
                     if !accepted {
                         return Err("local evaluation budget exhausted".into());
                     }
+                    Ok(cost)
+                };
+                reservation =
+                    reserve().map_err(|_| prime_radiant::providers::ProviderError::Quota)?;
+            }
+            let (text, usage) = self
+                .inner
+                .complete_with_usage(system, input, config)
+                .await?;
+            if let (Some(path), Some(usage)) = (&self.ledger, usage) {
+                let settle = || -> std::result::Result<(), Box<dyn std::error::Error>> {
+                    use std::io::{Read, Seek, SeekFrom};
+                    let cost = usage
+                        .prompt_tokens
+                        .div_ceil(2)
+                        .checked_add(usage.completion_tokens)
+                        .ok_or("invalid usage")?;
+                    let refund = reservation
+                        .checked_sub(cost)
+                        .ok_or("usage exceeds reservation")?;
+                    let mut file = std::fs::OpenOptions::new()
+                        .read(true)
+                        .write(true)
+                        .open(path)?;
+                    file.lock()?;
+                    let mut raw = String::new();
+                    file.read_to_string(&mut raw)?;
+                    let mut state: Value = serde_json::from_str(&raw)?;
+                    let reserved = state["reserved_micro_usd"]
+                        .as_u64()
+                        .ok_or("invalid ledger")?;
+                    state["reserved_micro_usd"] =
+                        json!(reserved.checked_sub(refund).ok_or("invalid ledger")?);
+                    state["settled_requests"] =
+                        json!(state["settled_requests"].as_u64().unwrap_or(0) + 1);
+                    file.seek(SeekFrom::Start(0))?;
+                    file.set_len(0)?;
+                    file.write_all(serde_json::to_string(&state)?.as_bytes())?;
+                    file.sync_all()?;
                     Ok(())
                 };
-                if reserve().is_err() {
-                    return Err(prime_radiant::providers::ProviderError::Quota);
-                }
+                settle().map_err(|_| prime_radiant::providers::ProviderError::Quota)?;
             }
-            self.inner.complete(system, input, config).await
+            Ok(text)
         })
     }
 }
@@ -175,12 +214,12 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     let started = std::time::Instant::now();
                     let prompt = plan.prompt()?;
                     let mut input = extraction_message(&source, previous_failure.as_deref());
-                    if plan.version() == "extraction-v12" {
-                        if let Some(previous) = &previous_attempt {
-                            let mut payload: Value = serde_json::from_str(&input)?;
-                            payload["untrusted_previous_attempt"] = previous.clone();
-                            input = payload.to_string();
-                        }
+                    if plan.version() == "extraction-v12"
+                        && let Some(previous) = &previous_attempt
+                    {
+                        let mut payload: Value = serde_json::from_str(&input)?;
+                        payload["untrusted_previous_attempt"] = previous.clone();
+                        input = payload.to_string();
                     }
                     let mut result = json!({"case_id":case["id"],"language":case["language"],"category":case["category"],"split":args.split,"run":run,"variant":variant,"plan":plan,"prompt_hash":plan.hash()?,"source_hash":hash(&source.content),"corpus_case":case,"reviews":[],"human_review":null});
                     result["attempt"] = json!(attempt);

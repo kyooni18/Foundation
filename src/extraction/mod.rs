@@ -589,10 +589,10 @@ async fn propose_with_feedback(
     let mut input: Value =
         serde_json::from_str(&extraction_message(source, feedback)).expect("payload");
     input["prior_extraction_claims"] = serde_json::json!(prior_claims);
-    if plan.version() == "extraction-v12" {
-        if let Some(repair) = repair {
-            input["untrusted_previous_attempt"] = repair.clone();
-        }
+    if plan.version() == "extraction-v12"
+        && let Some(repair) = repair
+    {
+        input["untrusted_previous_attempt"] = repair.clone();
     }
     let input = input.to_string();
     let call = |e: ProviderError| {

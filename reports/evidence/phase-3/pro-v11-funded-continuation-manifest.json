@@ -1,0 +1,21 @@
+{
+  "corpus": "/tmp/phase3-v11-funded-corpus.json",
+  "output": "/tmp/phase3-v11-funded-development",
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "prompt_version": "extraction-v11",
+  "max_output_tokens": 16384,
+  "review_max_output_tokens": 8192,
+  "split": "dev",
+  "runs": 2,
+  "repair_attempts": 3,
+  "workers": 4,
+  "shard_size": 1,
+  "variants": "audited",
+  "expected_rows": 208,
+  "git_commit": "e7ef067d841ed2d1cd6ee156bde41a0e34525286",
+  "status": "incomplete",
+  "succeeded_shards": 8,
+  "failed_shards": 4,
+  "skipped_shards": 92
+}

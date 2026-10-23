@@ -591,7 +591,7 @@ locks and durably reserves `(UTF-8 system/input bytes + 4096)/2`, rounded up, pl
 the explicit maximum output tokens, in microdollars. Rates of $0.50/M input and
 $1/M output exceed the frozen current model catalog rates including its higher tier
 and cache-write rates; byte counts conservatively bound input token counts with
-additional envelope allowance. No reservation is refunded, including failed calls.
+additional envelope allowance. The initial no-refund guard stopped conservatively before actual spending reached the ceiling. Successful metered calls now settle to a bound computed from provider-reported token counts at those same conservative rates. Failed or unmetered calls keep their full reservation.
 All concurrent shards share the same ceiling. Invalid/missing ledgers, unpriced
 models or unspecified output caps fail closed. Local refusal is represented as quota
 in the provider-compatible diagnostic and stops dispatch; the ledger distinguishes
@@ -608,3 +608,20 @@ repaired candidates undergo new complete reviews and publication approval. An
 existing fake-provider regression now inspects the actual retry input and verifies
 that four new reviews are required and no Claims publish automatically. V11 and
 earlier frozen inputs remain unchanged. Real paired results remain to be evaluated.
+
+
+The first funded v11 continuation saved 42 attempts: 12 terminal gate passes, four
+atomicity failures, one language failure and four local-budget terminations. Most
+scheduled shards were skipped when reservations filled; this is not a completed
+116-source semantic evaluation. The account usage increase after every child exited
+was $0.399282. The next shared ceiling was reduced by that amount, preserving the
+$5 total allowance. These are account-level increases since a private baseline,
+not fabricated attribution of earlier account usage to this task.
+
+OpenRouter optionally exposes bounded token usage with a completion. Its existing
+provider trait still returns only text; domain semantics and transport responses
+never receive billing metadata. The manual guard settles successful reservations
+using reported prompt/completion counts, preserving locked in-flight reservations.
+Invalid usage or accounting failures stop the evaluator; missing usage retains the
+full reservation. The existing response-decoding regression also checks usage
+decoding; no additional compile-time test was added.

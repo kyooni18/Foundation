@@ -64,6 +64,69 @@ impl OpenRouter {
         })
     }
 }
+/// Provider-reported token counts, for optional operational budget accounting only.
+/// These never influence Claim semantics, authorship or authorization.
+#[derive(Debug, Clone, Copy)]
+pub struct TokenUsage {
+    pub prompt_tokens: u64,
+    pub completion_tokens: u64,
+}
+impl OpenRouter {
+    pub async fn complete_with_usage(
+        &self,
+        system: &str,
+        input: &str,
+        config: &ModelConfig,
+    ) -> Result<(String, Option<TokenUsage>), ProviderError> {
+        // D-24: DeepSeek is restricted to English-only payloads, including review context.
+        if config.model.to_lowercase().contains("deepseek")
+            && (!system.is_ascii() || !input.is_ascii())
+        {
+            return Err(ProviderError::LanguageRestriction);
+        }
+        if config.model.is_empty() || !(1..=600).contains(&config.timeout_seconds) {
+            return Err(ProviderError::Unavailable);
+        }
+        if config
+            .max_output_tokens
+            .is_some_and(|n| !(1..=262144).contains(&n))
+        {
+            return Err(ProviderError::Unavailable);
+        }
+        let mut payload = serde_json::json!({"model":config.model,"temperature":0,"response_format":{"type":"json_object"},"messages":[{"role":"system","content":system},{"role":"user","content":input}]});
+        if let Some(limit) = config.max_output_tokens {
+            payload["max_tokens"] = limit.into();
+        }
+        let response = self
+            .client
+            .post("https://openrouter.ai/api/v1/chat/completions")
+            .bearer_auth(&self.key)
+            .timeout(Duration::from_secs(config.timeout_seconds))
+            .json(&payload)
+            .send()
+            .await
+            .map_err(|e| {
+                if e.is_timeout() {
+                    ProviderError::Timeout
+                } else {
+                    ProviderError::Unavailable
+                }
+            })?;
+        if response.status() == reqwest::StatusCode::PAYMENT_REQUIRED {
+            return Err(ProviderError::Quota);
+        }
+        if response.status() == reqwest::StatusCode::BAD_REQUEST {
+            return Err(ProviderError::InvalidRequest);
+        }
+        if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
+            return Err(ProviderError::RateLimited);
+        }
+        if !response.status().is_success() {
+            return Err(ProviderError::Unavailable);
+        }
+        read_completion_with_usage(response).await
+    }
+}
 impl LlmProvider for OpenRouter {
     fn identity(&self) -> &str {
         "openrouter"
@@ -75,53 +138,9 @@ impl LlmProvider for OpenRouter {
         config: &'a ModelConfig,
     ) -> ProviderFuture<'a> {
         Box::pin(async move {
-            // D-24: DeepSeek is restricted to English-only payloads, including review context.
-            if config.model.to_lowercase().contains("deepseek")
-                && (!system.is_ascii() || !input.is_ascii())
-            {
-                return Err(ProviderError::LanguageRestriction);
-            }
-            if config.model.is_empty() || !(1..=600).contains(&config.timeout_seconds) {
-                return Err(ProviderError::Unavailable);
-            }
-            if config
-                .max_output_tokens
-                .is_some_and(|n| !(1..=262144).contains(&n))
-            {
-                return Err(ProviderError::Unavailable);
-            }
-            let mut payload = serde_json::json!({"model":config.model,"temperature":0,"response_format":{"type":"json_object"},"messages":[{"role":"system","content":system},{"role":"user","content":input}]});
-            if let Some(limit) = config.max_output_tokens {
-                payload["max_tokens"] = limit.into();
-            }
-            let response = self
-                .client
-                .post("https://openrouter.ai/api/v1/chat/completions")
-                .bearer_auth(&self.key)
-                .timeout(Duration::from_secs(config.timeout_seconds))
-                .json(&payload)
-                .send()
+            self.complete_with_usage(system, input, config)
                 .await
-                .map_err(|e| {
-                    if e.is_timeout() {
-                        ProviderError::Timeout
-                    } else {
-                        ProviderError::Unavailable
-                    }
-                })?;
-            if response.status() == reqwest::StatusCode::PAYMENT_REQUIRED {
-                return Err(ProviderError::Quota);
-            }
-            if response.status() == reqwest::StatusCode::BAD_REQUEST {
-                return Err(ProviderError::InvalidRequest);
-            }
-            if response.status() == reqwest::StatusCode::TOO_MANY_REQUESTS {
-                return Err(ProviderError::RateLimited);
-            }
-            if !response.status().is_success() {
-                return Err(ProviderError::Unavailable);
-            }
-            read_completion(response).await
+                .map(|(text, _)| text)
         })
     }
 }
@@ -149,7 +168,15 @@ impl LlmProvider for FakeProvider {
     }
 }
 
-async fn read_completion(mut response: reqwest::Response) -> Result<String, ProviderError> {
+#[cfg(test)]
+async fn read_completion(response: reqwest::Response) -> Result<String, ProviderError> {
+    read_completion_with_usage(response)
+        .await
+        .map(|(text, _)| text)
+}
+async fn read_completion_with_usage(
+    mut response: reqwest::Response,
+) -> Result<(String, Option<TokenUsage>), ProviderError> {
     // Bound bytes before JSON decoding; Content-Length is only an early hint.
     const MAX_RESPONSE: usize = 8 * 1024 * 1024;
     if response
@@ -177,10 +204,18 @@ async fn read_completion(mut response: reqwest::Response) -> Result<String, Prov
     if body["choices"][0]["finish_reason"] != "stop" {
         return Err(ProviderError::InvalidOutput);
     }
-    body["choices"][0]["message"]["content"]
+    let usage = body["usage"]["prompt_tokens"]
+        .as_u64()
+        .zip(body["usage"]["completion_tokens"].as_u64())
+        .map(|(prompt_tokens, completion_tokens)| TokenUsage {
+            prompt_tokens,
+            completion_tokens,
+        });
+    let text = body["choices"][0]["message"]["content"]
         .as_str()
         .map(String::from)
-        .ok_or(ProviderError::InvalidOutput)
+        .ok_or(ProviderError::InvalidOutput)?;
+    Ok((text, usage))
 }
 
 #[cfg(test)]
@@ -189,8 +224,7 @@ mod tests {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     #[tokio::test]
     async fn response_decoding_bounds_and_sanitized_errors() {
-        let valid =
-            r#"{"choices":[{"finish_reason":"stop","message":{"content":"{\"claims\":[]}"}}]}"#;
+        let valid = r#"{"choices":[{"finish_reason":"stop","message":{"content":"{\"claims\":[]}"}}],"usage":{"prompt_tokens":17,"completion_tokens":3}}"#;
         let truncated = valid.replace("\"stop\"", "\"length\"");
         let bodies = [
             (
@@ -225,7 +259,7 @@ mod tests {
                 Err(ProviderError::InvalidOutput),
             ),
         ];
-        for (wire, expected) in bodies {
+        for (index, (wire, expected)) in bodies.into_iter().enumerate() {
             let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
             let addr = listener.local_addr().unwrap();
             let task = tokio::spawn(async move {
@@ -243,7 +277,14 @@ mod tests {
                 .send()
                 .await
                 .unwrap();
-            assert_eq!(read_completion(response).await, expected);
+            if index == 0 {
+                let (text, usage) = read_completion_with_usage(response).await.unwrap();
+                assert_eq!(Ok(text), expected);
+                let usage = usage.unwrap();
+                assert_eq!((usage.prompt_tokens, usage.completion_tokens), (17, 3));
+            } else {
+                assert_eq!(read_completion(response).await, expected);
+            }
             task.await.unwrap();
         }
     }
