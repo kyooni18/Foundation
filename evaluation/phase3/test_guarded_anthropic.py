@@ -149,6 +149,23 @@ class DirectClaudeTest(unittest.TestCase):
         with self.connection() as conn:
             self.assertIsNotNone(conn.execute('SELECT actual FROM request').fetchone()[0])
 
+    def test_miscounted_offsets_reanchor_only_unique_exact_quotes(self):
+        source='가 나 가'
+        j=dict(claims=[dict(index=0,evidence=[dict(start=1,end=3,quote='나'),
+                                               dict(start=0,end=1,quote='가'),
+                                               dict(start=2,end=3,quote='가')])],inventory=[])
+        fixed,corrections=a.anchor_evidence(j,source)
+        self.assertEqual(fixed['claims'][0]['evidence'][0],dict(start=2,end=3,quote='나'))
+        self.assertEqual(fixed['claims'][0]['evidence'][2],dict(start=2,end=3,quote='가'))
+        self.assertEqual(len(corrections),1)
+        self.assertEqual(j['claims'][0]['evidence'][0]['start'],1)
+        source=self.packet['case']['source']
+        for c in self.judgment['claims']:
+            c['evidence']=[dict(start=1,end=len(source)+5,quote=source)]
+        self.response['content'][0]['text']=json.dumps(self.judgment,ensure_ascii=False)
+        self.dispatcher().dispatch(self.packet)
+        self.assertEqual(len(list((self.root/'evidence').glob('*.anchoring.json'))),1)
+
     def test_long_prompt_tier_and_us_inference_are_not_underpriced(self):
         small=a.conservative_usage(dict(usage=dict(input_tokens=100000,output_tokens=0)))
         large=a.conservative_usage(dict(usage=dict(input_tokens=100001,output_tokens=0)))

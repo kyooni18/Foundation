@@ -136,6 +136,31 @@ def conservative_usage(response):
                 conservative_upper_nanos=upper, billed_cost_usd=None)
 
 
+def anchor_evidence(judgment, source):
+    """Re-anchor spans whose quote is an exact, UNIQUE substring of the Source.
+
+    Models miscount Korean character offsets. The quote text is the evidence; a
+    unique exact match fixes the span without interpretation. Absent or repeated
+    quotes stay untouched and fail validation. The raw response is never altered.
+    """
+    judgment = json.loads(json.dumps(judgment))
+    corrections = []
+    spans = [('claim', c['index'], c['evidence']) for c in judgment.get('claims', [])] + \
+            [('inventory', r['reference_index'], r['evidence']) for r in judgment.get('inventory', [])]
+    for kind, index, evidence in spans:
+        for e in evidence:
+            q = e.get('quote')
+            if (not isinstance(q, str) or not q or type(e.get('start')) is not int or
+                    type(e.get('end')) is not int or source[e['start']:e['end']] == q):
+                continue
+            position = source.find(q)
+            if position >= 0 and source.find(q, position + 1) < 0:
+                corrections.append(dict(kind=kind, index=index, quote=q, model=[e['start'], e['end']],
+                                        anchored=[position, position + len(q)]))
+                e['start'], e['end'] = position, position + len(q)
+    return judgment, corrections
+
+
 class Dispatcher(existing.Dispatcher):
     """Shares the exact ledger, local ceiling, request IDs, and $0.10 continuation."""
     def __init__(self, ledger, evidence, transport, authorization):
@@ -194,30 +219,53 @@ class Dispatcher(existing.Dispatcher):
             existing.immutable(self.evidence / (ident + '.accounting.json'),usage)
             existing.require(usage['conservative_upper_nanos'] <= q['estimate'],
                              'billed-usage bound exceeds reservation; stop')
-            existing.require(response.get('type') == 'message' and response.get('model') == MODEL
-                             and response.get('stop_reason') == 'end_turn', 'incomplete model response')
-            blocks = response.get('content')
-            existing.require(isinstance(blocks,list) and
-                             all(isinstance(block,dict) and block.get('type') in {'text', 'thinking'}
-                                 for block in blocks) and
-                             sum(block.get('type') == 'text' for block in blocks) == 1,
-                             'unexpected output format')
-            existing.require(__debug__, 'optimized Python unsupported')
-            judgment = focused.parse_judgment(next(block['text'] for block in blocks
-                                                    if block.get('type') == 'text'))
-            focused.validate_judgment(judgment,packet)
-            existing.immutable(self.evidence / (ident + '.judgment.json'), judgment)
-            judgments = [judgment]
-            if repeat:
-                parent = self.evidence / ('focused-haiku-' + case + '-primary-' + ATTEMPT + '.judgment.json')
-                judgments.insert(0, focused.parse_judgment(parent.read_text()))
-            existing.immutable(self.evidence / (ident + '.comparison.json'),
-                               existing.reconcile(packet,judgments,
-                                   historical_disagreement=case=='r1-ambiguous_ref',
-                                   editorial_contested=case in {'r1-ambiguous_ref','v23-fresh-003'}))
-            return judgment
+            return self.adjudicate(ident, packet, response, repeat)
         finally:
             conn.close()
+
+    def adjudicate(self, ident, packet, response, repeat=False):
+        """Protocol checks on a settled response; shared by live dispatch and offline replay."""
+        existing.require(response.get('type') == 'message' and response.get('model') == MODEL
+                         and response.get('stop_reason') == 'end_turn', 'incomplete model response')
+        blocks = response.get('content')
+        existing.require(isinstance(blocks,list) and
+                         all(isinstance(block,dict) and block.get('type') in {'text', 'thinking'}
+                             for block in blocks) and
+                         sum(block.get('type') == 'text' for block in blocks) == 1,
+                         'unexpected output format')
+        existing.require(__debug__, 'optimized Python unsupported')
+        judgment = focused.parse_judgment(next(block['text'] for block in blocks
+                                                if block.get('type') == 'text'))
+        judgment, anchoring = anchor_evidence(judgment, packet['case']['source'])
+        focused.validate_judgment(judgment,packet)
+        if anchoring:
+            existing.immutable(self.evidence / (ident + '.anchoring.json'), anchoring)
+        existing.immutable(self.evidence / (ident + '.judgment.json'), judgment)
+        judgments = [judgment]
+        if repeat:
+            parent = self.evidence / ('focused-haiku-' + packet['case']['id'] + '-primary-' + ATTEMPT + '.judgment.json')
+            judgments.insert(0, focused.parse_judgment(parent.read_text()))
+        existing.immutable(self.evidence / (ident + '.comparison.json'),
+                           existing.reconcile(packet,judgments,
+                               historical_disagreement=packet['case']['id']=='r1-ambiguous_ref',
+                               editorial_contested=packet['case']['id'] in {'r1-ambiguous_ref','v23-fresh-003'}))
+        return judgment
+
+    def revalidate(self, packet, repeat=False):
+        """Offline: adjudicate an already settled immutable response. No network."""
+        ident = 'focused-haiku-' + packet['case']['id'] + ('-repeat-' if repeat else '-primary-') + ATTEMPT
+        conn = self.connection()
+        try:
+            existing.require(conn.execute('SELECT 1 FROM request WHERE id=? AND actual IS NOT NULL',
+                                          (ident,)).fetchone(), 'response not settled')
+        finally:
+            conn.close()
+        existing.require(not (self.evidence / (ident + '.judgment.json')).exists(), 'already judged')
+        request = json.loads((self.evidence / (ident + '.request.json')).read_text())
+        existing.require(request['packet_sha256'] == focused.sha(focused.canonical(packet)),
+                         'packet mismatch')
+        return self.adjudicate(ident, packet,
+                               json.loads((self.evidence / (ident + '.response.json')).read_text()), repeat)
 
 
 def transport(key):
@@ -245,23 +293,34 @@ def main():
     parser.add_argument('--evidence',type=Path)
     parser.add_argument('--case',help='exactly one frozen case per paid invocation')
     parser.add_argument('--repeat',action='store_true')
+    parser.add_argument('--revalidate',action='store_true',help='offline; settled response only')
     args=parser.parse_args()
     manifest,selected=existing.packets()
-    if not args.execute:
+    if not args.execute and not args.revalidate:
         print(json.dumps(dict(status='offline only',provider='anthropic_direct',model=MODEL,
                               prepared_primaries=len(selected),missing=12-len(selected),
                               maximum_calls=15,spend_limit_nanos=existing.CONTINUATION)))
         return
     existing.require(args.authorization and args.evidence and __debug__,
                      'authorization/evidence required')
-    key = os.environ.get('ANTHROPIC_API_KEY')
-    existing.require(key and len(key) < 1024 and '\n' not in key and '\r' not in key,
-                     'ANTHROPIC_API_KEY not configured')
-    dispatcher = Dispatcher(existing.LEDGER,args.evidence,transport(key),
+    if args.revalidate:
+        def offline(*_):
+            raise ValueError('offline revalidation never uses the network')
+        call = offline
+    else:
+        key = os.environ.get('ANTHROPIC_API_KEY')
+        existing.require(key and len(key) < 1024 and '\n' not in key and '\r' not in key,
+                         'ANTHROPIC_API_KEY not configured')
+        call = transport(key)
+    dispatcher = Dispatcher(existing.LEDGER,args.evidence,call,
                             json.loads(args.authorization.read_text()))
     # One explicit sequential call per invocation; no batch loop, retry or fallback.
     chosen = [p for p in selected if p['case']['id'] == args.case]
     existing.require(len(chosen) == 1, 'select exactly one prepared case')
+    if args.revalidate:
+        print(json.dumps(dict(case=args.case, revalidated=True,
+                              verdict=dispatcher.revalidate(chosen[0], args.repeat)['verdict'])))
+        return
     print(json.dumps(dict(case=args.case, repeat=args.repeat,
                           verdict=dispatcher.dispatch(chosen[0], repeat=args.repeat)['verdict'])))
 
