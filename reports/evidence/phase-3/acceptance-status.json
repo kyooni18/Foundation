@@ -18,7 +18,8 @@
     "full final-profile development corpus rerun and semantic audit",
     "repeated broad fresh held-out comparison",
     "independent review of whole benchmark",
-    "resolve reviewer false-positive/false-negative reliability limitations"
+    "resolve reviewer false-positive/false-negative reliability limitations",
+    "reviewer emits pass with uncertainty flags in 4 of 9 judgments; repeat-vs-primary verdict disagreement on 2 of 3 repeated cases"
   ],
   "completion_tag_created": false,
   "final_profile_focused_results": {
@@ -49,5 +50,18 @@
   "current_spendable_remaining_usd": 0,
   "current_validation_version": "source-checks-v4",
   "offline_distinct_replayed_attempts": 4752,
-  "offline_distinct_replayed_sources": 145
+  "offline_distinct_replayed_sources": 145,
+  "direct_anthropic_o8000": {
+    "summary": "reports/evidence/phase-3/direct-anthropic/o8000-summary.json",
+    "paid_calls": 9,
+    "complete": 9,
+    "truncated": 0,
+    "protocol_valid": 4,
+    "protocol_invalid": 5,
+    "accepted_claims": 0,
+    "conservative_upper_bound_usd": 0.0180851,
+    "cumulative_conservative_usd": 4.81169545,
+    "remaining_ceiling_usd": 0.0709579,
+    "semantic_acceptance": null
+  }
 }

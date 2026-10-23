@@ -1,0 +1,38 @@
+{
+  "profile": "o8000: claude-haiku-5-5, effort low, adaptive thinking (default), json_schema output, max_tokens 8000; deviation from frozen 2400 recorded",
+  "paid_calls": 9,
+  "complete_responses": 9,
+  "truncated_responses": 0,
+  "historical_truncated_attempt": "focused-haiku-r1-nested_quote-primary (2400 tokens, max_tokens) preserved unchanged",
+  "conservative_upper_bound_usd": 0.0180851,
+  "list_price_token_estimate_usd": 0.0138473,
+  "provider_billed_usd": null,
+  "max_observed_output_tokens": 3485,
+  "max_observed_thinking_tokens": 1650,
+  "protocol_valid_judgments": ["r1-nested_quote primary", "r1-ambiguous_ref primary", "v23-fresh-003 primary", "v23-fresh-003 repeat"],
+  "protocol_invalid_judgments": {
+    "r1-hypothetical primary": "verdict pass with uncertainty flags",
+    "r1-habitual_temporal primary": "verdict pass with uncertainty flags",
+    "r1-nested_quote repeat": "verdict pass with uncertainty flags",
+    "r1-ambiguous_ref repeat": "verdict pass with uncertainty flags",
+    "v23-fresh-004 primary": "korean_meaning not_applicable on English claim in mixed case (possible validator over-strictness; not relaxed post hoc)"
+  },
+  "evidence_reanchored": "model character offsets miscounted on Korean; unique exact quotes re-anchored, recorded in *.anchoring.json",
+  "reviewer_disagreements": {
+    "r1-nested_quote": "primary unresolved (unsupported gloss, temporal) vs repeat attempted pass",
+    "r1-ambiguous_ref": "primary unresolved (implicit irritation object) vs repeat attempted pass",
+    "v23-fresh-003": "both atomicity fail; inventory pass vs unresolved"
+  },
+  "assistant_adjudication_not_independent_gold": {
+    "r1-nested_quote": "candidate gloss '원문 화자가 속한 집단의 구체적 내용이 원문에 밝혀지지 않은 방법' distorts '우리 방법' and adds an unsupported claim; repeat pass is a false acceptance",
+    "r1-ambiguous_ref": "claim 1 links irritation to lateness; contested reading, stays unresolved",
+    "r1-hypothetical": "conditional scope and intention preserved; unaccepted because judgment protocol-invalid",
+    "r1-habitual_temporal": "habitual present preserved; unaccepted because judgment protocol-invalid",
+    "v23-fresh-003": "claim bundles two truth-evaluable propositions (possible delay; not confirmed): atomicity violation correctly rejected",
+    "v23-fresh-004": "claim 1 contextual resolution of 'The count' plausible; unaccepted"
+  },
+  "not_run": ["v23-fresh-002 (English, lower priority)", "5 cases without v23 candidates"],
+  "accepted_claims": 0,
+  "semantic_acceptance": null,
+  "production_approval": false
+}
