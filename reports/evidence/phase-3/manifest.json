@@ -1,20 +1,25 @@
 {
   "status": "implementation checkpoint; live semantic acceptance not established",
-  "implementation_commit": "3edf6a3",
+  "implementation_commit": "17347f2",
   "offline_tests_passed": 40,
   "helper_tests": 2,
-  "provider_access": "HTTP 402; valid key, exhausted account credits; model calls stopped",
+  "provider_access": "funded real evaluations completed within $5 ceiling; no ongoing paid calls",
   "completion_tag_created": false,
   "development_cases": 116,
-  "heldout_cases": 20,
-  "final_evaluations": "v11 development quota-interrupted; fresh heldout-v10.json not run",
-  "annotation_status": "editorial draft inventories; assistant audits are not independent human adjudication",
+  "heldout_cases": 4,
+  "final_evaluations": "v23 focused and four targeted fresh challenges inspected; broad final-profile acceptance and independent full-corpus review unverified; all historical quota failures retained",
+  "annotation_status": "editorial inventories plus explicit source-level user adjudications; assistant audits are not independent whole-corpus gold",
   "artifacts": {
+    "__pycache__/v18-budgeted-development-controller.cpython-315.pyc": {
+      "sha256": "7fbef2d3075e75ee2d2f702a58e5523491ccc729f4820dc490f6fdfed95cd956"
+    },
     "acceptance-status.json": {
-      "sha256": "9963e0bc05923ae84df526916d89067375848266c065b300885c10d542b051b6"
+      "sha256": "a276692b1c8aeb4ca6f3da1f2a04c746cba1d9e55efef7dc8a2f734aa9609149"
     },
     "attachment-assistant-audit.jsonl": {
-      "sha256": "d1d6ad6fbf9857ebe28388d7162d56a2ed2104c323f97dade55cff3a28d13f0d"
+      "sha256": "d1d6ad6fbf9857ebe28388d7162d56a2ed2104c323f97dade55cff3a28d13f0d",
+      "rows": 16,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "attachment-assistant-metrics.json": {
       "sha256": "16ca025701ce4694a896be227bd41f6f1805233fb5267c1cbb7e100a998ac56e"
@@ -22,22 +27,22 @@
     "attachment-v6.jsonl.gz": {
       "sha256": "e4816219e279fee32d6d96a9356229eb5b16e48cfe00fbc18517bc19e2532a9c",
       "rows": 11,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "attachment-v7.jsonl.gz": {
       "sha256": "8194b3a1e7cceec241d22efed1e820a9a9d172cf57b546790327e6c846b98b76",
       "rows": 8,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "attachment-v8.jsonl.gz": {
       "sha256": "76e3d0b6b3cca6278a30c76ed6ba097f459a677cffc31e3a28238a29d3ae99bb",
       "rows": 20,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "attachment-v9.jsonl.gz": {
       "sha256": "315e85f4f2115655a7abba60a5972328898f0ca9a4e9e32cf83069e405d57560",
       "rows": 20,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "build.txt": {
       "sha256": "b58d4d52c9da463d71366a65d4a4dd458aed043f90eeca0825cf160e03dd63fb"
@@ -46,7 +51,7 @@
       "sha256": "4aeae6c8d1d3c0542916c70a0d416ae7923bc390a5a3b558b3b010eeed1bc2b7"
     },
     "clippy.txt": {
-      "sha256": "11dd44ce39733396ae11578a79196c036ae68f05c7ced55e6b2b17baff4c4588"
+      "sha256": "95e7cce02867ea564809e4515f741daad0341638cf1ae0d8ee901f7f73e8db50"
     },
     "correction-after.txt": {
       "sha256": "0ed6ed27196baf6a88e6d9c5c5474fd780163558d008e9c0fcd0fe53363ede40"
@@ -66,17 +71,17 @@
     "dev-v1.jsonl.gz": {
       "sha256": "93e86fe65977057ccaa9439ecd98980461ac375871c9bb49b905b640d207f216",
       "rows": 448,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "dev-v2.jsonl.gz": {
       "sha256": "fdbe8aed541b81026f057c075182b77bab49a31bcd573530d9def9e9a93cf91e",
       "rows": 192,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "dev-v3-reservation-failed.jsonl.gz": {
       "sha256": "fdec3f24f26a85a2655c31104cbad28b183816aba05858bf1759bf6b05ae0927",
       "rows": 216,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "english-request-error.json": {
       "sha256": "ac8d7c84bdb2a1411cd5b96a024f60da6adc67b8cdae32cf5a6ba127e9aced5f"
@@ -84,21 +89,54 @@
     "english-staged-pilot.jsonl.gz": {
       "sha256": "cd42174a673e0d980ce80105ba1e7911141e07b8e6029fc082e3555adb3f4f0d",
       "rows": 2,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "english-staged-request-failed.jsonl.gz": {
       "sha256": "d14152e54e0fdb37b51438ee3df0bf9acca68f433e7a5970f9aa29c38a682b0c",
       "rows": 72,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "fmt.txt": {
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "funded-budget-checkpoint-before-v14.json": {
+      "sha256": "52fa0ecad82d4173d02cf9667b4fe09fe3575e8b6294074441bc9f52917fd749"
+    },
+    "funded-budget-checkpoint-before-v15.json": {
+      "sha256": "fb0af50898d4b3751113dc9b973fe317852007c7adaebd33f134c570c907c418"
+    },
+    "funded-budget-checkpoint-before-v16.json": {
+      "sha256": "41cb8f7e7401fda25b2091bc5177e0705806e7835a5752d8dcd644a80d701a4e"
+    },
+    "funded-budget-checkpoint-before-v17.json": {
+      "sha256": "2cedb341a650ec527c99d93c6277cd2adb6502535d4cf248f2e4958bbef66394"
+    },
+    "funded-budget-checkpoint-before-v18.json": {
+      "sha256": "ba5907c5d6b39cdbca4b8a81cd5fd9573a096ba0d2ffd2903e64927224ac5b7f"
+    },
+    "funded-budget-checkpoint-before-v19.json": {
+      "sha256": "f1da9af77a03f88f7a8d45dbfa1fdfefbdd357eaaff264015af5cad2e369456b"
+    },
+    "funded-budget-checkpoint-before-v20.json": {
+      "sha256": "bc9753cc85d06e024671694391f3d5adf20ddca4a541e4c7a7725abc37a72083"
+    },
+    "funded-budget-checkpoint-before-v21.json": {
+      "sha256": "e55e0a2610e264543f243fbdbab3f11858aac0fc0158e9410ba10ded68d4e557"
+    },
+    "funded-budget-checkpoint-v21-continuation.json": {
+      "sha256": "f40b4e831716b251fda2e27427b206b10080ff762736d15044a3775d10c5aeec"
+    },
+    "funded-development-controller.py": {
+      "sha256": "b93fc72a5ed87d0274891d9e33015f701b373f8ab3ef71081663412ae7512470"
+    },
+    "funded-final-budget-checkpoint.json": {
+      "sha256": "a95ce2e98be96613b3fcbf1854f426c15e2f08911beea3271f8f67866d559e74"
     },
     "human-review-packet.json": {
       "sha256": "ac5df19d1f55ddad870c9e4e689c313536fec4a266c51fbdef1952cfb05e0e5a"
     },
     "human-review-packet.md": {
-      "sha256": "06185e037a75a7887e08d9837538525f14cd662add94819efdd7d55e74a56970"
+      "sha256": "9dfcfc9d7894386a0f794c651b1ead022e9a55668bf3925c093cdc4165767312"
     },
     "language-drift-v4.json": {
       "sha256": "5a3622784e8736c508f65770b8d20773ad89a444d32c509cee223e494e7e522d"
@@ -119,90 +157,94 @@
       "sha256": "7020c0cf86b42fd166499f704ebc8adaa212b37372d5bb1b78f849a2ccd8a626"
     },
     "live-v1/pilot.jsonl": {
-      "sha256": "e039c1011dd1390cea832c7ecc4f4dd59bfc74a67244b765ba4377337a28cdd3"
+      "sha256": "e039c1011dd1390cea832c7ecc4f4dd59bfc74a67244b765ba4377337a28cdd3",
+      "rows": 36,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "long-dev-v2.jsonl.gz": {
       "sha256": "c26148b93e8dfba190b72d37664429aa72918440dfe80128797beeecc007c3aa",
       "rows": 32,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-dev-v1.jsonl.gz": {
       "sha256": "8b7d6845965ad38371c355ba16597b3a0e00c5d5e2acd5631ecda29d0e33333a",
       "rows": 504,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-dev-v3-revalidated.jsonl.gz": {
       "sha256": "21bfab849fcd31702d7ae877af3825b4126dcd4e2ffc5bc6f6499310c97cb371",
       "rows": 216,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-dev-v3.jsonl.gz": {
       "sha256": "076a51167ff5cae31c2d43725862803934c295891307012e8f11a65d8b56fed7",
       "rows": 216,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-dev-v4-repair-revalidated.jsonl.gz": {
       "sha256": "db652eb3359dc72fb37b204b16d2706be938d5deb6e8a29de4c5558eac4cb115",
       "rows": 219,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-dev-v4-repair.jsonl.gz": {
       "sha256": "01dbc6e548eaa09ac027653081125d1fcbc1ae9d120f73684ea203f5174d78ce",
       "rows": 219,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-dev-v5-repair.jsonl.gz": {
       "sha256": "658f632cf8e290e9ddec922cdd9024c0185d3be5edc6389b4dc41b1ec996f5aa",
       "rows": 119,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-english-staged-v3.jsonl.gz": {
       "sha256": "d45fc31d346bcc271e1c78ba0caf6c79f06c783a6577838274d8aceb80591cc9",
       "rows": 72,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-legacy-r2.jsonl.gz": {
       "sha256": "e3b6badcafe25796f3162621c1d2e6a1b88acb3f5fbd000940ff96f170a60b05",
       "rows": 96,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-legacy-v3.jsonl.gz": {
       "sha256": "ca830a6d55b216b7546c8c33c1c20685638beb6586db531904fbb3607c667697",
       "rows": 96,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-legacy-v5.jsonl.gz": {
       "sha256": "14d209cbe7c90a6522242549e2e9a0f8311f50810174d73eb85d5a22023439e1",
       "rows": 96,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-pilot.jsonl.gz": {
       "sha256": "1b082bfde7ba5b12665277062e9f97cb0b618b48346b79a1833b34f986b48e77",
       "rows": 2,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-pro-v5-controls.jsonl.gz": {
       "sha256": "18a402339df3cf5876ec0b4cd95eb32a3b8ac0e307282d38f0c49e30d093ffa8",
       "rows": 33,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-pro-v5-pragmatics.jsonl.gz": {
       "sha256": "b8b3e03ee90aa91c8740bb61a7f41c034eb11eb38701f51b2db5428022fa8d53",
       "rows": 35,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-pro-v6-calibration-revalidated.jsonl.gz": {
       "sha256": "67b4abdaaf74d44bd917889f7914f4e084cf4bff6750a893137573512eb55089",
       "rows": 54,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-pro-v6-calibration.jsonl.gz": {
       "sha256": "ef0b5660874cd6d6f403d258b5758948f31e101d5fc6e5d8a4639a8ab9aed068",
       "rows": 54,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-v3-assistant-audit.jsonl": {
-      "sha256": "6e54e4d2b7acc1616dee40c590627e5c851860529fd81c5ecb61af946b095476"
+      "sha256": "6e54e4d2b7acc1616dee40c590627e5c851860529fd81c5ecb61af946b095476",
+      "rows": 64,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "luna-v3-assistant-metrics.json": {
       "sha256": "222f1e0e65d176e4a424a4699490204de7a3b93c987b7fb4954895131e7da26f"
@@ -219,13 +261,16 @@
     "negative-exception-counterexample.json": {
       "sha256": "5c7b7333f60de1877676eeb0bd2437ec9e98d529de45fe9dfd00bf9d312037cc"
     },
+    "priced-model-2026-10-23.json": {
+      "sha256": "8b247f9e19a758e850be86894c82216707706249ef3e2f588d4b19a608beb8cb"
+    },
     "pro-v10-development-diagnostics.json": {
       "sha256": "90bdda4f34978013c62a8ca6189f695fb19874d50ff1d034021941b4a31dadf8"
     },
     "pro-v10-development.jsonl.gz": {
       "sha256": "3b3014f66dec6c76e08f2218b79fb91e2bedb4028ed4c0278b325b0d3e6b647e",
       "rows": 328,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "pro-v11-development-diagnostics.json": {
       "sha256": "5282aefe1cba2794aeadf5720a38cfe21c70ee0afe41b296a30210b3f732dc89"
@@ -236,7 +281,18 @@
     "pro-v11-development-quota-limited.jsonl.gz": {
       "sha256": "1461376d6c1bf82967238b13a5cb818b64ee6f0374f2e7f409f9d78f48f9e2b9",
       "rows": 651,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v11-funded-continuation-budget.json": {
+      "sha256": "b8a556b60a09a9e8732f66fa21408faa8c8aa102019f6676a039586cc5d8b3ac"
+    },
+    "pro-v11-funded-continuation-manifest.json": {
+      "sha256": "6228e08f3adce6aa8066f1f9a5a96d3f0d3bff0f08951289382a8ed065e58ddd"
+    },
+    "pro-v11-funded-continuation.jsonl.gz": {
+      "sha256": "920b01bfe1432387d0fa0818d88f9daf22b72f5c60345f0895dab7cc5a67a8f8",
+      "rows": 42,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "pro-v11-pilot-diagnostics.json": {
       "sha256": "b8aed0d3979631702009e93418d9ca53fab85dad68ca87d04dc66811b917d7e1"
@@ -247,7 +303,95 @@
     "pro-v11-pilot.jsonl.gz": {
       "sha256": "a8d69d79f37dcfe07eb809d9c6d341a3b8633a6ed3ad3c8eeb5a645f4be2d3e7",
       "rows": 66,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v12-funded-pilot-manifest.json": {
+      "sha256": "285cd0936b8c93368182083f8282b327c63a8d30516fcc5c4d955313bcff0184"
+    },
+    "pro-v12-funded-pilot.jsonl.gz": {
+      "sha256": "da0056d0c67bea194b6ad7f1e22fbc7478ab040b36884ba02dae72de8a2af560",
+      "rows": 33,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v13-funded-pilot-manifest.json": {
+      "sha256": "e42384122807bda28554c0fba9582417741883916b2a3cc923135332ff76984e"
+    },
+    "pro-v13-funded-pilot.jsonl.gz": {
+      "sha256": "1b3e54e7100c6b69a24e77e9b8cf46fb04ce0a11f2b579287eb9d60bb63bc6c0",
+      "rows": 27,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v14-funded-development-manifest.json": {
+      "sha256": "759b1bd6530679b10e64f850fcc8b150a60e315af9fc9e4d16219fafdff3f3b8"
+    },
+    "pro-v14-funded-development.jsonl.gz": {
+      "sha256": "6cc574a9b768acb5eee83ee1627638dd59267846c120ce8433ebf3b7ded0244b",
+      "rows": 156,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v15-heldout-manifest.json": {
+      "sha256": "a918323d40c8b7c5e758617a76eacfae3b38ce4e50f37248df23212711ae3363"
+    },
+    "pro-v15-heldout.jsonl.gz": {
+      "sha256": "11ef00e4f30aacfa29119c2a36585461ae7ed28ca804223e6536a0e86719c9b5",
+      "rows": 14,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v15-regression-manifest.json": {
+      "sha256": "cd6e9d55c944625289233fdeed953cb29f36366d13d0eb7080af163e39f32028"
+    },
+    "pro-v15-regression.jsonl.gz": {
+      "sha256": "1478ab787a39dad1689fa97dd0a03551cd55ded3ffcfcb674c713504f96bda47",
+      "rows": 24,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v15-subject-pilot-manifest.json": {
+      "sha256": "79b4e26b18568f038abbdc59618afd8545d84e1045ab593ba0dcce3c17ae224d"
+    },
+    "pro-v15-subject-pilot.jsonl.gz": {
+      "sha256": "84eac5b8407ccbac48f61e463042ac7f806ec4751edff58c3441a77749c68f53",
+      "rows": 19,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v16-pilot-manifest.json": {
+      "sha256": "9487316f7f20cbbc979c8be39d2ccbb54cbeef8d8c71d4f8ebd91d65af130dcc"
+    },
+    "pro-v16-pilot.jsonl.gz": {
+      "sha256": "1e831e3773201bbdf5aaed7b8ef22c9b70de3581263a05dd1be883d4834fb4c3",
+      "rows": 26,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v17-pilot-manifest.json": {
+      "sha256": "10d643f373e58730c5666c5b5668dbc864def9d9f50a909cafb96928592a4f6e"
+    },
+    "pro-v17-pilot.jsonl.gz": {
+      "sha256": "02679e0b67450660007fee4b0289c0b9556bde1d66f1de2a0134fe0d3948d217",
+      "rows": 18,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v18-development-partial-manifest.json": {
+      "sha256": "ee5819e6c43949b1b754cab83b4ce0827214c0cf1af2ba2ca23917eadb1af4a1"
+    },
+    "pro-v18-development-partial.jsonl.gz": {
+      "sha256": "7784f38dc412322a27dd70edeccf284921fa7ef4443cea0c2a85eb878691771f",
+      "rows": 84,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v18-pilot-manifest.json": {
+      "sha256": "b1c01d83008a9aed1f4d410600de4e666ff01c5573ce2cb03332f05d7dfd1c78"
+    },
+    "pro-v18-pilot.jsonl.gz": {
+      "sha256": "a3848780ad0b7a0c9520c5349a1736c1d5b80adc0b1ffa2e29917645d3736cee",
+      "rows": 18,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "pro-v20-focused-development-manifest.json": {
+      "sha256": "2b3c5a2dd25cc784ded7bfe2962ba19ef323e6ad922a6f28e215d2e4240dc0af"
+    },
+    "pro-v20-focused-development.jsonl.gz": {
+      "sha256": "0a0ff72a6ba516df482b152f1847c34392e15330b712e8dbb801722d39a3a30d",
+      "rows": 11,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "pro-v6-development-diagnostics.json": {
       "sha256": "209af1a595dc7721c05dca9add32c980e36d75fdb6c0a48500122c2dce66857b"
@@ -255,7 +399,7 @@
     "pro-v6-development.jsonl.gz": {
       "sha256": "ccb558eab641386ea23e18d647926414d3af39d98bb4721a5921dff8962716f1",
       "rows": 423,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "pro-v6-heldout-diagnostics.json": {
       "sha256": "612d0796d13d0b422c09f3c7400875629129afeb59287d538bfb10c81de39a7a"
@@ -263,7 +407,7 @@
     "pro-v6-heldout.jsonl.gz": {
       "sha256": "11a5fe65b62125659cfec2872ea167e64e46fec4ec8ad4f0c62d914db719aab1",
       "rows": 118,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "provider-attempt.txt": {
       "sha256": "0b35175f470b23f7e65ebbca093e7e9dca079c16b29088b9752ef77aab7a0c60"
@@ -271,63 +415,68 @@
     "provider-reservation-error.json": {
       "sha256": "5d07040bea625b7bf174662a44a948cab34d06aa1e86279fca3341e9519b80f9"
     },
+    "python-tests.txt": {
+      "sha256": "74b252c4bd6a378ce7fee026ae69d0a83873751a4ba398521d4f2d861c33c411"
+    },
     "review-budget-4096.jsonl.gz": {
       "sha256": "b5983ce8d654641ca93d8e9b071d07b1129df1980403b75264ee8f76c77b9555",
       "rows": 6,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-budget-8192.jsonl.gz": {
       "sha256": "53b7c4852f9110bb4742582975ed36e1931b2154b26b580be94fa213a341cb2f",
       "rows": 6,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-controls.jsonl.gz": {
       "sha256": "d9b0ec908fd4a746780c4610ed4b464337fc731c5bd5c9532fd248627529ae53",
       "rows": 144,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-reference-v1-haiku.jsonl.gz": {
       "sha256": "c103950f675a9fdd991f6c35a48447fc6d51987063549af7a46b19a657bf2e9a",
       "rows": 24,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-reference-v1-pro.jsonl.gz": {
       "sha256": "c45f7a3167a5ef3525d605663d497cedb6a981a9fbfbf75fdddd4a5c4b2a1637",
       "rows": 24,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-reference-v1-qwen.jsonl.gz": {
       "sha256": "dd0265f4aa04a6ff491121a1b2a67f5049d5180399022e2da1cafe6195e27218",
       "rows": 24,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-scope-v8-haiku.jsonl.gz": {
       "sha256": "0500b79fc2976e3ca0d70209a43b23e043318d690405e9b40028be18b2b9fdca",
       "rows": 48,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-scope-v8-pro.jsonl.gz": {
       "sha256": "b14cd821bfa1d10b9bece25580f59cdd92213fd0c1a1643dff20a2325cbfd6fb",
       "rows": 48,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-scope-v8-qwen.jsonl.gz": {
       "sha256": "5e084493b11586a9eb55c216b9ddf89766c34662b316cac5c03e9bc468c81e05",
       "rows": 48,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-scope-v9-haiku.jsonl.gz": {
       "sha256": "2801a9c81ce9708055eba26cda12f8f64f05b59dbab1d59b0439ac8a8272a96f",
       "rows": 48,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "review-scope-v9-pro.jsonl.gz": {
       "sha256": "a114a75b2b376b65e67171cd95439f95a7d20069d569f08869ff22c335869be8",
       "rows": 48,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "scope-assistant-audit.jsonl": {
-      "sha256": "5c69c18becec690ef8e495f0d8956bc45bc7480aceb6203e66b5c90f3f27a058"
+      "sha256": "5c69c18becec690ef8e495f0d8956bc45bc7480aceb6203e66b5c90f3f27a058",
+      "rows": 56,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "scope-assistant-metrics.json": {
       "sha256": "30a0bed125356829d42ac9e00bfdbaa2612a23c141b4c2d5d6e5551acabf05cf"
@@ -335,7 +484,7 @@
     "scope-v6.jsonl.gz": {
       "sha256": "057380cb66a2f1822572af8431df26035f1ac23c05809befcf974b1afd1426e1",
       "rows": 12,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "standalone-heldout-v1-diagnostics.json": {
       "sha256": "6a52e5baaa468f91a0cd8612dd841c09a47e9695342778ab981d2c0c60ba3319"
@@ -343,17 +492,17 @@
     "standalone-heldout-v1-haiku.jsonl.gz": {
       "sha256": "ab3863db0d6cb00aa270b9e5a851715497e40c976b2b10a7f9302030127f014f",
       "rows": 32,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "standalone-heldout-v1-pro.jsonl.gz": {
       "sha256": "0aebca0a1f6847246da87b0f72cbf921ccab0a7d3ce70e4c2a6a150d5202cfda",
       "rows": 32,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "standalone-heldout-v1-qwen.jsonl.gz": {
       "sha256": "8cd7dbc414c8765e892873f8c39bcefc09236288cfb624499d42e5d549f33da0",
       "rows": 32,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "standalone-v1-diagnostics.json": {
       "sha256": "683bf480a95243fa0539af46330e45fb3b334d2297a04bd9546c673e312936d8"
@@ -361,26 +510,367 @@
     "standalone-v1-haiku.jsonl.gz": {
       "sha256": "f671194478951cca325f1ac01aa8a2509ced10e86e2aad1ae828bf9cacfd0e2f",
       "rows": 44,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "standalone-v1-pro.jsonl.gz": {
       "sha256": "e8e3ba38f52c67cd2edf2eb2bc52e1f040191b7bc7d42ded8d742b32d9c29e68",
       "rows": 44,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "standalone-v1-qwen.jsonl.gz": {
       "sha256": "77d683cc1a8de3ce6b9eaaf39c0f9fa56df4faecf6f3ea7ec961655bd289dac3",
       "rows": 44,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "standalone-v13-provenance-controls-metrics.json": {
+      "sha256": "5f982488ad023dca49df586219f7e1b581c5f5fcecd10d4acbd9d41f88c3f03d"
+    },
+    "standalone-v13-provenance-controls.jsonl.gz": {
+      "sha256": "c1dfe72927a256053047ebf70b39aefdb0e05e162b24ee2966f6d72d910abd87",
+      "rows": 52,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "standalone-v13-reader-regression-metrics.json": {
+      "sha256": "e8d57277933079432ff764001759ee191996d6e4d78906dd77c8145b7ab9a171"
+    },
+    "standalone-v13-reader-regression.jsonl.gz": {
+      "sha256": "ef3f649318ab1e92ea8aa01340b5fb565523889c7b4352f7d9fb004128b34249",
+      "rows": 32,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "standalone-v14-intensional-controls-metrics.json": {
+      "sha256": "a5db070075d8b93a7b849a91b44fbea57e6b6aabb20ac17bbb6d734df1532118"
+    },
+    "standalone-v14-intensional-controls.jsonl.gz": {
+      "sha256": "22d216bf868cda07ef938d0a811891c2f843e42b73fa0d684996f01733e52686",
+      "rows": 68,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "standalone-v17-source-time-controls-metrics.json": {
+      "sha256": "8bbaa1049f870e9bd217aa2a5d831943e44a673bbd1a8007d1614722677b4742"
+    },
+    "standalone-v17-source-time-controls.jsonl.gz": {
+      "sha256": "27c02711eb0a8b33f4eb692da451c0c616a2488b7c1a3a782f76849081232c0e",
+      "rows": 84,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "standalone-v18-progressive-time-controls-metrics.json": {
+      "sha256": "a2a39990130e9e681d634432bffe5094f8f3daf05db4a18e1f2442544503b08b"
+    },
+    "standalone-v18-progressive-time-controls.jsonl.gz": {
+      "sha256": "88a2dc85c0effc0ec367991acccd5be8d554d6ab6f0a97d09bdf57ce44e6d234",
+      "rows": 96,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "standalone-v19-scope-limit-controls-metrics.json": {
+      "sha256": "c2517fa148f387fb2541350c23e46dd5a785f9e13d8ecb8f18800c8241f81ab9"
+    },
+    "standalone-v19-scope-limit-controls.jsonl.gz": {
+      "sha256": "e16d063c0846432fae6cce8c500918d27c3ab9056d4af5d8d5bcd2296788cdc0",
+      "rows": 112,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "standalone-v20-focused-controls-metrics.json": {
+      "sha256": "4bb519f11556c99c9426d9cc1d7e83f3cfa7eca65bee4d32ac4441eb248abec4"
+    },
+    "standalone-v20-focused-controls.jsonl.gz": {
+      "sha256": "62c1d5b4763ab0da2d88a44df95a3b91d5e5f5f8a1007d3469f8d334c16328e4",
+      "rows": 24,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "tests.txt": {
-      "sha256": "0c89f8cc022b4d8a3397d25e8eb6a7c2b33fda0bf648dfebef70a26071da6a3f"
+      "sha256": "624be70861cce5c891bfeeda3f6b2e875bf9cc82cdf46d6660228f7b0868ecb1"
     },
     "v10-development-corpus.json.gz": {
       "sha256": "2c07e296139ea54ebd513262d0561b0269eaddd6c0cf2f85b767dded34b56e5c"
     },
     "v10-reference-example.json": {
       "sha256": "65876719c0e49ef0ccd7857a8dff61d6de61f21fcdd13001f5391138801176b3"
+    },
+    "v12-v13-shared-budget-final.json": {
+      "sha256": "4eb27cd5ed4e314b06de1ab3f786bbaac9dbb9c612c21f7ebe4cb8c4e66a283e"
+    },
+    "v14-assistant-audit-metrics.json": {
+      "sha256": "0d91f0089285bcd9a085420ad4ee6f2e8867fb5ffd9686e1252c550775f83434"
+    },
+    "v14-assistant-audit.jsonl": {
+      "sha256": "01d71e02046bfa918434d6f1c9b649996cf66daeb97c283e9726d9755e6429e6",
+      "rows": 41,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v14-audit-scope.json": {
+      "sha256": "4c7f2c78265352136a820d39e3a88fbaa89acc7ed45b06db901b195618edd5bf"
+    },
+    "v15-subject-assistant-audit.jsonl": {
+      "sha256": "40178d0822636294a1af83cfe1f72ccb23288d5b079d62e2bf27c4db36373bfb",
+      "rows": 12,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v15-subject-assistant-metrics.json": {
+      "sha256": "9f4e3e624badf9518a0c4a9146d3b4f7566990966e9f78c1ff780773b6024919"
+    },
+    "v16-frozen-profile.json": {
+      "sha256": "bca3a6bf31cb32417ec132c495008c891ef4876eaf746a0a64ee0b2b14ac21dc"
+    },
+    "v18-budgeted-development-controller.py": {
+      "sha256": "37f90e6fb753c4c19f9f272a4d765beb74582613dba768c3ae20dd669630cfba"
+    },
+    "v18-development-assistant-audit.jsonl": {
+      "sha256": "6bbba5841ec9191b97051776e9d2eb953904a37303e04a05b385157cde35e8ef",
+      "rows": 30,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v18-development-assistant-metrics.json": {
+      "sha256": "34605e85352833069e64ff2eb6cad45afa91ffcde22ab3b96a4ab0cba0a76844"
+    },
+    "v18-pilot-assistant-all-attempt-metrics.json": {
+      "sha256": "8125d92528be281bbf3e6be407a0aabd297591041f2df09f8c834aaf353278d7"
+    },
+    "v18-pilot-assistant-audit.jsonl": {
+      "sha256": "49339414e24af7beb5ced917f4cd3089e32670b8e9cadb3807e1bf6e8f9692a3",
+      "rows": 18,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v18-pilot-assistant-terminal-metrics.json": {
+      "sha256": "84df5b6e9471fb1e0fc3a397267c2e753fe9f449f5117c77eb90bab8164123a5"
+    },
+    "v18-revalidated-v2.jsonl.gz": {
+      "sha256": "e01f36209680873ba1c63405eaaf60bcf60da78644d5323026569c4f8ad67417",
+      "rows": 18,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-cause-continuation-assistant-audit.jsonl": {
+      "sha256": "6b63ecd917d1a2bc72f51ebef5a3060d3739b85c5ded061562f10051e1becd2d",
+      "rows": 2,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-cause-continuation-assistant-metrics.json": {
+      "sha256": "999df21368ee18e4a9ea8b7b10a8f8c35f01098531ee2158684f7d4302ff24e9"
+    },
+    "v21-cause-continuation.jsonl.gz": {
+      "sha256": "e44b9637fbe7705d090587f656c356013c8e012c01734699eb495f5ec9c12b38",
+      "rows": 2,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-focused-development-assistant-audit.jsonl": {
+      "sha256": "94ce134e54a31274d7b1f62b5dabaa0cfc91ef64c71f92d675bc5d8de2d7698e",
+      "rows": 3,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-focused-development-assistant-metrics.json": {
+      "sha256": "7f53b7da28b0a24738e1b7a9a1b839e58d646963d081b1fc0c0d3422b67acf6b"
+    },
+    "v21-focused-development.jsonl.gz": {
+      "sha256": "80e33f596ce2700c82bb82b696e887eb02f04ff6102a8f69ee13bad8d59067b9",
+      "rows": 10,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-focused-reader.jsonl.gz": {
+      "sha256": "ce8e1058140e7af658a1561268ccac63359cbe13808efdb1214dc0f6b9c1fb35",
+      "rows": 28,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-frozen-profile.json": {
+      "sha256": "15ca5b9758be3fb5e9ecfcddaa41f112d9d8bb7c9b9f882db12206b7b33a0a7b"
+    },
+    "v21-heldout-assistant-audit.jsonl": {
+      "sha256": "ff56565ef840b622912197b9def3aa459ff9d879388d03da313651410a16149a",
+      "rows": 11,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-heldout-assistant-metrics.json": {
+      "sha256": "01b86ecd44905d5e797d488fad55f96d168eb9314b7a9f1cf02e9c0b000ad57d"
+    },
+    "v21-heldout-continuation-1-manifest.json": {
+      "sha256": "8307c86c29e85cbde75f9cbb7e8b981c4815a3bc2ff0a4764343bb5dc55daac0"
+    },
+    "v21-heldout-continuation-1-summary.json": {
+      "sha256": "3d785254cd132b8e327e1c80c72d2a2b1a9de51c825078ff9a385ab159b0007d"
+    },
+    "v21-heldout-continuation-1.jsonl.gz": {
+      "sha256": "211d95bed8b255797cdb3b17d495444285e8d42f2d2cab35b52e92e22ffd0943",
+      "rows": 20,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-heldout-continuation-2-manifest.json": {
+      "sha256": "f6d20a95e4a77305b81660dbdf074ec76a423ad248e804f2453bafbb1f2f2517"
+    },
+    "v21-heldout-continuation-2-summary.json": {
+      "sha256": "d6e6ecd23c28305ddc33abaae33308727fec27e399f3a1f4833fb509a2d55bca"
+    },
+    "v21-heldout-continuation-2.jsonl.gz": {
+      "sha256": "45434d6649e25723cb6d08ea339c9e1c9712210e3f2856409d4672f02949991b",
+      "rows": 12,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-heldout-initial-manifest.json": {
+      "sha256": "023c4b3778aa990b57d1ef3f7ecad0fbbfddcfc3e8490aad08aea1acf9cc295a"
+    },
+    "v21-heldout-initial-summary.json": {
+      "sha256": "589163a0ba4c5cfbf3bd5730590932b765462dd1b0a30382015ad3347e709925"
+    },
+    "v21-heldout-initial.jsonl.gz": {
+      "sha256": "796895a84213c0cc8aacee1dac757b535ae8e0b578b721808d03499c422e8b2e",
+      "rows": 18,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-heldout-user-adjudicated.jsonl": {
+      "sha256": "0b5ff237cecd8c5d6d9d69f1b6b48dd118763bef8205cdbb2414e9d5d5780b6e",
+      "rows": 1,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-heldout-user-metrics.json": {
+      "sha256": "f8e95a793ac0b51985d778f861ddfc8860a32ec6b2514a483862e9674a472a0e"
+    },
+    "v21-rule-continuation-assistant-audit.jsonl": {
+      "sha256": "1c63853336d46ebd7f08ae13811c2446163a0485fc155e93fdf34af869ebdb34",
+      "rows": 1,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v21-rule-continuation-assistant-metrics.json": {
+      "sha256": "d5dd2e143a8cf75cd7257af4eb3b41b6994db75258cd2da840b900abd682d306"
+    },
+    "v21-rule-continuation.jsonl.gz": {
+      "sha256": "282b1e3ba1350dd15bf0e41c7bbf8f443125a14e6d90a1fba270585dd5f310c4",
+      "rows": 3,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v22-assistant-audit.jsonl": {
+      "sha256": "d56bf41ed58716e109f4cf90e2e936e658ba05f0ca84bf9468d9b1c063f13006",
+      "rows": 5,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v22-assistant-metrics.json": {
+      "sha256": "7a92fa38650b3b62bcf6768d2bac92c9d053b2c2147b2349115b001bd5a7f76a"
+    },
+    "v22-focused-manifest.json": {
+      "sha256": "e3c17454bfe93b8f6cd26330240493f3366c8b16b18454c658090d672cdca79e"
+    },
+    "v22-focused-summary.json": {
+      "sha256": "a3018909e85cc86af1ec27969fb60efc1964474abb8dcd8700f4619d279e0022"
+    },
+    "v22-focused.jsonl.gz": {
+      "sha256": "65335d920b765473d2fa14e3a5f60244ba7ec9ebffde35c17246720884609c35",
+      "rows": 4,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v22-frozen-profile.json": {
+      "sha256": "0d70b6dda9081c1518ef90b06fd07d0b6a6bb8c40a85d6f1424a1a78f295dad1"
+    },
+    "v22-heldout-manifest.json": {
+      "sha256": "b911cb9053b4904e6d6688ccab773c66204fd5c2ad9933977c8f98528ba58195"
+    },
+    "v22-heldout-summary.json": {
+      "sha256": "3e9e1bad9260eacb3b3e2d5b10ea4a138a52802a97432340f36cc4d904e610b9"
+    },
+    "v22-heldout.jsonl.gz": {
+      "sha256": "ad41ddd53ce6d058a71660a35e5b18b0bb359c3baca5a54ee053ac477b25ff1f",
+      "rows": 5,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-focused-assistant-audit.jsonl": {
+      "sha256": "b0e73c927a73a821dab84d6fd44e4d7f55b839cd9ef7b67f5fead165d635dfc3",
+      "rows": 2,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-focused-assistant-metrics.json": {
+      "sha256": "04da977168b74133b574caf36d0cee0db9e69736958d462336ae2e64374ad32d"
+    },
+    "v23-focused-manifest.json": {
+      "sha256": "b564ebf18deb98406ccd5166727ea1d854a078cb868e5b8d6306e8a260e761a6"
+    },
+    "v23-focused-summary.json": {
+      "sha256": "6103cd676a8050a94f0a1d8a0beb5e129238fd2a16956796532ed8d755a6af71"
+    },
+    "v23-focused.jsonl.gz": {
+      "sha256": "2ac2edf104b6b1c690f157638c214597bac08f3f1300a86254d34db73f751e3c",
+      "rows": 2,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-frozen-profile.json": {
+      "sha256": "477950e8f30686e325a6442885674c33ae1ff2f247c3499fc9ceb77091a13d69"
+    },
+    "v23-heldout-assistant-audit.jsonl": {
+      "sha256": "c53a426ace00021852d31cfaa78859c03c44c698b4f939dc15a29010c8dfaf51",
+      "rows": 8,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-heldout-assistant-metrics.json": {
+      "sha256": "68a21ea94af61bda5fa61d24f9f022c480bc1d9fd702c2257d727597a4101141"
+    },
+    "v23-heldout-continuation-manifest.json": {
+      "sha256": "18732f4de40cac4935ae597761b700c0f22ec54a01736b0406e079fedad21389"
+    },
+    "v23-heldout-continuation.jsonl.gz": {
+      "sha256": "05e8ced1dbaa3770c96506cf4a362bc615c339cbb825a105b8d840e019057b44",
+      "rows": 4,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-heldout-initial-manifest.json": {
+      "sha256": "19b1a8ea2b2d88993d64eff87624792668725cdb6dd9ac23121851909e74a4bf"
+    },
+    "v23-heldout-initial-summary.json": {
+      "sha256": "218a6123a533ad85baa44a037826bd39b59fbe6673d6172bba2e853e37c0ae7e"
+    },
+    "v23-heldout-initial.jsonl.gz": {
+      "sha256": "18dd5b8ceacf382cb83f810e71e4d34bfef0fe82ed5749452dc92104189be888",
+      "rows": 6,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-heldout-summary.json": {
+      "sha256": "9f746ea76f9738539a6c511ad659c79265e8cefe9377c72d8ea7b61be0455201"
+    },
+    "v23-user-continuation-1-manifest.json": {
+      "sha256": "103afa126886d4fd433194e2b0394a6a144dcbb66217b2ddddb7d5296f1fda0f"
+    },
+    "v23-user-continuation-1-summary.json": {
+      "sha256": "3b50a7eaa734705ba93dad7dc3cd7cd25900ce65791e4ec698678863c6074f22"
+    },
+    "v23-user-continuation-1.jsonl.gz": {
+      "sha256": "53e9fc0856735670027151225bf164889cfb816d8dd58be602384381779e8dd8",
+      "rows": 5,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-user-continuation-2-manifest.json": {
+      "sha256": "c8d22bf6b740435fcd27a30d6edbb825dd13510d3866131f192d891e7966dfb3"
+    },
+    "v23-user-continuation-2-summary.json": {
+      "sha256": "0268b1b5c9591c278d591b04865a1030022fcc921299fd37b156a2ddba2d4b1c"
+    },
+    "v23-user-continuation-2.jsonl.gz": {
+      "sha256": "a19dfd8902b7b82a552599576684e09d36e6acee80fef385327e6e6f16f0ce04",
+      "rows": 3,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-user-regressions-assistant-audit.jsonl": {
+      "sha256": "dc269c2702c66abfbc709f41b294365ca9c734128c880fa20f33588133c829b4",
+      "rows": 7,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-user-regressions-assistant-metrics.json": {
+      "sha256": "94b5591bbc3f6699666856a5edfaa07b7f15cc3b523ee5ad9ac05e0708b0ac82"
+    },
+    "v23-user-regressions-initial-manifest.json": {
+      "sha256": "e49a2f3404600de1f60122daa3f416961784f4fb30609834185feecd036f57ae"
+    },
+    "v23-user-regressions-initial-summary.json": {
+      "sha256": "37350000af5e2dd48149619253481f954f72ff959062cae64ad8c9ec556da5fd"
+    },
+    "v23-user-regressions-initial.jsonl.gz": {
+      "sha256": "f895f785cf415a6472a4a330b995ea1ca76f6d64d9c22eddc5c4735e00571106",
+      "rows": 7,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "v23-user-unknown-continuation-manifest.json": {
+      "sha256": "6699d0e5a4f2a75651ce1d90fbccf112d306f831eb5a775f62df5fa6f13574d1"
+    },
+    "v23-user-unknown-continuation-summary.json": {
+      "sha256": "451eddd2c80242d6b32507f43576621e89d939d4798c0d8ea519973a4b2082ed"
+    },
+    "v23-user-unknown-continuation.jsonl.gz": {
+      "sha256": "e873e1ef564eb7b9f0a0ac0fcaacaa46b5487e582cf6d1626305c3c618d75292",
+      "rows": 2,
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "v4-retrospective-diagnostics.json": {
       "sha256": "4ed56ef0ab65e465fde2fb24f1d7fcdb668990dc06c181210a91871a4d77f437"
@@ -391,12 +881,15 @@
     "v8-exposed-regressions.jsonl.gz": {
       "sha256": "0b503e8bd426769d92f800e941b21d5b153c8fb87a9c400e711282fc795c4be2",
       "rows": 21,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
     },
     "v9-exposed-regressions.jsonl.gz": {
       "sha256": "909e994789aa6d0c03324b1c2ca60a0b33bcb1cac321ee0d5080dc0a5284d002",
       "rows": 17,
-      "note": "artifact rows; may be controls, retrospective checks or repeated attempts, not necessarily extraction runs"
+      "note": "Artifact rows may be attempts, controls or repeated requests, not necessarily independent successful extractions."
+    },
+    "validation-checkpoint.json": {
+      "sha256": "f31363c39c941b3c2484758fa7ad7e643c3b645eefdc32a8d6457a81f4944ebf"
     }
   },
   "prompt_files": {
@@ -487,5 +980,6 @@
       "cases": 20
     }
   },
-  "working_tree_additions": "quota fail-fast harness, reference correction and final evidence; see following Git checkpoint"
+  "working_tree_additions": "quota fail-fast harness, reference correction and final evidence; see following Git checkpoint",
+  "current_opt_in_prompt": "extraction-v23"
 }

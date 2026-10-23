@@ -1,0 +1,1554 @@
+{
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|all": {
+    "annotation_source": "assistant_review",
+    "runs": 6,
+    "reviewed": 6,
+    "accepted_batches": 6,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 7,
+      "denominator": 7,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 7,
+      "denominator": 7,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-005": 1,
+      "fresh-006": 1,
+      "fresh-007": 1,
+      "fresh-009": 1,
+      "fresh-010": 1,
+      "fresh-011": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 6,
+      "atomicity and independence:TN": 6,
+      "semantic fidelity and epistemic framing:TN": 6,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 6,
+      "standalone atomicity / candidate 1:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 25
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|nested_report": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-005": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 4
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|unverified": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-006": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 4
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|unapproved_proposal": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-007": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 4
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|unknown_reference": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-009": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 4
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|irony": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-010": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "standalone atomicity / candidate 1:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 5
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|en|all": {
+    "annotation_source": "assistant_review",
+    "runs": 3,
+    "reviewed": 3,
+    "accepted_batches": 2,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 5,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 1,
+      "denominator": 5,
+      "rate": 0.2
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 1,
+      "denominator": 5,
+      "rate": 0.2
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 1,
+      "denominator": 5,
+      "rate": 0.2
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 5,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 5,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 5,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 4,
+      "denominator": 6,
+      "rate": 0.6666666666666666
+    },
+    "generated_coverage": {
+      "numerator": 5,
+      "denominator": 6,
+      "rate": 0.8333333333333334
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-015": 1,
+      "fresh-016": 1,
+      "fresh-017": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 2,
+      "standalone atomicity / candidate 1:TN": 2,
+      "atomicity and independence:TN": 2,
+      "semantic fidelity and epistemic framing:TN": 2,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 2,
+      "standalone atomicity / candidate 0:FN": 1,
+      "atomicity and independence:FN": 1,
+      "semantic fidelity and epistemic framing:FN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:FN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {
+      "semantic fidelity and epistemic framing:FN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:FN": 1
+    },
+    "unscored_stage_reviews": 12
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|en|exception": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-015": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "standalone atomicity / candidate 1:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 5
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|en|nested_unverified": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 0,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "generated_unsupported": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "generated_fidelity_error": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "generated_epistemic_error": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_coverage": {
+      "numerator": 1,
+      "denominator": 2,
+      "rate": 0.5
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-016": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:FN": 1,
+      "atomicity and independence:FN": 1,
+      "semantic fidelity and epistemic framing:FN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:FN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {
+      "semantic fidelity and epistemic framing:FN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:FN": 1
+    },
+    "unscored_stage_reviews": 2
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|en|reference_time": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-017": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "standalone atomicity / candidate 1:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 5
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|mixed|all": {
+    "annotation_source": "assistant_review",
+    "runs": 2,
+    "reviewed": 2,
+    "accepted_batches": 2,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 4,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 4,
+      "denominator": 4,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 4,
+      "denominator": 4,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-019": 1,
+      "fresh-020": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 2,
+      "standalone atomicity / candidate 1:TN": 2,
+      "atomicity and independence:TN": 2,
+      "semantic fidelity and epistemic framing:TN": 2,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 2
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 10
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|mixed|project_scope": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-019": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "standalone atomicity / candidate 1:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 5
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|mixed|cross_span_reference": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 2,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-020": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "standalone atomicity / candidate 1:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 5
+  },
+  "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|ambiguous_evaluation": {
+    "annotation_source": "assistant_review",
+    "runs": 1,
+    "reviewed": 1,
+    "accepted_batches": 1,
+    "unreviewed": 0,
+    "atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_atomicity_violation": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_unsupported": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_fidelity_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_epistemic_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_language_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_anchor_error": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "generated_duplicate": {
+      "numerator": 0,
+      "denominator": 1,
+      "rate": 0.0
+    },
+    "coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "generated_coverage": {
+      "numerator": 1,
+      "denominator": 1,
+      "rate": 1.0
+    },
+    "oversplit": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "translation_errors": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null
+    },
+    "distinct_outputs_per_case": {
+      "fresh-011": 1
+    },
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:TN": 1,
+      "atomicity and independence:TN": 1,
+      "semantic fidelity and epistemic framing:TN": 1,
+      "whole-batch coverage, duplication and conflicting interpretation:TN": 1
+    },
+    "reviewer_confusion_scope": "legacy whole-batch quality association; not responsibility-aligned diagnostic accuracy",
+    "reviewer_confusion_stage_specific": {},
+    "unscored_stage_reviews": 4
+  }
+}

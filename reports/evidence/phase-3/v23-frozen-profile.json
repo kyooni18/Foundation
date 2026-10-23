@@ -1,0 +1,13 @@
+{
+  "implementation_commit": "17347f29b78b54a5b713677460c16231bbbe84bc",
+  "frozen_before_heldout": true,
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "files": {
+    "prompts/extraction-v23/review.txt": "b117c0951684164e83e16f8f71f99dd09f25f2e718141e9c6d00d19d504afe05",
+    "prompts/extraction-v23/reader.txt": "f4edbef66f07201b89c957b14560cef7b41f400e10ec677c0a2d5f19af9a3e81",
+    "prompts/extraction-v23/frames.txt": "87b9fa9f481ca21e3ad93ce338857cd56e1666ba79e571149c2cb9abcfe392ba",
+    "target/debug/examples/evaluate_extraction": "6c8ca2cafb8db6133d5884704ee941558d8d31a6c342d4607bb3d0b904b0bfa5",
+    "evaluation/phase3/heldout-v23.json": "65568e7b9741cdf61a282fc16b2b2f37dd9337dbc77242ca53878cebaf0895f6"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "corpus": "/tmp/phase3-v22-focused-corpus.json",
+  "output": "/tmp/phase3-v22-focused",
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "prompt_version": "extraction-v22",
+  "max_output_tokens": 16384,
+  "review_max_output_tokens": 8192,
+  "split": "dev",
+  "runs": 2,
+  "repair_attempts": 3,
+  "workers": 1,
+  "shard_size": 1,
+  "variants": "audited",
+  "expected_rows": 6,
+  "git_commit": "23a26e29c9fb37860c05665b4c72bcb920504f74",
+  "status": "incomplete",
+  "succeeded_shards": 1,
+  "failed_shards": 1,
+  "skipped_shards": 1
+}

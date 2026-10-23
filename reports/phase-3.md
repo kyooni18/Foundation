@@ -1,18 +1,28 @@
 # Phase 3 — implementation checkpoint; semantic acceptance blocked
 
-Status: **not accepted; no `phase-3` tag**. The implementation and offline regression
-suite are complete as a reviewable checkpoint. Real OpenRouter experiments were run
-and prompts revised through v17. An earlier run was blocked by HTTP 402
-(account credits exhausted; the key remained valid without a per-key cap). The user
-then authorized at most $5 additional evaluation spending, and funded access was
-verified. Frozen v11 evaluations resumed with a shared conservative reservation guard.
-Only cheap models were used after the user requested that restriction. The fresh
-20-source extraction benchmark was partially exposed during v15; a replacement
-20-source set retaining all 16 untouched cases is reserved and has not yet been run. The user independently confirmed
-that each Claim must explicitly describe an unknown third-person referent and that
-the isolated habitual self-report refers to the original speaker. The exception-scope
-review remains pending. Neither fake-provider tests nor reviewer agreement establishes
-semantic acceptance. The historical experiments below remain reproducible evidence.
+Status: **not accepted; no `phase-3` tag**. The Rust implementation is a
+reviewable checkpoint, with 40 offline Rust tests and three Python evaluation tests
+passing, plus formatting and clippy. Real OpenRouter experiments and source audits
+led to frozen opt-in prompts through v23. The latest user adjudication permits separate, self-contained
+Claims for a tentative assessment of Jimin's anger and ignorance of its cause, provided
+both retain uncertainty. D-72 supersedes the earlier same-target merge hypothesis.
+Other user judgments require explicit unknown third-person/experiment referents,
+original-speaker interpretation of the isolated Korean habitual self-report, and an
+original-utterance temporal frame for an undated ongoing state.
+
+The user authorized a maximum $5 additional evaluation budget using cheap models.
+Funded continuation uses `openai/gpt-6-luna-pro` with a shared reservation ledger.
+Historical quota-interrupted requests remain failures; controlled continuations are
+separate experiments, not successes within the original production retry budget.
+The replacement 20-source held-out benchmark was reserved before v21 froze; its final
+outcomes are documented in the latest evidence section below. No prompt will be tuned
+against that set. Model agreement and assistant audits do not substitute for independent
+human adjudication or establish universal semantic correctness. All proposals remain
+quarantined pending exact-hash local user fidelity approval; no validated production
+prompt default has been promoted. V21 exposed a user-confirmed attribution defect;
+v22 repaired assertion layers but still omitted unknown targets. V23 addresses that
+argument-completeness defect. The latest evidence section distinguishes actual
+regressions, targeted fresh challenges, local quota failures and unverified coverage.
 
 The first live pilot completed 36 extractions (12 development cases × 3 variants)
 with `anthropic/claude-sonnet-5.5` and independent reviews by
@@ -780,3 +790,186 @@ acceptance is inferred from that bookkeeping result. The core's bounded total wo
 deadline still covers the entire pipeline; sufficiently slow/large batches can time out
 and remain recoverable for controlled re-extraction. No unbounded-duration extraction
 capability is claimed.
+
+### Frozen v21 continuation and current acceptance limits
+
+D-72's independent cause-ignorance boundary is incorporated in the extractor, Source
+reviewer, isolated reader and reference inventory. V21 focused reader controls produced
+28/28 expected decisions (14 controls twice). The initial three-Source development
+request retained 10 attempts: three terminal passes, two local quota refusals, and one
+unstarted run. Separate controlled continuations produced two first-attempt passes for
+the uncertain Jimin assessment/cause-ignorance pair and one third-attempt pass for the
+two rule targets. Both nested-report runs in the original request preserved ownership
+of the original narrator's group's unspecified method through the professor/Reviewer2
+attribution. These terminal outputs were inspected against their original Sources by
+the implementation assistant. This is not independent whole-corpus human review.
+
+In the rule continuation, the first isolated-reader rejections identified unbound
+future time; repair bound the requested rule to the original utterance. A subsequent
+Source atomicity reviewer rejected that repaired two-rule batch for attribution,
+although the text named the original speaker and its two distinct policy targets.
+The final attempt passed. This illustrates reviewer instability and repair cost;
+repeated agreement is not proof. Original quota failures and continuation requests
+are archived separately rather than presented as one successful production job.
+
+The v21 core passes `cargo fmt --check`, `cargo test --offline --all-targets`
+(40 top-level Rust tests, plus two helpers exercised by parent crash tests),
+`cargo clippy --offline --all-targets -- -D warnings`, and three Python evaluation
+tests. Saved logs identify the checked implementation commit. The original migration
+0001 and Phase 1/2 tag targets remain unchanged. No final semantic default or completion
+tag is promoted. All original Sources remain recoverable regardless of extraction
+failure, and model output cannot confer recorder authority or bypass quarantine.
+
+The initial v21 held-out request stopped on local conservative reservation refusals:
+18 attempt rows, six R2 terminal outputs, five audited passes, one audited exhausted
+atomicity outcome, and one audited quota outcome. The exhausted case was
+“혹시 캐시 때문에 화면이 멈춘 걸까? 아직 확인하지 못했다.” All three Source reviews
+accepted the attached unverified-question frame, but the isolated reader repeatedly
+rejected it. This disagreement is retained as a failed run and a known reviewer
+reliability limitation; changing the prompt against this held-out case would require a
+new evaluation set. The R2 sensor output separated the uninspected evidential limitation
+from its speculation, contrary to the requested standalone epistemic preservation.
+The initial request therefore does not establish zero-error semantic acceptance.
+
+After every paid child exited, the account usage increase was $4.36413746 against the
+private funding baseline, leaving a new guarded allowance of $0.585862 plus the $0.05
+margin. A separate continuation prioritized the untouched English and mixed-language
+cases before remaining Korean cases to expose language-specific failures. This ordering
+change does not alter source bytes, references, prompts, or the model. All original
+requests, quota outcomes and scheduling manifests remain available. Account deltas are
+conservative spending monitors including possible other account activity, not exact
+attribution of task costs. Guard reservations intentionally exceed catalog charges;
+reconciliation only happens with no outstanding paid requests.
+
+English continuation identified two important failure modes. For the disjunction
+“Either the cable or the connector is faulty, but the note does not identify which,”
+the isolated reviewer twice rejected the intact uncertainty frame; the third repair
+split it and failed exact verbatim anchoring. No Claim was published. This is an
+exhausted run, not a recovered success. For “Lena reported that Omar suspected a
+coolant leak, but Omar had not checked whether there was a leak,” the passing output
+was “Lena reported that Omar suspected there might be a coolant leak without having
+checked whether a leak existed.” Assistant inspection flagged movement of the
+narrator's qualification into Lena's report. The editorial reference uses the same
+attachment and cannot independently settle this dispute. The user independently requires two separate nodes, one for Lena’s report and one for
+the narrator-level unperformed verification, with the leak target explicitly unidentified.
+This confirms the attribution defect; D-74 records the correction. The frozen benchmark is not silently relabeled or used to tune
+v21. These concrete disagreements prevent a claim of zero known framing risk.
+
+### V22 correction: assertion ownership before qualifier attachment
+
+User adjudication confirmed that the Lena/Omar example requires two independently
+meaningful nodes and an explicitly unidentified leak target. V22 (commit `23a26e2`)
+adds an assertion-layer inventory before attachment: narrator-level verification status
+must not be moved into another speaker's report. It contrasts this with limitations
+actually inside reported speech, and keeps the direct unchecked-toner qualifier and
+D-72 cause-ignorance distinction. The user’s illustrative “since” is not treated as
+new evidence of causality or an additional temporal interval absent from the original.
+V21 and its original reference remain frozen. The confirmed defect is labeled in
+`v21-heldout-user-adjudicated.jsonl`; other assistant audits are separate.
+
+The same revision adds explicit isolated-reader examples for a qualified question and
+a disjunction whose alternative is unidentified, addressing reproducible false
+rejections rather than introducing punctuation-based splitting. The existing important
+profile/repair test was extended to v22; no additional Rust test methods were added.
+All required offline commands pass. A new eight-Source editorial benchmark was created
+after the v22 prompt assets were frozen (five Korean, two English, one mixed). These
+new references are human-reviewable drafts, not independently adjudicated gold. Live
+v22 regression requests reuse the exposed question, report and disjunction Sources;
+they are explicitly regression evidence rather than held-out evidence. Neither benchmark
+nor regression model agreement is substituted for original-source inspection.
+
+V22 requests retained four focused rows (three passes, one local quota refusal) and
+five new-benchmark rows (two audited passes, two R2 outputs, one local quota refusal).
+The unverified-question regression passed twice on the first attempt. However, the
+single completed Lena/Omar run still lacked the explicitly unidentified leak target in
+both nodes. This violates the user's D-74 requirement even though splitting and
+attribution improved. No semantic acceptance is claimed. D-75 and opt-in v23 address
+the general distinction between an event noun and its missing affected argument;
+leak/damage/failure alone does not identify an affected object. Every node must retain
+an explicit unknown target without inventing a machine, location or owner. V22 assets
+remain frozen. A four-Source fresh v23 challenge set (two Korean, one English, one mixed)
+was constructed after prompt freezing, and actual v23 regression and benchmark requests
+are bounded by the same funding ceiling. Such small, targeted editorial sets do not
+establish full-corpus quality or independent gold-standard performance.
+
+### Latest v23 evidence and limits of the comparison
+
+The Lena/Omar regression completed twice, both on the first attempt, with equivalent
+meaning and two nodes each. Both explicitly identify the leak target as unspecified;
+neither attributes the narrator's lack-of-checking statement to Lena. Actual wording
+varies (“affecting an unspecified entity” / “from an unspecified target”), with no
+invented equipment, causality, date or confirmed leak. These four Claim texts were
+inspected against the original Source and the user's adjudication.
+
+All four fresh v23 challenges eventually produced model-gate passes, with seven Claim
+texts inspected against their original Sources. The initial request also contains one
+preterminal atomicity rejection and a local quota terminal for the quoted-delay case;
+a separate continuation passed it. These are **four passing final proposals plus an
+original failed quota request**, not four uninterrupted first-attempt production jobs.
+No actual publication or original-source mutation occurred during evaluations.
+
+| Challenge language | Sources inspected | Audited Claim texts | Known semantic/anchor/language errors in inspected final texts |
+| --- | ---: | ---: | ---: |
+| Korean | 2 | 3 | 0 |
+| English | 1 | 2 | 0 |
+| Mixed | 1 | 2 | 0 |
+
+This is a small, targeted editorial challenge set, not a representative or independently
+human-adjudicated benchmark. Assistant source inspection found all seven reference
+propositions represented, no independently combined propositions, no meaning-changing
+split, no duplicate Claim and no unsupported added fact in these final proposals.
+The validated anchors and final-language checks pass for these same proposals.
+The same four Sources were run through the R2 schema-adapted baseline with the same
+cheap model. Three baseline outputs omitted the explicitly unidentified affected target;
+the quoted-delay baseline additionally separated the verification limitation and left
+its object unstated. The mixed technical baseline was faithful in this inspection.
+Raw baseline outputs, proposal-level labels, per-language metrics and original failures
+are retained. These observations support the particular correction, not a claim that
+v23 is a proven general winner or that reviewers have zero false negatives. No
+translation-induced error rate can be estimated from these direct-only mini challenges;
+the earlier broad direct/English-intermediate experiments remain historical evidence,
+not final-profile comparative acceptance.
+
+The default remains frozen legacy behavior and every new candidate batch requires
+exact-hash local user fidelity approval. Full final-profile development reruns, repeated
+broad held-out evaluation and independent whole-benchmark review remain unverified.
+The remaining funding cannot support the required full comparison matrix, and local
+quota refusals are not semantic abstention or successful empty extraction. Completion
+is not claimed and `phase-3` must not be tagged on this evidence.
+
+V23 also passed the user-adjudicated habitual self-report twice with identical wording
+and the original-speaker/original-utterance frame. Separate controlled continuations
+passed the explicitly unidentified conditional experiment and the exact undated
+ongoing-state frame. The initial unknown-person run retained isolated-review
+disagreements and quota interruptions rather than publishing a partial result; its
+Source-grounded reviewers did not agree with every standalone rejection. Original
+quota runs and new controlled requests remain separate. The later Jimin regression
+passed with two independently meaningful, uncertain Claims, as the user permits.
+These focused outcomes are not a completed two-run six-case production reliability
+study: quota interruptions and unstarted runs prevent that interpretation.
+
+The final nested-report regression retained original-narrator group ownership and the
+professor → Reviewer2 attribution in both nodes. The last unknown-person continuation
+passed on attempt two, explicitly describing the unknown person in each node. Crucially,
+the two Claim texts were unchanged from the first attempt: the isolated reader changed
+its ambiguity judgment. This is reviewer instability, **not** evidence that repair
+improved semantics. The failed earlier attempts remain archived. Across the passing
+terminal proposals only, seven runs across six user-adjudicated Source cases yielded
+ten inspected Claim texts (the habitual case ran twice). No known contract defect was
+found in those final texts. This conditional subset is not the success rate over all
+requests, and no full two-run six-case study is claimed.
+
+All paid children exited before the final credit check. The conservative account-wide
+usage increase against the private funding baseline was **$4.78265335**, below the
+user's **$5** additional ceiling; $0.21734665 remained. This delta may include unrelated
+account activity and is not exact task cost. No further paid calls are running or
+scheduled. The unspent remainder is not represented as exhausted credits, and it does
+not establish the missing broad final-profile comparison or independent full-corpus
+review. The checkpoint deliberately has no `phase-3` completion tag.
+
+Final implementation checkpoint: `17347f2` (v23), preceded by `23a26e2` (v22 scope
+correction) and `b7e5d57` (v21 independent mental-state adjudication/protocol fix).
+The saved validation identifies this implementation and passes all three required Rust
+commands plus three Python tests. Phase 1/2 tag targets remain respectively
+`50dbccb34fc3b5960fe02de2af56c8c33f7b5916` and
+`ec11625f53f1bc12cb1f9e3e9849044f8e0d7d0d`; migration 0001 has no diff from Phase 2.

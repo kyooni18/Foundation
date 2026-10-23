@@ -1,0 +1,75 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v23|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko": {
+      "runs": 4,
+      "attempt_rows": 7,
+      "terminal_runs": 4,
+      "structural_valid": 6,
+      "provider_failures": 4,
+      "extractor_provider_failures": 1,
+      "reviewer_provider_error_calls": {
+        "Quota": 8
+      },
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {
+        "reference": 1,
+        "provider_or_schema_error": 8,
+        "atomicity": 2,
+        "ambiguity": 1
+      },
+      "generated_claims": 9,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 2,
+      "repeatability": {
+        "r1-habitual_temporal": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-ambiguous_ref": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v23|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|all": {
+      "runs": 4,
+      "attempt_rows": 7,
+      "terminal_runs": 4,
+      "structural_valid": 6,
+      "provider_failures": 4,
+      "extractor_provider_failures": 1,
+      "reviewer_provider_error_calls": {
+        "Quota": 8
+      },
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {
+        "reference": 1,
+        "provider_or_schema_error": 8,
+        "atomicity": 2,
+        "ambiguity": 1
+      },
+      "generated_claims": 9,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 2,
+      "repeatability": {
+        "r1-habitual_temporal": {
+          "runs": 2,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-ambiguous_ref": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    }
+  }
+}

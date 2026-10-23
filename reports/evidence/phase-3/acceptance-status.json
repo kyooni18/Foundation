@@ -1,16 +1,46 @@
 {
   "status": "not accepted; no completion tag",
   "provider_key": "valid; credential content excluded",
-  "provider_failure": "historical HTTP402; funded access verified for continuation",
-  "further_model_calls": "resumed with user-authorized $5 ceiling and shared conservative reservation ledger",
-  "fresh_extraction_heldout": "evaluation/phase3/heldout-v10.json reserved; not run",
-  "independent_korean_review": "user requires explicit unknown referent in every relevant Claim; negative-exception question pending",
-  "implementation_commit": "3edf6a3",
+  "provider_failure": "historical HTTP402; current funded real calls work; conservative local reservation refusals retained",
+  "further_model_calls": "stopped; original absolute additional budget remains $5, not a new allowance per continuation",
+  "fresh_extraction_heldout": "v21 original20 partially evaluated with confirmed framing failure; v22 fresh8 partially evaluated; v23 targeted fresh4 evaluated against R2 in separate requests, one original quota failure retained; no independent whole-benchmark human gold",
+  "independent_korean_review": "Explicit user unknown-reference, temporal, Korean narrator, independent-cause and assertion-layer judgments incorporated; whole-corpus independent human review not completed",
+  "implementation_commit": "17347f2",
   "completed_offline_commands": [
     "cargo fmt --check",
     "cargo test --offline --all-targets",
     "cargo clippy --offline --all-targets -- -D warnings"
   ],
   "offline_top_level_passed": 40,
-  "live_worker_http_mcp_v11": "passed on two synthetic reported Claims; no semantic corpus-wide acceptance inference"
+  "live_worker_http_mcp_v11": "passed on two synthetic reported Claims; no semantic corpus-wide acceptance inference",
+  "current_opt_in_prompt": "extraction-v23",
+  "remaining_acceptance": [
+    "full final-profile development corpus rerun and semantic audit",
+    "repeated broad fresh held-out comparison",
+    "independent review of whole benchmark",
+    "resolve reviewer false-positive/false-negative reliability limitations"
+  ],
+  "completion_tag_created": false,
+  "final_profile_focused_results": {
+    "lena_omar_regression": {
+      "passing_requests": 2,
+      "claim_texts": 4
+    },
+    "user_boundary_regressions": {
+      "passing_requests": 7,
+      "distinct_sources": 6,
+      "claim_texts": 10,
+      "note": "conditional passing subset, not all-request success rate; quota failures retained"
+    },
+    "fresh_challenges": {
+      "passing_audited_sources": 4,
+      "audited_claim_texts": 7,
+      "known_errors_in_assistant_inspected_final_texts": 0,
+      "note": "small targeted editorial set; not universal quality proof"
+    }
+  },
+  "provider_access": "funded access verified; account not reported exhausted",
+  "all_paid_children_joined": true,
+  "conservative_usage_delta_usd": 4.78265335,
+  "unspent_authorized_ceiling_usd": 0.21734665
 }

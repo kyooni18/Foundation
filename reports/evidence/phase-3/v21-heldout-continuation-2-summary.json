@@ -1,0 +1,189 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|mixed": {
+      "runs": 1,
+      "attempt_rows": 2,
+      "terminal_runs": 1,
+      "structural_valid": 2,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 1,
+      "reviewer_reported_issues": {
+        "ambiguity": 1
+      },
+      "generated_claims": 4,
+      "recovered_after_retry": 1,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "fresh-020": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|all": {
+      "runs": 4,
+      "attempt_rows": 8,
+      "terminal_runs": 4,
+      "structural_valid": 7,
+      "provider_failures": 4,
+      "extractor_provider_failures": 1,
+      "reviewer_provider_error_calls": {
+        "Timeout": 3,
+        "Quota": 4
+      },
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {
+        "ambiguity": 2,
+        "atomicity": 2,
+        "provider_or_schema_error": 7
+      },
+      "generated_claims": 11,
+      "recovered_after_retry": 2,
+      "terminal_gate_failures": 2,
+      "repeatability": {
+        "fresh-020": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "fresh-011": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "fresh-013": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|r2-frame|mixed": {
+      "runs": 1,
+      "attempt_rows": 1,
+      "terminal_runs": 1,
+      "structural_valid": 1,
+      "provider_failures": 0,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 1,
+      "reviewer_reported_issues": {},
+      "generated_claims": 2,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "fresh-020": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|r2-frame|all": {
+      "runs": 3,
+      "attempt_rows": 4,
+      "terminal_runs": 3,
+      "structural_valid": 3,
+      "provider_failures": 1,
+      "extractor_provider_failures": 1,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 3,
+      "reviewer_reported_issues": {},
+      "generated_claims": 5,
+      "recovered_after_retry": 1,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "fresh-020": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "fresh-011": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "fresh-012": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko": {
+      "runs": 3,
+      "attempt_rows": 6,
+      "terminal_runs": 3,
+      "structural_valid": 5,
+      "provider_failures": 4,
+      "extractor_provider_failures": 1,
+      "reviewer_provider_error_calls": {
+        "Timeout": 3,
+        "Quota": 4
+      },
+      "experimental_gate_passes": 1,
+      "reviewer_reported_issues": {
+        "atomicity": 2,
+        "provider_or_schema_error": 7,
+        "ambiguity": 1
+      },
+      "generated_claims": 7,
+      "recovered_after_retry": 1,
+      "terminal_gate_failures": 2,
+      "repeatability": {
+        "fresh-011": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "fresh-013": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v21|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|r2-frame|ko": {
+      "runs": 2,
+      "attempt_rows": 3,
+      "terminal_runs": 2,
+      "structural_valid": 2,
+      "provider_failures": 1,
+      "extractor_provider_failures": 1,
+      "reviewer_provider_error_calls": {},
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {},
+      "generated_claims": 3,
+      "recovered_after_retry": 1,
+      "terminal_gate_failures": 0,
+      "repeatability": {
+        "fresh-011": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "fresh-012": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    }
+  }
+}

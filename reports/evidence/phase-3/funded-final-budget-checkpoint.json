@@ -1,0 +1,83 @@
+{
+  "checked_at_utc": "2026-10-23T07:24:27.522747+00:00",
+  "approved_additional_ceiling_usd": 5,
+  "conservative_account_usage_delta_usd": 4.782653350000004,
+  "unspent_ceiling_usd": 0.2173466499999961,
+  "all_paid_children_joined": true,
+  "further_paid_model_calls": "stopped; final-profile broad acceptance remains unverified",
+  "attribution_note": "Account-wide usage increase against private baseline may include other activity; not exact task cost. No all-time account values or credentials retained.",
+  "reservation_ledgers": {
+    "v21-budget": {
+      "limit_micro_usd": 806365,
+      "rejected_requests": 9,
+      "reserved_micro_usd": 785559,
+      "settled_requests": 51
+    },
+    "v21-continuation-budget": {
+      "limit_micro_usd": 708699,
+      "rejected_requests": 0,
+      "reserved_micro_usd": 309687,
+      "settled_requests": 30
+    },
+    "v21-heldout-budget": {
+      "limit_micro_usd": 664110,
+      "rejected_requests": 3,
+      "reserved_micro_usd": 599056,
+      "settled_requests": 56
+    },
+    "v21-heldout-cont-budget": {
+      "limit_micro_usd": 585862,
+      "rejected_requests": 7,
+      "reserved_micro_usd": 564075,
+      "settled_requests": 60
+    },
+    "v21-heldout-final-budget": {
+      "limit_micro_usd": 488702,
+      "rejected_requests": 5,
+      "reserved_micro_usd": 449808,
+      "settled_requests": 35
+    },
+    "v22-budget": {
+      "limit_micro_usd": 425137,
+      "rejected_requests": 4,
+      "reserved_micro_usd": 391321,
+      "settled_requests": 37
+    },
+    "v23-budget": {
+      "limit_micro_usd": 363492,
+      "rejected_requests": 4,
+      "reserved_micro_usd": 338778,
+      "settled_requests": 32
+    },
+    "v23-cont-budget": {
+      "limit_micro_usd": 314797,
+      "rejected_requests": 0,
+      "reserved_micro_usd": 135326,
+      "settled_requests": 13
+    },
+    "v23-user-budget": {
+      "limit_micro_usd": 297025,
+      "rejected_requests": 9,
+      "reserved_micro_usd": 281182,
+      "settled_requests": 25
+    },
+    "v23-user-cont-budget": {
+      "limit_micro_usd": 250246,
+      "rejected_requests": 7,
+      "reserved_micro_usd": 226570,
+      "settled_requests": 21
+    },
+    "v23-last-budget": {
+      "limit_micro_usd": 227998,
+      "rejected_requests": 1,
+      "reserved_micro_usd": 190830,
+      "settled_requests": 17
+    },
+    "v23-unknown-budget": {
+      "limit_micro_usd": 198714,
+      "rejected_requests": 0,
+      "reserved_micro_usd": 146535,
+      "settled_requests": 12
+    }
+  }
+}

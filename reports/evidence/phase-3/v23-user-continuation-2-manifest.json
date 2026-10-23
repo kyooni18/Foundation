@@ -1,0 +1,21 @@
+{
+  "corpus": "/tmp/phase3-v23-last-corpus.json",
+  "output": "/tmp/phase3-v23-last",
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "prompt_version": "extraction-v23",
+  "max_output_tokens": 16384,
+  "review_max_output_tokens": 8192,
+  "split": "dev",
+  "runs": 1,
+  "repair_attempts": 3,
+  "workers": 1,
+  "shard_size": 1,
+  "variants": "audited",
+  "expected_rows": 3,
+  "git_commit": "17347f29b78b54a5b713677460c16231bbbe84bc",
+  "status": "incomplete",
+  "succeeded_shards": 2,
+  "failed_shards": 1,
+  "skipped_shards": 0
+}

@@ -1,0 +1,95 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v23|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko": {
+      "runs": 4,
+      "attempt_rows": 5,
+      "terminal_runs": 4,
+      "structural_valid": 5,
+      "provider_failures": 3,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {
+        "Quota": 7
+      },
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {
+        "temporal": 1,
+        "provider_or_schema_error": 7
+      },
+      "generated_claims": 8,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 2,
+      "repeatability": {
+        "v23-user-progressive": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-speculation_other_mind": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-nested_quote": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-hypothetical": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    },
+    "extraction-v23|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|all": {
+      "runs": 4,
+      "attempt_rows": 5,
+      "terminal_runs": 4,
+      "structural_valid": 5,
+      "provider_failures": 3,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {
+        "Quota": 7
+      },
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {
+        "temporal": 1,
+        "provider_or_schema_error": 7
+      },
+      "generated_claims": 8,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 2,
+      "repeatability": {
+        "v23-user-progressive": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        },
+        "r1-speculation_other_mind": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-nested_quote": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-hypothetical": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 1,
+          "max_count": 1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "corpus": "/tmp/phase3-v21-heldout-final-corpus.json",
+  "output": "/tmp/phase3-v21-heldout-final",
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "prompt_version": "extraction-v21",
+  "max_output_tokens": 16384,
+  "review_max_output_tokens": 8192,
+  "split": "heldout",
+  "runs": 1,
+  "repair_attempts": 3,
+  "workers": 2,
+  "shard_size": 1,
+  "variants": "audited,r2-frame",
+  "expected_rows": 18,
+  "git_commit": "b7e5d573147d4834d63a740459bd4360d123f364",
+  "status": "incomplete",
+  "succeeded_shards": 5,
+  "failed_shards": 2,
+  "skipped_shards": 11
+}

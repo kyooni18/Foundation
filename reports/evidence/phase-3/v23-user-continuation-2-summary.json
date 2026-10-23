@@ -1,0 +1,81 @@
+{
+  "warning": "Model gate results and lexical variation are diagnostics, not semantic quality acceptance.",
+  "groups": {
+    "extraction-v23|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko": {
+      "runs": 3,
+      "attempt_rows": 3,
+      "terminal_runs": 3,
+      "structural_valid": 3,
+      "provider_failures": 1,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {
+        "Quota": 1
+      },
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {
+        "provider_or_schema_error": 1
+      },
+      "generated_claims": 6,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 1,
+      "repeatability": {
+        "r1-nested_quote": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-ambiguous_ref": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-speculation_other_mind": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    },
+    "extraction-v23|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|all": {
+      "runs": 3,
+      "attempt_rows": 3,
+      "terminal_runs": 3,
+      "structural_valid": 3,
+      "provider_failures": 1,
+      "extractor_provider_failures": 0,
+      "reviewer_provider_error_calls": {
+        "Quota": 1
+      },
+      "experimental_gate_passes": 2,
+      "reviewer_reported_issues": {
+        "provider_or_schema_error": 1
+      },
+      "generated_claims": 6,
+      "recovered_after_retry": 0,
+      "terminal_gate_failures": 1,
+      "repeatability": {
+        "r1-nested_quote": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-ambiguous_ref": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        },
+        "r1-speculation_other_mind": {
+          "runs": 1,
+          "distinct_text_sets": 1,
+          "min_count": 2,
+          "max_count": 2
+        }
+      }
+    }
+  }
+}
