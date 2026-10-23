@@ -51,14 +51,85 @@ fn provider_code(error: &str) -> &'static str {
         _ => "provider",
     }
 }
+// Manual-evaluation guard only. Reserve conservatively before every request, including
+// failed calls, using $0.50/M input and $1/M output tokens (above all frozen cheap-model
+// catalog rates). UTF-8 byte length plus 4096 envelopes upper-bounds input tokens.
+// Reservations are never refunded; file locking shares the ceiling across shards.
+struct EvaluationProvider {
+    inner: OpenRouter,
+    ledger: Option<PathBuf>,
+}
+impl LlmProvider for EvaluationProvider {
+    fn identity(&self) -> &str {
+        self.inner.identity()
+    }
+    fn complete<'a>(
+        &'a self,
+        system: &'a str,
+        input: &'a str,
+        config: &'a ModelConfig,
+    ) -> prime_radiant::providers::ProviderFuture<'a> {
+        Box::pin(async move {
+            if let Some(path) = &self.ledger {
+                let reserve = || -> std::result::Result<(), Box<dyn std::error::Error>> {
+                    use std::io::{Read, Seek, SeekFrom};
+                    if config.model != "openai/gpt-6-luna-pro" {
+                        return Err("budget guard requires the priced evaluation model".into());
+                    }
+                    let mut file = std::fs::OpenOptions::new()
+                        .read(true)
+                        .write(true)
+                        .open(path)?;
+                    file.lock()?;
+                    let mut text = String::new();
+                    file.read_to_string(&mut text)?;
+                    let mut state: Value = serde_json::from_str(&text)?;
+                    let cost = ((system.len() + input.len() + 4096) as u64).div_ceil(2)
+                        + u64::from(
+                            config
+                                .max_output_tokens
+                                .ok_or("explicit token limit required")?,
+                        );
+                    let reserved = state["reserved_micro_usd"]
+                        .as_u64()
+                        .ok_or("invalid ledger")?;
+                    let limit = state["limit_micro_usd"].as_u64().ok_or("invalid ledger")?;
+                    let accepted = reserved.checked_add(cost).is_some_and(|n| n <= limit);
+                    if accepted {
+                        state["reserved_micro_usd"] = json!(reserved + cost);
+                    } else {
+                        state["rejected_requests"] =
+                            json!(state["rejected_requests"].as_u64().unwrap_or(0) + 1);
+                    }
+                    file.seek(SeekFrom::Start(0))?;
+                    file.set_len(0)?;
+                    file.write_all(serde_json::to_string(&state)?.as_bytes())?;
+                    file.sync_all()?;
+                    if !accepted {
+                        return Err("local evaluation budget exhausted".into());
+                    }
+                    Ok(())
+                };
+                if reserve().is_err() {
+                    return Err(prime_radiant::providers::ProviderError::Quota);
+                }
+            }
+            self.inner.complete(system, input, config).await
+        })
+    }
+}
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     if !(1..=3).contains(&args.repair_attempts) {
         return Err("repair attempts must be 1..3".into());
     }
-    let provider = OpenRouter::from_environment()
+    let inner = OpenRouter::from_environment()
         .map_err(|_| "provider credentials unavailable; no evaluation performed")?;
+    let provider = EvaluationProvider {
+        inner,
+        ledger: std::env::var_os("PHASE3_EVALUATION_BUDGET_LEDGER").map(PathBuf::from),
+    };
     let cases: Vec<Value> = serde_json::from_slice(&std::fs::read(args.corpus)?)?;
     let mut opts = std::fs::OpenOptions::new();
     opts.write(true).create_new(true);

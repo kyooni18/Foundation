@@ -383,3 +383,15 @@ One reported, explicitly unverified possibility remains a complete qualified pro
 under the user's positive example. No production code, per-case rule or authorization
 change follows from this annotation resolution. Models and hearsay never grant actual
 application permissions; only authenticated Principal and core policy do so.
+
+### D-58 — Human adjudication of unknown referents applies to every Claim
+On 2026-10-23 the user reviewed the actual short-form annoyance Claim about “걔” and
+required the explicit unknown referent in that Claim itself. Quoting the original
+pronoun is insufficient; the same referent description must appear in each dependent
+Claim's text. Source-aware reviewers accepting the short form were filling context
+that isolated readers do not have. This confirms the existing contract and v11
+prompt rule; it does not change Source bytes, historical hashes or authorization.
+The user's additional live-evaluation budget is capped at $5. The manual evaluator
+uses a shared, locked, no-refund conservative request-reservation ledger for the
+priced cheap model; local budget rejection stops evaluation like quota exhaustion.
+Production provider/job semantics are unchanged.

@@ -1,10 +1,10 @@
 {
   "status": "not accepted; no completion tag",
   "provider_key": "valid; credential content excluded",
-  "provider_failure": "HTTP 402; account credits depleted, not a configured per-key cap",
-  "further_model_calls": "stopped pending replenishment and an explicit additional evaluation budget",
+  "provider_failure": "historical HTTP402; funded access verified for continuation",
+  "further_model_calls": "resumed with user-authorized $5 ceiling and shared conservative reservation ledger",
   "fresh_extraction_heldout": "evaluation/phase3/heldout-v10.json reserved; not run",
-  "independent_korean_review": "two concrete questions pending; no human answers fabricated",
+  "independent_korean_review": "user requires explicit unknown referent in every relevant Claim; negative-exception question pending",
   "implementation_commit": "3edf6a3",
   "completed_offline_commands": [
     "cargo fmt --check",

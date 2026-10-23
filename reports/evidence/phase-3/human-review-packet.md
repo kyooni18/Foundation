@@ -32,4 +32,4 @@ Case `r1-ambiguous_ref`, run 1, prompt `extraction-v10`.
 2. 원문 화자는 원문을 말한 시점에 '걔'가 또 늦은 일을 진짜 짜증나는 일로 여겼다.
 
 The second Claim uses quoted 걔 without naming the unknown referent in that text. Is that sufficiently self-contained under the explicit unknown-reference contract?
-Human assessment: pending.
+Human assessment (2026-10-23, user): require the explicit unknown referent in this Claim. Quoting 걔 alone is insufficient. This confirms the strict isolation contract and the assistant rejection; source-aware reviewer acceptance is a false negative.

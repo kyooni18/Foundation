@@ -2,12 +2,14 @@
 
 Status: **not accepted; no `phase-3` tag**. The implementation and offline regression
 suite are complete as a reviewable checkpoint. Real OpenRouter experiments were run
-and prompts revised through v11. Provider access is currently blocked by HTTP 402
-(account credits exhausted; the key is valid and has no configured per-key cap).
-Further model calls have stopped pending replenishment and an additional evaluation
-budget. Only cheap models were used after the user requested that restriction.
-The fresh 20-source extraction benchmark has not been run; independent Korean review
-is also pending. Neither fake-provider tests nor reviewer agreement establishes
+and prompts revised through v11. An earlier run was blocked by HTTP 402
+(account credits exhausted; the key remained valid without a per-key cap). The user
+then authorized at most $5 additional evaluation spending, and funded access was
+verified. Frozen v11 evaluations resumed with a shared conservative reservation guard.
+Only cheap models were used after the user requested that restriction. The fresh
+20-source extraction benchmark has not yet been run. The user independently confirmed
+that each Claim must explicitly describe an unknown referent; the exception-scope
+review remains pending. Neither fake-provider tests nor reviewer agreement establishes
 semantic acceptance. The historical experiments below remain reproducible evidence.
 
 The first live pilot completed 36 extractions (12 development cases × 3 variants)
@@ -574,3 +576,24 @@ concrete outputs and resolve outstanding Korean judgments; freeze the selected
 strategy; run the reserved fresh benchmark and repeated comparison; record metrics
 and any failures. If these checks expose a general defect, revise and regress before
 considering the completion tag. All historical evidence and prior Git tags remain.
+
+
+### User review and bounded funded continuation
+The user rejected a Claim that used only quoted “걔” and required the unknown person
+to be described explicitly in that Claim. This supplies a human judgment for that
+concrete failure, not independent labels for the whole corpus. The frozen v11 prompt
+already contains the general rule and was not modified for this example.
+
+The additional budget is $5. The manual evaluator can use
+`PHASE3_EVALUATION_BUDGET_LEDGER`, a shared JSON file with `limit_micro_usd`,
+`reserved_micro_usd` and `rejected_requests`. Before each GPT-6 Luna Pro request it
+locks and durably reserves `(UTF-8 system/input bytes + 4096)/2`, rounded up, plus
+the explicit maximum output tokens, in microdollars. Rates of $0.50/M input and
+$1/M output exceed the frozen current model catalog rates including its higher tier
+and cache-write rates; byte counts conservatively bound input token counts with
+additional envelope allowance. No reservation is refunded, including failed calls.
+All concurrent shards share the same ceiling. Invalid/missing ledgers, unpriced
+models or unspecified output caps fail closed. Local refusal is represented as quota
+in the provider-compatible diagnostic and stops dispatch; the ledger distinguishes
+local budget exhaustion from an actual HTTP 402. This guard is evaluation-only.
+A zero-budget check verified no request dispatch and one durable rejected reservation.
