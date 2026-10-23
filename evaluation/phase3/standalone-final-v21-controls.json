@@ -1,0 +1,198 @@
+[
+  {
+    "id": "scope-and-limit-001",
+    "expected": "reject",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 커밋 메시지는 영어로 쓰고 문서 파일은 한국어를 허용한다고 요청했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial calibration; target scope and epistemic frame; overlaps instructions"
+  },
+  {
+    "id": "scope-and-limit-002",
+    "expected": "pass",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 모든 문서는 영어로 작성하되 법률 인용문에는 원문 한국어를 허용한다고 요청했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial calibration; target scope and epistemic frame; overlaps instructions"
+  },
+  {
+    "id": "scope-and-limit-003",
+    "expected": "pass",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "민수는 커밋 영어/문서 한국어라는 복합 정책이 일관적이라고 평가했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial calibration; target scope and epistemic frame; overlaps instructions"
+  },
+  {
+    "id": "scope-and-limit-004-independent-states-v2",
+    "expected": "reject",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 지민이 자신에게 화난 듯하지만 그 이유는 모른다고 밝혔다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "User adjudication permits separate independently assessable mental-state propositions; shared target alone does not require merging."
+  },
+  {
+    "id": "scope-and-limit-005",
+    "expected": "reject",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 지민이 자신에게 화난 듯하다고 여겼고 센서가 멈춘 이유는 모른다고 밝혔다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial calibration; target scope and epistemic frame; overlaps instructions"
+  },
+  {
+    "id": "scope-and-limit-006-bound-intent-v2",
+    "expected": "reject",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 원문 발화 시점에, 원문에서 이번 실험이라고 지칭한 실험의 loss가 0.1 아래로 떨어지지 않으면 그 실험의 아키텍처를 바꾸려는 의사를 밝혔다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial paired reference control revised to remove unbound present-intent temporal confound; v19 original controls and outputs retained"
+  },
+  {
+    "id": "scope-and-limit-007-bound-intent-v2",
+    "expected": "pass",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 원문 발화 시점에, 원문에서 구체적 정체가 밝혀지지 않은 실험의 loss가 0.1 아래로 떨어지지 않으면 그 실험의 아키텍처를 바꾸려는 의사를 밝혔다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial paired reference control revised to remove unbound present-intent temporal confound; v19 original controls and outputs retained"
+  },
+  {
+    "id": "scope-and-limit-008-bound-intent-v2",
+    "expected": "pass",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 원문 발화 시점에 실험 E42의 loss가 0.1 아래로 떨어지지 않으면 E42의 아키텍처를 바꾸려는 의사를 밝혔다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial paired reference control revised to remove unbound present-intent temporal confound; v19 original controls and outputs retained"
+  },
+  {
+    "id": "speech-viewpoint-001",
+    "expected": "pass",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "민수는 “내가 늦었다”라고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial focused calibration; source-aware attribution still required"
+  },
+  {
+    "id": "speech-viewpoint-002",
+    "expected": "reject",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "민수는 내가 늦었다고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial focused calibration; source-aware attribution still required"
+  },
+  {
+    "id": "speech-viewpoint-003",
+    "expected": "pass",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "민수는 원문 화자가 늦었다고 말했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial focused calibration; source-aware attribution still required"
+  },
+  {
+    "id": "speech-viewpoint-004",
+    "expected": "pass",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "교수는 리뷰어 2가 원문 화자가 속한 집단의 구체적 내용이 밝혀지지 않은 방법은 새롭지 않다고 말했다고 전했다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "editorial focused calibration; source-aware attribution still required"
+  },
+  {
+    "id": "independent-cause-001",
+    "expected": "pass",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 원문 발화 시점에 지민이 원문 화자에게 화난 듯하다고 여겼다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "Editorial wording consistent with user-adjudicated split; not independent full wording gold"
+  },
+  {
+    "id": "independent-cause-002",
+    "expected": "pass",
+    "original_source": "Not supplied to standalone reader.",
+    "candidate_batch": {
+      "claims": [
+        {
+          "text": "원문 화자는 원문 발화 시점에 지민이 원문 화자에게 화난 듯해 보이는 이유는 알지 못했다고 밝혔다."
+        }
+      ],
+      "empty_reason": null
+    },
+    "annotation_status": "Editorial wording consistent with user-adjudicated split; not independent full wording gold"
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "corpus": "evaluation/phase3/quoted-time-controls.json",
+  "output": "/tmp/phase3-v18-pilot",
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "prompt_version": "extraction-v18",
+  "max_output_tokens": 16384,
+  "review_max_output_tokens": 8192,
+  "split": "dev",
+  "runs": 2,
+  "repair_attempts": 3,
+  "workers": 4,
+  "shard_size": 1,
+  "variants": "audited",
+  "expected_rows": 16,
+  "git_commit": "aa6c5378aa4b20fd03b6ecdb5a2aadb8722c6cd0",
+  "status": "complete",
+  "succeeded_shards": 8,
+  "failed_shards": 0,
+  "skipped_shards": 0,
+  "attempt_rows": 18,
+  "terminal_outcomes": {
+    "gate_pass": 16
+  },
+  "acceptance": false
+}

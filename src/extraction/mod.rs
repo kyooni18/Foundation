@@ -124,6 +124,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v20/frames.txt"),
                 include_str!("../../prompts/extraction-v20/review.txt"),
             )),
+            "extraction-v21" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v21/frames.txt"),
+                include_str!("../../prompts/extraction-v21/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -158,8 +163,15 @@ impl Plan {
             "extraction-v18" => Some(include_str!("../../prompts/extraction-v18/reader.txt")),
             "extraction-v19" => Some(include_str!("../../prompts/extraction-v19/reader.txt")),
             "extraction-v20" => Some(include_str!("../../prompts/extraction-v20/reader.txt")),
+            "extraction-v21" => Some(include_str!("../../prompts/extraction-v21/reader.txt")),
             _ => None,
         }
+    }
+    /// Profiles from v12 onward include bounded previous-attempt diagnostics.
+    /// Derive this from the reader profile so new frozen profiles cannot silently
+    /// diverge between the core worker and evaluation harness.
+    pub fn supports_repair(&self) -> bool {
+        self.reader_prompt().is_some() && self.version() != "extraction-v11"
     }
     pub fn hash(&self) -> Result<String> {
         for config in [&self.extractor, &self.reviewer] {
@@ -468,20 +480,7 @@ fn korean_matrix_evidence(span: &str) -> bool {
 /// Older frozen profiles retain their original payload shape.
 pub fn review_message(plan: &Plan, source: &SourceView, batch: &Batch) -> String {
     let mut input = serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch});
-    if matches!(
-        plan.version(),
-        "extraction-v10"
-            | "extraction-v11"
-            | "extraction-v12"
-            | "extraction-v13"
-            | "extraction-v14"
-            | "extraction-v15"
-            | "extraction-v16"
-            | "extraction-v17"
-            | "extraction-v18"
-            | "extraction-v19"
-            | "extraction-v20"
-    ) {
+    if plan.version() == "extraction-v10" || plan.reader_prompt().is_some() {
         input["candidate_count"] = serde_json::json!(batch.claims.len());
         input["required_checked_indices"] =
             serde_json::json!((0..batch.claims.len()).collect::<Vec<_>>());
@@ -642,18 +641,8 @@ async fn propose_with_feedback(
     let mut input: Value =
         serde_json::from_str(&extraction_message(source, feedback)).expect("payload");
     input["prior_extraction_claims"] = serde_json::json!(prior_claims);
-    if matches!(
-        plan.version(),
-        "extraction-v12"
-            | "extraction-v13"
-            | "extraction-v14"
-            | "extraction-v15"
-            | "extraction-v16"
-            | "extraction-v17"
-            | "extraction-v18"
-            | "extraction-v19"
-            | "extraction-v20"
-    ) && let Some(repair) = repair
+    if plan.supports_repair()
+        && let Some(repair) = repair
     {
         input["untrusted_previous_attempt"] = repair.clone();
     }
@@ -896,18 +885,7 @@ impl App {
                 |r| r.get(0),
             )?;
             let reader = self.store.reader()?;
-            let repair_row: Option<(String, String)> = if matches!(
-                plan.version(),
-                "extraction-v12"
-                    | "extraction-v13"
-                    | "extraction-v14"
-                    | "extraction-v15"
-                    | "extraction-v16"
-                    | "extraction-v17"
-                    | "extraction-v18"
-                    | "extraction-v19"
-                    | "extraction-v20"
-            ) {
+            let repair_row: Option<(String, String)> = if plan.supports_repair() {
                 reader.query_row("SELECT output_json,reviews_json FROM extraction_candidate WHERE job_id=?1 AND json_extract(reviews_json,'$.attempt')=?2 ORDER BY created_at DESC,id DESC LIMIT 1", params![lease.id,lease.attempt.saturating_sub(1)], |r| Ok((r.get(0)?,r.get(1)?))).optional()?
             } else {
                 None

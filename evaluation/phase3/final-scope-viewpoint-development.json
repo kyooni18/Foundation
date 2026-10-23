@@ -51,9 +51,11 @@
         "지민이 화났다고 단정하지 않음"
       ],
       "propositions": [
-        "화자는 지민이 자신에게 화난 듯하다고 추측하지만 그 이유는 모른다."
+        "원문 화자는 지민이 원문 화자에게 화난 듯하다고 추측한다.",
+        "원문 화자는 지민이 원문 화자에게 화난 듯한 이유를 모른다."
       ],
-      "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+      "annotation_status": "User independently permits two self-contained Claims; preserve uncertainty on both; other annotations remain editorial",
+      "human_adjudication": "Allow the two self-contained Claims; ignorance of why can be independent from the tentative assessment."
     },
     "category": "speculation_other_mind"
   },

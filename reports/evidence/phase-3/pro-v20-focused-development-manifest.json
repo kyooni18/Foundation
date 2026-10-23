@@ -1,0 +1,29 @@
+{
+  "corpus": "evaluation/phase3/final-scope-viewpoint-development.json",
+  "output": "/tmp/phase3-v20-focused-development",
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "prompt_version": "extraction-v20",
+  "max_output_tokens": 16384,
+  "review_max_output_tokens": 8192,
+  "split": "dev",
+  "runs": 2,
+  "repair_attempts": 3,
+  "workers": 2,
+  "shard_size": 1,
+  "variants": "audited",
+  "expected_rows": 12,
+  "git_commit": "b50584ceb56869540598eceae037341903d87c58",
+  "status": "incomplete",
+  "succeeded_shards": 2,
+  "failed_shards": 1,
+  "skipped_shards": 3,
+  "attempt_rows": 11,
+  "terminal_outcomes": {
+    "gate_pass": 3,
+    "atomicity": 2,
+    "quota": 1
+  },
+  "acceptance": false,
+  "note": "Stopped after user independently permitted the two self-contained assessment/unknown-cause Claims; v21 removes overbinding instruction."
+}

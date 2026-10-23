@@ -227,18 +227,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     let started = std::time::Instant::now();
                     let prompt = plan.prompt()?;
                     let mut input = extraction_message(&source, previous_failure.as_deref());
-                    if matches!(
-                        plan.version(),
-                        "extraction-v12"
-                            | "extraction-v13"
-                            | "extraction-v14"
-                            | "extraction-v15"
-                            | "extraction-v16"
-                            | "extraction-v17"
-                            | "extraction-v18"
-                            | "extraction-v19"
-                            | "extraction-v20"
-                    ) && let Some(previous) = &previous_attempt
+                    if plan.supports_repair()
+                        && let Some(previous) = &previous_attempt
                     {
                         let mut payload: Value = serde_json::from_str(&input)?;
                         payload["untrusted_previous_attempt"] = previous.clone();

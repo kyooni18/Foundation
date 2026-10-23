@@ -562,3 +562,27 @@ judgments confirm the conservative source-time and unidentified-reference handli
 the current profile. V17's unframed state and v18's source-relative experiment label are
 known gate-passing defects, not acceptable equivalent formulations. Neither correction
 establishes user Principal identity or authorizes any model-proposed metadata.
+
+### D-72 — Human adjudication supersedes the same-target unknown-reason merge
+The user independently allowed TWO self-contained Claims for “지민이 나한테 화난 것
+같은데 이유를 모르겠다”: the tentative anger assessment and ignorance of why the
+apparent anger exists. Both retain uncertainty and assert no actual anger. This
+supersedes D-68's requirement to merge the unknown reason into the assessment. Shared
+target alone does not make independently variable mental states one proposition.
+Ignorance of WHY differs from an evidential limitation on WHETHER; the explicit
+unchecked-toner example still retains its verification limitation. V21 removes the
+conflicting merge instructions from extractor, source reviewers and isolated reader.
+The legacy editorial reference is corrected with the user's exact adjudication; source
+bytes and historical prompts/outputs remain unchanged. The earlier v18 two-Claim output
+is not counted as a known fidelity failure merely for that split. All other scope,
+reference, temporal and authorship constraints remain intact.
+
+### D-73 — Derive evaluation protocol features from the core frozen profile
+The offline revalidator's duplicated version list stopped at v15 and would incorrectly
+expect only three reviews for newer profiles. It now reads the core Plan's reader
+feature and validates the saved plan/prompt hash. Repair-context support is likewise
+shared by the core and harness rather than repeated growing version lists. Existing
+profile behavior and prompt hashes are unchanged. Offline revalidation of 18 saved v18
+rows verified all 18 plan hashes and retained the same 16 terminal gate-eligible runs.
+This verifies protocol bookkeeping, not semantic acceptance. Existing tests were extended
+without increasing Rust/Python test-method counts.

@@ -1,0 +1,9 @@
+{
+  "rows": 24,
+  "confusion_against_then_editorial_labels": {
+    "TP": 8,
+    "TN": 15,
+    "FP": 1
+  },
+  "scope": "editorial calibration; overlaps instructions; v20 unknown-cause expected-pass label superseded by user D72"
+}

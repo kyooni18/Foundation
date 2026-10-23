@@ -734,7 +734,9 @@ The v18 broad development attempt retained 84 attempt rows and 30 non-quota term
 Sources out of 116 planned. Across all terminal rows, including interrupted attempts,
 there were 25 gate passes, four atomicity failures, one schema failure and 21 quota-class
 stops. This is incomplete evaluation, not a 116-source success rate. Its gate-passing
-anger assessment lost its same-target unknown-reason qualifier when split; a rejected
+anger assessment was initially treated as losing an unknown-reason qualifier when split,
+but the user subsequently adjudicated those two self-contained Claims as acceptable
+(D-72); that split is **not** counted as a fidelity failure. A rejected
 nested report also relocated the narrator's “our method” to Reviewer 2. The run was
 stopped to preserve budget for corrections and held-out measurement.
 
@@ -760,3 +762,21 @@ rejections are not labeled false positives. Original controls and outputs remain
 Before v20, the account usage increase was $4.01856285, leaving a guarded $0.931437 plus
 the $0.05 safety margin. The remaining evaluation therefore cannot be presented as a
 complete rerun of every earlier corpus/profile combination.
+
+The user adjudication corrected the same-target overbinding hypothesis before final
+evaluation: independently variable ignorance of a cause can be a separate proposition,
+while absence of verification explicitly qualifying an assessment stays attached. V21
+removes the conflicting V19/V20 instructions instead of merely appending a contradictory
+exception. The original-source/Claim fixtures retain uncertainty in both resulting
+Claims. This distinction is user-adjudicated; other full-corpus annotations remain
+editorial. The correction also invalidates treating the V18 split alone as a reviewer
+false negative.
+
+Offline protocol revalidation found and fixed a stale example-only profile list ending
+at v15. Review counts now derive from the core Plan; repair support also uses the core
+feature in both harness and worker. Revalidation of all 18 v18 pilot rows confirmed 18
+matching prompt/plan hashes and the same 16 terminal gate-eligible outcomes. No semantic
+acceptance is inferred from that bookkeeping result. The core's bounded total worker
+deadline still covers the entire pipeline; sufficiently slow/large batches can time out
+and remain recoverable for controlled re-extraction. No unbounded-duration extraction
+capability is claimed.

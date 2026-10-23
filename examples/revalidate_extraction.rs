@@ -3,7 +3,7 @@ use clap::Parser;
 use prime_radiant::{
     App,
     domain::*,
-    extraction::{VALIDATION_VERSION, hash, validate, validate_review},
+    extraction::{Plan, VALIDATION_VERSION, hash, validate, validate_review},
 };
 use serde_json::{Value, json};
 use std::{
@@ -54,23 +54,23 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             Some("atomicity-review" | "fidelity-review") => 1,
             _ => 0,
         };
+        let plan = serde_json::from_value::<Plan>(row["plan"].clone()).ok();
+        let plan_hash_valid = plan.as_ref().is_some_and(|plan| {
+            plan.variant == row["variant"].as_str().unwrap_or_default()
+                && plan.hash().ok().as_deref() == row["prompt_hash"].as_str()
+        });
         let expected = expected
-            + if matches!(
-                row["plan"]["prompt_version"].as_str(),
-                Some(
-                    "extraction-v11"
-                        | "extraction-v12"
-                        | "extraction-v13"
-                        | "extraction-v14"
-                        | "extraction-v15"
-                )
-            ) && matches!(row["variant"].as_str(), Some("audited" | "english-staged"))
+            + if plan
+                .as_ref()
+                .is_some_and(|plan| plan.reader_prompt().is_some())
+                && matches!(row["variant"].as_str(), Some("audited" | "english-staged"))
             {
                 count
             } else {
                 0
             };
         let eligible = valid
+            && plan_hash_valid
             && row["reviews"].as_array().is_some_and(|reviews| {
                 reviews.len() == expected
                     && reviews.iter().all(|review| {
@@ -90,7 +90,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                         })
                     })
             });
-        row["revalidation"] = json!({"version":VALIDATION_VERSION,"valid":valid,"error":field,"experimental_gate_eligible":eligible});
+        row["revalidation"] = json!({"version":VALIDATION_VERSION,"valid":valid,"error":field,"experimental_gate_eligible":eligible,"plan_hash_valid":plan_hash_valid});
         writeln!(output, "{}", serde_json::to_string(&row)?)?;
     }
     output.sync_all()?;
