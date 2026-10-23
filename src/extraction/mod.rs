@@ -84,6 +84,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v11/frames.txt"),
                 include_str!("../../prompts/extraction-v11/review.txt"),
             )),
+            "extraction-v12" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v12/frames.txt"),
+                include_str!("../../prompts/extraction-v12/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -107,8 +112,11 @@ impl Plan {
         ))
     }
     pub fn reader_prompt(&self) -> Option<&'static str> {
-        (self.version() == "extraction-v11")
-            .then_some(include_str!("../../prompts/extraction-v11/reader.txt"))
+        match self.version() {
+            "extraction-v11" => Some(include_str!("../../prompts/extraction-v11/reader.txt")),
+            "extraction-v12" => Some(include_str!("../../prompts/extraction-v12/reader.txt")),
+            _ => None,
+        }
     }
     pub fn hash(&self) -> Result<String> {
         for config in [&self.extractor, &self.reviewer] {
@@ -417,7 +425,10 @@ fn korean_matrix_evidence(span: &str) -> bool {
 /// Older frozen profiles retain their original payload shape.
 pub fn review_message(plan: &Plan, source: &SourceView, batch: &Batch) -> String {
     let mut input = serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"candidate_batch":batch});
-    if matches!(plan.version(), "extraction-v10" | "extraction-v11") {
+    if matches!(
+        plan.version(),
+        "extraction-v10" | "extraction-v11" | "extraction-v12"
+    ) {
         input["candidate_count"] = serde_json::json!(batch.claims.len());
         input["required_checked_indices"] =
             serde_json::json!((0..batch.claims.len()).collect::<Vec<_>>());
@@ -559,6 +570,7 @@ pub async fn propose(
         None,
         &[],
         &mut ProposalTrace::default(),
+        None,
     )
     .await
 }
@@ -569,6 +581,7 @@ async fn propose_with_feedback(
     feedback: Option<&str>,
     prior_claims: &[Value],
     trace: &mut ProposalTrace,
+    repair: Option<&Value>,
 ) -> Result<Proposal> {
     if provider.identity() != plan.provider {
         return Err(invalid("provider", "configuration mismatch"));
@@ -576,6 +589,11 @@ async fn propose_with_feedback(
     let mut input: Value =
         serde_json::from_str(&extraction_message(source, feedback)).expect("payload");
     input["prior_extraction_claims"] = serde_json::json!(prior_claims);
+    if plan.version() == "extraction-v12" {
+        if let Some(repair) = repair {
+            input["untrusted_previous_attempt"] = repair.clone();
+        }
+    }
     let input = input.to_string();
     let call = |e: ProviderError| {
         if e == ProviderError::LanguageRestriction {
@@ -815,6 +833,15 @@ impl App {
                 |r| r.get(0),
             )?;
             let reader = self.store.reader()?;
+            let repair_row: Option<(String, String)> = if plan.version() == "extraction-v12" {
+                reader.query_row("SELECT output_json,reviews_json FROM extraction_candidate WHERE job_id=?1 AND json_extract(reviews_json,'$.attempt')=?2 ORDER BY created_at DESC,id DESC LIMIT 1", params![lease.id,lease.attempt.saturating_sub(1)], |r| Ok((r.get(0)?,r.get(1)?))).optional()?
+            } else {
+                None
+            };
+            let repair = repair_row.and_then(|(raw, reports)| {
+                let reports: Value = serde_json::from_str(&reports).ok()?;
+                repair_context(&raw, reports["reviews"].as_array()?)
+            });
             let prior:Vec<Value>=reader.prepare("SELECT c.id,c.text,COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore') FROM claim c JOIN extraction_request r ON c.job_id=r.base_job WHERE r.job_id=?1 ORDER BY c.id")?.query_map([&lease.id],|r|Ok(serde_json::json!({"id":r.get::<_,String>(0)?,"text":r.get::<_,String>(1)?,"lifecycle_event":r.get::<_,String>(2)?})))?.collect::<std::result::Result<_,_>>()?;
             drop(reader);
             let proposal = propose_with_feedback(
@@ -824,6 +851,7 @@ impl App {
                 previous.as_deref(),
                 &prior,
                 &mut trace,
+                repair.as_ref(),
             )
             .await?;
             self.quarantine_extraction(&lease, proposal)
@@ -883,6 +911,34 @@ impl App {
 }
 
 /// Shared evaluation/production payload; original bytes remain authoritative.
+/// Private same-job diagnostic context; never evidence or publication approval.
+/// Reports can be stored JSON strings or evaluation envelopes. Preserve their stage.
+pub fn repair_context(raw: &str, reports: &[Value]) -> Option<Value> {
+    if raw.len() > 4 * 1024 * 1024 {
+        return None;
+    }
+    let candidate: Value = serde_json::from_str(raw).ok()?;
+    let n = candidate["claims"].as_array()?.len();
+    let reports: Vec<Value> = reports
+        .iter()
+        .enumerate()
+        .filter_map(|(i, r)| {
+            if let Some(text) = r.as_str() {
+                let report: Value = serde_json::from_str(text).ok()?;
+                let stage = if i < n {
+                    format!("standalone candidate {i}")
+                } else {
+                    REVIEW_STAGES.get(i - n)?.to_string()
+                };
+                Some(serde_json::json!({"stage":stage,"report":report}))
+            } else {
+                Some(r.clone())
+            }
+        })
+        .collect();
+    let result = serde_json::json!({"candidate_batch":candidate,"review_reports":reports,"authority":"untrusted diagnostic only; original_source remains authoritative"});
+    (result.to_string().len() <= 4 * 1024 * 1024).then_some(result)
+}
 pub fn extraction_message(source: &SourceView, feedback: Option<&str>) -> String {
     serde_json::json!({"original_source":source.content,"authored_at":source.authored_at,"observed_at":source.observed_at,"artifact_available":source.artifact_ref.is_some(),"previous_failure_code":feedback,"prior_extraction_claims":[],"repair_instruction":"Re-analyze the original source and repair the entire batch; do not omit difficult propositions to avoid failure."}).to_string()
 }

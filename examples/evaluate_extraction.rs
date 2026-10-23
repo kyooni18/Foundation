@@ -5,7 +5,7 @@ use prime_radiant::{
     domain::*,
     extraction::{
         Plan, REVIEW_STAGES, VALIDATION_VERSION, extraction_message, hash, locate, reader_message,
-        review_message, validate, validate_review,
+        repair_context, review_message, validate, validate_review,
     },
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
@@ -170,10 +170,18 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             };
             for run in 0..args.runs {
                 let mut previous_failure: Option<String> = None;
+                let mut previous_attempt: Option<Value> = None;
                 for attempt in 1..=args.repair_attempts {
                     let started = std::time::Instant::now();
                     let prompt = plan.prompt()?;
                     let mut input = extraction_message(&source, previous_failure.as_deref());
+                    if plan.version() == "extraction-v12" {
+                        if let Some(previous) = &previous_attempt {
+                            let mut payload: Value = serde_json::from_str(&input)?;
+                            payload["untrusted_previous_attempt"] = previous.clone();
+                            input = payload.to_string();
+                        }
+                    }
                     let mut result = json!({"case_id":case["id"],"language":case["language"],"category":case["category"],"split":args.split,"run":run,"variant":variant,"plan":plan,"prompt_hash":plan.hash()?,"source_hash":hash(&source.content),"corpus_case":case,"reviews":[],"human_review":null});
                     result["attempt"] = json!(attempt);
                     result["validation_version"] = json!(VALIDATION_VERSION);
@@ -385,6 +393,9 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     if failure.is_none() {
                         break;
                     }
+                    previous_attempt = result["raw"]
+                        .as_str()
+                        .and_then(|raw| repair_context(raw, result["reviews"].as_array().unwrap()));
                     previous_failure = failure.map(str::to_owned);
                 }
             }

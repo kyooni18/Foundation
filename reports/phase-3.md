@@ -597,3 +597,14 @@ models or unspecified output caps fail closed. Local refusal is represented as q
 in the provider-compatible diagnostic and stops dispatch; the ledger distinguishes
 local budget exhaustion from an actual HTTP 402. This guard is evaluation-only.
 A zero-budget check verified no request dispatch and one durable rejected reservation.
+
+
+### Repair-feedback experiment (v12)
+Funded v11 repeated calendar-document Claims with unbound “이 메모” after a
+standalone reference rejection; the retry input only said `atomicity`. V12 now
+supplies bounded same-job, immediately preceding candidate/review diagnostics with
+stage labels. This is untrusted repair context, not new evidence or a pass. All
+repaired candidates undergo new complete reviews and publication approval. An
+existing fake-provider regression now inspects the actual retry input and verifies
+that four new reviews are required and no Claims publish automatically. V11 and
+earlier frozen inputs remain unchanged. Real paired results remain to be evaluated.

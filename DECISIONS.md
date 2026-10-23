@@ -395,3 +395,16 @@ The user's additional live-evaluation budget is capped at $5. The manual evaluat
 uses a shared, locked, no-refund conservative request-reservation ledger for the
 priced cheap model; local budget rejection stops evaluation like quota exhaustion.
 Production provider/job semantics are unchanged.
+
+### D-59 — Versioned same-job repair diagnostics, never reused approval
+Funded v11 retries repeated standalone-reference rejections (for example unbound
+“이 메모”) while the next extractor saw only `atomicity`. A coarse failure class is
+insufficient to identify the failed candidate or the review's actual issue. Opt-in
+v12 supplies a bounded, explicitly untrusted previous candidate plus stage-labelled
+review diagnostics. The worker selects only the immediately preceding attempt of
+the same job; the evaluator follows the same input contract. The original Source
+remains the sole semantic evidence. Reviewer diagnostics can be wrong and must be
+checked against that Source, not obeyed as instructions. Every repaired batch receives
+all new reader and source-grounded reviews, and still requires exact-hash local user
+approval. No review result is inherited as publication authority. Older frozen
+profiles retain their prior request shape and hashes. No migration is needed.

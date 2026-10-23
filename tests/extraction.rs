@@ -560,7 +560,10 @@ async fn review_rejection_rolls_back_and_prompt_injection_remains_data() {
         Ok(denied_raw),
         Ok(json!({"verdict":"reject","issues":["reference"],"checked":[0],"coverage_complete":true}).to_string())
     ].into()));
-    assert!(denied_app.work_once(&denied, &standalone).await.is_err());
+    let mut repair_plan = standalone.clone();
+    repair_plan.prompt_version = Some("extraction-v12".into());
+    assert_ne!(repair_plan.hash().unwrap(), standalone.hash().unwrap());
+    assert!(denied_app.work_once(&denied, &repair_plan).await.is_err());
     assert_eq!(row(&denied_app)["failure"], "atomicity");
     assert!(
         denied_app
@@ -571,6 +574,49 @@ async fn review_rejection_rolls_back_and_prompt_injection_remains_data() {
     assert_eq!(
         denied_app.get_source(&user(), source_id).unwrap().content,
         first
+    );
+    // A retry receives only the prior attempt from this job, with diagnostic stages;
+    // old review proofs do not replace the four new required reviews.
+    rusqlite::Connection::open(_denied_dir.path().join("db"))
+        .unwrap()
+        .execute("UPDATE job SET run_after='2000-01-01T00:00:00.000Z'", [])
+        .unwrap();
+    let pass =
+        json!({"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true}).to_string();
+    let retry = Observed {
+        script: FakeProvider(std::sync::Mutex::new(
+            [
+                Ok(output(vec![candidate(first)])),
+                Ok(pass.clone()),
+                Ok(pass.clone()),
+                Ok(pass.clone()),
+                Ok(pass),
+            ]
+            .into(),
+        )),
+        inputs: std::sync::Mutex::new(Vec::new()),
+    };
+    denied_app
+        .work_once(&retry, &repair_plan)
+        .await
+        .unwrap()
+        .unwrap();
+    let inputs = retry.inputs.lock().unwrap();
+    assert_eq!(inputs.len(), 5);
+    assert_eq!(inputs[0]["previous_failure_code"], "atomicity");
+    let hint = &inputs[0]["untrusted_previous_attempt"];
+    assert_eq!(hint["candidate_batch"]["claims"][0]["text"], first);
+    assert_eq!(hint["review_reports"][0]["stage"], "standalone candidate 0");
+    assert_eq!(
+        hint["review_reports"][0]["report"]["issues"],
+        json!(["reference"])
+    );
+    assert!(inputs[1].get("untrusted_previous_attempt").is_none());
+    assert!(
+        denied_app
+            .list_claims(&p(PrincipalKind::Agent))
+            .unwrap()
+            .is_empty()
     );
 }
 #[test]
