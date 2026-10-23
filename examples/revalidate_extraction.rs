@@ -57,7 +57,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         let expected = expected
             + if matches!(
                 row["plan"]["prompt_version"].as_str(),
-                Some("extraction-v11" | "extraction-v12" | "extraction-v13")
+                Some("extraction-v11" | "extraction-v12" | "extraction-v13" | "extraction-v14")
             ) && matches!(row["variant"].as_str(), Some("audited" | "english-staged"))
             {
                 count

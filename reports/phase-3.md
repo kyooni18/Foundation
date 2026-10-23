@@ -636,3 +636,19 @@ calibration controls repeated twice, the reader returned 28 correct passes and 2
 correct rejections with no provider/schema errors. These labels are editorial and
 partly overlap the prompt; the whole pipeline and separate reader regressions are
 being evaluated. The user's short-form unknown-person rejection remains enforced.
+
+
+The completed v12 pilot has 33 attempts and 16 terminal runs: nine model-gate passes
+and seven atomicity-class rejections. V13 retains false positives on a composite
+policy assessment and on unidentified technical components in the long mixed case.
+V14 tests an explicit intensional-object distinction: describing the single policy
+being assessed must not be confused with independently asserting its component
+events or assessing each component separately. Paired negative controls still require
+splitting two reported events or two target evaluations. This is a semantic scope
+change to the prompt, not a relaxed schema/anchor gate. Its actual quality remains
+subject to the new control and pipeline runs.
+
+On the separate exposed reader regression set, v13 rejects all 16 deliberately bad
+instances, accepts 15 of 16 valid instances, and falsely rejects one nested English
+report with a generic ticket reference. These are editorial judgments on repeated
+controls; no extraction held-out result or independent human gold is implied.

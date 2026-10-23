@@ -1,0 +1,12 @@
+{
+  "annotation": "editorial reader regression, exposed earlier as v1 held-out; not a fresh extraction benchmark or independent human gold",
+  "runs": 32,
+  "true_accepts": 15,
+  "true_rejects": 16,
+  "false_accepts": 0,
+  "false_rejects": 1,
+  "false_reject_cases": [
+    "nested-english-report-valid run1"
+  ],
+  "note": "same generic ticket-reference false-positive category seen with v1 Pro"
+}

@@ -73,11 +73,12 @@ def main():
                 raise ValueError("Standalone controls must contain exactly one Claim")
             source = {"claim_text": claims[0]["text"], "candidate_count": 1, "required_checked_indices": [0]}
         else:
-            folder = root / "prompts" / version
-            prompt = (folder / "review.txt").read_text() + "\n" + (folder / "frames.txt").read_text() + f"\nIndependent review responsibility: {stage}. Compare against original, never a translation."
+            folder = root / "prompts" / ("extraction-v12" if version == "extraction-v13" else version)
+            review_folder = root / "prompts" / ("extraction-v12" if version in {"extraction-v13", "extraction-v14"} else version)
+            prompt = (review_folder / "review.txt").read_text() + "\n" + (folder / "frames.txt").read_text() + f"\nIndependent review responsibility: {stage}. Compare against original, never a translation."
             source = {k: control[k] for k in ["original_source", "candidate_batch"]}
             source["authored_at"] = control.get("authored_at")
-            if version == "extraction-v10":
+            if version in {"extraction-v10", "extraction-v11", "extraction-v12", "extraction-v13", "extraction-v14"}:
                 source["candidate_count"] = len(source["candidate_batch"]["claims"])
                 source["required_checked_indices"] = list(range(source["candidate_count"]))
         payload = dict(model=args.model, temperature=0, max_tokens=args.max_output_tokens, response_format=dict(type="json_object"),

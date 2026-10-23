@@ -440,3 +440,17 @@ reviewer returned 28 correct passes and 24 correct rejections. Several examples 
 instructions; these are calibration results, not proof of general semantic accuracy.
 The previous reader prompts and experiment outputs remain immutable. Further pipeline
 and separate reader regression evaluation are required before acceptance.
+
+### D-61 — Assess the scope of a composite object before splitting its description
+The long mixed-language pilot exposed standalone reviewers rejecting an opinion about
+one fully described policy because the policy's definition contains multiple actions.
+“One person considers [this composite policy] safe” is one assessment of one object;
+its defining clauses are not separate assertions that the described events occurred,
+nor separate safety judgments about each subrule. Splitting the opinion would invent
+judgments about different objects and change its truth conditions. This differs from
+“a person said A occurred and B occurred” or two evaluations of different targets,
+which must split. V14 adds explicit positive/negative scope controls and reader
+instructions, while retaining all strict output, anchor and authorship checks. It
+also clarifies that an explicitly unidentified technical component can be a subject
+when the Source gives no instance identity. Existing Source-provided names remain
+mandatory. These changes require empirical evaluation; they do not declare acceptance.
