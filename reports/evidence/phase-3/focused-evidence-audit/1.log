@@ -1,0 +1,2 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running `target/debug/examples/revalidate_extraction --input reports/evidence/phase-3/focused-verification/selected-input.jsonl --output reports/evidence/phase-3/focused-evidence-audit/current-revalidated.jsonl`

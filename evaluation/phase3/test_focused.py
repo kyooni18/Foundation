@@ -38,6 +38,9 @@ class FocusedTest(unittest.TestCase):
             lambda j: j['claims'][0]['checks']['atomicity'].update(status='unresolved'),
             lambda j: j.update(inventory=[]),
             lambda j: j['inventory'][0].update(claim_indices=[]),
+            lambda j: j['inventory'][0].update(status='not_applicable', claim_indices=[]),
+            lambda j: j['claims'][0].update(index=False),
+            lambda j: j['inventory'][0].update(reference_index=False),
             lambda j: j['claims'][0].update(uncertainty_flags=['contested']),
         ]:
             changed = copy.deepcopy(judgment)

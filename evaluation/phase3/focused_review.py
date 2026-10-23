@@ -1,7 +1,7 @@
 """Offline focused-review preparation. No network, credentials or paid dispatch.
 
-After explicit budget authorization a separate guarded dispatch implementation is
-required: current $4.50 ceiling is exhausted and must not be bypassed. Prepared
+The guarded_haiku dispatcher requires explicit authorization and budget headroom;
+the current $4.50 ceiling is exhausted and must not be bypassed. Prepared
 packets are not judgments and never feed production approval.
 """
 import argparse
@@ -55,6 +55,7 @@ def validate_judgment(judgment, packet):
     claims = packet['candidate']['claims']
     assert judgment['verdict'] in {'pass', 'fail', 'unresolved'}
     assert isinstance(judgment['uncertainty_flags'], list)
+    assert all(type(c['index']) is int for c in judgment['claims'])
     assert [c['index'] for c in judgment['claims']] == list(range(len(claims)))
     statuses = []
     for checked, claim in zip(judgment['claims'], claims):
@@ -70,9 +71,12 @@ def validate_judgment(judgment, packet):
             assert check['status'] in STATUSES and check['reason'].strip()
             statuses.append(check['status'])
     references = packet['case']['reference']['propositions']
+    assert all(type(r['reference_index']) is int for r in judgment['inventory'])
     assert [r['reference_index'] for r in judgment['inventory']] == list(range(len(references)))
     for reference in judgment['inventory']:
-        assert reference['status'] in STATUSES and reference['reason'].strip()
+        # Every frozen inventory proposition needs a coverage judgment. A disputed
+        # reference is unresolved, never N/A to manufacture a passing batch.
+        assert reference['status'] in {'pass', 'fail', 'unresolved'} and reference['reason'].strip()
         assert evidence_valid(reference['evidence'], source)
         assert all(type(i) is int and 0 <= i < len(claims) for i in reference['claim_indices'])
         assert reference['status'] != 'pass' or reference['claim_indices']

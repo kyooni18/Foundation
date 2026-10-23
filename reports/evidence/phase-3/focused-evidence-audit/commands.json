@@ -1,0 +1,99 @@
+{
+  "base_head": "17da05c7304d022f8effc6463d5957a788927e58",
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "build",
+        "--offline",
+        "--example",
+        "revalidate_extraction"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/focused-evidence-audit/0.log",
+      "sha256": "92bec25ad54c650450560360480d5f94d3d8ad203f81a2c724e0c641b330bbfb"
+    },
+    {
+      "argv": [
+        "cargo",
+        "run",
+        "--offline",
+        "--example",
+        "revalidate_extraction",
+        "--",
+        "--input",
+        "reports/evidence/phase-3/focused-verification/selected-input.jsonl",
+        "--output",
+        "reports/evidence/phase-3/focused-evidence-audit/current-revalidated.jsonl"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/focused-evidence-audit/1.log",
+      "sha256": "2ebd38cd6e1ea6ad9bc263389e188a6ec6308f955aac485a6f571aef0bb88b6e"
+    },
+    {
+      "argv": [
+        "python3",
+        "evaluation/phase3/audit_focused_evidence.py",
+        "--current",
+        "reports/evidence/phase-3/focused-evidence-audit/current-revalidated.jsonl",
+        "--output",
+        "reports/evidence/phase-3/focused-evidence-audit/audit"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/focused-evidence-audit/2.log",
+      "sha256": "d3e281a28c5132f6c9e1354873716cde1a78020009cdcdb124bee89ee725f240"
+    },
+    {
+      "argv": [
+        "python3",
+        "evaluation/phase3/replay_archives.py",
+        "--output",
+        "reports/evidence/phase-3/focused-evidence-audit/full-replay"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/focused-evidence-audit/3.log",
+      "sha256": "d3b777066cc26fd7ef8de23486f87b9bbb256af6c8cc2809102fe3f30448d2c8"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--test",
+        "extraction",
+        "explicit_korean_route_preserves_source_and_fails_closed_without_fallback"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/focused-evidence-audit/4.log",
+      "sha256": "14fe3e1470f332b49366043e6a9648e1c945c3b75f528dc2ee538f47ec0a85df"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--test",
+        "extraction",
+        "cross_source_ids_never_supply_user_authority_even_for_matching_live_user_text"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/focused-evidence-audit/5.log",
+      "sha256": "e2cf82b23685eec1efb3b2477692f276e1e472888158e87a83a4695c62c9ca6b"
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "evaluation/phase3",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/focused-evidence-audit/6.log",
+      "sha256": "a284cdd0a0f434be2428c61a711902c1266e5aca502b69104d864e62043e2548"
+    }
+  ]
+}
