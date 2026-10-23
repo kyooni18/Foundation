@@ -672,3 +672,33 @@ lifecycle. No model review or empty checklist implies semantic acceptance.
 Fine-grained scorer dimensions are optional for old labels; missing entries remain
 unknown with null error rates. Accepted and generated populations remain separate.
 Broad archived structural replay is not presented as a fresh semantic trial.
+
+### D-80 — Encoded input is not an English-only routing exception
+DeepSeek's input guard now inspects Unicode escape notation and decoded JSON as
+well as raw ASCII. Escaped Korean, nested strings and duplicate-key masking must
+not carry Korean across the English-only boundary. Conservative rejection of literal
+non-ASCII Unicode escape notation is intentional; ASCII is still not proof of English.
+No model substitution, translation or production Korean-model promotion is authorized.
+The explicit frozen Plan remains the model routing configuration; unavailable paths
+fail closed. Korean-capable direct processing remains semantically unaccepted.
+
+OpenRouter also rejects a combined system/input envelope above 256 KiB before any
+network request or budget operation. This is an operational safety bound, not a
+tokenizer/context guarantee or chunking implementation. No truncation or partial
+coverage is allowed. Sources stay intact and normal durable job failure/retry applies.
+
+### D-81 — Focused evidence rather than retry-to-pass semantic acceptance
+The frozen 12-case challenge manifest and source-grounded evaluation protocol live
+in evaluation/phase3/focused-*. Historical v23 outputs are selected by fixed archive/
+run/attempt ordering without filtering for success; older profiles remain historical.
+The new protocol demands exact Claim identity, original-source evidence, explicit
+unknown measurements and competing interpretations. It is evaluation-only, not a
+retroactive modification of frozen v23 or a publication gate. An identical-text reader
+verdict flip is disagreement, not extraction improvement. Its live repair effect is
+unverified. Paid dispatch is blocked by the unchanged persistent budget, and the
+offline runner deliberately has no alternate billing path.
+
+Cross-source citation verification remains deferred: source_citation is Phase 4 and
+Phase 3 has no trusted cited-span/semantic-support authority model. Even an existing
+user Source ID supplied by a model cannot confer user authority. Unsupported citation
+fields fail schema validation; non-user speaker=user remains unresolved.

@@ -1,0 +1,48 @@
+{
+  "status": "unresolved",
+  "case_id": "r1-ambiguous_ref",
+  "source": "걔가 또 늦었어. 진짜 짜증나.",
+  "source_sha256": "d48c52c2087b46684a3aeecac61cfcd2f31c182b9284830efa6f733a61cf9bfe",
+  "claim_index": 1,
+  "claim_text": "원문 화자는 원문 발화 시점에 걔라고 지칭된 신원이 밝혀지지 않은 사람이 또 늦은 일에 진짜 짜증이 났다.",
+  "review_prompt_hash": "f4edbef66f07201b89c957b14560cef7b41f400e10ec677c0a2d5f19af9a3e81",
+  "archive": "reports/evidence/phase-3/v23-user-unknown-continuation.jsonl.gz",
+  "archive_sha256": "e873e1ef564eb7b9f0a0ac0fcaacaa46b5487e582cf6d1626305c3c618d75292",
+  "before": {
+    "line": 1,
+    "reader": {
+      "prompt_hash": "f4edbef66f07201b89c957b14560cef7b41f400e10ec677c0a2d5f19af9a3e81",
+      "raw": "{\"verdict\":\"reject\",\"issues\":[\"ambiguity\"],\"checked\":[0],\"coverage_complete\":true}",
+      "stage": "standalone atomicity / candidate 1"
+    },
+    "source_review": {
+      "prompt_hash": "97d23044ef6928a423f1504d6a7d8a1055b5998a4cc8ca922bd99e7826d6d115",
+      "raw": "{\"verdict\":\"pass\",\"issues\":[],\"checked\":[0,1],\"coverage_complete\":true}",
+      "stage": "atomicity and independence"
+    },
+    "anchor": {
+      "quote": "진짜 짜증나.",
+      "occurrence": 0
+    }
+  },
+  "after": {
+    "line": 2,
+    "reader": {
+      "prompt_hash": "f4edbef66f07201b89c957b14560cef7b41f400e10ec677c0a2d5f19af9a3e81",
+      "raw": "{\"verdict\":\"pass\",\"issues\":[],\"checked\":[0],\"coverage_complete\":true}",
+      "stage": "standalone atomicity / candidate 1"
+    },
+    "source_review": {
+      "prompt_hash": "97d23044ef6928a423f1504d6a7d8a1055b5998a4cc8ca922bd99e7826d6d115",
+      "raw": "{\"verdict\":\"pass\",\"issues\":[],\"checked\":[0,1],\"coverage_complete\":true}",
+      "stage": "atomicity and independence"
+    },
+    "anchor": {
+      "quote": "걔가 또 늦었어. 진짜 짜증나.",
+      "occurrence": 0
+    }
+  },
+  "classification": "identical reader input and prompt, different ambiguity verdict; not semantic repair",
+  "interpretation": "Reader sees only Claim text. Anchor broadened on retry but cannot explain isolated-reader change. Nondeterminism/instruction compliance is observed; issue-only responses cannot establish the exact internal cause. Unknown identity is explicitly bound. Source-grounded passes do not overrule rejection.",
+  "protocol_repair": "New evaluation protocol requires exact Claim and original-source evidence plus competing interpretations; no majority approval. Effect on live model reliability remains unverified."
+}

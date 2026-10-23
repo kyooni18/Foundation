@@ -1,0 +1,327 @@
+{
+  "version": 1,
+  "starting_commit": "5be9c669ddae79686346a12752afaa0887374c62",
+  "model": "anthropic/claude-haiku-5.5",
+  "reasoning_effort": "low",
+  "max_output_tokens": 2400,
+  "max_primary": 12,
+  "max_repeated": 3,
+  "repeated_cases": [
+    "r1-ambiguous_ref",
+    "r1-nested_quote",
+    "v23-fresh-003"
+  ],
+  "selection": "Risk/category selection from source/reference files before new outcome inspection; exposed editorial references, not independent gold. No selection by passing outcomes.",
+  "primary_selection": "Only verified extraction-v23 audited rows with raw output; prefer initial-named archive, then archive path, run, attempt, line. Never filter by verdict. Preserve all other attempts as historical evidence. Missing v23 remains a gap.",
+  "cases": [
+    {
+      "case": {
+        "id": "new-003",
+        "split": "dev",
+        "origin": "Phase3 independent editorial draft",
+        "language": "ko",
+        "category": "negated_conjunction",
+        "source": "A와 B가 모두 성공한 건 아니다.",
+        "authored_at": null,
+        "reference": {
+          "propositions": [
+            "A와 B가 모두 성공했다는 것은 부정된다."
+          ],
+          "required": [
+            "not(A and B)"
+          ],
+          "unsupported": [
+            "A 실패 또는 B 실패 각각 단언"
+          ],
+          "equivalence": "Accept paraphrases preserving every truth condition, attribution, modality and scope; references are semantic inventories, not string-match gold.",
+          "annotation_status": "draft; independent human adjudication pending"
+        }
+      },
+      "corpus": "evaluation/phase3/curated.json",
+      "corpus_sha256": "62500aac1f9af4561e7e931bb654eae2c73522ac886822a5e2402faa624dca68",
+      "source_sha256": "41c6179a5bb5c7e9e9be18aca020de7592d24836f7b95647ac639b8663dbb4dc",
+      "reference_sha256": "6533df64c08f6fc55a5536f36f348cc003a69dc8b639ba4c6ab6b48a9616a250"
+    },
+    {
+      "case": {
+        "id": "new-007",
+        "split": "dev",
+        "origin": "Phase3 independent editorial draft",
+        "language": "ko",
+        "category": "question",
+        "source": "혹시 VPN 비밀번호가 바뀌었나?",
+        "authored_at": null,
+        "reference": {
+          "propositions": [
+            "화자는 VPN 비밀번호 변경 여부를 질문했다."
+          ],
+          "required": [
+            "질문"
+          ],
+          "unsupported": [
+            "비밀번호 변경 확정"
+          ],
+          "equivalence": "Accept paraphrases preserving every truth condition, attribution, modality and scope; references are semantic inventories, not string-match gold.",
+          "annotation_status": "draft; independent human adjudication pending"
+        }
+      },
+      "corpus": "evaluation/phase3/curated.json",
+      "corpus_sha256": "62500aac1f9af4561e7e931bb654eae2c73522ac886822a5e2402faa624dca68",
+      "source_sha256": "3c05759d363daccb6b83fc3ff97cd4fbe55c11969d09d865246b817458f28432",
+      "reference_sha256": "9503dc5e8f3c95b6a1650206f9f70b8d97ee8212278746375dca47e12f39bc45"
+    },
+    {
+      "case": {
+        "id": "new-018",
+        "split": "dev",
+        "origin": "Phase3 independent editorial draft",
+        "language": "ko",
+        "category": "correction",
+        "source": "회의는 화요일이야. 아니, 수요일로 정정할게.",
+        "authored_at": null,
+        "reference": {
+          "propositions": [
+            "화자는 회의 요일을 화요일에서 수요일로 정정했다."
+          ],
+          "required": [
+            "정정 관계 하나"
+          ],
+          "unsupported": [
+            "두 요일을 동시 현행 사실로 단언"
+          ],
+          "equivalence": "Accept paraphrases preserving every truth condition, attribution, modality and scope; references are semantic inventories, not string-match gold.",
+          "annotation_status": "draft; independent human adjudication pending"
+        }
+      },
+      "corpus": "evaluation/phase3/curated.json",
+      "corpus_sha256": "62500aac1f9af4561e7e931bb654eae2c73522ac886822a5e2402faa624dca68",
+      "source_sha256": "fcd3cadad2e69bfa0bd89bc1247c74699b1fea1dcdbb80862f58be2804f6d193",
+      "reference_sha256": "b3511e3e8b4a11883e64bd7d3ea18e7d12733ff9ce891ca0e030f1bc18a8118a"
+    },
+    {
+      "case": {
+        "id": "new-025",
+        "split": "dev",
+        "origin": "Phase3 independent editorial draft",
+        "language": "mixed",
+        "category": "mixed",
+        "source": "PrimeRadiant의 record_source는 sync이고 HTTP adapter는 async다.",
+        "authored_at": null,
+        "reference": {
+          "propositions": [
+            "PrimeRadiant의 record_source는 sync다.",
+            "PrimeRadiant의 HTTP adapter는 async다."
+          ],
+          "required": [
+            "고유명 보존"
+          ],
+          "unsupported": [
+            "함수명 번역"
+          ],
+          "equivalence": "Accept paraphrases preserving every truth condition, attribution, modality and scope; references are semantic inventories, not string-match gold.",
+          "annotation_status": "draft; independent human adjudication pending"
+        }
+      },
+      "corpus": "evaluation/phase3/curated.json",
+      "corpus_sha256": "62500aac1f9af4561e7e931bb654eae2c73522ac886822a5e2402faa624dca68",
+      "source_sha256": "ccd3589d0daaf5d38fe0716aa3e47aa4ea14addbf79da3ae4f4a91ef72620515",
+      "reference_sha256": "8f7a14182766879678d59a49c38d1b026d1abdbf34bd896fae0c3037cb3e594d"
+    },
+    {
+      "case": {
+        "id": "new-042",
+        "split": "heldout",
+        "origin": "Phase3 independent editorial draft",
+        "language": "en",
+        "category": "english_quote",
+        "source": "Mina said the server might be down, but she had not checked.",
+        "authored_at": null,
+        "reference": {
+          "propositions": [
+            "Mina said the server might be down without having checked."
+          ],
+          "required": [
+            "attribution uncertainty unverified"
+          ],
+          "unsupported": [
+            "server down as fact"
+          ],
+          "equivalence": "Accept paraphrases preserving every truth condition, attribution, modality and scope; references are semantic inventories, not string-match gold.",
+          "annotation_status": "draft; independent human adjudication pending"
+        }
+      },
+      "corpus": "evaluation/phase3/curated.json",
+      "corpus_sha256": "62500aac1f9af4561e7e931bb654eae2c73522ac886822a5e2402faa624dca68",
+      "source_sha256": "1caf95dbecf6ed7b15d6ddeaf5fe0cb740978a8cdffd98213a7c4c9e3a3f0853",
+      "reference_sha256": "42d35cfc5450c1c849f37e1879918e5ca18fb15be05f1d82b884111d5b8dd772"
+    },
+    {
+      "case": {
+        "id": "r1-nested_quote",
+        "split": "dev",
+        "origin": "R1 synthetic",
+        "language": "ko",
+        "source": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함.",
+        "authored_at": null,
+        "reference": {
+          "criteria": [
+            "'새롭지 않다'가 사실로 저장되지 않음",
+            "사용자 반대 의견 보존"
+          ],
+          "propositions": [
+            "교수님은 리뷰어 2가 화자 집단의 방법이 새롭지 않다고 말했다고 전했다.",
+            "화자는 해당 새롭지 않다는 평가에 동의하지 않는다."
+          ],
+          "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+        },
+        "category": "nested_quote"
+      },
+      "corpus": "evaluation/phase3/legacy.json",
+      "corpus_sha256": "30be4a8b97127cdd46dd41b0a6a3dc3b555d0c0513ed3e338a84e00b62793a5e",
+      "source_sha256": "9f9259757e0e286bfa7239b895ee1cc5809c946c929a68a4db5d9c11a7125de9",
+      "reference_sha256": "fc4b9fc12ea5e5d619f92cdb70f689cccf3121a28cccd1e51b6ebb4f032e04fb"
+    },
+    {
+      "case": {
+        "id": "r1-ambiguous_ref",
+        "split": "dev",
+        "origin": "R1 synthetic",
+        "language": "ko",
+        "source": "걔가 또 늦었어. 진짜 짜증나.",
+        "authored_at": null,
+        "reference": {
+          "criteria": [
+            "지시대상을 특정 인물로 날조하지 않음"
+          ],
+          "propositions": [
+            "원문에서 걔로 지칭한 신원 미상의 인물이 또 늦었다.",
+            "화자는 그 인물의 반복 지각에 짜증을 표현한다."
+          ],
+          "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+        },
+        "category": "ambiguous_ref"
+      },
+      "corpus": "evaluation/phase3/legacy.json",
+      "corpus_sha256": "30be4a8b97127cdd46dd41b0a6a3dc3b555d0c0513ed3e338a84e00b62793a5e",
+      "source_sha256": "d48c52c2087b46684a3aeecac61cfcd2f31c182b9284830efa6f733a61cf9bfe",
+      "reference_sha256": "bc7eb0f4178fc1de89a9152489a64a914722d10c95ed460952e71830b1341894"
+    },
+    {
+      "case": {
+        "id": "r1-hypothetical",
+        "split": "dev",
+        "origin": "R1 synthetic",
+        "language": "ko",
+        "source": "만약 이번 실험에서 loss가 0.1 아래로 안 떨어지면 아키텍처를 갈아엎을 거야.",
+        "authored_at": null,
+        "reference": {
+          "criteria": [
+            "아키텍처 교체를 결정/사실로 무조건 저장하지 않음",
+            "조건(loss 0.1) 보존"
+          ],
+          "propositions": [
+            "이번 실험의 loss가 0.1 아래로 떨어지지 않으면 화자는 아키텍처를 전면 변경할 의향이 있다."
+          ],
+          "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+        },
+        "category": "hypothetical"
+      },
+      "corpus": "evaluation/phase3/legacy.json",
+      "corpus_sha256": "30be4a8b97127cdd46dd41b0a6a3dc3b555d0c0513ed3e338a84e00b62793a5e",
+      "source_sha256": "8db325edbaa59e36d8eac3e8961287262d74ff9a68ef3780de39c0e576a9bb04",
+      "reference_sha256": "5521644b7fc759fa2a2e68f99390edf9beb852b33821daf8c6890530db26ecb4"
+    },
+    {
+      "case": {
+        "id": "r1-habitual_temporal",
+        "split": "dev",
+        "origin": "R1 synthetic",
+        "language": "ko",
+        "source": "요즘 매일 아침 6시에 일어나는 중",
+        "authored_at": null,
+        "reference": {
+          "criteria": [
+            "시간 범위 무근거 영구화 금지(항상/always 아님)"
+          ],
+          "propositions": [
+            "화자는 원문 기준 최근 매일 아침 6시에 일어나는 습관이 있다."
+          ],
+          "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+        },
+        "category": "habitual_temporal"
+      },
+      "corpus": "evaluation/phase3/legacy.json",
+      "corpus_sha256": "30be4a8b97127cdd46dd41b0a6a3dc3b555d0c0513ed3e338a84e00b62793a5e",
+      "source_sha256": "f6f8034df5036df572c323aef58b791165067cc8ba337d33919c7ee1d29a598b",
+      "reference_sha256": "97f02dc9b2de70dee6b14630b744be041a11dc27626e686088060a641bf16ac3"
+    },
+    {
+      "case": {
+        "id": "v23-fresh-002",
+        "split": "heldout",
+        "language": "en",
+        "category": "argument-completeness",
+        "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+        "source": "Tara relayed that Ben suspected a delay. Ben had not checked whether a delay had occurred.",
+        "authored_at": null,
+        "reference": {
+          "annotation_status": "editorial draft; independent review pending",
+          "propositions": [
+            "Tara report of Ben suspicion, affected target unidentified",
+            "narrator assertion of Ben unperformed verification, same unknown target"
+          ],
+          "equivalence": "Original truth conditions, not exact wording"
+        }
+      },
+      "corpus": "evaluation/phase3/heldout-v23.json",
+      "corpus_sha256": "65568e7b9741cdf61a282fc16b2b2f37dd9337dbc77242ca53878cebaf0895f6",
+      "source_sha256": "39214d5b6410eda996e6376b188bfb9c5f3cf4c1aa368520b1139d1e497b435a",
+      "reference_sha256": "2d0311bc01f109ec836c1640ea6c31c15dadf6ab5acdc3d0c1e04a4ba370158f"
+    },
+    {
+      "case": {
+        "id": "v23-fresh-003",
+        "split": "heldout",
+        "language": "ko",
+        "category": "argument-completeness",
+        "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+        "source": "진우는 “지연이 있을지도 몰라. 확인은 못 했어”라고 말했다.",
+        "authored_at": null,
+        "reference": {
+          "annotation_status": "editorial draft; independent review pending",
+          "propositions": [
+            "진우의 미확인 지연 가능성 발언, 지연 대상 불명, 같은 인용 프레임"
+          ],
+          "equivalence": "Original truth conditions, not exact wording"
+        }
+      },
+      "corpus": "evaluation/phase3/heldout-v23.json",
+      "corpus_sha256": "65568e7b9741cdf61a282fc16b2b2f37dd9337dbc77242ca53878cebaf0895f6",
+      "source_sha256": "a14e6643cc68632ef317835f85512e581eee7355b76118edaea86bc5bba92e24",
+      "reference_sha256": "3a6b565d1202b49da93168578865658100a1125b42f8986f52d2249f128542d3"
+    },
+    {
+      "case": {
+        "id": "v23-fresh-004",
+        "split": "heldout",
+        "language": "mixed",
+        "category": "mixed-technical",
+        "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+        "source": "Mori 서비스의 worker_count는 4다. The count alone does not establish parallel execution.",
+        "authored_at": null,
+        "reference": {
+          "annotation_status": "editorial draft; independent review pending",
+          "propositions": [
+            "Mori worker_count 4",
+            "count does not establish parallel execution"
+          ],
+          "equivalence": "Original truth conditions, not exact wording"
+        }
+      },
+      "corpus": "evaluation/phase3/heldout-v23.json",
+      "corpus_sha256": "65568e7b9741cdf61a282fc16b2b2f37dd9337dbc77242ca53878cebaf0895f6",
+      "source_sha256": "dd77589c47ace7c6a3fb31e685503f1034d941e3d4f7ed635e8129b454130d56",
+      "reference_sha256": "20b9b963a170ad64ccff69dff95f03b742684eb3e198eb07c62c2b55b19a004a"
+    }
+  ]
+}

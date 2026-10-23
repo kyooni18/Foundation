@@ -1,0 +1,10 @@
+{
+  "ceiling_nano_usd": 4500000000,
+  "historical_conservative_nano_usd": 4782653350,
+  "request_rows": 0,
+  "new_paid_requests": 0,
+  "new_paid_tokens": 0,
+  "new_spend_usd": "0.00",
+  "spendable_usd": "0.00",
+  "accounting": "Historical account-wide delta, not confirmed task-attributed spending. Read-only inspection; no changes authorized."
+}
