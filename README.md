@@ -195,6 +195,7 @@ primeradiant --db /path/to/db extraction-backfill
 primeradiant --db /path/to/db extraction-work --model "$EXTRACTION_MODEL" --reviewer "$REVIEW_MODEL" \
   --prompt-version "$PROMPT_VERSION" --max-output-tokens 16384 --review-max-output-tokens 4096
 primeradiant --db /path/to/db extraction-inspect
+primeradiant --db /path/to/db extraction-review CANDIDATE_ID
 # Review the original Source and the entire exact candidate before approving fidelity:
 primeradiant --db /path/to/db extraction-approve CANDIDATE_ID OUTPUT_SHA256
 primeradiant --db /path/to/db claims --principal user
@@ -207,3 +208,10 @@ shares the sole database owner. Offline CLI maintenance
 requires stopping that server. HTTP/MCP also expose `claim_get`, `claim_list`,
 `claim_retract`, `claim_forget`, `claim_confirm`, and `claim_unconfirm`, all through the
 same core authorization. Extraction approval does not confer user endorsement.
+
+The local `extraction-review` packet shows original evidence, recorder, frozen hashes,
+per-Claim byte/scalar spans and diagnostic model reviews. It does not approve or
+confirm Claims. Null checklist entries need assessment. Review the exact original
+and each standalone Claim before using `extraction-approve`; repeated quotes and
+emoji must be interpreted using the documented offset units. See the
+[offline Phase 3 report](reports/phase-3-offline-review.md) for validation and measurement limits.

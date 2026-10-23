@@ -5,13 +5,13 @@
   "further_model_calls": "blocked by stricter $4.50 ceiling with carried-forward $4.78265335 conservative historical account delta; no budget reset",
   "fresh_extraction_heldout": "v21 original20 partially evaluated with confirmed framing failure; v22 fresh8 partially evaluated; v23 targeted fresh4 evaluated against R2 in separate requests, one original quota failure retained; no independent whole-benchmark human gold",
   "independent_korean_review": "Explicit user unknown-reference, temporal, Korean narrator, independent-cause and assertion-layer judgments incorporated; whole-corpus independent human review not completed",
-  "implementation_commit": "669a044",
+  "implementation_commit": "e2f47bf",
   "completed_offline_commands": [
     "cargo fmt --check",
     "cargo test --offline --all-targets",
     "cargo clippy --offline --all-targets -- -D warnings"
   ],
-  "offline_top_level_passed": 42,
+  "offline_top_level_passed": 43,
   "live_worker_http_mcp_v11": "passed on two synthetic reported Claims; no semantic corpus-wide acceptance inference",
   "current_opt_in_prompt": "extraction-v23",
   "remaining_acceptance": [
@@ -43,8 +43,11 @@
   "all_paid_children_joined": true,
   "conservative_usage_delta_usd": 4.78265335,
   "unspent_authorized_ceiling_usd": 0.21734665,
-  "current_continuation_report": "reports/phase-2-3-continuation.md",
+  "current_continuation_report": "reports/phase-3-offline-review.md",
   "current_new_requests": 0,
   "current_confirmed_spending_usd": 0,
-  "current_spendable_remaining_usd": 0
+  "current_spendable_remaining_usd": 0,
+  "current_validation_version": "source-checks-v4",
+  "offline_distinct_replayed_attempts": 4752,
+  "offline_distinct_replayed_sources": 145
 }

@@ -1,0 +1,15 @@
+{
+  "implementation_commit": "e2f47bf",
+  "rust_passed": 43,
+  "python_passed": 3,
+  "final_failures": 0,
+  "ignored_helpers_exercised_by_parents": 2,
+  "validation_version": "source-checks-v4",
+  "openrouter_new_requests": 0,
+  "openrouter_new_tokens": 0,
+  "openrouter_new_actual_cost_usd": 0,
+  "new_unknown_billing_outcomes": 0,
+  "spendable_remaining_usd": 0,
+  "phase_3_accepted": false,
+  "production_claims_published": 0
+}

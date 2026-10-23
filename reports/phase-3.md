@@ -1,6 +1,8 @@
 # Phase 3 — implementation checkpoint; semantic acceptance blocked
 
-Latest continuation: [runtime budgeting, attribution hardening and 42-test verification](phase-2-3-continuation.md). The detailed experiments below are historical; no new paid evaluation or completion tag was added.
+Latest offline work: [source-bound review packets, strict JSON and broad recorded-output replay](phase-3-offline-review.md). Phase 3 remains unaccepted.
+
+Previous continuation: [runtime budgeting, attribution hardening and 42-test verification](phase-2-3-continuation.md). The detailed experiments below are historical; no new paid evaluation or completion tag was added.
 
 Status: **not accepted; no `phase-3` tag**. The Rust implementation is a
 reviewable checkpoint, with 40 offline Rust tests and three Python evaluation tests

@@ -654,3 +654,21 @@ quarantine and again before approval/publication. Agent assertions remain agent 
 user fidelity approval/confirmation cannot rewrite source authorship. Historical rows
 and frozen model prompts are unchanged. Existing negative-authority and transport tests
 were extended without adding redundant test methods.
+
+### D-78 — Reject ambiguous candidate JSON before schema conversion
+Source-checks-v4 replaces the proposal's intermediate permissive JSON Value parse
+with recursive duplicate-member rejection. Last-key-wins interpretation can hide
+conflicting Claim text, anchor quotes or semantic metadata, including escaped
+spellings of the same member. Reject rather than choose or repair. Typed review
+responses already reject duplicate fields. Original source/candidate bytes and
+frozen prompt hashes remain unchanged; archived revalidation is separate evidence.
+
+### D-79 — Source-bound local fidelity inspection and explicit unknown measurements
+The new extraction-review command is local-user-only explicit inspection, not a
+projection or approval. It reads candidate, source and frozen plan in one read
+transaction, verifies hashes, and supplies exact byte/scalar anchor positions and
+unassessed semantic checks. Existing approval separately validates freshness and
+lifecycle. No model review or empty checklist implies semantic acceptance.
+Fine-grained scorer dimensions are optional for old labels; missing entries remain
+unknown with null error rates. Accepted and generated populations remain separate.
+Broad archived structural replay is not presented as a fresh semantic trial.

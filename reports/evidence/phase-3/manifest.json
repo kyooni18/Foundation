@@ -1,7 +1,7 @@
 {
   "status": "implementation checkpoint; live semantic acceptance not established",
-  "implementation_commit": "669a044",
-  "offline_tests_passed": 42,
+  "implementation_commit": "e2f47bf",
+  "offline_tests_passed": 43,
   "helper_tests": 2,
   "provider_access": "No new paid calls; historical conservative spending carried into stricter $4.50 guard; remaining allowance zero",
   "completion_tag_created": false,
@@ -14,7 +14,7 @@
       "sha256": "7fbef2d3075e75ee2d2f702a58e5523491ccc729f4820dc490f6fdfed95cd956"
     },
     "acceptance-status.json": {
-      "sha256": "75fd809c2f5a4cb3f9bc300b798175e606cf285807813f42126f37d22ab34738"
+      "sha256": "2b2aad5a2e5465e4e0ca0160999aedfb1b1e4006b9d0ef3a25a545e848555034"
     },
     "attachment-assistant-audit.jsonl": {
       "sha256": "d1d6ad6fbf9857ebe28388d7162d56a2ed2104c323f97dade55cff3a28d13f0d",
@@ -911,6 +911,36 @@
     },
     "runtime-budget-20261023/rust-tests.txt": {
       "sha256": "332267b5f1a4991b7efa6baf7508dd043bee5ed94d5b13a49728b56dfbd53d80"
+    },
+    "offline-review-20261023/python-tests.txt": {
+      "sha256": "bfb3dcc30d03ba921218ff45f1d08f76ddf87b8c7c70f39334d64cbcb0c8c1c8"
+    },
+    "offline-review-20261023/input-manifest.json": {
+      "sha256": "cea3c620795d19d66bd1fabae781a2fa1cb7ca11ab3042ace16900ddf55baf81"
+    },
+    "offline-review-20261023/replay-summary.json": {
+      "sha256": "d3b777066cc26fd7ef8de23486f87b9bbb256af6c8cc2809102fe3f30448d2c8"
+    },
+    "offline-review-20261023/v23-detailed-metrics.json": {
+      "sha256": "8ca2c0e33fcbdcf6ce2b44db7e6ae6e2ea5b75cdc39b0f0d78820c00c0fba863"
+    },
+    "offline-review-20261023/fmt.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "offline-review-20261023/replay-index.jsonl.gz": {
+      "sha256": "414287cc874cc3724d21d396f2999b1408048438b0162ca17cd297f5f4141625"
+    },
+    "offline-review-20261023/verification.json": {
+      "sha256": "0997cb321833b7016d1376ddbb3ecca8e5de0e73e1005bb59fd2e7272a18007f"
+    },
+    "offline-review-20261023/replay-by-profile.json": {
+      "sha256": "133b2ac57a4d4322ee58bc9decc1e55f74ce57e1f79b8ad65096b226602f6599"
+    },
+    "offline-review-20261023/clippy.txt": {
+      "sha256": "a41051563a4cb5fc1b1bcdd9aa0ba28ca80f7736d629d90cc138218756e8e3a9"
+    },
+    "offline-review-20261023/rust-tests.txt": {
+      "sha256": "6c6090e76954d49c142bbb33e6a9535e4efa640086f7deff9cead7677bb4c0f7"
     }
   },
   "prompt_files": {
@@ -1003,5 +1033,5 @@
   },
   "working_tree_additions": "quota fail-fast harness, reference correction and final evidence; see following Git checkpoint",
   "current_opt_in_prompt": "extraction-v23",
-  "current_continuation": "runtime-budget-20261023/verification.json"
+  "current_continuation": "offline-review-20261023/verification.json"
 }
