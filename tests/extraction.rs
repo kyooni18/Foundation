@@ -561,7 +561,7 @@ async fn review_rejection_rolls_back_and_prompt_injection_remains_data() {
         Ok(json!({"verdict":"reject","issues":["reference"],"checked":[0],"coverage_complete":true}).to_string())
     ].into()));
     let mut repair_plan = standalone.clone();
-    repair_plan.prompt_version = Some("extraction-v22".into());
+    repair_plan.prompt_version = Some("extraction-v23".into());
     assert!(repair_plan.supports_repair());
     assert!(!standalone.supports_repair());
     assert_ne!(repair_plan.hash().unwrap(), standalone.hash().unwrap());

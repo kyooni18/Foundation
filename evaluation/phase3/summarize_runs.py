@@ -45,7 +45,7 @@ for key, values in groups.items():
     generated = 0
     for row in values:
         reviews = row.get("reviews", [])
-        reader_count = row.get("claim_count", 0) if key[0] in {"extraction-v11", "extraction-v12", "extraction-v13", "extraction-v14", "extraction-v15", "extraction-v16", "extraction-v17", "extraction-v18", "extraction-v19", "extraction-v20", "extraction-v21", "extraction-v22"} and key[-2] in {"audited", "english-staged"} else 0
+        reader_count = row.get("claim_count", 0) if key[0] in {"extraction-v11", "extraction-v12", "extraction-v13", "extraction-v14", "extraction-v15", "extraction-v16", "extraction-v17", "extraction-v18", "extraction-v19", "extraction-v20", "extraction-v21", "extraction-v22", "extraction-v23"} and key[-2] in {"audited", "english-staged"} else 0
         gate = bool(row.get("structural_valid") and len(reviews) == stages + reader_count
                     and all(review_pass(review, 1 if review.get("stage", "").startswith("standalone") else row["claim_count"]) for review in reviews))
         if args.current_validation:

@@ -1,0 +1,69 @@
+[
+  {
+    "id": "v23-fresh-001",
+    "split": "heldout",
+    "language": "ko",
+    "category": "argument-completeness",
+    "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+    "source": "서진은 민호가 손상을 의심한다고 전했다. 민호는 손상이 있는지 검사하지 않았다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; independent review pending",
+      "propositions": [
+        "서진의 민호 손상 의심 전언, 대상 불명",
+        "원문 화자의 민호 미검사 진술, 대상 불명"
+      ],
+      "equivalence": "Original truth conditions, not exact wording"
+    }
+  },
+  {
+    "id": "v23-fresh-002",
+    "split": "heldout",
+    "language": "en",
+    "category": "argument-completeness",
+    "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+    "source": "Tara relayed that Ben suspected a delay. Ben had not checked whether a delay had occurred.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; independent review pending",
+      "propositions": [
+        "Tara report of Ben suspicion, affected target unidentified",
+        "narrator assertion of Ben unperformed verification, same unknown target"
+      ],
+      "equivalence": "Original truth conditions, not exact wording"
+    }
+  },
+  {
+    "id": "v23-fresh-003",
+    "split": "heldout",
+    "language": "ko",
+    "category": "argument-completeness",
+    "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+    "source": "진우는 “지연이 있을지도 몰라. 확인은 못 했어”라고 말했다.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; independent review pending",
+      "propositions": [
+        "진우의 미확인 지연 가능성 발언, 지연 대상 불명, 같은 인용 프레임"
+      ],
+      "equivalence": "Original truth conditions, not exact wording"
+    }
+  },
+  {
+    "id": "v23-fresh-004",
+    "split": "heldout",
+    "language": "mixed",
+    "category": "mixed-technical",
+    "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+    "source": "Mori 서비스의 worker_count는 4다. The count alone does not establish parallel execution.",
+    "authored_at": null,
+    "reference": {
+      "annotation_status": "editorial draft; independent review pending",
+      "propositions": [
+        "Mori worker_count 4",
+        "count does not establish parallel execution"
+      ],
+      "equivalence": "Original truth conditions, not exact wording"
+    }
+  }
+]

@@ -134,6 +134,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v22/frames.txt"),
                 include_str!("../../prompts/extraction-v22/review.txt"),
             )),
+            "extraction-v23" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v23/frames.txt"),
+                include_str!("../../prompts/extraction-v23/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -170,6 +175,7 @@ impl Plan {
             "extraction-v20" => Some(include_str!("../../prompts/extraction-v20/reader.txt")),
             "extraction-v21" => Some(include_str!("../../prompts/extraction-v21/reader.txt")),
             "extraction-v22" => Some(include_str!("../../prompts/extraction-v22/reader.txt")),
+            "extraction-v23" => Some(include_str!("../../prompts/extraction-v23/reader.txt")),
             _ => None,
         }
     }

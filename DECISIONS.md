@@ -604,3 +604,14 @@ contract changes; no default prompt promotion. V22 also clarifies that an uniden
 alternative in a disjunction and an explicitly unverified question are governing frames,
 responding to reproducible isolated-review false rejections. These changes require fresh
 real-model evaluation and cannot retroactively turn v21 failures into passes.
+
+### D-75 — An event noun does not fill its missing semantic argument
+V22 split Lena/Omar's assertion layers correctly but an accepted regression output
+still omitted the explicitly unidentified leak target required by the user's D74
+adjudication. V23 adds argument completeness to all three semantic prompt roles:
+leak/damage/failure event names alone do not identify their affected target; each Claim
+must explicitly preserve an unknown target without inventing equipment or a location.
+This general rule differs from demanding proper names for every supplied common noun
+(e.g. battery). The prior unknown-reference invariant is unchanged. V22 evidence and
+prompts stay frozen and the failed acceptance target is recorded, not retroactively
+relabeled as a success. V23 is opt-in and unpromoted pending actual evaluation.
