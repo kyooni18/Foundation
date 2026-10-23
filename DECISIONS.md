@@ -424,3 +424,19 @@ token counts. Failed/unmetered calls retain their full reservation. Locked in-fl
 reservations remain charged, preventing concurrent shards from exceeding the shared
 ceiling. Token usage remains provider-layer operational data and never enters Claim
 semantics or the HTTP/MCP response contract.
+
+### D-60 — Distinguish the Claim's original-source root from missing referents
+The v12 pilot repeatedly rejected the standalone proposition that the original memo's
+dates use UTC/Korean Standard Time, even after the repair replaced “이 메모” with an
+explicit original-memo designation. The original Source and its narrator can be
+identified through that intrinsic provenance frame; understanding this proposition
+does not require a globally unique document title. This differs from a person quoted
+as 걔 or a policy defined elsewhere, whose essential identity/content remains absent.
+V13 changes only the standalone-reader prompt, retaining v12 extractor/source-review
+prompts and same-job repair protocol. It accepts a bound original-source designation
+while still rejecting unbound “this memo”, bare quoted pronouns and missing policy
+content. In 26 editorial calibration controls repeated twice, the cheap selected
+reviewer returned 28 correct passes and 24 correct rejections. Several examples overlap
+instructions; these are calibration results, not proof of general semantic accuracy.
+The previous reader prompts and experiment outputs remain immutable. Further pipeline
+and separate reader regression evaluation are required before acceptance.

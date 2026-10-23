@@ -625,3 +625,14 @@ using reported prompt/completion counts, preserving locked in-flight reservation
 Invalid usage or accounting failures stop the evaluator; missing usage retains the
 full reservation. The existing response-decoding regression also checks usage
 decoding; no additional compile-time test was added.
+
+
+V12 repair supplied useful diagnostics but all four calendar convention runs still
+failed because the standalone reader rejected an explicit original-memo designation.
+V13 isolates a reader-only change: the Claim's original source/narrator is a valid
+intrinsic provenance root, unlike an unresolved third-party referent or an undefined
+policy. The extractor and source reviewers remain the frozen v12 templates. On 26
+calibration controls repeated twice, the reader returned 28 correct passes and 24
+correct rejections with no provider/schema errors. These labels are editorial and
+partly overlap the prompt; the whole pipeline and separate reader regressions are
+being evaluated. The user's short-form unknown-person rejection remains enforced.

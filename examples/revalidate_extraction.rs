@@ -55,8 +55,10 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             _ => 0,
         };
         let expected = expected
-            + if row["plan"]["prompt_version"] == "extraction-v11"
-                && matches!(row["variant"].as_str(), Some("audited" | "english-staged"))
+            + if matches!(
+                row["plan"]["prompt_version"].as_str(),
+                Some("extraction-v11" | "extraction-v12" | "extraction-v13")
+            ) && matches!(row["variant"].as_str(), Some("audited" | "english-staged"))
             {
                 count
             } else {

@@ -6,6 +6,7 @@ editorial controls, not human adjudication of natural extraction outputs.
 import argparse
 import concurrent.futures
 import hashlib
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -13,6 +14,29 @@ import stat
 import time
 import urllib.request
 
+
+def reserve_evaluation_budget(model, prompt, source, output_limit):
+    """Same conservative bound as the Rust evaluator; no refunds for controls."""
+    path = os.environ.get("PHASE3_EVALUATION_BUDGET_LEDGER")
+    if path is None:
+        return True
+    if model != "openai/gpt-6-luna-pro":
+        return False
+    cost = (len(prompt.encode()) + len(json.dumps(source, ensure_ascii=False).encode()) + 4097) // 2 + output_limit
+    with open(path, "r+") as ledger:
+        fcntl.flock(ledger, fcntl.LOCK_EX)
+        state = json.load(ledger)
+        accepted = state["reserved_micro_usd"] + cost <= state["limit_micro_usd"]
+        if accepted:
+            state["reserved_micro_usd"] += cost
+        else:
+            state["rejected_requests"] = state.get("rejected_requests", 0) + 1
+        ledger.seek(0)
+        ledger.truncate()
+        json.dump(state, ledger)
+        ledger.flush()
+        os.fsync(ledger.fileno())
+    return accepted
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -62,6 +86,13 @@ def main():
                       prompt_hash=hashlib.sha256(prompt.encode()).hexdigest(), max_output_tokens=args.max_output_tokens)
         if "deepseek" in args.model.lower() and not (prompt + json.dumps(source, ensure_ascii=False)).isascii():
             result["error"] = "LanguageRestriction"
+            return result
+        try:
+            allowed = reserve_evaluation_budget(args.model, prompt, source, args.max_output_tokens)
+        except (OSError, ValueError, KeyError, TypeError):
+            allowed = False
+        if not allowed:
+            result["error"] = "LocalBudget"
             return result
         request = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions",
                                          data=json.dumps(payload).encode(),

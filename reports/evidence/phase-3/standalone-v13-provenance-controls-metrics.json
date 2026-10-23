@@ -1,0 +1,9 @@
+{
+  "annotation": "editorial calibration, partly prompt-overlapping; not independent human gold",
+  "runs": 52,
+  "true_accepts": 28,
+  "true_rejects": 24,
+  "false_accepts": 0,
+  "false_rejects": 0,
+  "invalid_or_provider_errors": 0
+}
