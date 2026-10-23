@@ -216,3 +216,18 @@ class GuardedHaikuTest(unittest.TestCase):
             self.assertEqual(conn.execute('SELECT actual FROM request').fetchone()[0], 1000000)
         self.assertFalse(list((self.root / 'evidence').glob('*.judgment.json')))
         self.assertEqual(len(list((self.root / 'evidence').glob('*.response.json'))), 1)
+
+    def test_uncapped_or_resettable_key_blocks_before_reservation_and_post(self):
+        original = self.transport
+        for cap in [dict(limit=None, limit_remaining=None, limit_reset=None),
+                    dict(limit=4.5, limit_remaining=.5, limit_reset='daily'),
+                    dict(limit=5, limit_remaining=.5, limit_reset=None)]:
+            def capped(method, path, body):
+                if path == '/key':
+                    return {'data': cap}
+                return original(method, path, body)
+            with self.assertRaisesRegex(ValueError, 'provider cap blocked'):
+                g.Dispatcher(self.ledger, self.root / 'evidence', capped, self.auth).dispatch(self.packet)
+            with self.connection() as conn:
+                self.assertEqual(conn.execute('SELECT COUNT(*) FROM request').fetchone()[0], 0)
+            self.assertFalse(any(method == 'POST' for method, _, _ in self.calls))

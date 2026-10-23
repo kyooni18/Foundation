@@ -1,7 +1,7 @@
 """Offline focused-review preparation. No network, credentials or paid dispatch.
 
 The guarded_haiku dispatcher requires explicit authorization and budget headroom;
-the current $4.50 ceiling is exhausted and must not be bypassed. Prepared
+the authorized ceiling still requires a compatible provider cap. Prepared
 packets are not judgments and never feed production approval.
 """
 import argparse
@@ -162,7 +162,7 @@ def prepare(output, binary):
                    archived_rows=len(replay), valid_new_model_judgments=0,
                    accepted_batches=0, rejected_batches=0, semantic_valid_claim_coverage=None,
                    korean_semantic_valid_claim_coverage=None, new_paid_requests=0, new_spend_usd=0,
-                   blocker='Existing ledger prior $4.78265335 exceeds $4.50 ceiling; no authorization to change it.')
+                   blocker='Offline preparation supplies no judgments; authorized dispatch requires budget headroom and a compatible non-resetting provider cap.')
     (output / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
     print(json.dumps(summary, indent=2))
 

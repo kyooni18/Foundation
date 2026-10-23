@@ -110,7 +110,7 @@ def budget_audit(path):
     return dict(queries=queries, rows=results, amounts='integer nano-USD',
                 before_sha256=before, after_sha256=after,
                 authorized_headroom_nanos=max(0, min(ceiling, guarded.LIMIT) - prior - spent - pending),
-                new_spending_authorization='not supplied in this task; no authorization file created',
+                new_spending_authorization='not assessed by read-only accounting audit; consult the applicable user authorization record',
                 dispatch_permitted=False)
 
 

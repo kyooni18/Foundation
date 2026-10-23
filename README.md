@@ -171,7 +171,7 @@ primeradiant budget-init /private/path/spending.sqlite --limit-usd 4.50 \
 export PRIMERADIANT_OPENROUTER_LEDGER=/private/path/spending.sqlite
 ```
 
-Provisioning refuses existing files and ceilings above $4.50. A dedicated provider
+Provisioning refuses existing files and ceilings above the authorized $4.88265335 cumulative limit. A dedicated provider
 key must already have a non-resetting total cap no greater than the ledger ceiling;
 the adapter checks this without changing the key. Fresh endpoint prices are fetched
 before every paid request; unknown/tiered pricing fails closed. A pinned provider,
@@ -188,8 +188,10 @@ The Rust evaluation harness uses this same adapter. Build the guarded diagnostic
 helper before running Python reviewer controls with
 `cargo build --offline --example guarded_completion`. Historical JSON ledgers are
 not automatically imported or discarded: carry their conservative totals into the
-new ledger explicitly. The current continuation's private ledger is already
-exhausted by carried-forward historical usage; see [the continuation report](reports/phase-2-3-continuation.md).
+new ledger explicitly. The private ledger carries forward $4.78265335 conservative historical usage. The user
+authorized up to $0.10 additional on the same ledger; the active ceiling is
+$4.88265335. The available credential is uncapped, so the independent provider-cap
+guard still blocks paid dispatch. See [the authorized continuation](reports/phase-3-authorized-continuation.md).
 
 ```sh
 primeradiant --db /path/to/db extraction-backfill

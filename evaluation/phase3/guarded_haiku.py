@@ -1,6 +1,6 @@
 """Focused evaluator; never extraction or publication. Default CLI is offline.
 
-Uses the existing Rust ledger schema and unchanged $4.50 hard ceiling. Authorization
+Uses the existing Rust ledger schema and authorized $4.88265335 hard ceiling. Authorization
 is necessary, never sufficient: no policy amendment or ledger provisioning here.
 Unknown outcomes retain reservations. All prices use Decimal, rounded upward.
 """
@@ -15,7 +15,7 @@ import urllib.request
 import focused_review as focused
 
 MODEL = 'anthropic/claude-haiku-5.5'
-LIMIT = 4_500_000_000
+LIMIT = 4_882_653_350
 CONTINUATION = 100_000_000
 OUTPUT = 2400
 PACKETS = focused.ROOT / 'reports/evidence/phase-3/focused-continuation/replay/packets.json'
@@ -84,6 +84,14 @@ def quote(catalog, endpoints, input_bytes):
         except (ValueError, KeyError, TypeError):
             continue
     raise ValueError('no safely priced compatible endpoint')
+
+
+def validate_key_cap(key, ceiling, estimate):
+    """Uncapped or resettable credentials cannot supply the independent backstop."""
+    require(key.get('limit') is not None and key.get('limit_remaining') is not None and
+            key.get('limit_reset', 'missing') is None, 'provider cap blocked: non-resetting cap required')
+    require(0 < nanos(rate(key['limit'])) <= ceiling and
+            nanos(rate(key['limit_remaining'])) >= estimate, 'provider cap blocked: cap or headroom incompatible')
 
 
 def packets():
@@ -213,9 +221,7 @@ class Dispatcher:
             body = payload(packet, q)
             key = self.transport('GET', '/key', None)['data']
             ceiling, _ = self.check(conn, q['estimate'])
-            require(key.get('limit_reset', 'missing') is None and
-                    0 < nanos(rate(key['limit'])) <= ceiling and
-                    nanos(rate(key['limit_remaining'])) >= q['estimate'], 'provider cap blocked')
+            validate_key_cap(key, ceiling, q['estimate'])
             conn.execute('BEGIN IMMEDIATE')
             _, cumulative = self.check(conn, q['estimate'])
             conn.execute("INSERT INTO request(id,model,created_at,estimate,cumulative) VALUES(?,?,datetime('now'),?,?)",

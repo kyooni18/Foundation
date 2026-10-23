@@ -17,12 +17,14 @@ class PolicyProposalTest(unittest.TestCase):
             for name in ('src/budget.rs', 'evaluation/phase3/guarded_haiku.py'):
                 dest = root / name
                 dest.parent.mkdir(parents=True, exist_ok=True)
-                dest.write_bytes((current.focused.ROOT / name).read_bytes())
+                # Preserve the reviewed pre-amendment input, even after its patch is applied.
+                dest.write_bytes(subprocess.check_output(
+                    ['git', 'show', '1e2a74b:' + name], cwd=current.focused.ROOT))
             subprocess.run(['git', 'apply', str(proposal / 'ceiling.patch')], cwd=root, check=True)
             spec = importlib.util.spec_from_file_location('proposed_guard', root / 'evaluation/phase3/guarded_haiku.py')
             proposed = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(proposed)
-            self.assertEqual(current.LIMIT, 4_500_000_000)
+            self.assertEqual(current.LIMIT, 4_882_653_350)
             self.assertEqual(proposed.LIMIT, 4_882_653_350)
             self.assertIn('const MAX_LIMIT: i64 = 4_882_653_350;', (root / 'src/budget.rs').read_text())
             conn = sqlite3.connect(root / 'fixture.sqlite')
@@ -38,8 +40,7 @@ class PolicyProposalTest(unittest.TestCase):
             self.assertEqual(guard.check(conn, 100_000_000)[1], 4_882_653_350)
             with self.assertRaisesRegex(ValueError, 'budget blocked'):
                 guard.check(conn, 100_000_001)
-            with self.assertRaisesRegex(ValueError, 'budget blocked'):
-                object.__new__(current.Dispatcher).check(conn, 1)
+            self.assertEqual(object.__new__(current.Dispatcher).check(conn, 1)[0], proposed.LIMIT)
             conn.execute("INSERT INTO request VALUES('other-worker',99999999,NULL)")
             guard.check(conn, 1)
             with self.assertRaisesRegex(ValueError, 'budget blocked'):
