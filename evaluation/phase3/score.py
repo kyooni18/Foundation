@@ -12,6 +12,9 @@ parser.add_argument('--annotation-field', choices=['human_review','assistant_rev
 parser.add_argument('--terminal-only', action='store_true', help='Score terminal attempts only; retain separate full-attempt metrics')
 args=parser.parse_args()
 annotation=args.annotation_field
+dimensions=['multi_proposition','semantic_omission','negation','condition','uncertainty',
+            'attribution','temporal_scope','entity_resolution','korean_meaning']
+check_values={'pass','fail','not_applicable','unknown'}
 flags=['atomicity_violation','unsupported','fidelity_error','epistemic_error','language_error','anchor_error','duplicate']
 
 def require(condition, message):
@@ -44,6 +47,11 @@ def validate_review(row):
     for claim in h['claims']:
         require(isinstance(claim, dict) and all(type(claim.get(f)) is bool for f in flags),
                 'every Claim needs all error flags as booleans')
+        checks = claim.get('semantic_checks', {})
+        require(isinstance(checks, dict) and all(k in dimensions and isinstance(v, str) and v in check_values for k, v in checks.items()),
+                'semantic_checks must use known dimensions and pass/fail/not_applicable/unknown')
+        require('fail' not in checks.values() or any(claim[f] for f in flags),
+                'detailed semantic failure must also be reflected in the aggregate error flags')
     if h['accepted']:
         require(row.get('structural_valid') is True, 'structurally invalid output cannot be accepted')
     if not h['claims']:
@@ -74,6 +82,20 @@ for key,rs in groups.items():
     for f in flags:
         item[f]=rate(sum(c[f] for c in claims),len(claims))
         item['generated_'+f]=rate(sum(c[f] for c in generated),len(generated))
+    # Old/coarse annotations never imply that a finer semantic dimension was checked.
+    def dimension_metrics(cs):
+        result = {}
+        for dimension in dimensions:
+            counts = collections.Counter(c.get('semantic_checks', {}).get(dimension, 'unknown') for c in cs)
+            assessed = counts['pass'] + counts['fail']
+            result[dimension] = {state: counts[state] for state in sorted(check_values)}
+            result[dimension]['error_rate'] = rate(counts['fail'], assessed)
+            result[dimension]['assessment_coverage'] = rate(assessed, len(cs) - counts['not_applicable'])
+        return result
+    item['accepted_semantic_dimensions'] = dimension_metrics(claims)
+    item['generated_semantic_dimensions'] = dimension_metrics(generated)
+    item['annotation_coverage'] = rate(len(reviewed), len(rs))
+    item['adjudicated_rejection_rate'] = rate(len(reviewed) - len(accepted), len(reviewed))
     # End-to-end coverage includes rejected batches as zero, rather than hiding failures.
     item['coverage']=rate(sum(r[annotation]['covered_propositions'] if r[annotation]['accepted'] else 0 for r in reviewed),sum(r[annotation]['supported_propositions'] for r in reviewed))
     item['generated_coverage']=rate(sum(r[annotation]['covered_propositions'] for r in reviewed),sum(r[annotation]['supported_propositions'] for r in reviewed))

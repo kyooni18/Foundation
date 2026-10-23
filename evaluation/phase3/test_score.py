@@ -34,6 +34,17 @@ class ScoringTests(unittest.TestCase):
         group = json.loads(result.stdout)[GROUP]
         self.assertEqual(group["coverage"], dict(numerator=0, denominator=2, rate=0.0))
         self.assertIsNone(group["atomicity_violation"]["rate"])
+        self.assertEqual(group["generated_semantic_dimensions"]["negation"]["unknown"], 1)
+        self.assertIsNone(group["generated_semantic_dimensions"]["negation"]["error_rate"]["rate"])
+        detailed = copy.deepcopy(row)
+        detailed["human_review"]["claims"][0].update(epistemic_error=True,
+            semantic_checks={"negation":"fail","condition":"not_applicable","entity_resolution":"pass"})
+        measured = json.loads(self.run_score([detailed]).stdout)[GROUP]
+        self.assertEqual(measured["generated_semantic_dimensions"]["negation"]["error_rate"]["rate"],1)
+        self.assertIsNone(measured["accepted_semantic_dimensions"]["negation"]["error_rate"]["rate"])
+        self.assertIsNone(measured["generated_semantic_dimensions"]["condition"]["assessment_coverage"]["rate"])
+        self.assertEqual(measured["generated_semantic_dimensions"]["entity_resolution"]["error_rate"]["rate"],0)
+
         scoped = copy.deepcopy(row)
         scoped['reviews'] = [dict(stage='standalone', raw=json.dumps(dict(verdict='pass'))),
                              dict(stage='fidelity', raw=json.dumps(dict(verdict='reject')))]
@@ -48,6 +59,9 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(group["unreviewed"], 1)
         self.assertIsNone(group["coverage"]["rate"])
         mutations = [
+            lambda r: r["human_review"]["claims"][0].update(semantic_checks={"negation":"fail"}),
+            lambda r: r["human_review"]["claims"][0].update(semantic_checks={"negation":False}),
+            lambda r: r["human_review"]["claims"][0].update(semantic_checks={"made_up":"pass"}),
             lambda r: r["human_review"].update(expected_reviews={"standalone": "unknown"}),
             lambda r: r["human_review"].update(claims=[]),
             lambda r: r["human_review"].update(covered_propositions=3),

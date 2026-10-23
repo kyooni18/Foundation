@@ -1,4 +1,6 @@
 //! Untrusted proposals, deterministic evidence checks, and independent semantic reviews.
+mod json;
+mod review;
 use crate::{
     App,
     domain::*,
@@ -11,7 +13,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 pub const VERSION: &str = "extraction-v1";
-pub const VALIDATION_VERSION: &str = "source-checks-v3";
+pub const VALIDATION_VERSION: &str = "source-checks-v4";
 const CONTRACT: &str = include_str!("../../prompts/extraction-v1/contract.txt");
 const FRAMES: &str = include_str!("../../prompts/extraction-v1/frames.txt");
 const REVIEW: &str = include_str!("../../prompts/extraction-v1/review.txt");
@@ -295,7 +297,8 @@ pub fn validate(raw: &str, source: &SourceView) -> Result<Batch> {
     if raw.len() > 4 * 1024 * 1024 {
         return Err(invalid("schema", "output too large"));
     }
-    let value: Value = serde_json::from_str(raw).map_err(|_| invalid("schema", "invalid JSON"))?;
+    let value: Value =
+        json::parse(raw).map_err(|_| invalid("schema", "ambiguous or invalid JSON"))?;
     keys(&value, &["claims", "empty_reason"])?;
     let array = value["claims"]
         .as_array()

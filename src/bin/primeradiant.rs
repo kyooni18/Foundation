@@ -41,6 +41,10 @@ enum Command {
         review_max_output_tokens: Option<u32>,
     },
     ExtractionInspect,
+    /// Inspect exact source evidence and one quarantined proposal without approval.
+    ExtractionReview {
+        candidate: String,
+    },
     ExtractionApprove {
         candidate: String,
         hash: String,
@@ -264,6 +268,10 @@ fn run() -> Result<()> {
             None,
             None,
         ))?),
+        Command::ExtractionReview { candidate } => output(app.extraction_review_packet(
+            &Principal::for_local_cli(PrincipalKind::User, None, None),
+            &candidate,
+        )?),
         Command::ExtractionApprove { candidate, hash } => output(app.approve_extraction(
             &Principal::for_local_cli(PrincipalKind::User, None, None),
             &candidate,

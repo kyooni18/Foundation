@@ -166,6 +166,63 @@ async fn agent_metadata_never_promotes_and_confirmations_are_user_only() {
     app.set_claim_status(&user(), &ids[0], "unconfirm").unwrap();
     assert!(app.list_claims(&user()).unwrap().is_empty());
 }
+#[tokio::test]
+async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_authority() {
+    let (_dir, app) = fixture();
+    let text = "서두 👩‍💻 é.\n민수는 서울에 산다.\n민수는 서울에 산다.";
+    let source_id = app
+        .record_source(&user(), RecordSource::plain(text))
+        .unwrap()
+        .source_id;
+    let mut claim = candidate("민수는 서울에 산다.");
+    claim["anchor"]["occurrence"] = json!(1);
+    let raw = output(vec![claim]);
+    let id = app
+        .work_once(&fake(&raw, 1), &plan())
+        .await
+        .unwrap()
+        .unwrap();
+    for role in [PrincipalKind::Agent, PrincipalKind::Import] {
+        assert!(matches!(
+            app.extraction_review_packet(&p(role), &id),
+            Err(Error::Forbidden)
+        ));
+    }
+    assert!(matches!(
+        app.extraction_review_packet(&user(), "missing"),
+        Err(Error::NotFound)
+    ));
+    let packet = app.extraction_review_packet(&user(), &id).unwrap();
+    assert_eq!(packet["source"]["content"], text);
+    assert_eq!(packet["raw_output"], raw);
+    assert_eq!(packet["candidate_hash"], hash(&raw));
+    assert_eq!(packet["validation"]["structural_valid"], true);
+    let span = &packet["claims"][0]["source_span"];
+    let start = text.rfind("민수는 서울에 산다.").unwrap();
+    assert_eq!(span["byte_start"], start);
+    assert_eq!(span["byte_end"], text.len());
+    assert_eq!(span["scalar_start"], text[..start].chars().count());
+    assert_eq!(span["scalar_end"], text.chars().count());
+    assert_eq!(span["quote"], "민수는 서울에 산다.");
+    assert!(
+        packet["claims"][0]["review_checks"]
+            .as_object()
+            .unwrap()
+            .values()
+            .all(Value::is_null)
+    );
+    assert!(app.list_claims(&user()).unwrap().is_empty());
+    assert_eq!(
+        app.get_source(&user(), source_id.clone()).unwrap().content,
+        text
+    );
+    app.set_source_lifecycle(&user(), source_id, LifecycleEvent::Retract, None)
+        .unwrap();
+    assert!(matches!(
+        app.extraction_review_packet(&user(), &id),
+        Err(Error::NotFound)
+    ));
+}
 #[test]
 fn schema_language_anchors_and_dependencies_fail_closed() {
     let (_dir, app) = fixture();
@@ -174,6 +231,17 @@ fn schema_language_anchors_and_dependencies_fail_closed() {
         .unwrap()
         .source_id;
     let source = app.get_source(&user(), id).unwrap();
+    let valid = output(vec![candidate("한글")]);
+    assert!(validate(&valid, &source).is_ok());
+    for malformed in [
+        valid.replacen("{", "{\"claims\":[],", 1),
+        valid.replace("\"text\":", "\"text\":\"wrong\",\"te\\u0078t\":"),
+        valid.replace("\"quote\":", "\"quote\":\"wrong\",\"quote\":"),
+        valid.replace("\"index_fields\":null", "\"index_fields\":{\"stance\":\"x\",\"holder\":\"x\",\"certainty\":\"x\",\"condition\":\"if rain\",\"condition\":\"none\"}"),
+    ] {
+        assert!(validate(&malformed,&source).is_err(),"ambiguous JSON was accepted");
+    }
+
     assert_eq!(
         locate(&source.content, "한글", 1).unwrap().0,
         source.content.rfind("한글").unwrap()
