@@ -292,6 +292,13 @@ fn schema_language_anchors_and_dependencies_fail_closed() {
         ("text", json!("unsupported")),
         ("speaker", json!("administrator")),
         ("basis", json!("observed")),
+        // Neither real nor invented IDs provide citation authority in Phase 3.
+        ("source_citation", json!(source.id)),
+        ("source_citation", json!("01AAAAAAAAAAAAAAAAAAAAAAAA")),
+        (
+            "anchor",
+            json!({"quote":"한글","occurrence":0,"source_id":source.id}),
+        ),
         ("anchor", json!({"quote":"absent","occurrence":0})),
         ("dependencies", json!([{"parent":0,"kind":"premise"}])),
     ] {

@@ -2,6 +2,26 @@
 use crate::budget::{Budget, nanos};
 use serde::{Deserialize, Serialize};
 pub const DEFAULT_GENERAL_MODEL: &str = "deepseek/deepseek-v4.1-flash-1017";
+/// Operational envelope, not a claim of model context-window compatibility.
+/// Oversized requests fail intact; callers may retry after explicit configuration work.
+pub const MAX_REQUEST_BYTES: usize = 256 * 1024;
+
+fn ascii_payload(text: &str) -> bool {
+    text.is_ascii()
+        // Inspect escapes before JSON decoding: duplicate keys must not hide a
+        // non-ASCII value through last-key-wins parsing. Conservatively reject
+        // non-ASCII escape notation even in plain text or nested JSON strings.
+        && !text.as_bytes().windows(6).any(|window| {
+            window.starts_with(b"\\u")
+                && std::str::from_utf8(&window[2..])
+                    .ok()
+                    .and_then(|hex| u16::from_str_radix(hex, 16).ok())
+                    .is_some_and(|code| code > 127)
+        })
+        && serde_json::from_str::<serde_json::Value>(text)
+            .map(|value| value.to_string().is_ascii())
+            .unwrap_or(true)
+}
 use std::{future::Future, pin::Pin, time::Duration};
 #[derive(Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -92,9 +112,12 @@ impl OpenRouter {
         input: &str,
         config: &ModelConfig,
     ) -> Result<(String, Option<TokenUsage>), ProviderError> {
+        if system.len().saturating_add(input.len()) > MAX_REQUEST_BYTES {
+            return Err(ProviderError::InvalidRequest);
+        }
         // D-24: DeepSeek is restricted to English-only payloads, including review context.
         if config.model.to_lowercase().contains("deepseek")
-            && (!system.is_ascii() || !input.is_ascii())
+            && (!ascii_payload(system) || !ascii_payload(input))
         {
             return Err(ProviderError::LanguageRestriction);
         }
@@ -193,7 +216,7 @@ impl OpenRouter {
         if config.model.to_lowercase().contains("deepseek") {
             let decoded = serde_json::from_str::<serde_json::Value>(&result.0)
                 .map_err(|_| ProviderError::InvalidOutput)?;
-            if !result.0.is_ascii() || !decoded.to_string().is_ascii() {
+            if !ascii_payload(&result.0) || !decoded.to_string().is_ascii() {
                 return Err(ProviderError::LanguageRestriction);
             }
         }
@@ -389,6 +412,51 @@ impl Quote {
 mod tests {
     use super::*;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    #[tokio::test]
+    async fn escaped_korean_and_oversized_context_fail_before_network_or_budget() {
+        let provider = OpenRouter {
+            client: reqwest::Client::new(),
+            key: "unused".into(),
+            base: "http://127.0.0.1:1".into(),
+            ledger: None,
+        };
+        let config = ModelConfig {
+            model: DEFAULT_GENERAL_MODEL.into(),
+            timeout_seconds: 1,
+            max_output_tokens: Some(100),
+        };
+        for input in [
+            "한국어",
+            r#"{"source":"\ud55c\uad6d\uc5b4"}"#,
+            r#"{"\ud55c":"text"}"#,
+            r#"{"source":"\ud55c","source":"English"}"#,
+            r#"{"nested":"\\ud55c"}"#,
+        ] {
+            assert_eq!(
+                provider.complete("English", input, &config).await,
+                Err(ProviderError::LanguageRestriction)
+            );
+            assert_eq!(
+                provider.complete(input, "English", &config).await,
+                Err(ProviderError::LanguageRestriction)
+            );
+        }
+        assert!(ascii_payload(r#"{"source":"English","count":1}"#));
+        assert!(ascii_payload("English instructions"));
+        assert_eq!(
+            provider
+                .complete("", &"a".repeat(MAX_REQUEST_BYTES + 1), &config)
+                .await,
+            Err(ProviderError::InvalidRequest)
+        );
+        // At the boundary the intact request proceeds to the unchanged budget guard.
+        assert_eq!(
+            provider
+                .complete("", &"a".repeat(MAX_REQUEST_BYTES), &config)
+                .await,
+            Err(ProviderError::Quota)
+        );
+    }
     #[tokio::test]
     async fn guarded_adapter_prices_reserves_and_records_real_usage_before_validation() {
         use axum::{
