@@ -1,0 +1,10 @@
+{
+  "composition": {
+    "ko": 8,
+    "mixed": 2,
+    "en": 2
+  },
+  "measurements_unchanged": true,
+  "headroom_nanos": 100000000,
+  "semantic_acceptance": null
+}

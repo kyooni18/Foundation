@@ -1,0 +1,10 @@
+{
+  "limit": null,
+  "limit_reset": null,
+  "limit_remaining": null,
+  "existing_usage_exceeds_authorized_cumulative_ceiling": true,
+  "cap_compatible": false,
+  "credential_identity": "existing environment key equals existing historical key-file credential",
+  "provider_cap_changed": false,
+  "credentials_created": false
+}

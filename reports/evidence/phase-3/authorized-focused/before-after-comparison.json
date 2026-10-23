@@ -1,0 +1,9 @@
+{
+  "exact_reproduction": {
+    "current-revalidated.jsonl": true,
+    "focused-replay/packets.json": true,
+    "full-replay/replay-summary.json": true,
+    "full-replay/replay-index.jsonl.gz": true
+  },
+  "semantic_improvement": null
+}

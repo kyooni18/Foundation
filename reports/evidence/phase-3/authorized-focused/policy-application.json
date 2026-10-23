@@ -1,0 +1,1 @@
+{"after":{"budget":[[1,4882653350,4782653350]],"requests":0},"after_sha256":"9952c1b6f0466ebecece2e535ae012c89bba2ee4c4767cd85d59e37d304f86b1","authorization":"authorization.json","before":{"budget":[[1,4500000000,4782653350]],"requests":0},"before_sha256":"36c1b1413343da0f15f62e9171360358898d8fd0d65dbcbc9f868c465d1af260","headroom_nanos":100000000}

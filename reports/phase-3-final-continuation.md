@@ -1,5 +1,9 @@
 # Phase 3 final continuation — 2026-10-23
 
+Latest follow-up: [authorized ceiling applied; provider-cap blocker verified](phase-3-authorized-continuation.md).
+The $0.10 authorization has now been granted and the same ledger ceiling amended to
+$4.88265335. The earlier report below is preserved as the pre-authorization checkpoint.
+
 **Phase 3 remains Implemented but unverified. Semantic acceptance is Blocked.**
 Engineering verification passes; missing outputs, independent adjudication, Korean
 quality and reviewer reliability prevent completion. No phase-3 tag was created.

@@ -1,0 +1,710 @@
+[
+  {
+    "case": {
+      "id": "r1-nested_quote",
+      "split": "dev",
+      "origin": "R1 synthetic",
+      "language": "ko",
+      "source": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함.",
+      "authored_at": null,
+      "reference": {
+        "criteria": [
+          "'새롭지 않다'가 사실로 저장되지 않음",
+          "사용자 반대 의견 보존"
+        ],
+        "propositions": [
+          "교수님은 리뷰어 2가 화자 집단의 방법이 새롭지 않다고 말했다고 전했다.",
+          "화자는 해당 새롭지 않다는 평가에 동의하지 않는다."
+        ],
+        "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+      },
+      "category": "nested_quote"
+    },
+    "source_sha256": "9f9259757e0e286bfa7239b895ee1cc5809c946c929a68a4db5d9c11a7125de9",
+    "reference_sha256": "fc4b9fc12ea5e5d619f92cdb70f689cccf3121a28cccd1e51b6ebb4f032e04fb",
+    "candidate": {
+      "claims": [
+        {
+          "text": "원문 화자는 교수님에게서, 리뷰어 2가 원문 화자가 속한 집단의 구체적 내용이 원문에 밝혀지지 않은 방법은 새롭지 않다고 말했다는 내용을 전해 들었다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "교수님",
+              "occurrence": 0
+            },
+            {
+              "surface": "리뷰어 2",
+              "occurrence": 0
+            }
+          ],
+          "dependencies": []
+        },
+        {
+          "text": "원문 화자는 원문 발화 시점에, 교수님을 통해 전해 들은 리뷰어 2의 평가, 즉 원문 화자가 속한 집단의 구체적 내용이 원문에 밝혀지지 않은 방법은 새롭지 않다는 평가에 동의하지 못한다고 밝혔다.",
+          "lang": "ko",
+          "category": "View",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "난 동의 못 함",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "교수님",
+              "occurrence": 0
+            },
+            {
+              "surface": "리뷰어 2",
+              "occurrence": 0
+            }
+          ],
+          "dependencies": [
+            {
+              "parent": 0,
+              "kind": "informed_by"
+            }
+          ]
+        }
+      ],
+      "empty_reason": null
+    },
+    "candidate_sha256": "a68a0f9acba88e3966a200ebb5e919005f4b0fba1086794a21613a54cd1d0e33",
+    "plan": {
+      "extractor": {
+        "max_output_tokens": 16384,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "prompt_version": "extraction-v23",
+      "provider": "openrouter",
+      "reviewer": {
+        "max_output_tokens": 8192,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "variant": "audited"
+    },
+    "prompt_hash": "16c29261d935687e19c0d3c211f03acdab08ee6b844116a43ff8a8d051e64393",
+    "provenance": {
+      "line": 4,
+      "path": "reports/evidence/phase-3/v23-user-continuation-1.jsonl.gz",
+      "sha256": "53e9fc0856735670027151225bf164889cfb816d8dd58be602384381779e8dd8"
+    },
+    "structural_replay": {
+      "error": null,
+      "experimental_gate_eligible": false,
+      "plan_hash_valid": true,
+      "valid": true,
+      "version": "source-checks-v4"
+    }
+  },
+  {
+    "case": {
+      "id": "r1-ambiguous_ref",
+      "split": "dev",
+      "origin": "R1 synthetic",
+      "language": "ko",
+      "source": "걔가 또 늦었어. 진짜 짜증나.",
+      "authored_at": null,
+      "reference": {
+        "criteria": [
+          "지시대상을 특정 인물로 날조하지 않음"
+        ],
+        "propositions": [
+          "원문에서 걔로 지칭한 신원 미상의 인물이 또 늦었다.",
+          "화자는 그 인물의 반복 지각에 짜증을 표현한다."
+        ],
+        "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+      },
+      "category": "ambiguous_ref"
+    },
+    "source_sha256": "d48c52c2087b46684a3aeecac61cfcd2f31c182b9284830efa6f733a61cf9bfe",
+    "reference_sha256": "bc7eb0f4178fc1de89a9152489a64a914722d10c95ed460952e71830b1341894",
+    "candidate": {
+      "claims": [
+        {
+          "text": "원문 화자는 정체가 밝혀지지 않은 사람을 '걔'라고 지칭하며, 그 사람이 다시 늦었다고 말했다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "걔가 또 늦었어.",
+            "occurrence": 0
+          },
+          "tkind": "report_past",
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "'걔'",
+              "occurrence": 0
+            }
+          ],
+          "dependencies": []
+        },
+        {
+          "text": "원문 화자는 정체가 밝혀지지 않은 사람을 '걔'라고 지칭하며, 그 사람이 다시 늦은 일에 대해 원문 발화 시점에 진짜 짜증난다고 표현했다.",
+          "lang": "ko",
+          "category": "View",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "진짜 짜증나.",
+            "occurrence": 0
+          },
+          "tkind": "state",
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "'걔'",
+              "occurrence": 0
+            },
+            {
+              "surface": "원문 발화 시점",
+              "occurrence": 0
+            }
+          ],
+          "dependencies": [
+            {
+              "parent": 0,
+              "kind": "informed_by"
+            }
+          ]
+        }
+      ],
+      "empty_reason": null
+    },
+    "candidate_sha256": "4f3f7c874c365b572f45a7d7d0dd06fbfaa9ed260e2c51bc2d9e9d00dc479d80",
+    "plan": {
+      "extractor": {
+        "max_output_tokens": 16384,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "prompt_version": "extraction-v23",
+      "provider": "openrouter",
+      "reviewer": {
+        "max_output_tokens": 8192,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "variant": "audited"
+    },
+    "prompt_hash": "16c29261d935687e19c0d3c211f03acdab08ee6b844116a43ff8a8d051e64393",
+    "provenance": {
+      "line": 5,
+      "path": "reports/evidence/phase-3/v23-user-regressions-initial.jsonl.gz",
+      "sha256": "f895f785cf415a6472a4a330b995ea1ca76f6d64d9c22eddc5c4735e00571106"
+    },
+    "structural_replay": {
+      "error": null,
+      "experimental_gate_eligible": false,
+      "plan_hash_valid": true,
+      "valid": true,
+      "version": "source-checks-v4"
+    }
+  },
+  {
+    "case": {
+      "id": "r1-hypothetical",
+      "split": "dev",
+      "origin": "R1 synthetic",
+      "language": "ko",
+      "source": "만약 이번 실험에서 loss가 0.1 아래로 안 떨어지면 아키텍처를 갈아엎을 거야.",
+      "authored_at": null,
+      "reference": {
+        "criteria": [
+          "아키텍처 교체를 결정/사실로 무조건 저장하지 않음",
+          "조건(loss 0.1) 보존"
+        ],
+        "propositions": [
+          "이번 실험의 loss가 0.1 아래로 떨어지지 않으면 화자는 아키텍처를 전면 변경할 의향이 있다."
+        ],
+        "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+      },
+      "category": "hypothetical"
+    },
+    "source_sha256": "8db325edbaa59e36d8eac3e8961287262d74ff9a68ef3780de39c0e576a9bb04",
+    "reference_sha256": "5521644b7fc759fa2a2e68f99390edf9beb852b33821daf8c6890530db26ecb4",
+    "candidate": {
+      "claims": [
+        {
+          "text": "원문 화자는 원문 발화에서 '이번 실험'이라고 지칭했으나 구체적 정체가 밝혀지지 않은 실험에서 loss가 0.1 아래로 떨어지지 않으면 아키텍처를 갈아엎을 것이라고 밝혔다.",
+          "lang": "ko",
+          "category": "Intent",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "만약 이번 실험에서 loss가 0.1 아래로 안 떨어지면 아키텍처를 갈아엎을 거야.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "이번 실험",
+              "occurrence": 0
+            },
+            {
+              "surface": "loss",
+              "occurrence": 0
+            },
+            {
+              "surface": "아키텍처",
+              "occurrence": 0
+            }
+          ],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "candidate_sha256": "cc4f2548b0e213464e7481eb8e7080f61a7b7c5531c16abf60dd6c606c56f92b",
+    "plan": {
+      "extractor": {
+        "max_output_tokens": 16384,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "prompt_version": "extraction-v23",
+      "provider": "openrouter",
+      "reviewer": {
+        "max_output_tokens": 8192,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "variant": "audited"
+    },
+    "prompt_hash": "16c29261d935687e19c0d3c211f03acdab08ee6b844116a43ff8a8d051e64393",
+    "provenance": {
+      "line": 3,
+      "path": "reports/evidence/phase-3/v23-user-regressions-initial.jsonl.gz",
+      "sha256": "f895f785cf415a6472a4a330b995ea1ca76f6d64d9c22eddc5c4735e00571106"
+    },
+    "structural_replay": {
+      "error": null,
+      "experimental_gate_eligible": false,
+      "plan_hash_valid": true,
+      "valid": true,
+      "version": "source-checks-v4"
+    }
+  },
+  {
+    "case": {
+      "id": "r1-habitual_temporal",
+      "split": "dev",
+      "origin": "R1 synthetic",
+      "language": "ko",
+      "source": "요즘 매일 아침 6시에 일어나는 중",
+      "authored_at": null,
+      "reference": {
+        "criteria": [
+          "시간 범위 무근거 영구화 금지(항상/always 아님)"
+        ],
+        "propositions": [
+          "화자는 원문 기준 최근 매일 아침 6시에 일어나는 습관이 있다."
+        ],
+        "annotation_status": "assistant editorial inventory; independent adjudication pending; acceptable equivalents preserve scope, temporal framing and unknown referents"
+      },
+      "category": "habitual_temporal"
+    },
+    "source_sha256": "f6f8034df5036df572c323aef58b791165067cc8ba337d33919c7ee1d29a598b",
+    "reference_sha256": "97f02dc9b2de70dee6b14630b744be041a11dc27626e686088060a641bf16ac3",
+    "candidate": {
+      "claims": [
+        {
+          "text": "원문 화자는 원문 발화 시점 기준 요즘 매일 아침 6시에 일어나고 있다고 밝혔다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "요즘 매일 아침 6시에 일어나는 중",
+            "occurrence": 0
+          },
+          "tkind": "habit",
+          "applies_from": null,
+          "applies_to": null,
+          "standing": true,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "candidate_sha256": "4585f686ff41751c92704eadd01ff1792f93de0b56cce9c2375cf0b94bc7100b",
+    "plan": {
+      "extractor": {
+        "max_output_tokens": 16384,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "prompt_version": "extraction-v23",
+      "provider": "openrouter",
+      "reviewer": {
+        "max_output_tokens": 8192,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "variant": "audited"
+    },
+    "prompt_hash": "16c29261d935687e19c0d3c211f03acdab08ee6b844116a43ff8a8d051e64393",
+    "provenance": {
+      "line": 1,
+      "path": "reports/evidence/phase-3/v23-user-regressions-initial.jsonl.gz",
+      "sha256": "f895f785cf415a6472a4a330b995ea1ca76f6d64d9c22eddc5c4735e00571106"
+    },
+    "structural_replay": {
+      "error": null,
+      "experimental_gate_eligible": true,
+      "plan_hash_valid": true,
+      "valid": true,
+      "version": "source-checks-v4"
+    }
+  },
+  {
+    "case": {
+      "id": "v23-fresh-002",
+      "split": "heldout",
+      "language": "en",
+      "category": "argument-completeness",
+      "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+      "source": "Tara relayed that Ben suspected a delay. Ben had not checked whether a delay had occurred.",
+      "authored_at": null,
+      "reference": {
+        "annotation_status": "editorial draft; independent review pending",
+        "propositions": [
+          "Tara report of Ben suspicion, affected target unidentified",
+          "narrator assertion of Ben unperformed verification, same unknown target"
+        ],
+        "equivalence": "Original truth conditions, not exact wording"
+      }
+    },
+    "source_sha256": "39214d5b6410eda996e6376b188bfb9c5f3cf4c1aa368520b1139d1e497b435a",
+    "reference_sha256": "2d0311bc01f109ec836c1640ea6c31c15dadf6ab5acdc3d0c1e04a4ba370158f",
+    "candidate": {
+      "claims": [
+        {
+          "text": "Tara relayed that Ben suspected that a delay affecting an unspecified target had occurred.",
+          "lang": "en",
+          "category": "View",
+          "speaker": "external",
+          "speaker_label": "Tara",
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "Tara relayed that Ben suspected a delay.",
+            "occurrence": 0
+          },
+          "tkind": "report_past",
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "Tara",
+              "occurrence": 0
+            },
+            {
+              "surface": "Ben",
+              "occurrence": 0
+            }
+          ],
+          "dependencies": []
+        },
+        {
+          "text": "According to the original source, Ben had not checked whether a delay affecting an unspecified target had occurred.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "Ben had not checked whether a delay had occurred.",
+            "occurrence": 0
+          },
+          "tkind": "report_past",
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "Ben",
+              "occurrence": 0
+            }
+          ],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "candidate_sha256": "c31ad5751d3df98a00865e689edf3368dfd8bcc55f75a0f5aedd04f28399f56e",
+    "plan": {
+      "extractor": {
+        "max_output_tokens": 16384,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "prompt_version": "extraction-v23",
+      "provider": "openrouter",
+      "reviewer": {
+        "max_output_tokens": 8192,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "variant": "audited"
+    },
+    "prompt_hash": "16c29261d935687e19c0d3c211f03acdab08ee6b844116a43ff8a8d051e64393",
+    "provenance": {
+      "line": 1,
+      "path": "reports/evidence/phase-3/v23-heldout-initial.jsonl.gz",
+      "sha256": "18dd5b8ceacf382cb83f810e71e4d34bfef0fe82ed5749452dc92104189be888"
+    },
+    "structural_replay": {
+      "error": null,
+      "experimental_gate_eligible": true,
+      "plan_hash_valid": true,
+      "valid": true,
+      "version": "source-checks-v4"
+    }
+  },
+  {
+    "case": {
+      "id": "v23-fresh-003",
+      "split": "heldout",
+      "language": "ko",
+      "category": "argument-completeness",
+      "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+      "source": "진우는 “지연이 있을지도 몰라. 확인은 못 했어”라고 말했다.",
+      "authored_at": null,
+      "reference": {
+        "annotation_status": "editorial draft; independent review pending",
+        "propositions": [
+          "진우의 미확인 지연 가능성 발언, 지연 대상 불명, 같은 인용 프레임"
+        ],
+        "equivalence": "Original truth conditions, not exact wording"
+      }
+    },
+    "source_sha256": "a14e6643cc68632ef317835f85512e581eee7355b76118edaea86bc5bba92e24",
+    "reference_sha256": "3a6b565d1202b49da93168578865658100a1125b42f8986f52d2249f128542d3",
+    "candidate": {
+      "claims": [
+        {
+          "text": "진우는 무엇의 지연인지는 원문에 밝혀지지 않은 지연이 있을지도 모른다고 말했으며, 그 지연 여부를 확인하지 못했다고도 말했다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "external",
+          "speaker_label": "진우",
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "진우는 “지연이 있을지도 몰라. 확인은 못 했어”라고 말했다.",
+            "occurrence": 0
+          },
+          "tkind": "report_past",
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "진우",
+              "occurrence": 0
+            }
+          ],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "candidate_sha256": "9c69601f5dfc20c178aa571915e9948569f5a331884545f7c1ffc11a52205d93",
+    "plan": {
+      "extractor": {
+        "max_output_tokens": 16384,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "prompt_version": "extraction-v23",
+      "provider": "openrouter",
+      "reviewer": {
+        "max_output_tokens": 8192,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "variant": "audited"
+    },
+    "prompt_hash": "16c29261d935687e19c0d3c211f03acdab08ee6b844116a43ff8a8d051e64393",
+    "provenance": {
+      "line": 4,
+      "path": "reports/evidence/phase-3/v23-heldout-initial.jsonl.gz",
+      "sha256": "18dd5b8ceacf382cb83f810e71e4d34bfef0fe82ed5749452dc92104189be888"
+    },
+    "structural_replay": {
+      "error": null,
+      "experimental_gate_eligible": false,
+      "plan_hash_valid": true,
+      "valid": true,
+      "version": "source-checks-v4"
+    }
+  },
+  {
+    "case": {
+      "id": "v23-fresh-004",
+      "split": "heldout",
+      "language": "mixed",
+      "category": "mixed-technical",
+      "origin": "Editorial benchmark constructed after v23 prompt assets frozen, before live calls",
+      "source": "Mori 서비스의 worker_count는 4다. The count alone does not establish parallel execution.",
+      "authored_at": null,
+      "reference": {
+        "annotation_status": "editorial draft; independent review pending",
+        "propositions": [
+          "Mori worker_count 4",
+          "count does not establish parallel execution"
+        ],
+        "equivalence": "Original truth conditions, not exact wording"
+      }
+    },
+    "source_sha256": "dd77589c47ace7c6a3fb31e685503f1034d941e3d4f7ed635e8129b454130d56",
+    "reference_sha256": "20b9b963a170ad64ccff69dff95f03b742684eb3e198eb07c62c2b55b19a004a",
+    "candidate": {
+      "claims": [
+        {
+          "text": "Mori 서비스의 worker_count는 4다.",
+          "lang": "ko",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "verbatim",
+          "anchor": {
+            "quote": "Mori 서비스의 worker_count는 4다.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "Mori",
+              "occurrence": 0
+            },
+            {
+              "surface": "worker_count",
+              "occurrence": 0
+            }
+          ],
+          "dependencies": []
+        },
+        {
+          "text": "The Mori service's worker_count value of 4, by itself, does not establish that the Mori service executes in parallel.",
+          "lang": "en",
+          "category": "Fact",
+          "speaker": "unknown",
+          "speaker_label": null,
+          "basis": "paraphrase",
+          "anchor": {
+            "quote": "The count alone does not establish parallel execution.",
+            "occurrence": 0
+          },
+          "tkind": null,
+          "applies_from": null,
+          "applies_to": null,
+          "standing": false,
+          "index_fields": null,
+          "revision_of": null,
+          "mentions": [
+            {
+              "surface": "Mori",
+              "occurrence": 0
+            },
+            {
+              "surface": "worker_count",
+              "occurrence": 0
+            },
+            {
+              "surface": "Mori",
+              "occurrence": 1
+            }
+          ],
+          "dependencies": []
+        }
+      ],
+      "empty_reason": null
+    },
+    "candidate_sha256": "aacb6d6e98a1d6c7111ed54a050f914fdf2425e4510b7f7b3edd812db314a38b",
+    "plan": {
+      "extractor": {
+        "max_output_tokens": 16384,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "prompt_version": "extraction-v23",
+      "provider": "openrouter",
+      "reviewer": {
+        "max_output_tokens": 8192,
+        "model": "openai/gpt-6-luna-pro",
+        "timeout_seconds": 180
+      },
+      "variant": "audited"
+    },
+    "prompt_hash": "16c29261d935687e19c0d3c211f03acdab08ee6b844116a43ff8a8d051e64393",
+    "provenance": {
+      "line": 1,
+      "path": "reports/evidence/phase-3/v23-heldout-continuation.jsonl.gz",
+      "sha256": "05e8ced1dbaa3770c96506cf4a362bc615c339cbb825a105b8d840e019057b44"
+    },
+    "structural_replay": {
+      "error": null,
+      "experimental_gate_eligible": true,
+      "plan_hash_valid": true,
+      "valid": true,
+      "version": "source-checks-v4"
+    }
+  }
+]

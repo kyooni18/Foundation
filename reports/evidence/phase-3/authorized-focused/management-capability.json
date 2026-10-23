@@ -1,0 +1,7 @@
+{
+  "operation": "GET /keys management capability check",
+  "mutation": false,
+  "http_status": 401,
+  "management_access": false,
+  "management_credential_env_present": false
+}

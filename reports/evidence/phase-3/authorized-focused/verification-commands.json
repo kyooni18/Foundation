@@ -1,0 +1,114 @@
+{
+  "tested_head": "ac2121d86d8d805820be0e59f2a93953efa4a892",
+  "commands": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/authorized-focused/verification-0.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--all-targets"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/authorized-focused/verification-1.log",
+      "sha256": "bcca220bb19182c486857e1a2094c64f751f392a399d45ba712d7e4227e1ba81"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/authorized-focused/verification-2.log",
+      "sha256": "59e5d59892da9f59c08d26fc96a3be0f291e8d86ab6d19139f787a8dfa910c56"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "evaluation/phase3",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/authorized-focused/verification-3.log",
+      "sha256": "c7cd899534caf8e2db6f513320686401891557a388e79ae67a9c32bce3e216d8"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "--offline",
+        "--example",
+        "revalidate_extraction"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/authorized-focused/verification-4.log",
+      "sha256": "6c7ddf33a43021d0d1f02ace5173bccb1d462c28168cc258cff2a673dcd44295"
+    },
+    {
+      "command": [
+        "target/debug/examples/revalidate_extraction",
+        "--input",
+        "reports/evidence/phase-3/focused-verification/selected-input.jsonl",
+        "--output",
+        "reports/evidence/phase-3/authorized-focused/current-revalidated.jsonl"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/authorized-focused/verification-5.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "python3",
+        "evaluation/phase3/audit_focused_evidence.py",
+        "--current",
+        "reports/evidence/phase-3/authorized-focused/current-revalidated.jsonl",
+        "--output",
+        "reports/evidence/phase-3/authorized-focused/audit"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/authorized-focused/verification-6.log",
+      "sha256": "00f4fdaf6c05fb6e041502479eb828befc54871df418edb29c1d3591b1407800"
+    },
+    {
+      "command": [
+        "python3",
+        "evaluation/phase3/focused_review.py",
+        "--output",
+        "reports/evidence/phase-3/authorized-focused/focused-replay"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/authorized-focused/verification-7.log",
+      "sha256": "55111b49070b355fd124498a5b1265cab73a481bde471605a6f41b83a18db894"
+    },
+    {
+      "command": [
+        "python3",
+        "evaluation/phase3/replay_archives.py",
+        "--output",
+        "reports/evidence/phase-3/authorized-focused/full-replay"
+      ],
+      "exit_code": 0,
+      "log": "reports/evidence/phase-3/authorized-focused/verification-8.log",
+      "sha256": "d3b777066cc26fd7ef8de23486f87b9bbb256af6c8cc2809102fe3f30448d2c8"
+    }
+  ]
+}

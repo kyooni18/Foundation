@@ -1,0 +1,1 @@
+{"api_calls":[{"method":"GET","path":"/models"},{"method":"GET","path":"/models/anthropic/claude-haiku-5.5/endpoints"},{"method":"GET","path":"/key"}],"ledger_requests":0,"new_actual_nanos":0,"outcome":"provider cap blocked: non-resetting cap required","paid_posts":0,"pending_nanos":0,"semantic_acceptance":null}
