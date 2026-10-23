@@ -1,0 +1,85 @@
+[
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--check"
+    ],
+    "exit_code": 0,
+    "log": "reports/evidence/phase-3/final-continuation/verification-0.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--all-targets"
+    ],
+    "exit_code": 0,
+    "log": "reports/evidence/phase-3/final-continuation/verification-1.log",
+    "sha256": "ef23db465fb0904ada95cd120696f5ea6cef0ec89e4d2df770907810be275820"
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--offline",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "log": "reports/evidence/phase-3/final-continuation/verification-2.log",
+    "sha256": "8ff208724cf0c04081c037b021a39dac4e914bed652a41bbea2f278fdd6433e0"
+  },
+  {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "evaluation/phase3",
+      "-p",
+      "test_*.py"
+    ],
+    "exit_code": 0,
+    "log": "reports/evidence/phase-3/final-continuation/verification-3.log",
+    "sha256": "697bdd411f17262dd38f3140518b5877a852aedf1891c41409aedf57e356a441"
+  },
+  {
+    "command": [
+      "python3",
+      "evaluation/phase3/focused_review.py",
+      "--output",
+      "reports/evidence/phase-3/final-continuation/focused-replay"
+    ],
+    "exit_code": 0,
+    "log": "reports/evidence/phase-3/final-continuation/verification-4.log",
+    "sha256": "5f4e07e01b6d1a7171e938fba24bf894f757c6b110fc3943f76268d0d240eb49"
+  },
+  {
+    "command": [
+      "python3",
+      "evaluation/phase3/audit_focused_evidence.py",
+      "--current",
+      "reports/evidence/phase-3/final-continuation/current-revalidated.jsonl",
+      "--output",
+      "reports/evidence/phase-3/final-continuation/verified-audit"
+    ],
+    "exit_code": 0,
+    "log": "reports/evidence/phase-3/final-continuation/verification-5.log",
+    "sha256": "d3e281a28c5132f6c9e1354873716cde1a78020009cdcdb124bee89ee725f240"
+  },
+  {
+    "command": [
+      "python3",
+      "evaluation/phase3/guarded_haiku.py"
+    ],
+    "exit_code": 0,
+    "log": "reports/evidence/phase-3/final-continuation/verification-6.log",
+    "sha256": "75a0ef7cb2ca2851c1b86e178d9f606a0d21e48c66379936dca541c49d062765"
+  }
+]

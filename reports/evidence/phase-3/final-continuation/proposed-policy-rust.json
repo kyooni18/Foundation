@@ -1,0 +1,13 @@
+{
+  "command": [
+    "cargo",
+    "test",
+    "--offline",
+    "--lib",
+    "budget::",
+    "--target-dir",
+    "/Users/kyooni18/Code/PrimeRadiant/target/policy-proposal"
+  ],
+  "exit_code": 0,
+  "scope": "temporary exported checkout with proposed patch and runtime probe; real ledger unopened"
+}

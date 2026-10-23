@@ -1,0 +1,28 @@
+{
+  "status": "Blocked",
+  "manifest_sha256": "164f84834501955b62359552ac192fb6f92fccb44d5a0424a63f8bcdaf8004a7",
+  "protocol_sha256": "c0c3e603edf7964bbe7f90d4cc73ad09ef5f814525d33199a1b9b8b243173909",
+  "selected_cases": 12,
+  "prepared_primary": 7,
+  "coverage_gaps": [
+    "new-003",
+    "new-007",
+    "new-018",
+    "new-025",
+    "new-042"
+  ],
+  "prepared_repeats": [
+    "r1-nested_quote",
+    "r1-ambiguous_ref",
+    "v23-fresh-003"
+  ],
+  "archived_rows": 546,
+  "valid_new_model_judgments": 0,
+  "accepted_batches": 0,
+  "rejected_batches": 0,
+  "semantic_valid_claim_coverage": null,
+  "korean_semantic_valid_claim_coverage": null,
+  "new_paid_requests": 0,
+  "new_spend_usd": 0,
+  "blocker": "Existing ledger prior $4.78265335 exceeds $4.50 ceiling; no authorization to change it."
+}

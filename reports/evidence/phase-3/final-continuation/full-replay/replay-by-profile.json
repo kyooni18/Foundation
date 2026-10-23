@@ -1,0 +1,134 @@
+{
+  "extraction-v6": {
+    "attempts": 617,
+    "structurally_valid": 590,
+    "plan_hash_valid": 617,
+    "experimental_gate_eligible": 460
+  },
+  "extraction-v7": {
+    "attempts": 8,
+    "structurally_valid": 8,
+    "plan_hash_valid": 8,
+    "experimental_gate_eligible": 8
+  },
+  "extraction-v8": {
+    "attempts": 41,
+    "structurally_valid": 39,
+    "plan_hash_valid": 41,
+    "experimental_gate_eligible": 21
+  },
+  "extraction-v9": {
+    "attempts": 37,
+    "structurally_valid": 35,
+    "plan_hash_valid": 37,
+    "experimental_gate_eligible": 22
+  },
+  "extraction-v1": {
+    "attempts": 1048,
+    "structurally_valid": 1000,
+    "plan_hash_valid": 1048,
+    "experimental_gate_eligible": 926
+  },
+  "extraction-v2": {
+    "attempts": 224,
+    "structurally_valid": 219,
+    "plan_hash_valid": 224,
+    "experimental_gate_eligible": 211
+  },
+  "extraction-v3": {
+    "attempts": 676,
+    "structurally_valid": 361,
+    "plan_hash_valid": 530,
+    "experimental_gate_eligible": 233
+  },
+  "extraction-v4": {
+    "attempts": 219,
+    "structurally_valid": 188,
+    "plan_hash_valid": 115,
+    "experimental_gate_eligible": 59
+  },
+  "extraction-v5": {
+    "attempts": 283,
+    "structurally_valid": 266,
+    "plan_hash_valid": 283,
+    "experimental_gate_eligible": 149
+  },
+  "extraction-v10": {
+    "attempts": 328,
+    "structurally_valid": 315,
+    "plan_hash_valid": 328,
+    "experimental_gate_eligible": 212
+  },
+  "extraction-v11": {
+    "attempts": 739,
+    "structurally_valid": 131,
+    "plan_hash_valid": 739,
+    "experimental_gate_eligible": 65
+  },
+  "extraction-v12": {
+    "attempts": 33,
+    "structurally_valid": 33,
+    "plan_hash_valid": 33,
+    "experimental_gate_eligible": 9
+  },
+  "extraction-v13": {
+    "attempts": 27,
+    "structurally_valid": 23,
+    "plan_hash_valid": 27,
+    "experimental_gate_eligible": 14
+  },
+  "extraction-v14": {
+    "attempts": 156,
+    "structurally_valid": 146,
+    "plan_hash_valid": 156,
+    "experimental_gate_eligible": 70
+  },
+  "extraction-v15": {
+    "attempts": 57,
+    "structurally_valid": 54,
+    "plan_hash_valid": 57,
+    "experimental_gate_eligible": 36
+  },
+  "extraction-v16": {
+    "attempts": 26,
+    "structurally_valid": 24,
+    "plan_hash_valid": 26,
+    "experimental_gate_eligible": 14
+  },
+  "extraction-v17": {
+    "attempts": 18,
+    "structurally_valid": 18,
+    "plan_hash_valid": 18,
+    "experimental_gate_eligible": 16
+  },
+  "extraction-v18": {
+    "attempts": 101,
+    "structurally_valid": 92,
+    "plan_hash_valid": 101,
+    "experimental_gate_eligible": 41
+  },
+  "extraction-v20": {
+    "attempts": 11,
+    "structurally_valid": 11,
+    "plan_hash_valid": 11,
+    "experimental_gate_eligible": 3
+  },
+  "extraction-v21": {
+    "attempts": 65,
+    "structurally_valid": 56,
+    "plan_hash_valid": 65,
+    "experimental_gate_eligible": 31
+  },
+  "extraction-v22": {
+    "attempts": 9,
+    "structurally_valid": 9,
+    "plan_hash_valid": 9,
+    "experimental_gate_eligible": 7
+  },
+  "extraction-v23": {
+    "attempts": 29,
+    "structurally_valid": 28,
+    "plan_hash_valid": 29,
+    "experimental_gate_eligible": 17
+  }
+}

@@ -151,6 +151,7 @@ All proposals remain quarantined for local user review. Real-model experiments h
 found both false acceptance and false rejection by model reviewers; semantic acceptance
 has not been established. There is **no phase-3 completion tag**. See [the Phase 3 report](reports/phase-3.md)
 for evidence, decisions, limitations, and the reproducible evaluation procedure.
+Latest continuation: [verified recovery, evaluation safeguards and remaining acceptance blockers](reports/phase-3-final-continuation.md).
 
 Provider credentials use `OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_FILE` (canonical path,
 0600, same owner, no symlinks). `extraction-work` defaults to

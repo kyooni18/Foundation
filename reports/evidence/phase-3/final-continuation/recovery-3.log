@@ -1,0 +1,18 @@
+{
+  "artifact_rows": 5281,
+  "unique_attempt_payloads": 4752,
+  "unique_sources": 145,
+  "errors": {
+    "None": 3646,
+    "anchor": 131,
+    "schema": 40,
+    "provider_or_schema": 913,
+    "timestamp": 5,
+    "language": 17
+  },
+  "historical_structural_pass_now_rejected": 2,
+  "semantic_acceptance": false,
+  "plan_hash_valid": 4502,
+  "structurally_valid": 3646,
+  "experimental_gate_eligible": 2624
+}

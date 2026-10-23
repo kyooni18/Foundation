@@ -1,0 +1,42 @@
+[
+  {
+    "command": [
+      "cargo",
+      "build",
+      "--offline",
+      "--example",
+      "revalidate_extraction"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "target/debug/examples/revalidate_extraction",
+      "--input",
+      "reports/evidence/phase-3/focused-verification/selected-input.jsonl",
+      "--output",
+      "reports/evidence/phase-3/final-continuation/current-revalidated.jsonl"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "python3",
+      "evaluation/phase3/audit_focused_evidence.py",
+      "--current",
+      "reports/evidence/phase-3/final-continuation/current-revalidated.jsonl",
+      "--output",
+      "reports/evidence/phase-3/final-continuation/audit"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "python3",
+      "evaluation/phase3/replay_archives.py",
+      "--output",
+      "reports/evidence/phase-3/final-continuation/full-replay"
+    ],
+    "exit_code": 0
+  }
+]

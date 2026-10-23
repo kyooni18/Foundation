@@ -1,0 +1,15 @@
+{
+  "head": "73b367f9f08196b281ae4e13632085c33187dd44",
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "evaluation/phase3",
+    "-p",
+    "test_*.py"
+  ],
+  "exit_code": 0,
+  "sha256": "06ebc693779af828d4e3bc59fd145f22dda2708a6d8d91dd6fe3edf6baa10633"
+}

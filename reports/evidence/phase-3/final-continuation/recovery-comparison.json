@@ -1,0 +1,12 @@
+{
+  "exact_reproduction": {
+    "current-revalidated.jsonl": true,
+    "full-replay/replay-summary.json": true,
+    "full-replay/replay-index.jsonl.gz": true,
+    "full-replay/input-manifest.json": true,
+    "full-replay/replay-by-profile.json": true,
+    "audit/budget-readonly.json": true
+  },
+  "frozen_packets_exact": true,
+  "semantic_improvement": null
+}
