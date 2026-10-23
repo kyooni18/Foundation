@@ -2,12 +2,13 @@
 
 Status: **not accepted; no `phase-3` tag**. The implementation and offline regression
 suite are complete as a reviewable checkpoint. Real OpenRouter experiments were run
-and prompts revised through v15. An earlier run was blocked by HTTP 402
+and prompts revised through v17. An earlier run was blocked by HTTP 402
 (account credits exhausted; the key remained valid without a per-key cap). The user
 then authorized at most $5 additional evaluation spending, and funded access was
 verified. Frozen v11 evaluations resumed with a shared conservative reservation guard.
 Only cheap models were used after the user requested that restriction. The fresh
-20-source extraction benchmark has not yet been run. The user independently confirmed
+20-source extraction benchmark was partially exposed during v15; a replacement
+20-source set retaining all 16 untouched cases is reserved and has not yet been run. The user independently confirmed
 that each Claim must explicitly describe an unknown third-person referent and that
 the isolated habitual self-report refers to the original speaker. The exception-scope
 review remains pending. Neither fake-provider tests nor reviewer agreement establishes
@@ -718,3 +719,12 @@ unknown prompt version and made no provider calls. The subsequent built run abov
 separate. Offline v16 validation passed all 40 Rust tests, three Python tests, formatting
 and clippy. No compile-time test count was increased. Account usage increase before
 v17 continuation was $2.97002132, leaving a guarded $1.979978 plus the $0.05 margin.
+
+V17 completed 18 attempts and 16 model-gate-passing terminal runs. The revised reader
+eliminated the prior exhausted habitual-control rejection in this small paired set,
+and both named-person reports explicitly retain hearsay. One direct ongoing-state
+Claim remained unframed in time; independent user judgment is pending. V18 conservatively
+binds explicitly ongoing states to the original utterance while preserving timeless
+conditionals and generic properties. This is a faithful paraphrase and does not gain
+verbatim projection eligibility. The current guarded allowance before v18 was $1.843651
+($3.10634897 account usage increase against the $5 ceiling, plus $0.05 margin).

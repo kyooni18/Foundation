@@ -508,3 +508,15 @@ narrator report. That batch failed another gate and remained unpublished. V17 ex
 preserves the further hearsay layer without inventing an informant or adding hearsay
 to plain assertions. This is a general morphology/frame rule, not a fixture-specific
 exception. Source bytes, authoritative authorship and strict schema checks are unchanged.
+
+### D-67 — Conservatively bind explicitly ongoing states to the source utterance
+A v17 paired-control output copied “지수는 야간 근무 중이다” without a statement-time
+frame and passed its model gates. Independent user judgment on whether the verbatim
+form suffices is pending. Pending that judgment, v18 uses the conservative faithful
+paraphrase “원문 발화 시점에 지수는 야간 근무 중이었다.” This preserves an explicitly
+ongoing source state without implying it continues at retrieval time, inventing a date,
+or substituting capture time. The rule applies to asserted progressive states, not a
+substring ban or a requirement to date every generic property. Timeless conditionals
+containing an ongoing-state condition do not assert that the condition actually holds.
+Adding a frame makes the result paraphrase rather than verbatim; existing projection
+and explicit-confirmation rules continue to apply without an authorship exception.

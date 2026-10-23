@@ -235,6 +235,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                             | "extraction-v15"
                             | "extraction-v16"
                             | "extraction-v17"
+                            | "extraction-v18"
                     ) && let Some(previous) = &previous_attempt
                     {
                         let mut payload: Value = serde_json::from_str(&input)?;
