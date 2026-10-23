@@ -51,137 +51,14 @@ fn provider_code(error: &str) -> &'static str {
         _ => "provider",
     }
 }
-// Manual-evaluation guard only. Reserve conservatively before every request, including
-// failed calls, using $0.50/M input and $1/M output tokens (above all frozen cheap-model
-// catalog rates). UTF-8 byte length plus 4096 envelopes upper-bounds input tokens.
-// Failed/unmetered calls keep their reservation. Successful metered calls settle to
-// a conservative token-cost bound; file locking shares the ceiling across shards.
-struct EvaluationProvider {
-    inner: OpenRouter,
-    ledger: Option<PathBuf>,
-}
-impl LlmProvider for EvaluationProvider {
-    fn identity(&self) -> &str {
-        self.inner.identity()
-    }
-    fn complete<'a>(
-        &'a self,
-        system: &'a str,
-        input: &'a str,
-        config: &'a ModelConfig,
-    ) -> prime_radiant::providers::ProviderFuture<'a> {
-        Box::pin(async move {
-            let mut reservation = 0;
-            if let Some(path) = &self.ledger {
-                let reserve = || -> std::result::Result<u64, Box<dyn std::error::Error>> {
-                    use std::io::{Read, Seek, SeekFrom};
-                    if config.model != "openai/gpt-6-luna-pro" {
-                        return Err("budget guard requires the priced evaluation model".into());
-                    }
-                    let mut file = std::fs::OpenOptions::new()
-                        .read(true)
-                        .write(true)
-                        .open(path)?;
-                    file.lock()?;
-                    let mut text = String::new();
-                    file.read_to_string(&mut text)?;
-                    let mut state: Value = serde_json::from_str(&text)?;
-                    let cost = ((system.len() + input.len() + 4096) as u64).div_ceil(2)
-                        + u64::from(
-                            config
-                                .max_output_tokens
-                                .ok_or("explicit token limit required")?,
-                        );
-                    let reserved = state["reserved_micro_usd"]
-                        .as_u64()
-                        .ok_or("invalid ledger")?;
-                    let limit = state["limit_micro_usd"].as_u64().ok_or("invalid ledger")?;
-                    let accepted = reserved.checked_add(cost).is_some_and(|n| n <= limit);
-                    if accepted {
-                        state["reserved_micro_usd"] = json!(reserved + cost);
-                    } else {
-                        state["rejected_requests"] =
-                            json!(state["rejected_requests"].as_u64().unwrap_or(0) + 1);
-                    }
-                    file.seek(SeekFrom::Start(0))?;
-                    file.set_len(0)?;
-                    file.write_all(serde_json::to_string(&state)?.as_bytes())?;
-                    file.sync_all()?;
-                    if !accepted {
-                        return Err("local evaluation budget exhausted".into());
-                    }
-                    Ok(cost)
-                };
-                reservation = reserve().map_err(|error| {
-                    eprintln!(
-                        "evaluation reservation refused: {}",
-                        if error.to_string() == "local evaluation budget exhausted" {
-                            "ceiling"
-                        } else {
-                            "accounting/configuration"
-                        }
-                    );
-                    prime_radiant::providers::ProviderError::Quota
-                })?;
-            }
-            let (text, usage) = self
-                .inner
-                .complete_with_usage(system, input, config)
-                .await?;
-            if let (Some(path), Some(usage)) = (&self.ledger, usage) {
-                let settle = || -> std::result::Result<(), Box<dyn std::error::Error>> {
-                    use std::io::{Read, Seek, SeekFrom};
-                    let cost = usage
-                        .prompt_tokens
-                        .div_ceil(2)
-                        .checked_add(usage.completion_tokens)
-                        .ok_or("invalid usage")?;
-                    let refund = reservation
-                        .checked_sub(cost)
-                        .ok_or("usage exceeds reservation")?;
-                    let mut file = std::fs::OpenOptions::new()
-                        .read(true)
-                        .write(true)
-                        .open(path)?;
-                    file.lock()?;
-                    let mut raw = String::new();
-                    file.read_to_string(&mut raw)?;
-                    let mut state: Value = serde_json::from_str(&raw)?;
-                    let reserved = state["reserved_micro_usd"]
-                        .as_u64()
-                        .ok_or("invalid ledger")?;
-                    state["reserved_micro_usd"] =
-                        json!(reserved.checked_sub(refund).ok_or("invalid ledger")?);
-                    state["settled_requests"] =
-                        json!(state["settled_requests"].as_u64().unwrap_or(0) + 1);
-                    file.seek(SeekFrom::Start(0))?;
-                    file.set_len(0)?;
-                    file.write_all(serde_json::to_string(&state)?.as_bytes())?;
-                    file.sync_all()?;
-                    Ok(())
-                };
-                settle().map_err(|error| {
-                    eprintln!("evaluation settlement refused: prompt_tokens={} completion_tokens={} reserved_micro_usd={} reason={}", usage.prompt_tokens, usage.completion_tokens, reservation,
-                        if error.to_string() == "usage exceeds reservation" { "usage_bound" } else { "ledger" });
-                    prime_radiant::providers::ProviderError::Quota
-                })?;
-            }
-            Ok(text)
-        })
-    }
-}
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     if !(1..=3).contains(&args.repair_attempts) {
         return Err("repair attempts must be 1..3".into());
     }
-    let inner = OpenRouter::from_environment()
+    let provider = OpenRouter::from_environment()
         .map_err(|_| "provider credentials unavailable; no evaluation performed")?;
-    let provider = EvaluationProvider {
-        inner,
-        ledger: std::env::var_os("PHASE3_EVALUATION_BUDGET_LEDGER").map(PathBuf::from),
-    };
     let cases: Vec<Value> = serde_json::from_slice(&std::fs::read(args.corpus)?)?;
     let mut opts = std::fs::OpenOptions::new();
     opts.write(true).create_new(true);

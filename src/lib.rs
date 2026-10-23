@@ -1,6 +1,7 @@
 pub mod api;
 pub mod authentication;
 pub mod authz;
+pub mod budget;
 pub mod claims;
 pub mod extraction;
 pub mod jobs;

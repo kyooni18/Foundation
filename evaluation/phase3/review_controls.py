@@ -6,37 +6,24 @@ editorial controls, not human adjudication of natural extraction outputs.
 import argparse
 import concurrent.futures
 import hashlib
-import fcntl
 import json
 import os
 from pathlib import Path
-import stat
 import time
-import urllib.request
+import subprocess
 
 
-def reserve_evaluation_budget(model, prompt, source, output_limit):
-    """Same conservative bound as the Rust evaluator; no refunds for controls."""
-    path = os.environ.get("PHASE3_EVALUATION_BUDGET_LEDGER")
-    if path is None:
-        return True
-    if model != "openai/gpt-6-luna-pro":
-        return False
-    cost = (len(prompt.encode()) + len(json.dumps(source, ensure_ascii=False).encode()) + 4097) // 2 + output_limit
-    with open(path, "r+") as ledger:
-        fcntl.flock(ledger, fcntl.LOCK_EX)
-        state = json.load(ledger)
-        accepted = state["reserved_micro_usd"] + cost <= state["limit_micro_usd"]
-        if accepted:
-            state["reserved_micro_usd"] += cost
-        else:
-            state["rejected_requests"] = state.get("rejected_requests", 0) + 1
-        ledger.seek(0)
-        ledger.truncate()
-        json.dump(state, ledger)
-        ledger.flush()
-        os.fsync(ledger.fileno())
-    return accepted
+def guarded_completion(root, model, prompt, source, output_limit):
+    """No independent HTTP or accounting path: use the production Rust adapter."""
+    request = dict(system=prompt, input=json.dumps(source, ensure_ascii=False),
+                   config=dict(model=model, timeout_seconds=180, max_output_tokens=output_limit))
+    process = subprocess.run([str(root / "target/debug/examples/guarded_completion")],
+                             input=json.dumps(request, ensure_ascii=False), text=True,
+                             capture_output=True, timeout=225, check=False)
+    if process.returncode:
+        return {"error": "ProviderOrBudget"}
+    return json.loads(process.stdout)
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -52,11 +39,6 @@ def main():
     if not 1 <= args.workers <= 8 or not 1 <= args.runs <= 10 or not 1 <= args.max_output_tokens <= 262144:
         parser.error("invalid bounded evaluation configuration")
     root = Path(__file__).resolve().parents[2]
-    credential = Path(os.environ["OPENROUTER_API_KEY_FILE"])
-    info = credential.lstat()
-    if credential != credential.resolve() or not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != 0o600 or info.st_uid != os.getuid() or info.st_nlink != 1:
-        raise SystemExit("A canonical private 0600 credential file is required")
-    key = credential.read_text().strip()
     controls = json.loads(args.controls.read_text())
     stages = (["standalone atomicity and isolation"] if args.standalone_prompt else
               ["atomicity and independence", "semantic fidelity and epistemic framing",
@@ -81,40 +63,16 @@ def main():
             if version in {"extraction-v10", "extraction-v11", "extraction-v12", "extraction-v13", "extraction-v14", "extraction-v15", "extraction-v16", "extraction-v17", "extraction-v18", "extraction-v19", "extraction-v20", "extraction-v21"}:
                 source["candidate_count"] = len(source["candidate_batch"]["claims"])
                 source["required_checked_indices"] = list(range(source["candidate_count"]))
-        payload = dict(model=args.model, temperature=0, max_tokens=args.max_output_tokens, response_format=dict(type="json_object"),
-                       messages=[dict(role="system", content=prompt), dict(role="user", content=json.dumps(source, ensure_ascii=False))])
         result = dict(control=control, version=version, model=args.model, stage=stage, run=run,
                       prompt_hash=hashlib.sha256(prompt.encode()).hexdigest(), max_output_tokens=args.max_output_tokens)
         if "deepseek" in args.model.lower() and not (prompt + json.dumps(source, ensure_ascii=False)).isascii():
             result["error"] = "LanguageRestriction"
             return result
-        try:
-            allowed = reserve_evaluation_budget(args.model, prompt, source, args.max_output_tokens)
-        except (OSError, ValueError, KeyError, TypeError):
-            allowed = False
-        if not allowed:
-            result["error"] = "LocalBudget"
-            return result
-        request = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions",
-                                         data=json.dumps(payload).encode(),
-                                         headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"})
         start = time.monotonic()
         try:
-            with urllib.request.urlopen(request, timeout=180) as response:
-                data = response.read(8 * 1024 * 1024 + 1)
-                if len(data) > 8 * 1024 * 1024:
-                    raise ValueError()
-                response_data = json.loads(data)
-                choice = response_data["choices"][0]
-                reason = choice.get("finish_reason")
-                result["finish_reason"] = reason if reason in {"stop", "length", "tool_calls", "content_filter"} else "other"
-                usage = response_data.get("usage", {})
-                result["usage"] = {k: usage[k] for k in ["prompt_tokens", "completion_tokens", "total_tokens"] if type(usage.get(k)) is int}
-                if choice.get("finish_reason") != "stop":
-                    raise ValueError()
-                result["raw"] = choice["message"]["content"]
+            result.update(guarded_completion(root, args.model, prompt, source, args.max_output_tokens))
         except Exception as error:
-            result["error"] = type(error).__name__  # Never expose HTTP bodies or credentials.
+            result["error"] = type(error).__name__  # Never expose bodies or credentials.
         result["elapsed_ms"] = round((time.monotonic() - start) * 1000)
         return result
 

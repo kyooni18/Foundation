@@ -1,5 +1,7 @@
 //! Provider failures deliberately exclude response bodies, URLs, and credentials.
+use crate::budget::{Budget, nanos};
 use serde::{Deserialize, Serialize};
+pub const DEFAULT_GENERAL_MODEL: &str = "deepseek/deepseek-v4.1-flash-1017";
 use std::{future::Future, pin::Pin, time::Duration};
 #[derive(Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -33,6 +35,8 @@ pub trait LlmProvider: Send + Sync {
 pub struct OpenRouter {
     client: reqwest::Client,
     key: String,
+    base: String,
+    ledger: Option<std::path::PathBuf>,
 }
 impl OpenRouter {
     pub fn from_credential_file(path: impl AsRef<std::path::Path>) -> Result<Self, ProviderError> {
@@ -46,7 +50,12 @@ impl OpenRouter {
             return Err(ProviderError::Unavailable);
         }
         Ok(Self {
-            client: reqwest::Client::new(),
+            base: "https://openrouter.ai/api/v1".into(),
+            ledger: std::env::var_os("PRIMERADIANT_OPENROUTER_LEDGER").map(Into::into),
+            client: reqwest::Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .build()
+                .map_err(|_| ProviderError::Unavailable)?,
             key,
         })
     }
@@ -59,7 +68,12 @@ impl OpenRouter {
             return Err(ProviderError::Unavailable);
         }
         Ok(Self {
-            client: reqwest::Client::new(),
+            base: "https://openrouter.ai/api/v1".into(),
+            ledger: std::env::var_os("PRIMERADIANT_OPENROUTER_LEDGER").map(Into::into),
+            client: reqwest::Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .build()
+                .map_err(|_| ProviderError::Unavailable)?,
             key,
         })
     }
@@ -93,13 +107,62 @@ impl OpenRouter {
         {
             return Err(ProviderError::Unavailable);
         }
-        let mut payload = serde_json::json!({"model":config.model,"temperature":0,"response_format":{"type":"json_object"},"messages":[{"role":"system","content":system},{"role":"user","content":input}]});
-        if let Some(limit) = config.max_output_tokens {
-            payload["max_tokens"] = limit.into();
+        let output_limit = config.max_output_tokens.ok_or(ProviderError::Quota)?;
+        let budget = Budget::open(self.ledger.as_deref().ok_or(ProviderError::Quota)?)?;
+        // A provider-enforced, non-resetting cap is an independent backstop for price
+        // changes, tokenization differences, and requests with uncertain outcomes.
+        let key = self
+            .client
+            .get(format!("{}/key", self.base))
+            .bearer_auth(&self.key)
+            .timeout(Duration::from_secs(20))
+            .send()
+            .await
+            .map_err(|_| ProviderError::Unavailable)?;
+        if !key.status().is_success() {
+            return Err(ProviderError::Quota);
         }
+        let key = read_json(key).await?;
+        validate_key_cap(&key, budget.limit()?)?;
+        if !config
+            .model
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b"/-._:".contains(&b))
+        {
+            return Err(ProviderError::InvalidRequest);
+        }
+        let catalog = self
+            .client
+            .get(format!("{}/models/{}/endpoints", self.base, config.model))
+            .timeout(Duration::from_secs(20))
+            .send()
+            .await
+            .map_err(|_| ProviderError::Unavailable)?;
+        if !catalog.status().is_success() {
+            return Err(ProviderError::Unavailable);
+        }
+        let catalog = read_json(catalog).await?;
+        let quote = Quote::select(&catalog)?;
+        let estimate = quote.estimate(system.len(), input.len(), output_limit)?;
+        if nanos(
+            key["data"]["limit_remaining"]
+                .as_f64()
+                .ok_or(ProviderError::Quota)?,
+        )? < estimate
+        {
+            return Err(ProviderError::Quota);
+        }
+        let payload = serde_json::json!({"model":config.model,"temperature":0,
+            "max_tokens":output_limit,"response_format":{"type":"json_object"},
+            "provider":{"only":[quote.tag],"allow_fallbacks":false,"require_parameters":true,
+                "max_price":{"prompt":quote.input*1_000_000.0,"completion":quote.output*1_000_000.0,"request":quote.request}},
+            "plugins":[],
+            "messages":[{"role":"system","content":system},{"role":"user","content":input}]});
+        // Commit before sending. Cancellation, timeouts and malformed responses retain the hold.
+        let reservation = budget.reserve(&config.model, estimate)?;
         let response = self
             .client
-            .post("https://openrouter.ai/api/v1/chat/completions")
+            .post(format!("{}/chat/completions", self.base))
             .bearer_auth(&self.key)
             .timeout(Duration::from_secs(config.timeout_seconds))
             .json(&payload)
@@ -124,7 +187,17 @@ impl OpenRouter {
         if !response.status().is_success() {
             return Err(ProviderError::Unavailable);
         }
-        read_completion_with_usage(response).await
+        let body = read_json(response).await?;
+        budget.settle(&reservation, &body)?;
+        let result = decode_completion(&body)?;
+        if config.model.to_lowercase().contains("deepseek") {
+            let decoded = serde_json::from_str::<serde_json::Value>(&result.0)
+                .map_err(|_| ProviderError::InvalidOutput)?;
+            if !result.0.is_ascii() || !decoded.to_string().is_ascii() {
+                return Err(ProviderError::LanguageRestriction);
+            }
+        }
+        Ok(result)
     }
 }
 impl LlmProvider for OpenRouter {
@@ -174,9 +247,13 @@ async fn read_completion(response: reqwest::Response) -> Result<String, Provider
         .await
         .map(|(text, _)| text)
 }
+#[cfg(test)]
 async fn read_completion_with_usage(
-    mut response: reqwest::Response,
+    response: reqwest::Response,
 ) -> Result<(String, Option<TokenUsage>), ProviderError> {
+    decode_completion(&read_json(response).await?)
+}
+async fn read_json(mut response: reqwest::Response) -> Result<serde_json::Value, ProviderError> {
     // Bound bytes before JSON decoding; Content-Length is only an early hint.
     const MAX_RESPONSE: usize = 8 * 1024 * 1024;
     if response
@@ -198,8 +275,11 @@ async fn read_completion_with_usage(
         }
         bytes.extend_from_slice(&chunk);
     }
-    let body: serde_json::Value =
-        serde_json::from_slice(&bytes).map_err(|_| ProviderError::InvalidOutput)?;
+    serde_json::from_slice(&bytes).map_err(|_| ProviderError::InvalidOutput)
+}
+fn decode_completion(
+    body: &serde_json::Value,
+) -> Result<(String, Option<TokenUsage>), ProviderError> {
     // Even valid-looking JSON is incomplete if the provider reports truncation.
     if body["choices"][0]["finish_reason"] != "stop" {
         return Err(ProviderError::InvalidOutput);
@@ -218,12 +298,189 @@ async fn read_completion_with_usage(
     Ok((text, usage))
 }
 
+fn validate_key_cap(body: &serde_json::Value, ceiling: i64) -> Result<(), ProviderError> {
+    let data = &body["data"];
+    let limit = nanos(data["limit"].as_f64().ok_or(ProviderError::Quota)?)?;
+    if limit == 0 || limit > ceiling || data.get("limit_reset") != Some(&serde_json::Value::Null) {
+        return Err(ProviderError::Quota);
+    }
+    Ok(())
+}
+struct Quote {
+    tag: String,
+    input: f64,
+    output: f64,
+    request: f64,
+}
+impl Quote {
+    fn select(body: &serde_json::Value) -> Result<Self, ProviderError> {
+        for endpoint in body["data"]["endpoints"]
+            .as_array()
+            .ok_or(ProviderError::Quota)?
+        {
+            let Some(pricing) = endpoint["pricing"].as_object() else {
+                continue;
+            };
+            // Tiered/time-dependent and unfamiliar billing components need explicit support.
+            let mut rates = std::collections::BTreeMap::new();
+            let mut supported = true;
+            for (key, value) in pricing {
+                if key == "discount" {
+                    continue;
+                }
+                let Some(rate) = value.as_str().and_then(|s| s.parse::<f64>().ok()) else {
+                    supported = false;
+                    break;
+                };
+                if nanos(rate).is_err() {
+                    supported = false;
+                    break;
+                }
+                match key.as_str() {
+                    "prompt" | "completion" | "request" | "input_cache_read"
+                    | "input_cache_write" => {
+                        rates.insert(key.as_str(), rate);
+                    }
+                    _ if rate == 0.0 => {}
+                    _ => {
+                        supported = false;
+                        break;
+                    }
+                }
+            }
+            if !supported {
+                continue;
+            }
+            let (Some(input), Some(output), Some(tag)) = (
+                rates.get("prompt"),
+                rates.get("completion"),
+                endpoint["tag"].as_str(),
+            ) else {
+                continue;
+            };
+            let input = input
+                .max(*rates.get("input_cache_read").unwrap_or(&0.0))
+                .max(*rates.get("input_cache_write").unwrap_or(&0.0));
+            return Ok(Self {
+                tag: tag.into(),
+                input,
+                output: *output,
+                request: *rates.get("request").unwrap_or(&0.0),
+            });
+        }
+        Err(ProviderError::Quota)
+    }
+    fn estimate(
+        &self,
+        system_bytes: usize,
+        input_bytes: usize,
+        output: u32,
+    ) -> Result<i64, ProviderError> {
+        // One token per UTF-8 byte plus envelope allowance, doubled for safety.
+        let input = system_bytes
+            .checked_add(input_bytes)
+            .and_then(|n| n.checked_add(4096))
+            .ok_or(ProviderError::Quota)?;
+        nanos(2.0 * (input as f64 * self.input + f64::from(output) * self.output + self.request))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     #[tokio::test]
+    async fn guarded_adapter_prices_reserves_and_records_real_usage_before_validation() {
+        use axum::{
+            Json, Router,
+            routing::{get, post},
+        };
+        use serde_json::json;
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("spend.db");
+        Budget::create(&path, 4.5, 0.0).unwrap();
+        let requests = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let seen = requests.clone();
+        let app=Router::new()
+            .route("/key",get(||async{Json(json!({"data":{"limit":4.5,"limit_reset":null,"limit_remaining":4.5}}))}))
+            .route("/models/test/model/endpoints",get(||async{Json(json!({"data":{"endpoints":[{"tag":"fixture","pricing":{"prompt":"0.000001","completion":"0.000002"}}]}}))}))
+            .route("/chat/completions",post(move |Json(body):Json<serde_json::Value>| {let seen=seen.clone();async move {
+                assert_eq!(body["max_tokens"],100);
+                assert_eq!(body["provider"]["only"],json!(["fixture"]));
+                assert_eq!(body["provider"]["allow_fallbacks"],false);
+                assert_eq!(body["provider"]["max_price"]["prompt"],1.0);
+                seen.fetch_add(1,std::sync::atomic::Ordering::SeqCst);
+                // A truncated response is still billed and must be reconciled.
+                Json(json!({"id":"fixture-request","choices":[{"finish_reason":"length","message":{"content":"{}"}}],"usage":{"cost":0.001,"prompt_tokens":4,"completion_tokens":100}}))
+            }}));
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+        let mut provider = OpenRouter {
+            client: reqwest::Client::builder().no_proxy().build().unwrap(),
+            key: "fixture".into(),
+            base: format!("http://{addr}"),
+            ledger: None,
+        };
+        let config = ModelConfig {
+            model: "test/model".into(),
+            timeout_seconds: 5,
+            max_output_tokens: Some(100),
+        };
+        assert_eq!(
+            provider.complete("English", "input", &config).await,
+            Err(ProviderError::Quota)
+        );
+        assert_eq!(requests.load(std::sync::atomic::Ordering::SeqCst), 0);
+        provider.ledger = Some(path.clone());
+        assert_eq!(
+            provider.complete("English", "input", &config).await,
+            Err(ProviderError::InvalidOutput)
+        );
+        assert_eq!(requests.load(std::sync::atomic::Ordering::SeqCst), 1);
+        let conn = rusqlite::Connection::open(path).unwrap();
+        let record: (i64, String, i64) = conn
+            .query_row(
+                "SELECT actual,provider_id,cumulative FROM request",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            )
+            .unwrap();
+        assert_eq!(record, (1_000_000, "fixture-request".into(), 1_000_000));
+        server.abort();
+    }
+    #[tokio::test]
     async fn response_decoding_bounds_and_sanitized_errors() {
+        assert!(
+            validate_key_cap(
+                &serde_json::json!({"data":{"limit":4.5,"limit_reset":null}}),
+                4_500_000_000
+            )
+            .is_ok()
+        );
+        for data in [
+            serde_json::json!({"limit":null,"limit_reset":null}),
+            serde_json::json!({"limit":5,"limit_reset":null}),
+            serde_json::json!({"limit":4.5,"limit_reset":"daily"}),
+        ] {
+            assert!(validate_key_cap(&serde_json::json!({"data":data}), 4_500_000_000).is_err());
+        }
+        let catalog = serde_json::json!({"data":{"endpoints":[{"tag":"test","pricing":{"prompt":"0.000001","completion":"0.000002","request":"0.001","input_cache_write":"0.000003"}}]}});
+        let quote = Quote::select(&catalog).unwrap();
+        assert_eq!(quote.estimate(10, 20, 100).unwrap(), 27_156_000);
+        for pricing in [
+            serde_json::json!({"prompt":"-1","completion":"0"}),
+            serde_json::json!({"prompt":"NaN","completion":"0"}),
+            serde_json::json!({"prompt":"1","completion":"1","new_fee":"1"}),
+            serde_json::json!({"prompt":"1","completion":"1","overrides":[]}),
+        ] {
+            assert!(
+                Quote::select(
+                    &serde_json::json!({"data":{"endpoints":[{"tag":"test","pricing":pricing}]}})
+                )
+                .is_err()
+            );
+        }
         let valid = r#"{"choices":[{"finish_reason":"stop","message":{"content":"{\"claims\":[]}"}}],"usage":{"prompt_tokens":17,"completion_tokens":3}}"#;
         let truncated = valid.replace("\"stop\"", "\"length\"");
         let bodies = [

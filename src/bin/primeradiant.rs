@@ -15,11 +15,19 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     Init,
+    /// Create a new persistent spending ledger; never resets an existing ledger.
+    BudgetInit {
+        path: PathBuf,
+        #[arg(long, default_value_t = 4.5)]
+        limit_usd: f64,
+        #[arg(long)]
+        prior_spend_usd: f64,
+    },
     /// Queue any Phase 1/2 sources not yet assigned an extraction job.
     ExtractionBackfill,
     /// Run one durable job using OpenRouter credentials from the environment.
     ExtractionWork {
-        #[arg(long)]
+        #[arg(long, default_value = prime_radiant::providers::DEFAULT_GENERAL_MODEL)]
         model: String,
         #[arg(long)]
         reviewer: String,
@@ -147,6 +155,16 @@ fn output(value: impl serde::Serialize) {
 fn run() -> Result<()> {
     let cli = Cli::parse();
     match &cli.command {
+        Command::BudgetInit {
+            path,
+            limit_usd,
+            prior_spend_usd,
+        } => {
+            prime_radiant::budget::Budget::create(path, *limit_usd, *prior_spend_usd)
+                .map_err(|_| invalid("budget", "ledger provisioning refused"))?;
+            output(serde_json::json!({"created":true}));
+            return Ok(());
+        }
         Command::CredentialIssue {
             credentials,
             token_file,
@@ -207,12 +225,12 @@ fn run() -> Result<()> {
                         provider: "openrouter".into(),
                         variant: "audited".into(),
                         extractor: prime_radiant::providers::ModelConfig {
-                            max_output_tokens: extraction_max_output_tokens,
+                            max_output_tokens: extraction_max_output_tokens.or(Some(4096)),
                             model,
                             timeout_seconds: 120,
                         },
                         reviewer: prime_radiant::providers::ModelConfig {
-                            max_output_tokens: extraction_review_max_output_tokens,
+                            max_output_tokens: extraction_review_max_output_tokens.or(Some(2048)),
                             model: reviewer,
                             timeout_seconds: 120,
                         },
@@ -285,12 +303,12 @@ fn run() -> Result<()> {
                 provider: "openrouter".into(),
                 variant,
                 extractor: prime_radiant::providers::ModelConfig {
-                    max_output_tokens,
+                    max_output_tokens: max_output_tokens.or(Some(4096)),
                     model,
                     timeout_seconds: 120,
                 },
                 reviewer: prime_radiant::providers::ModelConfig {
-                    max_output_tokens: review_max_output_tokens,
+                    max_output_tokens: review_max_output_tokens.or(Some(2048)),
                     model: reviewer,
                     timeout_seconds: 120,
                 },
@@ -362,6 +380,7 @@ fn run() -> Result<()> {
         Command::Restore { .. }
         | Command::Serve { .. }
         | Command::Mcp { .. }
+        | Command::BudgetInit { .. }
         | Command::CredentialIssue { .. } => unreachable!(),
     }
     Ok(())

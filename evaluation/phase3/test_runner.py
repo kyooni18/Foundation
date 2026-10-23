@@ -37,15 +37,16 @@ class RunnerTest(unittest.TestCase):
 
 
 class BudgetTest(unittest.TestCase):
-    def test_concurrent_control_requests_share_one_ceiling(self):
-        with tempfile.TemporaryDirectory() as folder:
-            ledger = Path(folder) / 'budget.json'
-            ledger.write_text(json.dumps({'limit_micro_usd': 3000, 'reserved_micro_usd': 0}))
-            with patch.dict(os.environ, {'PHASE3_EVALUATION_BUDGET_LEDGER': str(ledger)}):
-                with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-                    outcomes = list(pool.map(lambda _: review_controls.reserve_evaluation_budget(
-                        'openai/gpt-6-luna-pro', 'JSON', {'claim_text': '원문'}, 1), range(8)))
-            state = json.loads(ledger.read_text())
-            self.assertEqual(outcomes.count(True), 1)
-            self.assertEqual(state['rejected_requests'], 7)
-            self.assertLessEqual(state['reserved_micro_usd'], 3000)
+    def test_controls_use_guarded_adapter_without_shell_or_secret_output(self):
+        with patch.object(review_controls.subprocess, "run") as execute:
+            execute.return_value.returncode = 1
+            execute.return_value.stderr = "sensitive provider body"
+            result = review_controls.guarded_completion(Path("/tmp"), "model", "instructions", {"source": "$(do-not-execute) 한국어"}, 100)
+            self.assertEqual(result, {"error": "ProviderOrBudget"})
+            args, kwargs = execute.call_args
+            self.assertEqual(args[0], ["/tmp/target/debug/examples/guarded_completion"])
+            self.assertNotIn("shell", kwargs)
+            self.assertEqual(json.loads(kwargs["input"])["config"]["max_output_tokens"], 100)
+            execute.return_value.returncode = 0
+            execute.return_value.stdout = '{"raw":"{}","usage":{"prompt_tokens":2}}'
+            self.assertEqual(review_controls.guarded_completion(Path("/tmp"), "model", "p", {}, 1)["raw"], "{}")
