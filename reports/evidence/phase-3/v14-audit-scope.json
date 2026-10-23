@@ -1,8 +1,9 @@
 {
   "expected_development_terminal_runs": 232,
-  "currently_saved_terminal_rows_including_quota": 41,
-  "assistant_reviewed": 16,
-  "scope": "incomplete incremental source audit; unreviewed rows never count as correct",
-  "pending_human_actor_binding_case": "r1-habitual_temporal",
+  "archived_v14_terminal_rows_including_quota": 90,
+  "assistant_reviewed": 18,
+  "known_gate_passing_subject_fidelity_failures": 2,
+  "scope": "partial source audit; unreviewed rows never count as correct",
+  "human_actor_binding_case": "r1-habitual_temporal: original speaker",
   "fresh_extraction_heldout_run": false
 }

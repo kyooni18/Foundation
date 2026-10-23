@@ -229,7 +229,11 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     let mut input = extraction_message(&source, previous_failure.as_deref());
                     if matches!(
                         plan.version(),
-                        "extraction-v12" | "extraction-v13" | "extraction-v14" | "extraction-v15"
+                        "extraction-v12"
+                            | "extraction-v13"
+                            | "extraction-v14"
+                            | "extraction-v15"
+                            | "extraction-v16"
                     ) && let Some(previous) = &previous_attempt
                     {
                         let mut payload: Value = serde_json::from_str(&input)?;

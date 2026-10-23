@@ -2,88 +2,88 @@
   "extraction-v14|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|all": {
     "annotation_source": "assistant_review",
     "runs": 38,
-    "reviewed": 16,
-    "accepted_batches": 16,
-    "unreviewed": 22,
+    "reviewed": 18,
+    "accepted_batches": 18,
+    "unreviewed": 20,
     "atomicity_violation": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "generated_atomicity_violation": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "unsupported": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "generated_unsupported": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "fidelity_error": {
-      "numerator": 0,
-      "denominator": 19,
-      "rate": 0.0
+      "numerator": 2,
+      "denominator": 21,
+      "rate": 0.09523809523809523
     },
     "generated_fidelity_error": {
-      "numerator": 0,
-      "denominator": 19,
-      "rate": 0.0
+      "numerator": 2,
+      "denominator": 21,
+      "rate": 0.09523809523809523
     },
     "epistemic_error": {
-      "numerator": 0,
-      "denominator": 19,
-      "rate": 0.0
+      "numerator": 2,
+      "denominator": 21,
+      "rate": 0.09523809523809523
     },
     "generated_epistemic_error": {
-      "numerator": 0,
-      "denominator": 19,
-      "rate": 0.0
+      "numerator": 2,
+      "denominator": 21,
+      "rate": 0.09523809523809523
     },
     "language_error": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "generated_language_error": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "anchor_error": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "generated_anchor_error": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "duplicate": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "generated_duplicate": {
       "numerator": 0,
-      "denominator": 19,
+      "denominator": 21,
       "rate": 0.0
     },
     "coverage": {
       "numerator": 19,
-      "denominator": 19,
-      "rate": 1.0
+      "denominator": 21,
+      "rate": 0.9047619047619048
     },
     "generated_coverage": {
       "numerator": 19,
-      "denominator": 19,
-      "rate": 1.0
+      "denominator": 21,
+      "rate": 0.9047619047619048
     },
     "oversplit": {
       "numerator": 0,
@@ -121,7 +121,11 @@
       "atomicity and independence:TN": 16,
       "semantic fidelity and epistemic framing:TN": 16,
       "whole-batch coverage, duplication and conflicting interpretation:TN": 16,
-      "standalone atomicity / candidate 1:TN": 3
+      "standalone atomicity / candidate 1:TN": 3,
+      "standalone atomicity / candidate 0:FN": 2,
+      "atomicity and independence:FN": 2,
+      "semantic fidelity and epistemic framing:FN": 2,
+      "whole-batch coverage, duplication and conflicting interpretation:FN": 2
     }
   },
   "extraction-v14|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|ambiguous_ref": {
@@ -1568,88 +1572,88 @@
   "extraction-v14|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|habitual_temporal": {
     "annotation_source": "assistant_review",
     "runs": 2,
-    "reviewed": 0,
-    "accepted_batches": 0,
-    "unreviewed": 2,
+    "reviewed": 2,
+    "accepted_batches": 2,
+    "unreviewed": 0,
     "atomicity_violation": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "generated_atomicity_violation": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "unsupported": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "generated_unsupported": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "fidelity_error": {
-      "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
     },
     "generated_fidelity_error": {
-      "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
     },
     "epistemic_error": {
-      "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
     },
     "generated_epistemic_error": {
-      "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "numerator": 2,
+      "denominator": 2,
+      "rate": 1.0
     },
     "language_error": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "generated_language_error": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "anchor_error": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "generated_anchor_error": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "duplicate": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "generated_duplicate": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "coverage": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "generated_coverage": {
       "numerator": 0,
-      "denominator": 0,
-      "rate": null
+      "denominator": 2,
+      "rate": 0.0
     },
     "oversplit": {
       "numerator": 0,
@@ -1664,7 +1668,12 @@
     "distinct_outputs_per_case": {
       "r1-habitual_temporal": 2
     },
-    "reviewer_confusion": {}
+    "reviewer_confusion": {
+      "standalone atomicity / candidate 0:FN": 2,
+      "atomicity and independence:FN": 2,
+      "semantic fidelity and epistemic framing:FN": 2,
+      "whole-batch coverage, duplication and conflicting interpretation:FN": 2
+    }
   },
   "extraction-v14|openai/gpt-6-luna-pro|openai/gpt-6-luna-pro|audited|ko|question": {
     "annotation_source": "assistant_review",

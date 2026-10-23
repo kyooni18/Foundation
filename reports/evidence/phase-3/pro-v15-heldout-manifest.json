@@ -1,0 +1,28 @@
+{
+  "corpus": "evaluation/phase3/heldout-v10.json",
+  "output": "/tmp/phase3-v15-heldout",
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "prompt_version": "extraction-v15",
+  "max_output_tokens": 16384,
+  "review_max_output_tokens": 8192,
+  "split": "heldout",
+  "runs": 2,
+  "repair_attempts": 3,
+  "workers": 3,
+  "shard_size": 1,
+  "variants": "audited,r2-frame",
+  "expected_rows": 80,
+  "git_commit": "43d419378efb84bfd560aaa7fa387ec79fcf35d8",
+  "status": "incomplete",
+  "succeeded_shards": 5,
+  "failed_shards": 3,
+  "skipped_shards": 32,
+  "archived_attempt_rows": 14,
+  "terminal_outcomes": {
+    "gate_pass": 11,
+    "quota": 3
+  },
+  "acceptance": false,
+  "note": "v15 source audit found quoted relative time bound to wrong utterance; calls stopped; no acceptance inference"
+}

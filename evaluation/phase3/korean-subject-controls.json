@@ -94,7 +94,8 @@
         "민수의 발화 시기 매일 새벽 달리기 자기 보고이며 원문 화자의 습관이 아니다."
       ],
       "required": [
-        "source-language subject binding; original reference time unknown; no Principal inference"
+        "source-language subject binding; original reference time unknown; no Principal inference",
+        "요즘 is relative to Min-su quoted utterance, not automatically outer original-source statement time"
       ],
       "unsupported": [
         "assign named third party to narrator",

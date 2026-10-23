@@ -2,13 +2,14 @@
 
 Status: **not accepted; no `phase-3` tag**. The implementation and offline regression
 suite are complete as a reviewable checkpoint. Real OpenRouter experiments were run
-and prompts revised through v11. An earlier run was blocked by HTTP 402
+and prompts revised through v15. An earlier run was blocked by HTTP 402
 (account credits exhausted; the key remained valid without a per-key cap). The user
 then authorized at most $5 additional evaluation spending, and funded access was
 verified. Frozen v11 evaluations resumed with a shared conservative reservation guard.
 Only cheap models were used after the user requested that restriction. The fresh
 20-source extraction benchmark has not yet been run. The user independently confirmed
-that each Claim must explicitly describe an unknown referent; the exception-scope
+that each Claim must explicitly describe an unknown third-person referent and that
+the isolated habitual self-report refers to the original speaker. The exception-scope
 review remains pending. Neither fake-provider tests nor reviewer agreement establishes
 semantic acceptance. The historical experiments below remain reproducible evidence.
 
@@ -681,3 +682,22 @@ After all superseded paid processes exited, account usage had increased by $2.40
 against the user's $5 additional ceiling. A shared locked ledger limited the remaining
 v15 allowance to $2.542657, retaining a $0.05 safety margin. This is an account usage
 delta, not a claim of exact per-request billing attribution.
+
+The v15 subject pilot completed 19 attempts and 12 model-gate-passing terminal runs.
+Source audit found **two temporal fidelity failures** in the quotation pair: both
+assigned Min-su's quoted 요즘 to the outer source statement time. The other ten final
+batches preserved their source-supported subject, attribution and temporal frames in
+assistant review. Per-Claim audit flags and denominators are archived; model agreement
+missed both errors. Thus an early “all controls pass” observation referred only to gates,
+not semantic acceptance. V16 explicitly binds relative time to its own quoted utterance
+and preserves nested attribution. No source date is inferred from the outer authored_at.
+
+V15's regression run stopped at 24 attempts/17 terminal outcomes (13 gate passes,
+one exhausted atomicity failure, three quota-class stops). The difficult long mixed
+note still failed standalone review; it was not silently published or treated as empty.
+The initial v15 held-out attempt stopped after 14 rows (11 gate passes, three local
+quota stops); fresh-001 through fresh-004 are now exposed regression material.
+For v16, all 16 untouched cases are retained and four new Korean editorial cases restore
+a 20-source held-out set. Selection is based on exposure, not favorable results. This
+set is not independently human-blinded. Its sources, references and origin annotations
+are saved separately in `evaluation/phase3/heldout-v16.json`.

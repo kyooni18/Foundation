@@ -99,6 +99,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v15/frames.txt"),
                 include_str!("../../prompts/extraction-v15/review.txt"),
             )),
+            "extraction-v16" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v16/frames.txt"),
+                include_str!("../../prompts/extraction-v16/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -126,7 +131,7 @@ impl Plan {
             "extraction-v11" => Some(include_str!("../../prompts/extraction-v11/reader.txt")),
             "extraction-v12" => Some(include_str!("../../prompts/extraction-v12/reader.txt")),
             "extraction-v13" => Some(include_str!("../../prompts/extraction-v13/reader.txt")),
-            "extraction-v14" | "extraction-v15" => {
+            "extraction-v14" | "extraction-v15" | "extraction-v16" => {
                 Some(include_str!("../../prompts/extraction-v14/reader.txt"))
             }
             _ => None,
@@ -447,6 +452,7 @@ pub fn review_message(plan: &Plan, source: &SourceView, batch: &Batch) -> String
             | "extraction-v13"
             | "extraction-v14"
             | "extraction-v15"
+            | "extraction-v16"
     ) {
         input["candidate_count"] = serde_json::json!(batch.claims.len());
         input["required_checked_indices"] =
@@ -610,7 +616,11 @@ async fn propose_with_feedback(
     input["prior_extraction_claims"] = serde_json::json!(prior_claims);
     if matches!(
         plan.version(),
-        "extraction-v12" | "extraction-v13" | "extraction-v14" | "extraction-v15"
+        "extraction-v12"
+            | "extraction-v13"
+            | "extraction-v14"
+            | "extraction-v15"
+            | "extraction-v16"
     ) && let Some(repair) = repair
     {
         input["untrusted_previous_attempt"] = repair.clone();
@@ -856,7 +866,11 @@ impl App {
             let reader = self.store.reader()?;
             let repair_row: Option<(String, String)> = if matches!(
                 plan.version(),
-                "extraction-v12" | "extraction-v13" | "extraction-v14" | "extraction-v15"
+                "extraction-v12"
+                    | "extraction-v13"
+                    | "extraction-v14"
+                    | "extraction-v15"
+                    | "extraction-v16"
             ) {
                 reader.query_row("SELECT output_json,reviews_json FROM extraction_candidate WHERE job_id=?1 AND json_extract(reviews_json,'$.attempt')=?2 ORDER BY created_at DESC,id DESC LIMIT 1", params![lease.id,lease.attempt.saturating_sub(1)], |r| Ok((r.get(0)?,r.get(1)?))).optional()?
             } else {

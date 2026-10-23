@@ -474,3 +474,15 @@ resolution does not establish authenticated user authorship, recorder identity o
 privileges. This prompt correction changes no stored Source, authorization rule or
 schema. Paired controls cover self-report, named third party, quotation and unresolved
 third person; empirical quality acceptance remains required.
+
+### D-64 — Relative time inside speech belongs to its own utterance frame
+The v15 quotation control “민수가 ‘요즘 매일 새벽에 달리는 중’이라고 했다”
+produced two gate-passing Claims binding 요즘 to the outer original-source statement
+time. The Source does not establish that this equals Min-su's quoted utterance time.
+V16 requires explicit inner-speaker temporal binding, including nested reports. Outer
+authored_at cannot silently date an inner utterance; an explicit date of that utterance
+can. Direct speaker-oriented self-reports still use the original speaker's statement
+frame. This clarifies existing temporal fidelity rather than changing timestamp schema
+or allowing capture-time substitution. Prior v15 outputs remain archived as known
+reviewer misses. The v15 reserved benchmark began before this discovery; any exposed
+cases cannot subsequently serve as untouched held-out evidence for v16.

@@ -1,0 +1,27 @@
+{
+  "corpus": "evaluation/phase3/korean-subject-controls.json",
+  "output": "/tmp/phase3-v15-subject-pilot",
+  "model": "openai/gpt-6-luna-pro",
+  "reviewer": "openai/gpt-6-luna-pro",
+  "prompt_version": "extraction-v15",
+  "max_output_tokens": 16384,
+  "review_max_output_tokens": 8192,
+  "split": "dev",
+  "runs": 2,
+  "repair_attempts": 3,
+  "workers": 3,
+  "shard_size": 1,
+  "variants": "audited",
+  "expected_rows": 12,
+  "git_commit": "5e6c31f43ed94d7ec057a2a087f71007e1c46e3a",
+  "status": "complete",
+  "succeeded_shards": 6,
+  "failed_shards": 0,
+  "skipped_shards": 0,
+  "archived_attempt_rows": 19,
+  "terminal_outcomes": {
+    "gate_pass": 12
+  },
+  "acceptance": false,
+  "note": "v15 source audit found quoted relative time bound to wrong utterance; calls stopped; no acceptance inference"
+}
