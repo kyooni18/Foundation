@@ -1,0 +1,20 @@
+{
+  "implementation_commit": "669a044",
+  "full_suite_commit": "fe5e6b9",
+  "rust_passed": 42,
+  "python_passed": 3,
+  "ignored_helpers_exercised_by_parents": 2,
+  "final_failures": 0,
+  "followup_check": "cargo test --offline --test extraction agent_metadata_never_promotes_and_confirmations_are_user_only: 1 passed on 669a044",
+  "openrouter_new_requests": 0,
+  "openrouter_new_tokens": 0,
+  "openrouter_new_actual_cost_usd": 0,
+  "new_unknown_billing_outcomes": 0,
+  "historical_conservative_account_delta_usd": 4.78265335,
+  "historical_request_attributed_cost": "unknown; account delta can include unrelated activity",
+  "current_ceiling_usd": 4.5,
+  "spendable_remaining_usd": 0,
+  "private_ledger": ".local/openrouter-phase2-phase3.sqlite",
+  "phase_2_tag": "ec11625f53f1bc12cb1f9e3e9849044f8e0d7d0d",
+  "phase_3_tag": null
+}

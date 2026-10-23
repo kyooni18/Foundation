@@ -1,9 +1,9 @@
 {
   "status": "implementation checkpoint; live semantic acceptance not established",
-  "implementation_commit": "17347f2",
-  "offline_tests_passed": 40,
+  "implementation_commit": "669a044",
+  "offline_tests_passed": 42,
   "helper_tests": 2,
-  "provider_access": "funded real evaluations completed within $5 ceiling; no ongoing paid calls",
+  "provider_access": "No new paid calls; historical conservative spending carried into stricter $4.50 guard; remaining allowance zero",
   "completion_tag_created": false,
   "development_cases": 116,
   "heldout_cases": 4,
@@ -14,7 +14,7 @@
       "sha256": "7fbef2d3075e75ee2d2f702a58e5523491ccc729f4820dc490f6fdfed95cd956"
     },
     "acceptance-status.json": {
-      "sha256": "a276692b1c8aeb4ca6f3da1f2a04c746cba1d9e55efef7dc8a2f734aa9609149"
+      "sha256": "75fd809c2f5a4cb3f9bc300b798175e606cf285807813f42126f37d22ab34738"
     },
     "attachment-assistant-audit.jsonl": {
       "sha256": "d1d6ad6fbf9857ebe28388d7162d56a2ed2104c323f97dade55cff3a28d13f0d",
@@ -890,6 +890,27 @@
     },
     "validation-checkpoint.json": {
       "sha256": "f31363c39c941b3c2484758fa7ad7e643c3b645eefdc32a8d6457a81f4944ebf"
+    },
+    "runtime-budget-20261023/python-tests.txt": {
+      "sha256": "2c895c1b94fdd1c8d602f0c770d75554f56549588d7bd2ef2d6fd273714ef777"
+    },
+    "runtime-budget-20261023/replay-summary.json": {
+      "sha256": "6d4a5a16153d587393dd9dedcc72eec3526718a666c885bd4f6ccb836cc16262"
+    },
+    "runtime-budget-20261023/v23-revalidated.jsonl.gz": {
+      "sha256": "76d48e3d11a2ef6db3f6add01231c714ea447fd76095b8dd8d4cd823a05c788c"
+    },
+    "runtime-budget-20261023/fmt.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime-budget-20261023/verification.json": {
+      "sha256": "d0a29b2c9a4e8897d4a64b7ea65af7c5c15eac866324e8a7830c6387ad0d5891"
+    },
+    "runtime-budget-20261023/clippy.txt": {
+      "sha256": "6bca67a5697944a740531de82acadaac8ac37a1bc4dc2cf80157c69254a16874"
+    },
+    "runtime-budget-20261023/rust-tests.txt": {
+      "sha256": "332267b5f1a4991b7efa6baf7508dd043bee5ed94d5b13a49728b56dfbd53d80"
     }
   },
   "prompt_files": {
@@ -981,5 +1002,6 @@
     }
   },
   "working_tree_additions": "quota fail-fast harness, reference correction and final evidence; see following Git checkpoint",
-  "current_opt_in_prompt": "extraction-v23"
+  "current_opt_in_prompt": "extraction-v23",
+  "current_continuation": "runtime-budget-20261023/verification.json"
 }

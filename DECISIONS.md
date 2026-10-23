@@ -615,3 +615,42 @@ This general rule differs from demanding proper names for every supplied common 
 (e.g. battery). The prior unknown-reference invariant is unchanged. V22 evidence and
 prompts stay frozen and the failed acceptance target is recorded, not retroactively
 relabeled as a success. V23 is opt-in and unpromoted pending actual evaluation.
+
+
+### D-76 — One persistent production budget boundary, including diagnostic tools
+The 2026-10-23 continuation found that production OpenRouter lacked the experiment
+harness's accounting, while the Rust/Python harnesses used hardcoded estimates and
+optional separate ledgers. All current paid entry points now use the Rust adapter's
+mandatory SQLite budget. Provisioning is explicit, requires prior conservative spend,
+refuses overwrite, and caps configured ceilings at $4.50. No key limits are raised.
+The adapter requires an existing non-resetting provider key cap at or below that
+ceiling, refreshes endpoint prices before each call, pins a supported flat-price
+endpoint, disables fallback/redirects, sets provider price ceilings and bounds output.
+Unknown price components or tier schedules fail closed. Reservations use twice the
+UTF-8 byte input bound plus 4096 envelope tokens, bounded output and request fees;
+cache rates are conservatively included. Integer nano-USD amounts round upward.
+BEGIN IMMEDIATE/FULL transactions share at most four outstanding requests across
+processes. Cancellation and unmetered/error responses retain reservations. Actual
+reported charges are reconciled before semantic parsing, including truncated output;
+over-estimate charges freeze further requests. There is no automatic release of an
+uncertain charge, increase, reset, or hidden model substitution. Ledger access is a
+trusted local filesystem boundary like other offline maintenance.
+
+The new explicit general model default is deepseek/deepseek-v4.1-flash-1017.
+Non-ASCII output, including escaped Unicode decoded from JSON, is now rejected as
+well as input. ASCII is a conservative script gate, not a complete English detector;
+no multilingual semantic validation claim follows from it. Existing quarantined
+extraction and frozen prompt defaults remain unchanged. Broad semantic acceptance
+is still unverified. Public OpenRouter pricing/limits documentation was consulted;
+no paid request was performed and no historical spending allowance was reset.
+
+### D-77 — Non-user records cannot supply unverified user attribution
+The explicit continuation requirement is stronger than merely hiding agent Claims
+from user projections. Source-checks-v3 rejects `speaker=user` whenever the immutable
+Source recorder is not user. A proposed speaker label or agent quotation is not a
+verifiable user citation. Cross-source citation verification remains outside Phase 3,
+so these derivations are unresolved rather than accepted. This check runs both before
+quarantine and again before approval/publication. Agent assertions remain agent Claims;
+user fidelity approval/confirmation cannot rewrite source authorship. Historical rows
+and frozen model prompts are unchanged. Existing negative-authority and transport tests
+were extended without adding redundant test methods.

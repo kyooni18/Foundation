@@ -1,0 +1,13 @@
+{
+  "rows": 29,
+  "plan_hash_valid": 29,
+  "structurally_valid": 28,
+  "experimental_gate_eligible": 17,
+  "validation_version": "source-checks-v3",
+  "errors": {
+    "None": 28,
+    "provider_or_schema": 1
+  },
+  "semantic_acceptance": false,
+  "note": "Offline replay of saved attempts, including nonterminal and baseline rows; no new semantic judgments or paid requests."
+}

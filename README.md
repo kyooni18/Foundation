@@ -153,7 +153,42 @@ has not been established. There is **no phase-3 completion tag**. See [the Phase
 for evidence, decisions, limitations, and the reproducible evaluation procedure.
 
 Provider credentials use `OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_FILE` (canonical path,
-0600, same owner, no symlinks). Model and reviewer names must be supplied explicitly.
+0600, same owner, no symlinks). `extraction-work` defaults to
+`deepseek/deepseek-v4.1-flash-1017`; reviewer selection remains explicit. DeepSeek
+rejects non-ASCII input and decoded output. This conservative boundary does not
+establish that arbitrary ASCII prose is English; Korean processing must use a
+separately validated language path or remain unresolved. No alternate model is
+silently selected. CLI output bounds default to 4096 extraction / 2048 review tokens.
+
+Every OpenRouter call requires `PRIMERADIANT_OPENROUTER_LEDGER`, pointing to the
+same persistent SQLite ledger across workers, evaluations and restarts. Provision
+it once with the already incurred conservative spending, never once per run:
+
+```sh
+primeradiant budget-init /private/path/spending.sqlite --limit-usd 4.50 \
+  --prior-spend-usd "$PRIOR_CONSERVATIVE_SPEND_USD"
+export PRIMERADIANT_OPENROUTER_LEDGER=/private/path/spending.sqlite
+```
+
+Provisioning refuses existing files and ceilings above $4.50. A dedicated provider
+key must already have a non-resetting total cap no greater than the ledger ceiling;
+the adapter checks this without changing the key. Fresh endpoint prices are fetched
+before every paid request; unknown/tiered pricing fails closed. A pinned provider,
+price ceilings, bounded output and a 2× byte-based estimate constrain reservations.
+SQLite `BEGIN IMMEDIATE` + FULL durability reserves atomically across processes,
+with at most four outstanding requests. Billing IDs, time, model, estimates, actual
+reported cost, tokens and cumulative spending are recorded without prompts or keys.
+Missing/uncertain bills retain reservations; an actual charge above its estimate
+halts further spending. There is no automatic refund/reset or unbounded retry.
+Inspect the ledger's `budget` and `request` tables for accounting. Keep it outside
+cloud-synced folders and do not delete it to recover an allowance.
+
+The Rust evaluation harness uses this same adapter. Build the guarded diagnostic
+helper before running Python reviewer controls with
+`cargo build --offline --example guarded_completion`. Historical JSON ledgers are
+not automatically imported or discarded: carry their conservative totals into the
+new ledger explicitly. The current continuation's private ledger is already
+exhausted by carried-forward historical usage; see [the continuation report](reports/phase-2-3-continuation.md).
 
 ```sh
 primeradiant --db /path/to/db extraction-backfill
