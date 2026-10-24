@@ -1,0 +1,7 @@
+{
+  "provider": "anthropic_direct",
+  "explicit_user_authorization": true,
+  "authorization_reference": "Human approved pending additional $0.05 proposal: 'U can use that credit. For LLM-required testing, focus on problematic boundary.'",
+  "additional_limit_nanos": 200000000,
+  "strict_total_below_nanos": 5000000000
+}
