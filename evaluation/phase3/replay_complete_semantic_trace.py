@@ -29,7 +29,7 @@ def response_text(path):
 
 def replay(evidence,case_id,version='extraction-v29',candidate_version=None,reader_version=None,review_output_tokens=None):
     packet=next(p for p in budget.packets()[1] if p['case']['id']==case_id)
-    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34'},'unsupported trace version')
+    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35'},'unsupported trace version')
     review_version=version.removeprefix('extraction-')
     candidate_version=candidate_version or version
     reader_version=reader_version or version.removeprefix('extraction-')
@@ -76,7 +76,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
     # Match Rust Plan/ModelConfig serialization field order exactly.
     plan=dict(provider='anthropic-direct-diagnostic',prompt_version=version,variant='audited',
         extractor=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=2500),
-        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or 3000))
+        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or (6000 if review_version=='v35' else 3000)))
     root=f.ROOT/'prompts'/version
     serialized=json.dumps(plan,ensure_ascii=False,separators=(',',':'))
     material=(f'{version}\n{extraction.prompt(version)}\n'+(root/'review.txt').read_text()+
@@ -111,7 +111,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',required=True)
-    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34'],default='extraction-v29')
+    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35'],default='extraction-v29')
     parser.add_argument('--review-output-tokens',type=int,choices=[6000])
     parser.add_argument('--candidate-version')
     parser.add_argument('--reader-version')

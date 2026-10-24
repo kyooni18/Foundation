@@ -116,7 +116,7 @@ def replay(evidence):
             judgment=focused.parse_judgment(raw_text(response))
             try:
                 checked=repair.check(judgment,packet,version,
-                    strict_entailment=request.get('review_validation_version')=='source-checks-v5' and version=='v34')
+                    strict_entailment=request.get('review_validation_version')=='source-checks-v5' and version in {'v34','v35'})
             except (ValueError,KeyError,TypeError) as error:
                 budget.require(rejected and saved['status']=='protocol_invalid' and
                     saved['reason']==str(error) and saved['model_verdict']==judgment.get('verdict'),

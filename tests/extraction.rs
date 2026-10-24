@@ -1533,7 +1533,12 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
             .is_err()
     );
     let v31_hash = meta_plan.hash().unwrap();
-    for version in ["extraction-v32", "extraction-v33", "extraction-v34"] {
+    for version in [
+        "extraction-v32",
+        "extraction-v33",
+        "extraction-v34",
+        "extraction-v35",
+    ] {
         meta_plan.prompt_version = Some(version.into());
         assert_ne!(meta_plan.hash().unwrap(), v31_hash);
         assert!(meta_plan.source_bound_review());
