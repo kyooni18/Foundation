@@ -197,6 +197,11 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertEqual(payload['untrusted_previous_attempt'],context)
         with self.assertRaisesRegex(ValueError,'repair Source drift'):
             repair.extraction.body(dict(recipe_packet,repair_context=dict(context,source_sha256='wrong')),'extraction-v38')
+        with self.assertRaisesRegex(ValueError,'actual failed trace'):
+            repair.extraction.attempt_label(recipe_packet,'extraction-v41','repair')
+        linked=dict(recipe_packet,repair_context=dict(context,trace_sha256='a'*64))
+        self.assertEqual(repair.extraction.attempt_label(linked,'extraction-v41','repair'),'extraction-v41-repair')
+        self.assertEqual(repair.extraction.attempt_label(linked,'extraction-v41'),'extraction-v41')
         invalid=focused.parse_judgment((root/'focused-haiku-extraction-v32-r1-nested_quote-primary.candidate.json').read_text())
         self.assertFalse(repair.extraction.rust_structure(invalid,case)['valid'])
         # A private fixture isolates the metadata defect; raw model evidence is immutable.
