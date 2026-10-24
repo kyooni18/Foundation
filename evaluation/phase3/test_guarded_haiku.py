@@ -170,6 +170,11 @@ class GuardedHaikuTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'budget blocked'):
                     dispatcher.check(conn,1)
             self.assertEqual(conn.execute('SELECT COUNT(*) FROM request WHERE actual IS NULL').fetchone()[0],4)
+            conn.execute('UPDATE budget SET ceiling=?',(g.LIMIT,))
+            conn.execute('UPDATE request SET estimate=0 WHERE id=?',('unknown-0',))
+            with g.dispatch_slot(self.ledger,dispatcher.authorization):
+                with self.assertRaisesRegex(ValueError,'budget blocked'):
+                    dispatcher.check(conn,1)
 
     def test_evidence_protocol_contains_historical_verdict_flip(self):
         record = json.loads((g.focused.ROOT / 'reports/evidence/phase-3/focused-continuation/reviewer-disagreement.json').read_text())

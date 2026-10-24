@@ -198,6 +198,7 @@ class Dispatcher:
                 authorization.get('strict_total_below_nanos') == STRICT_TOTAL and
                 bool(authorization.get('authorization_reference')), 'authorization missing')
         self.ledger, self.evidence = Path(ledger), Path(evidence)
+        require(authorization.get('unsettled_policy') in {None,UNSETTLED_POLICY},'unknown unsettled-request policy')
         self.transport, self.authorization = transport, authorization
         require(self.ledger.is_file(), 'existing ledger required')
         self.evidence.mkdir(parents=True, exist_ok=True)
@@ -215,7 +216,9 @@ class Dispatcher:
         continuation = conn.execute("SELECT COALESCE(SUM(COALESCE(actual,estimate)),0) FROM request WHERE id LIKE 'focused-haiku-%'").fetchone()[0]
         serialized=(getattr(self,'authorization',{}).get('unsettled_policy')==UNSETTLED_POLICY and
             _SERIALIZED_LEDGER.get()==str(Path(self.ledger).resolve()))
-        require(0 < ceiling <= LIMIT and prior >= 0 and (pending < 4 or serialized) and overruns == 0 and
+        slot_safe=serialized if getattr(self,'authorization',{}).get('unsettled_policy')==UNSETTLED_POLICY else pending<4
+        bad_holds=conn.execute('SELECT COUNT(*) FROM request WHERE actual IS NULL AND (estimate IS NULL OR estimate<=0)').fetchone()[0]
+        require(0 < ceiling <= LIMIT and prior >= 0 and slot_safe and bad_holds==0 and overruns == 0 and
                 prior + spent + estimate <= ceiling and prior + spent + estimate < STRICT_TOTAL and
                 continuation + estimate <= CONTINUATION, 'budget blocked')
         return ceiling, prior + spent + estimate
