@@ -136,7 +136,7 @@ class GuardedHaikuTest(unittest.TestCase):
 
     def test_continuation_limit_and_overrun_block(self):
         with self.connection() as conn:
-            conn.execute("INSERT INTO request(id,estimate,actual) VALUES('focused-haiku-other',100000000,100000000)")
+            conn.execute("INSERT INTO request(id,estimate,actual) VALUES('focused-haiku-other',?,?)", (g.CONTINUATION,g.CONTINUATION))
         with self.assertRaisesRegex(ValueError, 'budget blocked'):
             self.dispatcher().dispatch(self.packet)
         self.assertFalse(self.calls)

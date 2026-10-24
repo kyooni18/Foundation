@@ -1,0 +1,7 @@
+{
+  "provider": "anthropic_direct",
+  "explicit_user_authorization": true,
+  "authorization_reference": "User approved the pending up-to-$0.05 proposal with 'Added credits - proceed.' on 2026-10-24.",
+  "additional_limit_nanos": 150000000,
+  "strict_total_below_nanos": 5000000000
+}
