@@ -11,6 +11,14 @@
  fn quota<T>(_: T) -> ProviderError {
 --- a/evaluation/phase3/guarded_haiku.py
 +++ b/evaluation/phase3/guarded_haiku.py
+@@ -1,6 +1,6 @@
+ """Focused evaluator; never extraction or publication. Default CLI is offline.
+ 
+-Uses the existing Rust ledger schema and authorized $4.93265335 hard ceiling. Authorization
++Uses the existing Rust ledger schema and authorized $4.98265335 hard ceiling. Authorization
+ is necessary, never sufficient: no policy amendment or ledger provisioning here.
+ Unknown outcomes retain reservations. All prices use Decimal, rounded upward.
+ """
 @@ -15,8 +15,8 @@
  import focused_review as focused
  
