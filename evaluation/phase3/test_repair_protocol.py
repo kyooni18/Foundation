@@ -57,6 +57,11 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertEqual(repair.body(packet,'v36')['max_tokens'],6000)
         self.assertEqual(repair.check(duplicate_review,packet,'v37')['verdict'],'pass')
         self.assertEqual(repair.body(packet,'v37')['max_tokens'],6000)
+        korean_rule=repair.body(packet,'v38')['output_config']['format']['schema']['properties']['claims']['items']['properties']['dimensions']['properties']['korean_meaning']['properties']['status']
+        self.assertNotIn('not_applicable',korean_rule['enum'])
+        english_packet=dict(case=dict(source='A service runs.'),candidate=dict(claims=[dict(text='A service runs.',lang='en')]))
+        english_rule=repair.body(english_packet,'v38')['output_config']['format']['schema']['properties']['claims']['items']['properties']['dimensions']['properties']['korean_meaning']['properties']['status']
+        self.assertIn('not_applicable',english_rule['enum'])
         for component in ['frames.txt','reader.txt']:
             self.assertEqual((focused.ROOT/'prompts/extraction-v35'/component).read_bytes(),
                              (focused.ROOT/'prompts/extraction-v36'/component).read_bytes())
@@ -135,6 +140,16 @@ class RepairProtocolTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'unsupported diagnostic effort'):
             repair.body(packet,'v30',effort='medium')
         case=next(p['case'] for p in repair.budget.packets()[1] if p['case']['id']=='r1-nested_quote')
+        recipe_packet=next(p for p in repair.budget.packets()[1] if p['case']['id']=='r1-nested_quote')
+        context=dict(source_sha256=focused.sha(recipe_packet['case']['source'].encode()),failure_code='semantic',
+            candidate_batch=recipe_packet['candidate'],review_reports=[],authority='untrusted model output')
+        recipe=repair.extraction.body(dict(recipe_packet,repair_context=context),'extraction-v38')
+        payload=focused.parse_judgment(recipe['messages'][0]['content'])
+        self.assertEqual(payload['prior_extraction_claims'],context['candidate_batch']['claims'])
+        self.assertEqual(payload['previous_failure_code'],'semantic')
+        self.assertEqual(payload['untrusted_previous_attempt'],context)
+        with self.assertRaisesRegex(ValueError,'repair Source drift'):
+            repair.extraction.body(dict(recipe_packet,repair_context=dict(context,source_sha256='wrong')),'extraction-v38')
         invalid=focused.parse_judgment((root/'focused-haiku-extraction-v32-r1-nested_quote-primary.candidate.json').read_text())
         self.assertFalse(repair.extraction.rust_structure(invalid,case)['valid'])
         # A private fixture isolates the metadata defect; raw model evidence is immutable.
