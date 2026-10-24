@@ -105,7 +105,7 @@ def shape(value, rule):
             shape(item,rule['items'])
 
 
-def check(j,packet,version,strict_entailment=None):
+def check(j,packet,version,strict_entailment=None,strict_bijection=True):
     if strict_entailment is None:
         strict_entailment=version in {'v34','v35','v36','v37','v38'}
     shape(j,schema(version))
@@ -167,6 +167,12 @@ def check(j,packet,version,strict_entailment=None):
     expected='reject' if rejected else ('unresolved' if unresolved else 'pass')
     budget.require(j['verdict']==expected,'contradictory aggregate verdict')
     budget.require(expected!='pass' or covered==set(range(len(claims))),'passing inventory omitted a candidate Claim')
+    if strict_bijection and expected=='pass':
+        mappings=[r['claim_indices'] for r in j['inventory']]
+        propositions=[r['proposition'] for r in j['inventory']]
+        budget.require(len(mappings)==len(claims) and all(len(m)==1 for m in mappings) and
+            len({m[0] for m in mappings})==len(claims) and len(set(propositions))==len(propositions),
+            'passing inventory must map propositions and Claims one-to-one')
     return dict(protocol_valid=True,verdict=j['verdict'],claim_count=len(claims),
                 inventory_count=len(j['inventory']),semantic_acceptance=None,
                 production_approval=False)
@@ -227,7 +233,7 @@ def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['f
         budget.immutable(evidence/(ident+'.request.json'),dict(id=ident,payload=request,
             packet_sha256=focused.sha(focused.canonical(packet)),
             source_sha256=focused.sha(packet['case']['source'].encode()),
-            review_validation_version='source-checks-v5',review_stage=stage,review_effort=effort,review_output_tokens=output_tokens,reader_index=reader_index,prompt_sha256=focused.sha(
+            review_validation_version='source-checks-v6',review_stage=stage,review_effort=effort,review_output_tokens=output_tokens,reader_index=reader_index,prompt_sha256=focused.sha(
             (focused.ROOT/f"prompts/extraction-{version}/{'review' if reader_index is None else 'reader'}.txt").read_bytes()),
             system_sha256=focused.sha(request['system'].encode()),
             model_info=model,quote=quote,authorization=authorization))

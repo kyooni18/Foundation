@@ -82,6 +82,15 @@ class RepairProtocolTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'contradictory complete-claim entailment'):
             repair.check(contradiction,packet,'v34')
         self.assertEqual(repair.check(contradiction,packet,'v34',strict_entailment=False)['verdict'],'reject')
+        shared=copy.deepcopy(duplicate_review)
+        shared['inventory'][0]['claim_indices']=[0,1]
+        with self.assertRaisesRegex(ValueError,'one-to-one'):
+            repair.check(shared,packet,'v38')
+        self.assertEqual(repair.check(shared,packet,'v38',strict_bijection=False)['verdict'],'pass')
+        shared=copy.deepcopy(duplicate_review)
+        shared['inventory'][1]['proposition']=shared['inventory'][0]['proposition']
+        with self.assertRaisesRegex(ValueError,'one-to-one'):
+            repair.check(shared,packet,'v38')
         duplicate_review['claims'][0]['dimensions']['duplicates']['status']='reject'
         duplicate_review['verdict']='reject'
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'reject')

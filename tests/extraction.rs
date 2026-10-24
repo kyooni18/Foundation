@@ -1559,6 +1559,18 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
             .is_err()
         );
     }
+    let mut shared_claim = canonical.clone();
+    shared_claim["inventory"][0]["claim_indices"] = json!([0, 1]);
+    assert!(
+        validate_source_review(&meta_plan, &shared_claim.to_string(), &batch, &source).is_err()
+    );
+    let mut shared_proposition = canonical.clone();
+    shared_proposition["inventory"][1]["proposition"] =
+        shared_proposition["inventory"][0]["proposition"].clone();
+    assert!(
+        validate_source_review(&meta_plan, &shared_proposition.to_string(), &batch, &source)
+            .is_err()
+    );
     let mut contradictory_entailment = canonical.clone();
     contradictory_entailment["claims"][0]["dimensions"]["unsupported_inference"]["status"] =
         json!("reject");

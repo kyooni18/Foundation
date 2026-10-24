@@ -247,6 +247,22 @@ pub(super) fn validate(
                 "passing inventory omitted a candidate Claim",
             ));
         }
+        let mut mapped = std::collections::HashSet::new();
+        let mut propositions = std::collections::HashSet::new();
+        if inventory.len() != batch.claims.len()
+            || inventory.iter().any(|row| {
+                let indices = row["claim_indices"].as_array().expect("validated indices");
+                indices.len() != 1
+                    || !mapped.insert(indices[0].as_u64().expect("validated index"))
+                    || !propositions
+                        .insert(row["proposition"].as_str().expect("validated proposition"))
+            })
+        {
+            return Err(invalid(
+                "schema",
+                "passing inventory must map propositions and Claims one-to-one",
+            ));
+        }
         Ok(())
     } else if verdict == "unresolved" {
         Err(invalid("unresolved", "review cannot establish compliance"))

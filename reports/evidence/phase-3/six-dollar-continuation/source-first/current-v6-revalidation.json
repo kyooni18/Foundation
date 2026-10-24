@@ -1,0 +1,27 @@
+[
+  {
+    "candidate": "extraction-v32",
+    "current": {
+      "protocol_valid": false,
+      "reason": "passing inventory must map propositions and Claims one-to-one"
+    }
+  },
+  {
+    "candidate": "extraction-v35",
+    "current": {
+      "protocol_valid": false,
+      "reason": "passing inventory must map propositions and Claims one-to-one"
+    }
+  },
+  {
+    "candidate": "extraction-v38",
+    "current": {
+      "protocol_valid": true,
+      "verdict": "pass",
+      "claim_count": 2,
+      "inventory_count": 2,
+      "semantic_acceptance": null,
+      "production_approval": false
+    }
+  }
+]

@@ -1,0 +1,319 @@
+{
+  "cases": [
+    "r1-hypothetical",
+    "v23-fresh-003",
+    "r1-nested_quote"
+  ],
+  "requests": [
+    {
+      "case": "r1-hypothetical",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_extraction.py",
+        "--case",
+        "r1-hypothetical",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "extraction-v35",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-extraction-v35-r1-hypothetical-primary\", \"status\": \"diagnostic_candidate_only\", \"claims\": 1, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "r1-hypothetical",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "r1-hypothetical",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--reader-index",
+        "0",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-r1-hypothetical-extraction-v35-reader-0-primary\", \"protocol_valid\": true, \"verdict\": \"pass\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "r1-hypothetical",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "r1-hypothetical",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--stage",
+        "atomicity",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-r1-hypothetical-extraction-v35-atomicity-primary\", \"protocol_valid\": true, \"verdict\": \"pass\", \"claim_count\": 1, \"inventory_count\": 1, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "r1-hypothetical",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "r1-hypothetical",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--stage",
+        "fidelity",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-r1-hypothetical-extraction-v35-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 1, \"inventory_count\": 1, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "v23-fresh-003",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_extraction.py",
+        "--case",
+        "v23-fresh-003",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "extraction-v35",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-extraction-v35-v23-fresh-003-primary\", \"status\": \"diagnostic_candidate_only\", \"claims\": 2, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "v23-fresh-003",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "v23-fresh-003",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--reader-index",
+        "0",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-v23-fresh-003-extraction-v35-reader-0-primary\", \"protocol_valid\": true, \"verdict\": \"pass\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "v23-fresh-003",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "v23-fresh-003",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--reader-index",
+        "1",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-v23-fresh-003-extraction-v35-reader-1-primary\", \"protocol_valid\": true, \"verdict\": \"pass\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "v23-fresh-003",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "v23-fresh-003",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--stage",
+        "atomicity",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-v23-fresh-003-extraction-v35-atomicity-primary\", \"protocol_valid\": true, \"verdict\": \"pass\", \"claim_count\": 2, \"inventory_count\": 2, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "v23-fresh-003",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "v23-fresh-003",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--stage",
+        "fidelity",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-v23-fresh-003-extraction-v35-primary\", \"protocol_valid\": true, \"verdict\": \"pass\", \"claim_count\": 2, \"inventory_count\": 2, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "v23-fresh-003",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "v23-fresh-003",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--stage",
+        "coverage",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-v23-fresh-003-extraction-v35-coverage-primary\", \"protocol_valid\": true, \"verdict\": \"pass\", \"claim_count\": 2, \"inventory_count\": 2, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "r1-nested_quote",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_extraction.py",
+        "--case",
+        "r1-nested_quote",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "extraction-v35",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-extraction-v35-r1-nested_quote-primary\", \"status\": \"diagnostic_candidate_only\", \"claims\": 2, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "r1-nested_quote",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "r1-nested_quote",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--reader-index",
+        "0",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-r1-nested_quote-extraction-v35-reader-0-primary\", \"protocol_valid\": true, \"verdict\": \"pass\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "r1-nested_quote",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "r1-nested_quote",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--reader-index",
+        "1",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-r1-nested_quote-extraction-v35-reader-1-primary\", \"protocol_valid\": true, \"verdict\": \"pass\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    },
+    {
+      "case": "r1-nested_quote",
+      "command": [
+        "/opt/homebrew/opt/python@3.15/bin/python3.15",
+        "/Users/kyooni18/Code/PrimeRadiant/evaluation/phase3/guarded_anthropic_repair.py",
+        "--case",
+        "r1-nested_quote",
+        "--evidence",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/semantic-repair",
+        "--authorization",
+        "/Users/kyooni18/Code/PrimeRadiant/reports/evidence/phase-3/six-dollar-continuation/authorization.json",
+        "--version",
+        "v35",
+        "--candidate-version",
+        "extraction-v35",
+        "--stage",
+        "atomicity",
+        "--execute"
+      ],
+      "exit_code": 0,
+      "stdout": "{\"id\": \"focused-haiku-repair-v35-r1-nested_quote-extraction-v35-atomicity-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 2, \"inventory_count\": 2, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+      "stderr": ""
+    }
+  ]
+}
