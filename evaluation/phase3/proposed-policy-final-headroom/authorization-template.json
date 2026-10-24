@@ -1,0 +1,7 @@
+{
+  "provider": "anthropic_direct",
+  "explicit_user_authorization": false,
+  "authorization_reference": "PENDING new approval; previous two five-cent grants already applied",
+  "additional_limit_nanos": 217346640,
+  "strict_total_below_nanos": 5000000000
+}

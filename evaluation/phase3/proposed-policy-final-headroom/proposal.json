@@ -1,0 +1,13 @@
+{
+  "status": "inert; no approval observed",
+  "starting_commit": "343ccc5",
+  "new_capacity_nanos": 17346640,
+  "old_ceiling_nanos": 4982653350,
+  "proposed_ceiling_nanos": 4999999990,
+  "strictly_below_five_dollars": true,
+  "real_ledger_changed": false,
+  "prior_and_108_request_rows_preserved_in_private_test": true,
+  "stale_sql_rejected": true,
+  "patch_check": "pass",
+  "semantic_acceptance": "incomplete; funding is not a quality guarantee"
+}
