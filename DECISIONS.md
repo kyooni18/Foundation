@@ -857,3 +857,13 @@ a complete passing cohort; keep the profile unpromoted and Phase 3 incomplete.
 Unknown transport outcomes retain full reservations. Current totals and failed
 attempts are in `reports/phase-3-funded-semantic-validation.md`; older budgets and
 model agreements are historical observations, not current semantic acceptance.
+
+### Explicit extraction wire contract after failed v41 repairs
+
+Use a separately named optional `contract-v1` wire schema for direct Anthropic
+extraction, rather than changing frozen prompts or stripping malformed responses.
+The historical evaluator used unrestricted text whereas the production adapter
+already requests a JSON object. New schema-labelled request IDs and receipt-bound
+replay preserve the distinction. HTTP/connection/timeout failures retain their full
+reservation and redacted error evidence. This is an offline-verified envelope fix;
+no live semantic improvement, profile promotion or Phase 3 completion is claimed.

@@ -66,5 +66,12 @@
   "independent_whole_corpus_gold": false,
   "production_approvals": 0,
   "ending_implementation_commit": "214f48781e31cc2cfd112e8839597ba1317f20e1",
-  "final_verification": "reports/evidence/phase-3/six-dollar-continuation/final-checkpoint.json"
+  "final_verification": "reports/evidence/phase-3/six-dollar-continuation/final-checkpoint.json",
+  "latest_offline_repair": {
+    "implementation_commit": "1a2f525a7320ce53905c77e07f78e33524ad79f3",
+    "output_format": "contract-v1 (explicit selection)",
+    "evidence": "reports/evidence/phase-3/extraction-wire-contract/dry-run.json",
+    "paid_calls": 0,
+    "live_model_behavior_verified": false
+  }
 }

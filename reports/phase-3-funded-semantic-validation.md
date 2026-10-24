@@ -18,6 +18,36 @@ Ending implementation/replay commit: `214f487`. The final report/evidence checkp
 is identified in Git history; its parent and
 verification result are saved in `six-dollar-continuation/final-checkpoint.json`.
 
+## Subsequent offline extraction-envelope repair
+
+Commits `7bd9475` and `1a2f525` address an implementation mismatch exposed by the
+failed v41 repairs: the production OpenRouter adapter already requests a JSON object,
+while the direct Anthropic extraction evaluator requested unrestricted text.
+
+An explicit `--output-format contract-v1` now supplies the complete extraction JSON
+schema, including required/nullable fields and enums. It uses a distinct
+`extraction-v41-schema-v1` attempt label (and a separate repair suffix), so it cannot
+overwrite a historical primary or silently reinterpret its response. The legacy
+wire format and all frozen prompt versions remain reproducible. Review selection and
+complete/archive replay reconstruct the recorded wire format and compare the full
+request. Semantic, language and exact-anchor checks remain in Core; schema validity
+alone never implies acceptance. No raw response is stripped or repaired.
+
+Extraction HTTP/connection/timeout failures now retain a bounded, key-redacted error
+receipt and the full reservation. Offline replay handles a missing extraction
+response as an unknown extraction attempt, rather than trying to parse it as a
+Source review. A private fake HTTP400 fixture verifies error preservation, key
+redaction, retained accounting and replay without inventing token usage. No new test
+method or dependency was added.
+
+Six offline request constructions changed only the output contract. Their schema and
+request hashes and worst-case quotes are in
+`reports/evidence/phase-3/extraction-wire-contract/dry-run.json`. Existing saved
+requests replay unchanged. **No paid call was made for this change; live model
+behavior and semantic improvement remain unproven.** It is available only by explicit
+wire-format selection and does not promote the rejected v41 generator. The budget
+and unknown outcomes below are unchanged.
+
 ## What changed and why
 
 - Extraction instructions preserve nested report chains, quoted first-person

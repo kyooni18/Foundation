@@ -1,3 +1,13 @@
+## Latest offline progress: extraction wire contract
+
+`7bd9475` / `1a2f525` add an explicit, separately identified structured extraction
+format to the direct Anthropic evaluator and preserve/replay failed extraction
+reservations. This repairs its missing output-envelope constraint; Core still
+validates language, anchors and semantics. Six dry runs and the 40-test Python suite
+pass, with **no added API cost**. Live output improvement is not yet verified; Phase 3
+remains incomplete. See the subsequent offline repair section in the
+[funded report](phase-3-funded-semantic-validation.md).
+
 # Latest funded continuation — semantic acceptance incomplete
 
 The human-authorized cumulative ceiling is now strictly below $6; historical charges

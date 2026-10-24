@@ -1,0 +1,36 @@
+{
+  "implementation_commit": "1a2f525a7320ce53905c77e07f78e33524ad79f3",
+  "commands": [
+    {
+      "command": "cargo fmt --check",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo test --offline --all-targets",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo clippy --offline --all-targets -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -W error::ResourceWarning -m unittest discover -s evaluation/phase3 -p 'test_*.py'",
+      "exit_code": 0
+    },
+    {
+      "command": "read-only replay of saved request/response/accounting evidence",
+      "exit_code": 0
+    }
+  ],
+  "rust_passed": 48,
+  "rust_ignored": 2,
+  "python_passed": 40,
+  "paid_calls": 0,
+  "live_model_behavior_verified": false,
+  "ledger_unchanged": {
+    "count": 297,
+    "charge": 522796500,
+    "unknown": 4
+  },
+  "semantic_acceptance_complete": false
+}
