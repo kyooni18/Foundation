@@ -1412,6 +1412,11 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     assert!(
         validate_proposal_reviews_bound(&meta_plan, &reports(&review), &batch, &source).is_ok()
     );
+    meta_plan.prompt_version = Some("extraction-v28".into());
+    assert_ne!(meta_plan.hash().unwrap(), plan.hash().unwrap());
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&review), &batch, &source).is_ok()
+    );
     review["claims"][0]["dimensions"]["source_meta_expansion"]["status"] = json!("reject");
     assert!(
         validate_proposal_reviews_bound(&meta_plan, &reports(&review), &batch, &source).is_err()

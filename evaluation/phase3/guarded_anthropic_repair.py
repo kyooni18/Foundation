@@ -38,7 +38,7 @@ SCHEMA = {'type':'object','additionalProperties':False,'properties':{
 
 def schema(version):
     result=json.loads(json.dumps(SCHEMA))
-    if version=='v27':
+    if version in {'v27','v28'}:
         dimensions=result['properties']['claims']['items']['properties']['dimensions']
         dimensions['properties']['source_meta_expansion']=SCHEMA_DIMENSION
         dimensions['required'].append('source_meta_expansion')
@@ -47,6 +47,9 @@ def schema(version):
 
 def body(packet, version):
     protocol=(focused.ROOT/f'prompts/extraction-{version}/review.txt').read_text()
+    if version=='v28':
+        frames=(focused.ROOT/'prompts/extraction-v28/frames.txt').read_text()
+        protocol+='\n'+frames+'\nIndependent review responsibility: semantic fidelity and epistemic framing. Compare against original, never a translation.'
     content=focused.canonical(dict(original_source=packet['case']['source'],
                                    candidate_batch=packet['candidate'])).decode()
     budget.require(len(protocol.encode())+len(content.encode())<=256*1024,'oversized context')
@@ -56,11 +59,31 @@ def body(packet, version):
                 service_tier='standard_only')
 
 
+def shape(value, rule):
+    kind=rule['type']
+    budget.require({'object':lambda:isinstance(value,dict),
+        'array':lambda:isinstance(value,list),'string':lambda:isinstance(value,str),
+        'integer':lambda:type(value) is int}[kind](),'invalid review field type')
+    if 'enum' in rule:
+        budget.require(value in rule['enum'],'invalid review enum')
+    if kind=='object':
+        budget.require(set(rule.get('required',[]))<=set(value) and
+            (rule.get('additionalProperties',True) or set(value)<=set(rule['properties'])),
+            'invalid review fields')
+        for key,item in value.items():
+            shape(item,rule['properties'][key])
+    elif kind=='array':
+        for item in value:
+            shape(item,rule['items'])
+
+
 def check(j,packet,version):
+    shape(j,schema(version))
     source=packet['case']['source']
     claims=packet['candidate']['claims']
     budget.require(len(j['claims'])==len(claims),'review omitted Claim')
     rejected=False
+    budget.require(all(f.strip() for f in j['uncertainty_flags']),'empty uncertainty flag')
     unresolved=bool(j['uncertainty_flags'])
     def unique(quote):
         first=source.find(quote)
@@ -71,7 +94,7 @@ def check(j,packet,version):
         budget.require(row['evidence'] and all(unique(e['quote'])
                        for e in row['evidence']),'ambiguous/nonexact Claim evidence')
         korean=claim['lang']=='ko' or any('\uac00'<=c<='\ud7a3' for c in source)
-        for key in (*DIMENSIONS, *(['source_meta_expansion'] if version=='v27' else [])):
+        for key in (*DIMENSIONS, *(['source_meta_expansion'] if version in {'v27','v28'} else [])):
             d=row['dimensions'][key]
             budget.require(d['reason'].strip() and d['status'] in
                 ({'pass','reject','unresolved','not_applicable'} if key=='korean_meaning' else
@@ -80,6 +103,7 @@ def check(j,packet,version):
                            'unassessed Korean dependency')
             rejected |= d['status']=='reject'
             unresolved |= d['status']=='unresolved'
+        budget.require(all(f.strip() for f in row['uncertainty_flags']),'empty uncertainty flag')
         unresolved |= bool(row['uncertainty_flags'])
     budget.require(j['inventory'],'empty source proposition inventory')
     for row in j['inventory']:
@@ -88,6 +112,7 @@ def check(j,packet,version):
             'invalid inventory evidence')
         budget.require(all(type(i) is int and 0<=i<len(claims) for i in row['claim_indices']),
                        'invalid inventory Claim index')
+        budget.require(len(set(row['claim_indices']))==len(row['claim_indices']),'duplicate inventory Claim index')
         budget.require(row['status']!='pass' or row['claim_indices'],'uncovered passing inventory')
         rejected |= row['status']=='reject'
         unresolved |= row['status']=='unresolved'
@@ -122,6 +147,7 @@ def dispatch(packet, evidence, authorization, version, label=''):
         budget.immutable(evidence/(ident+'.request.json'),dict(id=ident,payload=request,
             packet_sha256=focused.sha(focused.canonical(packet)),prompt_sha256=focused.sha(
             (focused.ROOT/f'prompts/extraction-{version}/review.txt').read_bytes()),
+            system_sha256=focused.sha(request['system'].encode()),
             model_info=model,quote=quote,authorization=authorization))
         conn.commit()
         response=d.transport('POST','/v1/messages',request)
@@ -161,14 +187,17 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['v24','v25','v27'],default='v27')
-    parser.add_argument('--candidate-version',choices=['extraction-v25','extraction-v26'])
+    parser.add_argument('--version',choices=['v24','v25','v27','v28'],default='v28')
+    selection=parser.add_mutually_exclusive_group()
+    selection.add_argument('--candidate-version',choices=['extraction-v25','extraction-v26','extraction-v28'])
+    selection.add_argument('--control',choices=['nested-perspective'])
+    parser.add_argument('--replicate',choices=['primary','repeat'],default='primary')
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
     _,packets=budget.packets()
     selected=[p for p in packets if p['case']['id']==args.case]
-    budget.require(len(selected)==1 and args.case in {'r1-nested_quote','v23-fresh-003'},
-                   'only two known failure cases permitted')
+    budget.require(len(selected)==1 and args.case in {'r1-nested_quote','v23-fresh-003','r1-ambiguous_ref','r1-hypothetical','r1-habitual_temporal','v23-fresh-004'},
+                   'only frozen priority cases permitted')
     packet=selected[0]
     label=''
     if args.candidate_version:
@@ -181,6 +210,15 @@ def main():
         packet=dict(packet,candidate=json.loads(path.read_text()),
                     derived_candidate_sha256=focused.sha(path.read_bytes()))
         label='-'+args.candidate_version
+    if args.control:
+        path=Path(__file__).with_name('semantic_review_controls.json')
+        control=json.loads(path.read_text())[args.control]
+        budget.require(control['case']==args.case and control['source_sha256']==focused.sha(packet['case']['source'].encode()),'control source mismatch')
+        packet=dict(packet,candidate=control['candidate'],control_authorship=control['authorship'],
+            control_sha256=focused.sha(focused.canonical(control)))
+        label='-control-'+args.control
+    if args.replicate=='repeat':
+        label+='-repeat'
     if not args.execute:
         print(json.dumps(dict(status='dry_run',case=args.case,version=args.version,label=label,
                               quote=api.quote(body(packet,args.version)))))

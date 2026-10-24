@@ -162,6 +162,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v27/frames.txt"),
                 include_str!("../../prompts/extraction-v27/review.txt"),
             )),
+            "extraction-v28" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v28/frames.txt"),
+                include_str!("../../prompts/extraction-v28/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -203,6 +208,7 @@ impl Plan {
             "extraction-v25" => Some(include_str!("../../prompts/extraction-v25/reader.txt")),
             "extraction-v26" => Some(include_str!("../../prompts/extraction-v26/reader.txt")),
             "extraction-v27" => Some(include_str!("../../prompts/extraction-v27/reader.txt")),
+            "extraction-v28" => Some(include_str!("../../prompts/extraction-v28/reader.txt")),
             _ => None,
         }
     }
@@ -565,7 +571,11 @@ pub fn validate_proposal_reviews_bound(
 ) -> Result<()> {
     if !matches!(
         plan.version(),
-        "extraction-v24" | "extraction-v25" | "extraction-v26" | "extraction-v27"
+        "extraction-v24"
+            | "extraction-v25"
+            | "extraction-v26"
+            | "extraction-v27"
+            | "extraction-v28"
     ) {
         return validate_proposal_reviews(plan, reviews, batch.claims.len());
     }
@@ -580,7 +590,12 @@ pub fn validate_proposal_reviews_bound(
         validate_review(raw, 1)?;
     }
     for raw in &reviews[n..] {
-        review_v24::validate(raw, batch, source, plan.version() == "extraction-v27")?;
+        review_v24::validate(
+            raw,
+            batch,
+            source,
+            matches!(plan.version(), "extraction-v27" | "extraction-v28"),
+        )?;
     }
     let compared = reviews[n..].iter().map(|raw| {
         let v = json::parse(raw).map_err(|_| invalid("schema", "invalid review JSON"))?;
@@ -808,9 +823,18 @@ async fn propose_with_feedback(
         append_review_trace(plan, trace, &result)?;
         (if matches!(
             plan.version(),
-            "extraction-v24" | "extraction-v25" | "extraction-v26" | "extraction-v27"
+            "extraction-v24"
+                | "extraction-v25"
+                | "extraction-v26"
+                | "extraction-v27"
+                | "extraction-v28"
         ) {
-            review_v24::validate(&result, &batch, source, plan.version() == "extraction-v27")
+            review_v24::validate(
+                &result,
+                &batch,
+                source,
+                matches!(plan.version(), "extraction-v27" | "extraction-v28"),
+            )
         } else {
             validate_review(&result, batch.claims.len())
         })
@@ -839,7 +863,11 @@ async fn propose_with_feedback(
     }
     if matches!(
         plan.version(),
-        "extraction-v24" | "extraction-v25" | "extraction-v26" | "extraction-v27"
+        "extraction-v24"
+            | "extraction-v25"
+            | "extraction-v26"
+            | "extraction-v27"
+            | "extraction-v28"
     ) {
         validate_proposal_reviews_bound(plan, &reviews, &batch, source)?;
     }

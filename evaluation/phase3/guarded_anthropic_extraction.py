@@ -124,8 +124,8 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['extraction-v25','extraction-v26'],
-                        default='extraction-v26')
+    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28'],
+                        default='extraction-v28')
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
     _,packets=budget.packets()
