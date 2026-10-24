@@ -802,3 +802,12 @@ from affected target and clarifies licensed verification ellipsis; actual evalua
 still shows false-rejection risks and contradictory uncertainty. It is not promoted.
 A full exact-Source quote, nonempty schema array or agreeing models is not independent
 semantic truth. Phase 3 remains incomplete under its unchanged acceptance criteria.
+
+### D-89 — Compare exact configurations and retain capped diagnostic failures
+Repeat identity is the full canonical request body, including effort, output cap,
+schema, model and tier; system/user text alone is insufficient. One bounded matched
+v31 medium-effort review still rejects the hypothetical, so medium is a diagnostic
+option, not a production change or a proven reliability repair. It keeps the same
+3,000-token cap. Capped Source reviews retain a durable incomplete rejection after
+usage settlement; replay includes the failure rather than parsing it as a judgment.
+All historical raw evidence and existing authority/approval boundaries are preserved.

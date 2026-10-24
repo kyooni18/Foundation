@@ -1,6 +1,21 @@
 # Phase 3 semantic repair — acceptance remains incomplete (2026-10-24)
 
-## Latest authorized continuation
+## Latest effort diagnostic
+
+A matched v31 medium-effort experiment still rejects the hypothetical and misreads
+unknown experiment identity as missing speaker details. Higher effort is not a
+proven correction. Repeat comparisons now require identical complete request bodies;
+capped responses retain durable incomplete classifications and settled accounting.
+All required checks pass (48 Rust / 40 Python, fmt, Clippy). See the
+[effort diagnostic](phase-3-effort-diagnostic.md).
+
+Current cumulative upper bound is **$4.92882355**, unchanged ceiling **$4.93265335**,
+remaining **$0.00382980**; 76 requests, zero unsettled/overruns, provider billing
+unknown. A corresponding Source review requires $0.00463680 reservation and the
+read-only budget check blocks it. Phase 3 remains incomplete. Earlier checkpoints
+below retain their historical accounting.
+
+## Previous authorized continuation
 
 The user approved the pending up-to-$0.05 increase. Implementation commits
 `1324ca8` and `5b9b993` preserve the existing ledger and add versioned reviewer

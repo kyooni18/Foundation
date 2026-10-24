@@ -1,0 +1,19 @@
+{
+  "status": "incomplete",
+  "starting_commit": "c602a03",
+  "previous_goal_turn": "progress: three passing full v30 traces and preserved failed v31 evidence",
+  "request_count": 76,
+  "new_requests": 1,
+  "new_upper_nanos": 2181300,
+  "cumulative_upper_nanos": 4928823550,
+  "ceiling_nanos": 4932653350,
+  "remaining_nanos": 3829800,
+  "unsettled": 0,
+  "provider_billed_usd": null,
+  "next_source_quote_nanos": 4636800,
+  "dry_run_guard_result": "budget blocked",
+  "full_phase_3_accepted": false,
+  "production_default_changed": false,
+  "phase_3_tag": false,
+  "remaining": "Reviewer misinterpretation, incomplete current-profile acceptance and broader evidence remain. Further live source review needs authorized headroom and a justified general correction; more effort alone did not solve the observed failure."
+}

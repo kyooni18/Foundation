@@ -1,0 +1,132 @@
+{
+  "scope": "Single matched diagnostic pair; distinct configurations, not identical-input repeat or production gate",
+  "ids": [
+    "focused-haiku-repair-v31-r1-hypothetical-extraction-v31-atomicity-primary",
+    "focused-haiku-repair-v31-r1-hypothetical-extraction-v31-atomicity-effort-medium-primary"
+  ],
+  "only_request_difference": "output_config.effort: low -> medium",
+  "prompt_version": "v31",
+  "candidate_version": "extraction-v31",
+  "output_cap_unchanged": 3000,
+  "source_sha256": "8db325edbaa59e36d8eac3e8961287262d74ff9a68ef3780de39c0e576a9bb04",
+  "rows": [
+    {
+      "id": "focused-haiku-repair-v31-r1-hypothetical-extraction-v31-atomicity-primary",
+      "effort": "low",
+      "request_sha256": "a11f6862a19696293e22cd2b72cb07e631ee4c87ced295f10ce634b06e181340",
+      "response_sha256": "890a4a112258380f724fe4050ea01504f818ba3d297b1fb83c99e275deacdd11",
+      "verdict": "reject",
+      "flags": [
+        "candidate adds unknown-speaker meta assertion"
+      ],
+      "dimensions": {
+        "atomicity": "reject",
+        "attribution": "unresolved",
+        "duplicates": "pass",
+        "entailment": "unresolved",
+        "korean_meaning": "unresolved",
+        "missing_argument": "pass",
+        "polarity_scope": "pass",
+        "source_meta_expansion": "reject",
+        "unsupported_inference": "reject"
+      },
+      "inventory": [
+        {
+          "claim_indices": [
+            0
+          ],
+          "evidence": [
+            {
+              "quote": "만약 이번 실험에서 loss가 0.1 아래로 안 떨어지면 아키텍처를 갈아엎을 거야."
+            }
+          ],
+          "proposition": "만약 이번 실험에서 loss가 0.1 아래로 안 떨어지면 아키텍처를 갈아엎을 거야",
+          "reason": "The single original proposition is the conditional architecture-rebuild plan, which Claim 0 covers only with an added meta wrapper, so coverage is rejected.",
+          "status": "reject"
+        }
+      ],
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "global",
+        "input_tokens": 5419,
+        "output_tokens": 989,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      },
+      "accounting": {
+        "input_tokens": 5419,
+        "output_tokens": 989,
+        "conservative_upper_nanos": 1578300,
+        "billed_cost_usd": null
+      }
+    },
+    {
+      "id": "focused-haiku-repair-v31-r1-hypothetical-extraction-v31-atomicity-effort-medium-primary",
+      "effort": "medium",
+      "request_sha256": "4f340c050a0e066361a6cf6e84a919a7535821edda150119344096c1c90eda5b",
+      "response_sha256": "23ffab1ecc2f5ba539814f44e96da8dd1edca496a03b9e02a6921783e44148c6",
+      "verdict": "reject",
+      "flags": [],
+      "dimensions": {
+        "atomicity": "pass",
+        "attribution": "pass",
+        "duplicates": "pass",
+        "entailment": "pass",
+        "korean_meaning": "pass",
+        "missing_argument": "pass",
+        "polarity_scope": "pass",
+        "source_meta_expansion": "reject",
+        "unsupported_inference": "pass"
+      },
+      "inventory": [
+        {
+          "claim_indices": [
+            0
+          ],
+          "evidence": [
+            {
+              "quote": "만약 이번 실험에서 loss가 0.1 아래로 안 떨어지면 아키텍처를 갈아엎을 거야."
+            }
+          ],
+          "proposition": "만약 이번 실험에서 loss가 0.1 아래로 안 떨어지면 아키텍처를 갈아엎을 거야",
+          "reason": "The single conditional plan in the source is covered by Claim 0, but that Claim is rejected for an extra meta assertion.",
+          "status": "pass"
+        }
+      ],
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "global",
+        "input_tokens": 5419,
+        "output_tokens": 2195,
+        "output_tokens_details": {
+          "thinking_tokens": 1343
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      },
+      "accounting": {
+        "input_tokens": 5419,
+        "output_tokens": 2195,
+        "conservative_upper_nanos": 2181300,
+        "billed_cost_usd": null
+      }
+    }
+  ],
+  "production_approval": false,
+  "semantic_acceptance": null,
+  "independent_ground_truth": false,
+  "result": "Medium effort still rejects; it still misreads unknown experiment identity as absent speaker details. No general reliability improvement established; no promotion."
+}
