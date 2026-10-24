@@ -58,7 +58,8 @@ def replay(evidence):
             system_sha256=focused.sha(body['system'].encode()),
             input_sha256=focused.sha(body['messages'][0]['content'].encode()),
             conservative_upper_nanos=usage['conservative_upper_nanos'])
-        saved=load(evidence/(ident+'.outcome.json'))
+        rejected=(evidence/(ident+'.rejection.json')).is_file()
+        saved=load(evidence/(ident+('.rejection.json' if rejected else '.outcome.json')))
         budget.require(saved['production_approval'] is False and saved['semantic_acceptance'] is None,
                        'diagnostic boundary changed')
         if ident.startswith('focused-haiku-extraction-'):
@@ -86,7 +87,20 @@ def replay(evidence):
             expected=repair.body(packet,version,request.get('review_stage',repair.STAGES['fidelity']))
             budget.require(body==expected,'review request recipe drift')
             judgment=focused.parse_judgment(raw_text(response))
-            checked=repair.check(judgment,packet,version)
+            try:
+                checked=repair.check(judgment,packet,version)
+            except (ValueError,KeyError,TypeError) as error:
+                budget.require(rejected and saved['status']=='protocol_invalid' and
+                    saved['reason']==str(error) and saved['model_verdict']==judgment.get('verdict'),
+                    'rejection replay drift')
+                row.update(kind='review',version=version,protocol_valid=False,
+                    failure_reason=str(error),model_verdict=judgment.get('verdict'))
+                key=(row['system_sha256'],row['input_sha256'])
+                repeated.setdefault(key,[]).append((ident,dict(verdict=judgment.get('verdict'),
+                    protocol_valid=False,failure_reason=str(error))))
+                rows.append(row)
+                continue
+            budget.require(not rejected,'saved rejection unexpectedly passed')
             budget.require(checked==saved,'protocol replay drift')
             budget.require(judgment==load(evidence/(ident+'.judgment.json')),'judgment drift')
             row.update(kind='review',version=version,**checked)

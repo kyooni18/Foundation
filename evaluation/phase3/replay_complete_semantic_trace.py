@@ -1,4 +1,4 @@
-"""Replay a saved v29 failed prefix or complete extraction/reader/review trace.
+"""Replay a saved failed prefix or complete extraction/reader/review trace.
 
 Configuration is reconstructed from immutable API requests, not a previously
 quarantined production Plan. Eligibility is diagnostic; no approval/publication.
@@ -27,9 +27,10 @@ def response_text(path):
     return ''.join(b['text'] for b in value['content'] if b.get('type')=='text')
 
 
-def replay(evidence,case_id):
+def replay(evidence,case_id,version='extraction-v29'):
     packet=next(p for p in budget.packets()[1] if p['case']['id']==case_id)
-    version='extraction-v29'
+    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31'},'unsupported trace version')
+    review_version=version.removeprefix('extraction-')
     ident=f'focused-haiku-{version}-{case_id}-primary'
     request=read(evidence/(ident+'.request.json'))
     budget.require(request['payload']==extraction.body(packet,version),'extraction request drift')
@@ -39,12 +40,12 @@ def replay(evidence,case_id):
     budget.require(candidate==read(evidence/(ident+'.candidate.json')),'candidate sidecar drift')
     reviews=[]
     provenance=[ident]
-    prefix=f'focused-haiku-repair-v29-{case_id}-extraction-v29'
+    prefix=f'focused-haiku-repair-{review_version}-{case_id}-{version}'
     stop_stage=None
     for index,claim in enumerate(candidate['claims']):
         reader_id=prefix+f'-reader-{index}-primary'
         saved=read(evidence/(reader_id+'.request.json'))
-        budget.require(saved['payload']==review.reader_body(claim['text'],'v29'),'reader request drift')
+        budget.require(saved['payload']==review.reader_body(claim['text'],review_version),'reader request drift')
         budget.require(saved['reader_index']==index,'reader identity drift')
         text=response_text(evidence/(reader_id+'.response.json'))
         checked=review.reader_check(f.parse_judgment(text))
@@ -58,11 +59,15 @@ def replay(evidence,case_id):
             break
         source_id=prefix+('' if key=='fidelity' else '-'+key)+'-primary'
         saved=read(evidence/(source_id+'.request.json'))
-        budget.require(saved['payload']==review.body(packet,'v29',stage),'source review request drift')
+        budget.require(saved['payload']==review.body(packet,review_version,stage),'source review request drift')
         text=response_text(evidence/(source_id+'.response.json'))
-        checked=review.check(f.parse_judgment(text),packet,'v29')
         reviews.append(dict(stage=stage,raw=text))
         provenance.append(source_id)
+        try:
+            checked=review.check(f.parse_judgment(text),packet,review_version)
+        except (ValueError,KeyError,TypeError):
+            stop_stage=stage
+            break
         if checked['verdict']!='pass':
             stop_stage=stage
     # Match Rust Plan/ModelConfig serialization field order exactly.
@@ -103,10 +108,11 @@ def replay(evidence,case_id):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',required=True)
+    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31'],default='extraction-v29')
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
-    result=replay(args.evidence,args.case)
+    result=replay(args.evidence,args.case,args.version)
     budget.immutable(args.output,result)
     print(json.dumps({k:v for k,v in result.items() if k not in {'receipts','replay_row'}}))
 

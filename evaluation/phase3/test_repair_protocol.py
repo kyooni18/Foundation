@@ -74,3 +74,18 @@ class RepairProtocolTest(unittest.TestCase):
             inventory=[dict(proposition=english,evidence=[dict(quote=decomposed)],claim_indices=[0],status='pass',reason='represented')])
         with self.assertRaisesRegex(ValueError,'unassessed Korean dependency'):
             repair.check(decomposed_review,decomposed_packet,'v28')
+        # A real v30 response rejected without inspecting either supplied Claim.
+        failed='focused-haiku-repair-v30-r1-nested_quote-extraction-v30-primary'
+        saved=focused.parse_judgment((root/(failed+'.request.json')).read_text())
+        payload=focused.parse_judgment(saved['payload']['messages'][0]['content'])
+        packet=dict(case=dict(source=payload['original_source']),candidate=payload['candidate_batch'])
+        response=focused.parse_judgment((root/(failed+'.response.json')).read_text())
+        raw=''.join(b['text'] for b in response['content'] if b.get('type')=='text')
+        with self.assertRaisesRegex(ValueError,'review omitted Claim'):
+            repair.check(focused.parse_judgment(raw),packet,'v30')
+        constrained=repair.body(packet,'v31')['output_config']['format']['schema']['properties']
+        self.assertEqual(constrained['claims']['minItems'],1)
+        self.assertEqual(constrained['inventory']['minItems'],1)
+        empty_packet['candidate']['empty_reason']='No assertion.'
+        unconstrained=repair.body(empty_packet,'v31')['output_config']['format']['schema']['properties']
+        self.assertNotIn('minItems',unconstrained['claims'])

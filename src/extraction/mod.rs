@@ -177,6 +177,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v30/frames.txt"),
                 include_str!("../../prompts/extraction-v30/review.txt"),
             )),
+            "extraction-v31" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v31/frames.txt"),
+                include_str!("../../prompts/extraction-v31/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -195,7 +200,10 @@ impl Plan {
     }
     pub fn review_prompt(&self, stage: &str) -> Result<String> {
         let (_, frames, review) = self.components()?;
-        if matches!(self.version(), "extraction-v29" | "extraction-v30") {
+        if matches!(
+            self.version(),
+            "extraction-v29" | "extraction-v30" | "extraction-v31"
+        ) {
             return Ok(format!(
                 "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
             ));
@@ -226,6 +234,7 @@ impl Plan {
             "extraction-v28" => Some(include_str!("../../prompts/extraction-v28/reader.txt")),
             "extraction-v29" => Some(include_str!("../../prompts/extraction-v29/reader.txt")),
             "extraction-v30" => Some(include_str!("../../prompts/extraction-v30/reader.txt")),
+            "extraction-v31" => Some(include_str!("../../prompts/extraction-v31/reader.txt")),
             _ => None,
         }
     }
@@ -245,12 +254,17 @@ impl Plan {
                 | "extraction-v28"
                 | "extraction-v29"
                 | "extraction-v30"
+                | "extraction-v31"
         )
     }
     fn source_meta_review(&self) -> bool {
         matches!(
             self.version(),
-            "extraction-v27" | "extraction-v28" | "extraction-v29" | "extraction-v30"
+            "extraction-v27"
+                | "extraction-v28"
+                | "extraction-v29"
+                | "extraction-v30"
+                | "extraction-v31"
         )
     }
     pub fn hash(&self) -> Result<String> {
@@ -616,8 +630,11 @@ pub fn validate_source_review(
             batch,
             source,
             plan.source_meta_review(),
-            matches!(plan.version(), "extraction-v29" | "extraction-v30"),
-            plan.version() == "extraction-v30",
+            matches!(
+                plan.version(),
+                "extraction-v29" | "extraction-v30" | "extraction-v31"
+            ),
+            matches!(plan.version(), "extraction-v30" | "extraction-v31"),
         )
     } else {
         validate_review(raw, batch.claims.len())
