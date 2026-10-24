@@ -841,3 +841,19 @@ aggregates reject, but their full signatures disagree and both current objects a
 invalid. This is safe failure, not demonstrated general reviewer reliability. No
 profile promotion or Phase 3 completion follows. The original strictly-below-$5 cap
 is respected; final cumulative upper bound is $4.99560435 with no unsettled requests.
+
+## Phase 3 funded semantic boundary investigation (2026-10-25)
+
+The human authorized a cumulative ceiling strictly below $6; no ledger reset.
+Retain `source-checks-v6` one-to-one proposition/Claim mapping and opt-in v39+ separate
+Source responsibilities. Exact stage/Claim/Source identities and all required gates
+remain mandatory; no majority voting or normalized contradictory passes.
+
+Reject candidate-blind Source-first inventory as a demonstrated remedy: it invented
+a redundant report and accepted an actual bad repair. Narrow whole-Claim entailment
+correctly rejected that bad grammatical-commentary repair on one Source, but a repeat
+was protocol-invalid. v41 concise generation and its bounded repairs did not produce
+a complete passing cohort; keep the profile unpromoted and Phase 3 incomplete.
+Unknown transport outcomes retain full reservations. Current totals and failed
+attempts are in `reports/phase-3-funded-semantic-validation.md`; older budgets and
+model agreements are historical observations, not current semantic acceptance.

@@ -1,0 +1,34 @@
+{
+  "ending_implementation_commit": "214f48781e31cc2cfd112e8839597ba1317f20e1",
+  "report_commit_follows_this_checkpoint": true,
+  "commands": [
+    {
+      "command": "cargo fmt --check",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo test --offline --all-targets",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo clippy --offline --all-targets -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'",
+      "exit_code": 0
+    },
+    {
+      "command": "offline semantic-repair saved request/response/usage/ledger replay",
+      "exit_code": 0
+    }
+  ],
+  "rust_passed": 48,
+  "rust_ignored": 2,
+  "python_passed": 40,
+  "paid_orchestrators": {
+    "primary_exit_code": 130,
+    "bounded_repair_exit_code": 0
+  },
+  "semantic_acceptance_complete": false
+}

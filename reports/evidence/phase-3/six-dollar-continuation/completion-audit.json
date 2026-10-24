@@ -1,0 +1,78 @@
+{
+  "status": "Phase 3 semantic acceptance incomplete",
+  "implementation_commit": "33b7c119962fa6247dea0e605db5484162f41585",
+  "starting_commit": "3033136",
+  "six_dollar_starting_commit": "51fc7eb",
+  "current_profile": "extraction-v41 diagnostic, rejected for promotion",
+  "validation_version": "source-checks-v6",
+  "required_commands_passed": true,
+  "rust_tests_passed": 48,
+  "rust_tests_ignored": 2,
+  "python_tests_passed": 40,
+  "ledger": {
+    "ceiling_nanos": 5999999990,
+    "cumulative_upper_nanos": 5305449850,
+    "prior_nanos": 4782653350,
+    "provider_billed_usd": null,
+    "recorded_upper_nanos": 522796500,
+    "remaining_nanos": 694550140,
+    "requests": 297,
+    "unsettled": 4,
+    "unknown_reservations": [
+      {
+        "id": "focused-haiku-repair-v39-v23-fresh-003-extraction-v38-primary",
+        "reservation_nanos": 5301800,
+        "response_saved": false
+      },
+      {
+        "id": "focused-haiku-repair-v41-r1-hypothetical-extraction-v41-atomicity-schema-v2-primary",
+        "reservation_nanos": 5499200,
+        "response_saved": false
+      },
+      {
+        "id": "focused-haiku-repair-v41-r1-nested_quote-atomicity-schema-v2-primary",
+        "reservation_nanos": 5752000,
+        "response_saved": false
+      },
+      {
+        "id": "focused-haiku-repair-v41-v23-fresh-003-atomicity-schema-v2-primary",
+        "reservation_nanos": 5514600,
+        "response_saved": false
+      }
+    ]
+  },
+  "continuation_requests": 183,
+  "continuation_upper_delta_nanos": 309845500,
+  "v41_requests": 19,
+  "v41_upper_delta_nanos": 31212400,
+  "production_approvals": 0,
+  "published_claims": 0,
+  "phase3_tag_created": false,
+  "production_default_promoted": false,
+  "current_primary_cases": 6,
+  "current_primary_claims": 10,
+  "current_primary_fully_eligible": 0,
+  "current_primary_failures": {
+    "reader_reject": 4,
+    "core_language_reject": 1,
+    "source_transport_timeout": 1
+  },
+  "bounded_repairs": 3,
+  "bounded_repair_outcomes": {
+    "invalid_json": 2,
+    "reader_reject": 1
+  },
+  "negative_control_status": "v41 nested timed out; fused control interrupted with outcome unknown; old causal and v38 grammar control not dispatched. Do not count as rejects.",
+  "five_original_gaps": "No current-profile candidates: new-003,new-007,new-018,new-025,new-042; archive audit retained.",
+  "independent_whole_corpus_gold": false,
+  "paid_processes_live": false,
+  "remaining_work": [
+    "Repair standalone argument/time omissions without inventing Source grammar facts",
+    "Constrain extraction response envelope without editing malformed raw responses",
+    "Establish coherent current-profile positive, negative and repeat evidence",
+    "Resolve unknown transport outcomes before new paid dispatch under the existing pending-request gate"
+  ],
+  "decision": "Retain semantic acceptance incomplete. Do not promote v41, count blocked/unreviewed batches as passes, reset ledger or release unknown reservations.",
+  "ending_implementation_commit": "214f48781e31cc2cfd112e8839597ba1317f20e1",
+  "final_verification": "reports/evidence/phase-3/six-dollar-continuation/final-checkpoint.json"
+}

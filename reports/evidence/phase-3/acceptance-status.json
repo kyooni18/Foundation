@@ -1,11 +1,40 @@
 {
   "status": "not accepted; no completion tag",
-  "provider_key": "valid; credential content excluded",
-  "provider_failure": "historical HTTP402; current funded real calls work; conservative local reservation refusals retained",
-  "further_model_calls": "Current remaining conservative capacity $0.00439564 cannot reserve the next ordinary v34 nested Source review ($0.00552100); no dispatch.",
-  "fresh_extraction_heldout": "v21 original20 partially evaluated with confirmed framing failure; v22 fresh8 partially evaluated; v23 targeted fresh4 evaluated against R2 in separate requests, one original quota failure retained; no independent whole-benchmark human gold",
-  "independent_korean_review": "Explicit user unknown-reference, temporal, Korean narrator, independent-cause and assertion-layer judgments incorporated; whole-corpus independent human review not completed",
-  "implementation_commit": "cf64c34",
+  "current_opt_in_prompt": "extraction-v41 diagnostic, rejected for promotion",
+  "current_validation_version": "source-checks-v6",
+  "implementation_commit": "33b7c119962fa6247dea0e605db5484162f41585",
+  "current_ledger": {
+    "ceiling_nanos": 5999999990,
+    "cumulative_upper_nanos": 5305449850,
+    "prior_nanos": 4782653350,
+    "provider_billed_usd": null,
+    "recorded_upper_nanos": 522796500,
+    "remaining_nanos": 694550140,
+    "requests": 297,
+    "unsettled": 4,
+    "unknown_reservations": [
+      {
+        "id": "focused-haiku-repair-v39-v23-fresh-003-extraction-v38-primary",
+        "reservation_nanos": 5301800,
+        "response_saved": false
+      },
+      {
+        "id": "focused-haiku-repair-v41-r1-hypothetical-extraction-v41-atomicity-schema-v2-primary",
+        "reservation_nanos": 5499200,
+        "response_saved": false
+      },
+      {
+        "id": "focused-haiku-repair-v41-r1-nested_quote-atomicity-schema-v2-primary",
+        "reservation_nanos": 5752000,
+        "response_saved": false
+      },
+      {
+        "id": "focused-haiku-repair-v41-v23-fresh-003-atomicity-schema-v2-primary",
+        "reservation_nanos": 5514600,
+        "response_saved": false
+      }
+    ]
+  },
   "completed_offline_commands": [
     "cargo fmt --check",
     "cargo test --offline --all-targets",
@@ -13,71 +42,29 @@
     "python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'"
   ],
   "offline_top_level_passed": 48,
-  "live_worker_http_mcp_v11": "passed on two synthetic reported Claims; no semantic corpus-wide acceptance inference",
-  "current_opt_in_prompt": "extraction-v34 (unpromoted)",
-  "remaining_acceptance": [
-    "Coherent current-profile negative-control judgments: both latest raw rejects are internally contradictory and fail source-checks-v5.",
-    "Review stability beyond one repeated negative candidate; current signatures disagree.",
-    "Standalone hypothetical experiment identity interpretation remains unadjudicated.",
-    "Broader current-profile semantic coverage; historical profiles are not current-profile successes. Five named missing cases have only older archived outputs."
-  ],
-  "completion_tag_created": false,
-  "final_profile_focused_results": {
-    "lena_omar_regression": {
-      "passing_requests": 2,
-      "claim_texts": 4
-    },
-    "user_boundary_regressions": {
-      "passing_requests": 7,
-      "distinct_sources": 6,
-      "claim_texts": 10,
-      "note": "conditional passing subset, not all-request success rate; quota failures retained"
-    },
-    "fresh_challenges": {
-      "passing_audited_sources": 4,
-      "audited_claim_texts": 7,
-      "known_errors_in_assistant_inspected_final_texts": 0,
-      "note": "small targeted editorial set; not universal quality proof"
-    }
-  },
-  "provider_access": "funded access verified; account not reported exhausted",
-  "all_paid_children_joined": true,
-  "conservative_usage_delta_usd": "0.21295100",
-  "unspent_authorized_ceiling_usd": "0.00439564",
-  "current_continuation_report": "reports/phase-3-final-boundary.md",
-  "current_new_requests": 6,
-  "current_confirmed_spending_usd": null,
-  "current_spendable_remaining_usd": "0.00439564",
-  "current_validation_version": "source-checks-v5",
-  "offline_distinct_replayed_attempts": 4752,
-  "offline_distinct_replayed_sources": 145,
-  "direct_anthropic_o8000": {
-    "summary": "reports/evidence/phase-3/direct-anthropic/o8000-summary.json",
-    "paid_calls": 9,
-    "complete": 9,
-    "truncated": 0,
-    "protocol_valid": 4,
-    "protocol_invalid": 5,
-    "accepted_claims": 0,
-    "conservative_upper_bound_usd": 0.0180851,
-    "cumulative_conservative_usd": 4.81169545,
-    "remaining_ceiling_usd": 0.0709579,
-    "semantic_acceptance": null
-  },
-  "as_of_commit": "f1fbb75",
-  "historical_status_snapshot": "reports/evidence/phase-3/completion-recheck/acceptance-status-before.json",
-  "historical_status_sha256": "5a49372ab85af9cf9f3c9ed70aa7f88f630246fb9ad789ce6fe57ca2c0a1fe77",
-  "current_conservative_usage_upper_usd": "0.01677830",
-  "current_ledger": {
-    "ceiling_nanos": 4999999990,
-    "cumulative_upper_nanos": 4995604350,
-    "prior_nanos": 4782653350,
-    "provider_billed_usd": null,
-    "recorded_upper_nanos": 212951000,
-    "remaining_nanos": 4395640,
-    "requests": 114,
-    "unsettled": 0
-  },
   "python_tests_passed": 40,
-  "conservative_usage_delta_scope": "recorded request upper bounds; carried historical prior separately in current_ledger"
+  "completion_tag_created": false,
+  "current_continuation_report": "reports/phase-3-funded-semantic-validation.md",
+  "current_audit": "reports/evidence/phase-3/six-dollar-continuation/completion-audit.json",
+  "historical_status_snapshot": "reports/evidence/phase-3/six-dollar-continuation/acceptance-status-before-funded-update.json",
+  "further_model_calls": "Blocked by existing pending<4 rule: four unknown requests retain full reservations. Monetary headroom remains; no credit increase requested.",
+  "provider_access": "Funded real calls completed; do not classify unknown timeouts as exhausted credits",
+  "all_paid_children_joined": true,
+  "remaining_acceptance": [
+    "Repair standalone argument/time omissions without inventing Source grammar facts",
+    "Constrain extraction response envelope without editing malformed raw responses",
+    "Establish coherent current-profile positive, negative and repeat evidence",
+    "Resolve unknown transport outcomes before new paid dispatch under the existing pending-request gate"
+  ],
+  "five_unassessed_cases": [
+    "new-003",
+    "new-007",
+    "new-018",
+    "new-025",
+    "new-042"
+  ],
+  "independent_whole_corpus_gold": false,
+  "production_approvals": 0,
+  "ending_implementation_commit": "214f48781e31cc2cfd112e8839597ba1317f20e1",
+  "final_verification": "reports/evidence/phase-3/six-dollar-continuation/final-checkpoint.json"
 }

@@ -1,3 +1,22 @@
+# Latest funded continuation — semantic acceptance incomplete
+
+The human-authorized cumulative ceiling is now strictly below $6; historical charges
+remain intact. Current conservative cumulative usage is **$5.30544985**, with
+**$0.69455014** monetary headroom and four unknown reservations. The existing pending
+request gate blocks new paid calls; no credits are requested and no process remains
+live. All required checks pass (48 Rust, 40 Python, fmt, Clippy).
+
+Specialized Source review and proposition/Claim bijection were implemented. Real
+v38 broad-review false acceptance remains recorded; the narrowed comparison rejects
+that grammatical-commentary candidate. However, current v41 generation produced
+**0/6 complete eligible primary batches**, and three bounded repairs also failed.
+No production promotion or completion tag is justified. See the complete
+[funded validation report](phase-3-funded-semantic-validation.md) and current audit
+`reports/evidence/phase-3/six-dollar-continuation/completion-audit.json`.
+Earlier sections below are historical checkpoints, including superseded spending caps.
+
+---
+
 # Phase 3 semantic repair — acceptance remains incomplete (2026-10-24)
 
 ## Latest complete governing-report repair

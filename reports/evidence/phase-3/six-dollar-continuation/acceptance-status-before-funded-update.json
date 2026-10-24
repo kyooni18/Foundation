@@ -1,0 +1,83 @@
+{
+  "status": "not accepted; no completion tag",
+  "provider_key": "valid; credential content excluded",
+  "provider_failure": "historical HTTP402; current funded real calls work; conservative local reservation refusals retained",
+  "further_model_calls": "Current remaining conservative capacity $0.00439564 cannot reserve the next ordinary v34 nested Source review ($0.00552100); no dispatch.",
+  "fresh_extraction_heldout": "v21 original20 partially evaluated with confirmed framing failure; v22 fresh8 partially evaluated; v23 targeted fresh4 evaluated against R2 in separate requests, one original quota failure retained; no independent whole-benchmark human gold",
+  "independent_korean_review": "Explicit user unknown-reference, temporal, Korean narrator, independent-cause and assertion-layer judgments incorporated; whole-corpus independent human review not completed",
+  "implementation_commit": "cf64c34",
+  "completed_offline_commands": [
+    "cargo fmt --check",
+    "cargo test --offline --all-targets",
+    "cargo clippy --offline --all-targets -- -D warnings",
+    "python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'"
+  ],
+  "offline_top_level_passed": 48,
+  "live_worker_http_mcp_v11": "passed on two synthetic reported Claims; no semantic corpus-wide acceptance inference",
+  "current_opt_in_prompt": "extraction-v34 (unpromoted)",
+  "remaining_acceptance": [
+    "Coherent current-profile negative-control judgments: both latest raw rejects are internally contradictory and fail source-checks-v5.",
+    "Review stability beyond one repeated negative candidate; current signatures disagree.",
+    "Standalone hypothetical experiment identity interpretation remains unadjudicated.",
+    "Broader current-profile semantic coverage; historical profiles are not current-profile successes. Five named missing cases have only older archived outputs."
+  ],
+  "completion_tag_created": false,
+  "final_profile_focused_results": {
+    "lena_omar_regression": {
+      "passing_requests": 2,
+      "claim_texts": 4
+    },
+    "user_boundary_regressions": {
+      "passing_requests": 7,
+      "distinct_sources": 6,
+      "claim_texts": 10,
+      "note": "conditional passing subset, not all-request success rate; quota failures retained"
+    },
+    "fresh_challenges": {
+      "passing_audited_sources": 4,
+      "audited_claim_texts": 7,
+      "known_errors_in_assistant_inspected_final_texts": 0,
+      "note": "small targeted editorial set; not universal quality proof"
+    }
+  },
+  "provider_access": "funded access verified; account not reported exhausted",
+  "all_paid_children_joined": true,
+  "conservative_usage_delta_usd": "0.21295100",
+  "unspent_authorized_ceiling_usd": "0.00439564",
+  "current_continuation_report": "reports/phase-3-final-boundary.md",
+  "current_new_requests": 6,
+  "current_confirmed_spending_usd": null,
+  "current_spendable_remaining_usd": "0.00439564",
+  "current_validation_version": "source-checks-v5",
+  "offline_distinct_replayed_attempts": 4752,
+  "offline_distinct_replayed_sources": 145,
+  "direct_anthropic_o8000": {
+    "summary": "reports/evidence/phase-3/direct-anthropic/o8000-summary.json",
+    "paid_calls": 9,
+    "complete": 9,
+    "truncated": 0,
+    "protocol_valid": 4,
+    "protocol_invalid": 5,
+    "accepted_claims": 0,
+    "conservative_upper_bound_usd": 0.0180851,
+    "cumulative_conservative_usd": 4.81169545,
+    "remaining_ceiling_usd": 0.0709579,
+    "semantic_acceptance": null
+  },
+  "as_of_commit": "f1fbb75",
+  "historical_status_snapshot": "reports/evidence/phase-3/completion-recheck/acceptance-status-before.json",
+  "historical_status_sha256": "5a49372ab85af9cf9f3c9ed70aa7f88f630246fb9ad789ce6fe57ca2c0a1fe77",
+  "current_conservative_usage_upper_usd": "0.01677830",
+  "current_ledger": {
+    "ceiling_nanos": 4999999990,
+    "cumulative_upper_nanos": 4995604350,
+    "prior_nanos": 4782653350,
+    "provider_billed_usd": null,
+    "recorded_upper_nanos": 212951000,
+    "remaining_nanos": 4395640,
+    "requests": 114,
+    "unsettled": 0
+  },
+  "python_tests_passed": 40,
+  "conservative_usage_delta_scope": "recorded request upper bounds; carried historical prior separately in current_ledger"
+}

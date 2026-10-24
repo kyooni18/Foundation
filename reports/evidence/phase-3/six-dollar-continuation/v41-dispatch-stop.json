@@ -1,0 +1,8 @@
+{
+  "reason": "Pause new cohort dispatch after first new Source schema timed out; allow already-dispatched child to finish and retain every unknown reservation. No repeated paid request.",
+  "signal": "SIGINT to orchestrator only; child untouched",
+  "observed_orchestrator_exit_code": 130,
+  "all_paid_processes_absent_after_interrupt": true,
+  "last_child_request": "focused-haiku-repair-v41-v23-fresh-003-atomicity-schema-v2-primary",
+  "last_child_outcome": "Unknown: request and reservation exist; no saved response or transport terminal receipt. Do not infer completion, zero cost, or timeout."
+}
