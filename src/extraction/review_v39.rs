@@ -253,3 +253,5 @@ pub(super) fn inventory_signature(raw: &str) -> Result<Value> {
         "proposition":i["proposition"],"evidence":i["evidence"],"claim_indices":i["claim_indices"],"status":i["status"]
     })).collect()))
 }
+
+pub(super) const DEFINITIONS_42: &str = include_str!("../../prompts/extraction-v42/facets.json");

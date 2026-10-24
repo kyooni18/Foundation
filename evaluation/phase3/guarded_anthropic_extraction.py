@@ -60,12 +60,12 @@ def body(packet,version,output_format='legacy'):
     system=prompt(version)
     user=focused.canonical(content).decode()
     budget.require(len(system.encode())+len(user.encode())<=256*1024,'oversized context')
-    request = dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41'} else 6000),system=system,
+    request = dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42'} else 6000),system=system,
         messages=[dict(role='user',content=user)],
         output_config=dict(effort='low'),service_tier='standard_only')
     schema=output_schema(output_format)
     if schema is not None:
-        budget.require(version=='extraction-v41','structured extraction requires the current explicit profile')
+        budget.require(version in {'extraction-v41','extraction-v42'},'structured extraction requires the current explicit profile')
         request['output_config']['format']=dict(type='json_schema',schema=schema)
     return request
 
@@ -184,7 +184,7 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41'],
+    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42'],
                         default='extraction-v28')
     parser.add_argument('--repair-from-trace',type=Path)
     parser.add_argument('--replicate',choices=['primary','repair'],default='primary')

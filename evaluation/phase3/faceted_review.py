@@ -4,7 +4,7 @@ import focused_review as f
 import guarded_haiku as g
 
 def root(version):
-    g.require(version in {'v39','v40','v41'},'unknown faceted profile')
+    g.require(version in {'v39','v40','v41','v42'},'unknown faceted profile')
     return f.ROOT/('prompts/extraction-'+version)
 
 def definitions(version='v39'):return json.loads((root(version)/'facets.json').read_text())
@@ -34,7 +34,7 @@ def schema(packet,stage,wire_revision='supported-v2',version='v39'):
         dimensions[key]={'type':'object','additionalProperties':False,'properties':{'status':s,'reason':string},'required':['status','reason']}
     fields=dict(index={'type':'integer'},text=string,evidence=evidence,source_meaning=string,candidate_meaning=string,
         dimensions={'type':'object','additionalProperties':False,'properties':dimensions,'required':d['dimensions']},differences=strings,uncertainty_flags=strings)
-    if version=='v41':fields['violations']=fields.pop('differences')
+    if version in {'v41','v42'}:fields['violations']=fields.pop('differences')
     if n:
         fields['index']={'type':'integer','enum':list(range(n))}
         fields['text']={'type':'string','enum':[c['text'] for c in claims]}
@@ -61,7 +61,7 @@ def body(packet,stage,model,wire_revision='supported-v2',version='v39'):
 
 def check(j,packet,stage,shape,version='v39'):
     g.require(stage is not None,'review responsibility binding required');d=spec(stage,version);shape(j,schema(packet,stage,version=version))
-    violation_key='violations' if version=='v41' else 'differences'
+    violation_key='violations' if version in {'v41','v42'} else 'differences'
     source=packet['case']['source'];claims=packet['candidate']['claims'];g.require(j['stage']==stage,'review responsibility changed')
     g.require(all(s.strip() for s in j['uncertainty_flags']),'empty uncertainty flag')
     unresolved=bool(j['uncertainty_flags']);rejected=False
