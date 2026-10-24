@@ -124,8 +124,11 @@ def check(j,packet,version):
             unresolved |= d['status']=='unresolved'
         budget.require(all(f.strip() for f in row['uncertainty_flags']),'empty uncertainty flag')
         unresolved |= bool(row['uncertainty_flags'])
-    budget.require(j['inventory'],'empty source proposition inventory')
+    empty_reason=packet['candidate'].get('empty_reason')
+    budget.require(j['inventory'] or (not claims and isinstance(empty_reason,str) and empty_reason.strip()),
+                   'empty inventory requires a valid empty extraction')
     covered=set()
+    inventory_entries=set()
     for row in j['inventory']:
         budget.require(row['proposition'].strip() and row['reason'].strip() and row['evidence']
             and all(unique(e['quote']) for e in row['evidence']),
@@ -135,6 +138,10 @@ def check(j,packet,version):
         budget.require(all(type(i) is int and 0<=i<len(claims) for i in row['claim_indices']),
                        'invalid inventory Claim index')
         budget.require(len(set(row['claim_indices']))==len(row['claim_indices']),'duplicate inventory Claim index')
+        identity=(row['proposition'],tuple(sorted({e['quote'] for e in row['evidence']})),
+                  tuple(sorted(row['claim_indices'])))
+        budget.require(identity not in inventory_entries,'duplicate source inventory entry')
+        inventory_entries.add(identity)
         budget.require(row['status']!='pass' or row['claim_indices'],'uncovered passing inventory')
         if row['status']=='pass':
             covered.update(row['claim_indices'])

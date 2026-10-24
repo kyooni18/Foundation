@@ -3,6 +3,10 @@ use super::{Batch, SourceView, invalid, keys};
 use crate::domain::Result;
 use serde_json::Value;
 
+fn blank(text: &str) -> bool {
+    text.trim().is_empty()
+}
+
 fn status(value: &Value, allow_na: bool) -> Result<&str> {
     let s = value
         .as_str()
@@ -59,7 +63,7 @@ pub(super) fn validate(
     let flags = v["uncertainty_flags"]
         .as_array()
         .ok_or_else(|| invalid("schema", "uncertainty flags required"))?;
-    if flags.iter().any(|f| f.as_str().is_none_or(str::is_empty)) {
+    if flags.iter().any(|f| f.as_str().is_none_or(blank)) {
         return Err(invalid("schema", "invalid uncertainty flag"));
     }
     let claims = v["claims"]
@@ -110,7 +114,7 @@ pub(super) fn validate(
         keys(dimensions, &required)?;
         for key in required {
             keys(&dimensions[key], &["status", "reason"])?;
-            if dimensions[key]["reason"].as_str().is_none_or(str::is_empty) {
+            if dimensions[key]["reason"].as_str().is_none_or(blank) {
                 return Err(invalid("schema", "dimension explanation required"));
             }
             let s = status(&dimensions[key]["status"], key == "korean_meaning")?;
@@ -133,10 +137,7 @@ pub(super) fn validate(
         let local_flags = claim["uncertainty_flags"]
             .as_array()
             .ok_or_else(|| invalid("schema", "claim uncertainty flags required"))?;
-        if local_flags
-            .iter()
-            .any(|f| f.as_str().is_none_or(str::is_empty))
-        {
+        if local_flags.iter().any(|f| f.as_str().is_none_or(blank)) {
             return Err(invalid("schema", "invalid claim uncertainty flag"));
         }
         unresolved |= !local_flags.is_empty();
@@ -144,10 +145,16 @@ pub(super) fn validate(
     let inventory = v["inventory"]
         .as_array()
         .ok_or_else(|| invalid("schema", "source inventory required"))?;
-    if inventory.is_empty() && !source.content.trim().is_empty() {
-        return Err(invalid("schema", "empty source inventory"));
+    if inventory.is_empty()
+        && (!batch.claims.is_empty() || batch.empty_reason.as_deref().is_none_or(blank))
+    {
+        return Err(invalid(
+            "schema",
+            "empty inventory requires a valid empty extraction",
+        ));
     }
     let mut covered = std::collections::HashSet::new();
+    let mut inventory_entries = std::collections::HashSet::new();
     for row in inventory {
         keys(
             row,
@@ -159,8 +166,7 @@ pub(super) fn validate(
                 "reason",
             ],
         )?;
-        if row["proposition"].as_str().is_none_or(str::is_empty)
-            || row["reason"].as_str().is_none_or(str::is_empty)
+        if row["proposition"].as_str().is_none_or(blank) || row["reason"].as_str().is_none_or(blank)
         {
             return Err(invalid("schema", "inventory explanation required"));
         }
@@ -185,6 +191,29 @@ pub(super) fn validate(
             if n >= batch.claims.len() as u64 || !seen.insert(n) {
                 return Err(invalid("schema", "invalid inventory index"));
             }
+        }
+        // A different explanation or reordered support does not identify another
+        // Source proposition. Compare copies only; retain raw review evidence.
+        let mut quotes: Vec<_> = row["evidence"]
+            .as_array()
+            .expect("validated evidence")
+            .iter()
+            .map(|span| span["quote"].as_str().expect("validated quote").to_owned())
+            .collect();
+        quotes.sort();
+        quotes.dedup();
+        let mut mapped: Vec<_> = seen.iter().copied().collect();
+        mapped.sort_unstable();
+        let identity = (
+            row["proposition"]
+                .as_str()
+                .expect("validated proposition")
+                .to_owned(),
+            quotes,
+            mapped,
+        );
+        if !inventory_entries.insert(identity) {
+            return Err(invalid("schema", "duplicate source inventory entry"));
         }
         let s = status(&row["status"], false)?;
         if s == "pass" && indices.is_empty() {

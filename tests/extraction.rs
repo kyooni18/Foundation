@@ -1398,9 +1398,26 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
         ]
     };
     assert!(validate_proposal_reviews_bound(&plan, &reports(&review), &batch, &source).is_ok());
+    let mut duplicated_inventory = review.clone();
+    let mut duplicate = duplicated_inventory["inventory"][0].clone();
+    duplicate["reason"] = json!("a second explanation does not create another source proposition");
+    duplicated_inventory["inventory"]
+        .as_array_mut()
+        .unwrap()
+        .push(duplicate);
+    assert!(
+        validate_proposal_reviews_bound(&plan, &reports(&duplicated_inventory), &batch, &source)
+            .is_err()
+    );
     let mut orphaned = review.clone();
     orphaned["inventory"][1]["claim_indices"] = json!([0]);
     assert!(validate_proposal_reviews_bound(&plan, &reports(&orphaned), &batch, &source).is_err());
+    let mut missing_inventory = review.clone();
+    missing_inventory["inventory"] = json!([]);
+    assert!(
+        validate_proposal_reviews_bound(&plan, &reports(&missing_inventory), &batch, &source)
+            .is_err()
+    );
     let mut changed_inventory = reports(&review);
     let mut conflicting = review.clone();
     conflicting["inventory"][1]["proposition"] = json!("count proves parallel execution");
@@ -1477,6 +1494,53 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     invented["inventory"][0]["proposition"] = json!("parallel execution is proved");
     assert!(
         validate_proposal_reviews_bound(&meta_plan, &reports(&invented), &batch, &source).is_err()
+    );
+    meta_plan.prompt_version = Some("extraction-v28".into());
+    meta_plan.prompt_version = Some("extraction-v30".into());
+    let mut blank_reason = canonical.clone();
+    blank_reason["claims"][0]["dimensions"]["atomicity"]["reason"] = json!(" \t\n");
+    let blank_result =
+        validate_proposal_reviews_bound(&meta_plan, &reports(&blank_reason), &batch, &source);
+    let empty_id = app
+        .record_source(&user(), RecordSource::plain("..."))
+        .unwrap()
+        .source_id;
+    let empty_source = app.get_source(&user(), empty_id).unwrap();
+    let empty_raw =
+        json!({"claims":[],"empty_reason":"Ellipsis with no independently asserted proposition."})
+            .to_string();
+    let empty_batch = validate(&empty_raw, &empty_source).unwrap();
+    let no_propositions =
+        json!({"verdict":"pass","uncertainty_flags":[],"claims":[],"inventory":[]}).to_string();
+    let empty_reviews = vec![
+        no_propositions.clone(),
+        no_propositions.clone(),
+        no_propositions,
+    ];
+    let empty_result =
+        validate_proposal_reviews_bound(&meta_plan, &empty_reviews, &empty_batch, &empty_source);
+    assert!(
+        blank_result.is_err() && empty_result.is_ok(),
+        "blank reason accepted: {}; valid empty batch rejected: {}",
+        blank_result.is_ok(),
+        empty_result.is_err()
+    );
+    let mut unexplained_empty = empty_batch.clone();
+    unexplained_empty.empty_reason = None;
+    assert!(
+        validate_proposal_reviews_bound(
+            &meta_plan,
+            &empty_reviews,
+            &unexplained_empty,
+            &empty_source
+        )
+        .is_err()
+    );
+    let mut disputed_empty = empty_reviews.clone();
+    disputed_empty[0] = json!({"verdict":"unresolved","uncertainty_flags":["cannot establish that the Source has no proposition"],"claims":[],"inventory":[]}).to_string();
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &disputed_empty, &empty_batch, &empty_source)
+            .is_err()
     );
     meta_plan.prompt_version = Some("extraction-v28".into());
     review["claims"][0]["dimensions"]["source_meta_expansion"]["status"] = json!("reject");

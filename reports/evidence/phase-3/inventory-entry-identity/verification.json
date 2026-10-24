@@ -1,0 +1,50 @@
+[
+  {
+    "check": "rust-tests",
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--all-targets"
+    ],
+    "exit_code": 0,
+    "passed": 48
+  },
+  {
+    "check": "python-tests",
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "evaluation/phase3",
+      "-p",
+      "test_*.py"
+    ],
+    "exit_code": 0,
+    "passed": 40
+  },
+  {
+    "check": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "check": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--offline",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0
+  }
+]

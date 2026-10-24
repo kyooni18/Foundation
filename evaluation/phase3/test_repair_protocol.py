@@ -19,9 +19,11 @@ class RepairProtocolTest(unittest.TestCase):
             lambda j:j['uncertainty_flags'].append('contested source interpretation'),
             lambda j:j['claims'][0]['dimensions'].pop('source_meta_expansion'),
             lambda j:j['inventory'][0]['claim_indices'].append(j['inventory'][0]['claim_indices'][0]),
+            lambda j:j['inventory'].append(dict(j['inventory'][0],reason='a different explanation of the same proposition')),
             lambda j:j['claims'][0].update(index=False),
             lambda j:j['inventory'][1].update(claim_indices=[0]),
             lambda j:j['claims'][0]['dimensions']['korean_meaning'].update(status='not_applicable'),
+            lambda j:j['claims'][0]['dimensions']['atomicity'].update(reason=' \t\n'),
         ]
         for mutate in mutations:
             with self.subTest(mutation=mutations.index(mutate)):
@@ -56,3 +58,9 @@ class RepairProtocolTest(unittest.TestCase):
         request_text=repair.body(packet,'v28')['messages'][0]['content']
         self.assertNotIn('expected_verdict',request_text)
         self.assertNotIn('authorship',request_text)
+        empty_packet=dict(case=dict(source='...'),candidate=dict(claims=[],empty_reason='No independently asserted proposition.'))
+        no_propositions=dict(verdict='pass',uncertainty_flags=[],claims=[],inventory=[])
+        self.assertEqual(repair.check(no_propositions,empty_packet,'v30')['verdict'],'pass')
+        empty_packet['candidate']['empty_reason']=None
+        with self.assertRaises(ValueError):
+            repair.check(no_propositions,empty_packet,'v30')
