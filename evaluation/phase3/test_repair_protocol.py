@@ -46,6 +46,7 @@ class RepairProtocolTest(unittest.TestCase):
             row['dimensions']['duplicates']=dict(status='pass',reason='independent source assertions')
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'pass')
         self.assertEqual(repair.check(duplicate_review,packet,'v32')['verdict'],'pass')
+        self.assertEqual(repair.check(duplicate_review,packet,'v33')['verdict'],'pass')
         duplicate_review['claims'][0]['dimensions']['duplicates']['status']='reject'
         duplicate_review['verdict']='reject'
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'reject')
@@ -103,3 +104,10 @@ class RepairProtocolTest(unittest.TestCase):
             self.assertNotEqual(replay.request_identity(low),replay.request_identity(changed))
         with self.assertRaisesRegex(ValueError,'unsupported diagnostic effort'):
             repair.body(packet,'v30',effort='medium')
+        case=next(p['case'] for p in repair.budget.packets()[1] if p['case']['id']=='r1-nested_quote')
+        invalid=focused.parse_judgment((root/'focused-haiku-extraction-v32-r1-nested_quote-primary.candidate.json').read_text())
+        self.assertFalse(repair.extraction.rust_structure(invalid,case)['valid'])
+        # A private fixture isolates the metadata defect; raw model evidence is immutable.
+        fixed=copy.deepcopy(invalid)
+        fixed['claims'][1]['index_fields']=None
+        self.assertTrue(repair.extraction.rust_structure(fixed,case)['valid'])

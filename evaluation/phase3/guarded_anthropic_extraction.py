@@ -7,6 +7,8 @@ import argparse
 import json
 import os
 from pathlib import Path
+import subprocess
+import tempfile
 
 import focused_review as focused
 import guarded_anthropic as api
@@ -15,6 +17,19 @@ import guarded_haiku as budget
 VARIANT='audited'
 ALLOWED={'r1-nested_quote','r1-ambiguous_ref','v23-fresh-003',
          'r1-hypothetical','r1-habitual_temporal','v23-fresh-004'}
+
+
+def rust_structure(candidate,case):
+    """Authoritative offline preflight; no model, approval or gate credit."""
+    row=dict(corpus_case=case,source_hash=focused.sha(case['source'].encode()),
+             raw=focused.canonical(candidate).decode(),variant=VARIANT,plan=None,reviews=[])
+    with tempfile.TemporaryDirectory(prefix='prime-radiant-preflight-') as temporary:
+        src=Path(temporary)/'input.jsonl';dst=Path(temporary)/'output.jsonl'
+        src.write_bytes(focused.canonical(row)+b'\n')
+        result=subprocess.run(['cargo','run','--quiet','--offline','--example','revalidate_extraction',
+            '--','--input',str(src),'--output',str(dst)],cwd=focused.ROOT,capture_output=True,text=True)
+        budget.require(result.returncode==0,'Rust preflight failed: '+result.stderr)
+        return focused.parse_judgment(dst.read_text())['revalidation']
 
 def prompt(version):
     root=focused.ROOT/'prompts'
@@ -32,7 +47,7 @@ def body(packet,version):
     system=prompt(version)
     user=focused.canonical(content).decode()
     budget.require(len(system.encode())+len(user.encode())<=256*1024,'oversized context')
-    return dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32'} else 6000),system=system,
+    return dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33'} else 6000),system=system,
         messages=[dict(role='user',content=user)],
         output_config=dict(effort='low'),service_tier='standard_only')
 
@@ -125,7 +140,7 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32'],
+    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33'],
                         default='extraction-v28')
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
