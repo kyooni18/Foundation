@@ -14,7 +14,7 @@ All required checks pass (48 Rust, 40 Python, fmt, Clippy). This continuation us
 35 settled calls / $0.04693420 conservative upper bound. Cumulative bound:
 **$4.92664225**, ceiling **$4.93265335**, remaining **$0.00601110**, zero unsettled.
 Provider billing is unknown. Full results, denominators, failures and remaining work:
-[authorized continuation](phase-3-authorized-continuation.md).
+[current validation report](phase-3-v31-validation.md).
 Machine audit: `reports/evidence/phase-3/v30-authorized/completion-audit.json`.
 The sections below preserve earlier checkpoints and their historical budgets.
 
