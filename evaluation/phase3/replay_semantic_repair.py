@@ -29,7 +29,7 @@ def signature(j):
     return dict(verdict=j['verdict'],uncertainty=j['uncertainty_flags'],claims=[dict(
         index=c['index'],evidence=c['evidence'],uncertainty=c['uncertainty_flags'],
         dimensions={k:v['status'] for k,v in c['dimensions'].items()}) for c in j['claims']],
-        inventory=[{k:i[k] for k in ('proposition','evidence','claim_indices','status')} for i in j['inventory']])
+        inventory=[dict(proposition=i['proposition'],evidence=i['evidence'],claim_indices=([i['claim_index']] if i['claim_index'] is not None else []) if 'claim_index' in i else i['claim_indices'],status=i['status']) for i in j['inventory']])
 
 
 def request_identity(body):
@@ -65,7 +65,7 @@ def replay(evidence):
                 expected=(repair.reader_body(payload['claim_text'],version) if reader else
                     repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
                         request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),
-                        request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44'} else None))
+                        request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45'} else None))
             budget.require(body==expected and api.quote(body)==request['quote'],'pending request recipe drift')
             api.verify_request_serialization(request,expected,api.request_mode(version))
             error_path=evidence/(ident+'.transport-error.json')
@@ -104,7 +104,7 @@ def replay(evidence):
             version=ident.split('-')[3]
             expected=(repair.reader_body(payload['claim_text'],version) if reader else
                 repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
-                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44'} else None))
+                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45'} else None))
             budget.require(body==expected,'incomplete request recipe drift')
             api.verify_request_serialization(request,expected,api.request_mode(version))
             reason='stop_reason:'+str(response['stop_reason'])
@@ -155,7 +155,7 @@ def replay(evidence):
             version=ident.split('-')[3]
             packet=dict(case=case,candidate=payload['candidate_batch'])
             expected=repair.body(packet,version,request.get('review_stage',repair.STAGES['fidelity']),
-                                 request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44'} else None)
+                                 request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45'} else None)
             budget.require(body==expected,'review request recipe drift')
             api.verify_request_serialization(request,expected,api.request_mode(version))
             judgment=focused.parse_judgment(raw_text(response))

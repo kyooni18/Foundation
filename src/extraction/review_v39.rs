@@ -65,6 +65,7 @@ pub(super) fn validate(
     batch: &Batch,
     source: &SourceView,
     violation_key: &str,
+    single_mapping: bool,
 ) -> Result<()> {
     if raw.len() > 4 * 1024 * 1024 {
         return Err(invalid("schema", "review too large"));
@@ -186,7 +187,11 @@ pub(super) fn validate(
             &[
                 "proposition",
                 "evidence",
-                "claim_indices",
+                if single_mapping {
+                    "claim_index"
+                } else {
+                    "claim_indices"
+                },
                 "status",
                 "reason",
             ],
@@ -198,9 +203,19 @@ pub(super) fn validate(
         if !propositions.insert(proposition) {
             return Err(invalid("schema", "duplicate source inventory entry"));
         }
-        let indices = row["claim_indices"]
-            .as_array()
-            .ok_or_else(|| invalid("schema", "indices required"))?;
+        let scalar_indices;
+        let indices = if single_mapping {
+            scalar_indices = if row["claim_index"].is_null() {
+                vec![]
+            } else {
+                vec![row["claim_index"].clone()]
+            };
+            &scalar_indices
+        } else {
+            row["claim_indices"]
+                .as_array()
+                .ok_or_else(|| invalid("schema", "indices required"))?
+        };
         let mut local = HashSet::new();
         for index in indices {
             let index = index
@@ -250,7 +265,7 @@ pub(super) fn validate(
 pub(super) fn inventory_signature(raw: &str) -> Result<Value> {
     let v = super::json::parse(raw).map_err(|_| invalid("schema", "invalid review JSON"))?;
     Ok(Value::Array(v["inventory"].as_array().expect("validated inventory").iter().map(|i|serde_json::json!({
-        "proposition":i["proposition"],"evidence":i["evidence"],"claim_indices":i["claim_indices"],"status":i["status"]
+        "proposition":i["proposition"],"evidence":i["evidence"],"claim_indices":if let Some(index)=i.get("claim_index") {if index.is_null() {serde_json::json!([])} else {serde_json::json!([index])}} else {i["claim_indices"].clone()},"status":i["status"]
     })).collect()))
 }
 
@@ -259,3 +274,5 @@ pub(super) const DEFINITIONS_42: &str = include_str!("../../prompts/extraction-v
 pub(super) const DEFINITIONS_43: &str = include_str!("../../prompts/extraction-v43/facets.json");
 
 pub(super) const DEFINITIONS_44: &str = include_str!("../../prompts/extraction-v44/facets.json");
+
+pub(super) const DEFINITIONS_45: &str = include_str!("../../prompts/extraction-v45/facets.json");

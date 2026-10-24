@@ -34,7 +34,7 @@ def rust_structure(candidate,case):
 
 def prompt(version):
     root=focused.ROOT/'prompts'
-    contract=(root/(version if version in {'extraction-v43','extraction-v44'} else 'extraction-v12')/'contract.txt').read_text()
+    contract=(root/(version if version in {'extraction-v43','extraction-v44','extraction-v45'} else 'extraction-v12')/'contract.txt').read_text()
     frames=(root/version/'frames.txt').read_text()
     variant=json.loads((root/'extraction-v1/variants.json').read_text())[VARIANT]
     return f'{contract}\n{frames}\n{variant}'
@@ -60,14 +60,14 @@ def body(packet,version,output_format='legacy'):
     system=prompt(version)
     user=focused.canonical(content).decode()
     budget.require(len(system.encode())+len(user.encode())<=256*1024,'oversized context')
-    request = dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44'} else 6000),system=system,
+    request = dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45'} else 6000),system=system,
         messages=[dict(role='user',content=user)],
         output_config=dict(effort='low'),service_tier='standard_only')
     schema=output_schema(output_format)
     if schema is not None:
-        budget.require(version in {'extraction-v41','extraction-v42','extraction-v43','extraction-v44'},'structured extraction requires the current explicit profile')
+        budget.require(version in {'extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45'},'structured extraction requires the current explicit profile')
         if output_format=='grounded-v3':
-            budget.require(version=='extraction-v44','ordered grounded wire requires its explicit profile')
+            budget.require(version in {'extraction-v44','extraction-v45'},'ordered grounded wire requires its explicit profile')
             from faceted_review import exact_inventory_vocabulary
             vocabulary=exact_inventory_vocabulary(source['source'])
             if len(vocabulary)<=512:
@@ -193,7 +193,7 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44'],
+    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45'],
                         default='extraction-v28')
     parser.add_argument('--repair-from-trace',type=Path)
     parser.add_argument('--replicate',choices=['primary','repair'],default='primary')

@@ -135,6 +135,16 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertIn('pattern',protected['dimensions']['properties']['entailment']['properties']['reason'])
         self.assertIn('violations',protected)
         self.assertNotIn('differences',protected)
+        scalar=copy.deepcopy(violation_facet)
+        scalar['stage']=repair.stages('v45')['atomicity']
+        for row in scalar['claims']:
+            row['dimensions']={k:dict(status='pass',reason='Synthetic single independent assertion') for k in ['atomicity','duplicates']}
+        scalar['inventory']=copy.deepcopy(canonical['inventory'])
+        for item in scalar['inventory']:item['claim_index']=item.pop('claim_indices')[0]
+        self.assertEqual(repair.check(scalar,packet,'v45',stage=scalar['stage'])['verdict'],'pass')
+        for invalid_mapping in [None,[0],True]:
+            invalid=copy.deepcopy(scalar);invalid['inventory'][0]['claim_index']=invalid_mapping
+            with self.assertRaises(ValueError):repair.check(invalid,packet,'v45',stage=scalar['stage'])
         duplicate_review['claims'][0]['dimensions']['duplicates']['status']='reject'
         duplicate_review['verdict']='reject'
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'reject')

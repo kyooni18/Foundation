@@ -233,7 +233,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
     math_claim["speaker"] = json!("unknown");
     let math_raw = output(vec![math_claim]);
     let mut current = plan();
-    current.prompt_version = Some("extraction-v44".into());
+    current.prompt_version = Some("extraction-v45".into());
     let mut replies = vec![
         Ok(math_raw.clone()),
         Ok(
@@ -242,7 +242,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
         ),
     ];
     let definitions: Vec<Value> =
-        serde_json::from_str(include_str!("../prompts/extraction-v44/facets.json")).unwrap();
+        serde_json::from_str(include_str!("../prompts/extraction-v45/facets.json")).unwrap();
     for definition in definitions {
         let dimensions: serde_json::Map<String, Value> = definition["dimensions"]
             .as_array()
@@ -255,7 +255,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
                 )
             })
             .collect();
-        replies.push(Ok(json!({"stage":definition["stage"],"verdict":"pass","uncertainty_flags":[],"claims":[{"index":0,"text":math,"evidence":[{"quote":math}],"source_meaning":math,"candidate_meaning":math,"dimensions":dimensions,"violations":[],"uncertainty_flags":[]}],"inventory":if definition["inventory"]==true {json!([{"proposition":math.trim_end_matches('.'),"evidence":[{"quote":math}],"claim_indices":[0],"status":"pass","reason":"One original assertion"}])} else {json!([])}}).to_string()));
+        replies.push(Ok(json!({"stage":definition["stage"],"verdict":"pass","uncertainty_flags":[],"claims":[{"index":0,"text":math,"evidence":[{"quote":math}],"source_meaning":math,"candidate_meaning":math,"dimensions":dimensions,"violations":[],"uncertainty_flags":[]}],"inventory":if definition["inventory"]==true {json!([{"proposition":math.trim_end_matches('.'),"evidence":[{"quote":math}],"claim_index":0,"status":"pass","reason":"One original assertion"}])} else {json!([])}}).to_string()));
     }
     let provider = FakeProvider(std::sync::Mutex::new(replies.into()));
     let held = faceted_app
@@ -1718,6 +1718,34 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     assert!(
         validate_proposal_reviews_bound(&explicit_violations, &violation_reports, &batch, &source)
             .is_ok()
+    );
+    let mut scalar_plan = explicit_violations.clone();
+    scalar_plan.prompt_version = Some("extraction-v45".into());
+    let mut scalar_reports = violation_reports.clone();
+    for raw in &mut scalar_reports[2..] {
+        let mut value: Value = serde_json::from_str(raw).unwrap();
+        for item in value["inventory"].as_array_mut().unwrap() {
+            let indices = item
+                .as_object_mut()
+                .unwrap()
+                .remove("claim_indices")
+                .unwrap();
+            item["claim_index"] = indices[0].clone();
+        }
+        *raw = value.to_string();
+    }
+    assert!(
+        validate_proposal_reviews_bound(&scalar_plan, &scalar_reports, &batch, &source).is_ok()
+    );
+    assert!(
+        validate_proposal_reviews_bound(&scalar_plan, &violation_reports, &batch, &source).is_err()
+    );
+    let mut swapped: Value = serde_json::from_str(scalar_reports.last().unwrap()).unwrap();
+    swapped["inventory"][0]["claim_index"] = json!(1);
+    swapped["inventory"][1]["claim_index"] = json!(0);
+    *scalar_reports.last_mut().unwrap() = swapped.to_string();
+    assert!(
+        validate_proposal_reviews_bound(&scalar_plan, &scalar_reports, &batch, &source).is_err()
     );
     let dimensions: std::collections::HashSet<&str> = definitions
         .iter()
