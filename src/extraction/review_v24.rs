@@ -42,7 +42,12 @@ fn quote_evidence(value: &Value, source: &str) -> Result<()> {
     Ok(())
 }
 
-pub(super) fn validate(raw: &str, batch: &Batch, source: &SourceView) -> Result<()> {
+pub(super) fn validate(
+    raw: &str,
+    batch: &Batch,
+    source: &SourceView,
+    require_meta: bool,
+) -> Result<()> {
     if raw.len() > 4 * 1024 * 1024 {
         return Err(invalid("schema", "review too large"));
     }
@@ -81,19 +86,7 @@ pub(super) fn validate(raw: &str, batch: &Batch, source: &SourceView) -> Result<
         }
         quote_evidence(&claim["evidence"], &source.content)?;
         let dimensions = &claim["dimensions"];
-        keys(
-            dimensions,
-            &[
-                "atomicity",
-                "entailment",
-                "attribution",
-                "polarity_scope",
-                "missing_argument",
-                "unsupported_inference",
-                "korean_meaning",
-            ],
-        )?;
-        for key in [
+        let mut required = vec![
             "atomicity",
             "entailment",
             "attribution",
@@ -101,7 +94,12 @@ pub(super) fn validate(raw: &str, batch: &Batch, source: &SourceView) -> Result<
             "missing_argument",
             "unsupported_inference",
             "korean_meaning",
-        ] {
+        ];
+        if require_meta {
+            required.push("source_meta_expansion");
+        }
+        keys(dimensions, &required)?;
+        for key in required {
             keys(&dimensions[key], &["status", "reason"])?;
             if dimensions[key]["reason"].as_str().is_none_or(str::is_empty) {
                 return Err(invalid("schema", "dimension explanation required"));

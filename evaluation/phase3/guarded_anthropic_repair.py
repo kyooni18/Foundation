@@ -36,6 +36,14 @@ SCHEMA = {'type':'object','additionalProperties':False,'properties':{
     'claims':{'type':'array','items':CLAIM},'inventory':{'type':'array','items':INVENTORY}},
     'required':['verdict','uncertainty_flags','claims','inventory']}
 
+def schema(version):
+    result=json.loads(json.dumps(SCHEMA))
+    if version=='v27':
+        dimensions=result['properties']['claims']['items']['properties']['dimensions']
+        dimensions['properties']['source_meta_expansion']=SCHEMA_DIMENSION
+        dimensions['required'].append('source_meta_expansion')
+    return result
+
 
 def body(packet, version):
     protocol=(focused.ROOT/f'prompts/extraction-{version}/review.txt').read_text()
@@ -44,11 +52,11 @@ def body(packet, version):
     budget.require(len(protocol.encode())+len(content.encode())<=256*1024,'oversized context')
     return dict(model=api.MODEL,max_tokens=6000,system=protocol,
                 messages=[dict(role='user',content=content)],
-                output_config=dict(effort='low',format=dict(type='json_schema',schema=SCHEMA)),
+                output_config=dict(effort='low',format=dict(type='json_schema',schema=schema(version))),
                 service_tier='standard_only')
 
 
-def check(j,packet):
+def check(j,packet,version):
     source=packet['case']['source']
     claims=packet['candidate']['claims']
     budget.require(len(j['claims'])==len(claims),'review omitted Claim')
@@ -63,7 +71,7 @@ def check(j,packet):
         budget.require(row['evidence'] and all(unique(e['quote'])
                        for e in row['evidence']),'ambiguous/nonexact Claim evidence')
         korean=claim['lang']=='ko' or any('\uac00'<=c<='\ud7a3' for c in source)
-        for key in DIMENSIONS:
+        for key in (*DIMENSIONS, *(['source_meta_expansion'] if version=='v27' else [])):
             d=row['dimensions'][key]
             budget.require(d['reason'].strip() and d['status'] in
                 ({'pass','reject','unresolved','not_applicable'} if key=='korean_meaning' else
@@ -90,8 +98,8 @@ def check(j,packet):
                 production_approval=False)
 
 
-def dispatch(packet, evidence, authorization, version):
-    ident='focused-haiku-repair-'+version+'-'+packet['case']['id']+'-primary'
+def dispatch(packet, evidence, authorization, version, label=''):
+    ident='focused-haiku-repair-'+version+'-'+packet['case']['id']+label+'-primary'
     key=os.environ.get('ANTHROPIC_API_KEY')
     budget.require(key and len(key)<1024 and '\n' not in key and '\r' not in key,
                    'ANTHROPIC_API_KEY not configured')
@@ -135,7 +143,7 @@ def dispatch(packet, evidence, authorization, version):
         raw=''.join(b['text'] for b in response['content'] if b.get('type')=='text')
         j=focused.parse_judgment(raw)
         try:
-            result=check(j,packet)
+            result=check(j,packet,version)
         except (ValueError,KeyError,TypeError) as error:
             budget.immutable(evidence/(ident+'.rejection.json'),dict(status='protocol_invalid',
                 reason=str(error),model_verdict=j.get('verdict'),semantic_acceptance=None,
@@ -153,18 +161,31 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['v24','v25'],default='v25')
+    parser.add_argument('--version',choices=['v24','v25','v27'],default='v27')
+    parser.add_argument('--candidate-version',choices=['extraction-v25','extraction-v26'])
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
     _,packets=budget.packets()
     selected=[p for p in packets if p['case']['id']==args.case]
     budget.require(len(selected)==1 and args.case in {'r1-nested_quote','v23-fresh-003'},
                    'only two known failure cases permitted')
+    packet=selected[0]
+    label=''
+    if args.candidate_version:
+        path=args.evidence/('focused-haiku-'+args.candidate_version+'-'+args.case+'-primary.candidate.json')
+        original=args.evidence/('focused-haiku-'+args.candidate_version+'-'+args.case+'-primary.request.json')
+        budget.require(path.is_file() and original.is_file(),'saved extraction evidence required')
+        request=json.loads(original.read_text())
+        budget.require(request['source_sha256']==focused.sha(packet['case']['source'].encode()),
+                       'candidate source mismatch')
+        packet=dict(packet,candidate=json.loads(path.read_text()),
+                    derived_candidate_sha256=focused.sha(path.read_bytes()))
+        label='-'+args.candidate_version
     if not args.execute:
-        print(json.dumps(dict(status='dry_run',case=args.case,version=args.version,
-                              quote=api.quote(body(selected[0],args.version)))))
+        print(json.dumps(dict(status='dry_run',case=args.case,version=args.version,label=label,
+                              quote=api.quote(body(packet,args.version)))))
         return
-    print(json.dumps(dispatch(selected[0],args.evidence,
-        json.loads(args.authorization.read_text()),args.version),ensure_ascii=False))
+    print(json.dumps(dispatch(packet,args.evidence,
+        json.loads(args.authorization.read_text()),args.version,label),ensure_ascii=False))
 
 if __name__=='__main__': main()

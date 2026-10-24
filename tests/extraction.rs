@@ -1399,4 +1399,21 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     alternate["claims"][0]["evidence"] = json!([{"quote":content}]);
     divergent[4] = alternate.to_string();
     assert!(validate_proposal_reviews_bound(&plan, &divergent, &batch, &source).is_err());
+
+    let mut meta_plan = plan.clone();
+    meta_plan.prompt_version = Some("extraction-v27".into());
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&review), &batch, &source).is_err()
+    );
+    for claim in review["claims"].as_array_mut().unwrap() {
+        claim["dimensions"]["source_meta_expansion"] =
+            json!({"status":"pass","reason":"no source commentary added"});
+    }
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&review), &batch, &source).is_ok()
+    );
+    review["claims"][0]["dimensions"]["source_meta_expansion"]["status"] = json!("reject");
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&review), &batch, &source).is_err()
+    );
 }
