@@ -106,6 +106,7 @@ def check(j,packet,version):
         budget.require(all(f.strip() for f in row['uncertainty_flags']),'empty uncertainty flag')
         unresolved |= bool(row['uncertainty_flags'])
     budget.require(j['inventory'],'empty source proposition inventory')
+    covered=set()
     for row in j['inventory']:
         budget.require(row['proposition'].strip() and row['reason'].strip() and row['evidence']
             and all(unique(e['quote']) for e in row['evidence']),
@@ -114,10 +115,13 @@ def check(j,packet,version):
                        'invalid inventory Claim index')
         budget.require(len(set(row['claim_indices']))==len(row['claim_indices']),'duplicate inventory Claim index')
         budget.require(row['status']!='pass' or row['claim_indices'],'uncovered passing inventory')
+        if row['status']=='pass':
+            covered.update(row['claim_indices'])
         rejected |= row['status']=='reject'
         unresolved |= row['status']=='unresolved'
     expected='reject' if rejected else ('unresolved' if unresolved else 'pass')
     budget.require(j['verdict']==expected,'contradictory aggregate verdict')
+    budget.require(expected!='pass' or covered==set(range(len(claims))),'passing inventory omitted a candidate Claim')
     return dict(protocol_valid=True,verdict=j['verdict'],claim_count=len(claims),
                 inventory_count=len(j['inventory']),semantic_acceptance=None,
                 production_approval=False)

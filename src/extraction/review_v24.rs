@@ -138,6 +138,7 @@ pub(super) fn validate(
     if inventory.is_empty() && !source.content.trim().is_empty() {
         return Err(invalid("schema", "empty source inventory"));
     }
+    let mut covered = std::collections::HashSet::new();
     for row in inventory {
         keys(
             row,
@@ -171,6 +172,9 @@ pub(super) fn validate(
         if s == "pass" && indices.is_empty() {
             return Err(invalid("schema", "passing inventory item has no Claim"));
         }
+        if s == "pass" {
+            covered.extend(seen);
+        }
         rejects |= s == "reject";
         unresolved |= s == "unresolved";
     }
@@ -185,6 +189,12 @@ pub(super) fn validate(
         return Err(invalid("schema", "contradictory aggregate review verdict"));
     }
     if verdict == "pass" {
+        if covered.len() != batch.claims.len() {
+            return Err(invalid(
+                "schema",
+                "passing inventory omitted a candidate Claim",
+            ));
+        }
         Ok(())
     } else if verdict == "unresolved" {
         Err(invalid("unresolved", "review cannot establish compliance"))

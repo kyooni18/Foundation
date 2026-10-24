@@ -608,7 +608,7 @@ pub fn validate_proposal_reviews_bound(
                     .map(|(k,v)|(k.clone(),v["status"].clone())).collect::<serde_json::Map<_,_>>()
             })).collect::<Vec<_>>(),
             "inventory":v["inventory"].as_array().expect("validated inventory").iter().map(|i|serde_json::json!({
-                "evidence":i["evidence"],"claim_indices":i["claim_indices"],"status":i["status"]
+                "proposition":i["proposition"],"evidence":i["evidence"],"claim_indices":i["claim_indices"],"status":i["status"]
             })).collect::<Vec<_>>()
         }))
     }).collect::<Result<Vec<_>>>()?;

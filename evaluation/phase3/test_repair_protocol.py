@@ -20,6 +20,7 @@ class RepairProtocolTest(unittest.TestCase):
             lambda j:j['claims'][0]['dimensions'].pop('source_meta_expansion'),
             lambda j:j['inventory'][0]['claim_indices'].append(j['inventory'][0]['claim_indices'][0]),
             lambda j:j['claims'][0].update(index=False),
+            lambda j:j['inventory'][1].update(claim_indices=[0]),
             lambda j:j['claims'][0]['dimensions']['korean_meaning'].update(status='not_applicable'),
         ]
         for mutate in mutations:

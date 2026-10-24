@@ -1382,6 +1382,14 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
         ]
     };
     assert!(validate_proposal_reviews_bound(&plan, &reports(&review), &batch, &source).is_ok());
+    let mut orphaned = review.clone();
+    orphaned["inventory"][1]["claim_indices"] = json!([0]);
+    assert!(validate_proposal_reviews_bound(&plan, &reports(&orphaned), &batch, &source).is_err());
+    let mut changed_inventory = reports(&review);
+    let mut conflicting = review.clone();
+    conflicting["inventory"][1]["proposition"] = json!("count proves parallel execution");
+    changed_inventory[4] = conflicting.to_string();
+    assert!(validate_proposal_reviews_bound(&plan, &changed_inventory, &batch, &source).is_err());
     review["claims"][1]["dimensions"]["korean_meaning"]["status"] = json!("not_applicable");
     assert!(validate_proposal_reviews_bound(&plan, &reports(&review), &batch, &source).is_err());
     review["claims"][1]["dimensions"]["korean_meaning"]["status"] = json!("pass");

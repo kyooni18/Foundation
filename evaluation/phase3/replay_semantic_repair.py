@@ -29,7 +29,7 @@ def signature(j):
     return dict(verdict=j['verdict'],uncertainty=j['uncertainty_flags'],claims=[dict(
         index=c['index'],evidence=c['evidence'],uncertainty=c['uncertainty_flags'],
         dimensions={k:v['status'] for k,v in c['dimensions'].items()}) for c in j['claims']],
-        inventory=[{k:i[k] for k in ('evidence','claim_indices','status')} for i in j['inventory']])
+        inventory=[{k:i[k] for k in ('proposition','evidence','claim_indices','status')} for i in j['inventory']])
 
 
 def replay(evidence):

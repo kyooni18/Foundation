@@ -1,0 +1,143 @@
+{
+  "status": "assistant editorial inspection; independent adjudication unavailable; no semantic acceptance",
+  "frozen_references_changed": false,
+  "note": "Counts describe visible central propositions and observed defects, not an accepted-Claim success rate. Unknown measurements are null. The original frozen references that merge the delay speech acts or infer an irritation target are not gold for this repair.",
+  "measure_definitions": {
+    "supported_core_propositions": "Original independently meaningful propositions whose central content is recognizable in the output; a Claim may still fail qualifiers or isolation.",
+    "atomicity_violations": "Claims visibly asserting multiple independent propositions.",
+    "unsupported_assertions": "Added semantic commitments including source commentary; errors may overlap atomicity.",
+    "missing_propositions": "Independent Source propositions not faithfully represented; null if qualifier/reference uncertainty prevents a defensible count."
+  },
+  "cases": [
+    {
+      "version": "extraction-v25",
+      "case": "r1-nested_quote",
+      "generated_claims": 2,
+      "editorial_source_inventory_count": 2,
+      "supported_core_propositions": 2,
+      "atomicity_violations": 0,
+      "unsupported_assertions": 0,
+      "missing_propositions": 0,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "quoted perspective ambiguous in Claim 1; Claim 0 binds it correctly"
+    },
+    {
+      "version": "extraction-v25",
+      "case": "v23-fresh-003",
+      "generated_claims": 2,
+      "editorial_source_inventory_count": 2,
+      "supported_core_propositions": 2,
+      "atomicity_violations": 0,
+      "unsupported_assertions": 0,
+      "missing_propositions": 0,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "split possibility and verification; repeated unknown-target description remains an isolation question without a live reader"
+    },
+    {
+      "version": "extraction-v25",
+      "case": "r1-ambiguous_ref",
+      "generated_claims": 2,
+      "editorial_source_inventory_count": 2,
+      "supported_core_propositions": 2,
+      "atomicity_violations": 1,
+      "unsupported_assertions": 1,
+      "missing_propositions": 0,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "no causal target invented; Claim 1 appends independent commentary about missing source details"
+    },
+    {
+      "version": "extraction-v25",
+      "case": "r1-hypothetical",
+      "generated_claims": 1,
+      "editorial_source_inventory_count": 1,
+      "supported_core_propositions": 1,
+      "atomicity_violations": 0,
+      "unsupported_assertions": null,
+      "missing_propositions": 0,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "condition and intention preserved; experiment explicitly unidentified; architecture narrowed to one used in the experiment without explicit source identity"
+    },
+    {
+      "version": "extraction-v25",
+      "case": "r1-habitual_temporal",
+      "generated_claims": 1,
+      "editorial_source_inventory_count": 1,
+      "supported_core_propositions": 1,
+      "atomicity_violations": 0,
+      "unsupported_assertions": 0,
+      "missing_propositions": 0,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "speaker and recent habitual time bound to original statement; no permanence or invented date"
+    },
+    {
+      "version": "extraction-v25",
+      "case": "v23-fresh-004",
+      "generated_claims": 2,
+      "editorial_source_inventory_count": 2,
+      "supported_core_propositions": 2,
+      "atomicity_violations": 0,
+      "unsupported_assertions": 0,
+      "missing_propositions": 0,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "English count resolved to Mori worker_count=4; v28 reviewer assessed Korean dependency and passed"
+    },
+    {
+      "version": "extraction-v26",
+      "case": "r1-nested_quote",
+      "generated_claims": 2,
+      "editorial_source_inventory_count": 2,
+      "supported_core_propositions": 2,
+      "atomicity_violations": 0,
+      "unsupported_assertions": 0,
+      "missing_propositions": 0,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "quoted perspective still ambiguous in Claim 1"
+    },
+    {
+      "version": "extraction-v26",
+      "case": "v23-fresh-003",
+      "generated_claims": 2,
+      "editorial_source_inventory_count": 2,
+      "supported_core_propositions": 2,
+      "atomicity_violations": 0,
+      "unsupported_assertions": 0,
+      "missing_propositions": 0,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "speech acts split; unknown delay target repeated; demonstrative isolation unverified"
+    },
+    {
+      "version": "extraction-v28",
+      "case": "r1-nested_quote",
+      "generated_claims": 2,
+      "editorial_source_inventory_count": 2,
+      "supported_core_propositions": 2,
+      "atomicity_violations": 0,
+      "unsupported_assertions": 2,
+      "missing_propositions": 0,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "both Claims invent user-team ownership; v28 reviewer rejects both"
+    },
+    {
+      "version": "extraction-v28",
+      "case": "v23-fresh-003",
+      "generated_claims": 2,
+      "editorial_source_inventory_count": 2,
+      "supported_core_propositions": 1,
+      "atomicity_violations": 0,
+      "unsupported_assertions": 1,
+      "missing_propositions": 1,
+      "independently_validated_korean_fidelity": null,
+      "production_accepted_claims": 0,
+      "notes": "delay target absent; verification no longer identifies whether delay exists and appends source commentary"
+    }
+  ]
+}
