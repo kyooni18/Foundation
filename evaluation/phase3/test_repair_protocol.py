@@ -1,5 +1,11 @@
 """Meaningful protocol regressions using a saved live review; no network."""
 import copy
+import io
+import json
+import sqlite3
+import tempfile
+import urllib.error
+from pathlib import Path
 import unittest
 from unittest import mock
 
@@ -215,6 +221,31 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertEqual(repair.extraction.attempt_label(linked,'extraction-v41','repair','contract-v1'),'extraction-v41-schema-v1-repair')
         with self.assertRaisesRegex(ValueError,'unknown extraction output format'):
             repair.extraction.attempt_label(linked,'extraction-v41',output_format='guess')
+        # Offline transport failure must retain its reservation and remain replayable.
+        with tempfile.TemporaryDirectory() as directory:
+            ledger=Path(directory)/'ledger.sqlite'
+            evidence=Path(directory)/'evidence'
+            conn=sqlite3.connect(ledger)
+            conn.executescript("CREATE TABLE budget(id INTEGER PRIMARY KEY,ceiling INTEGER,prior INTEGER); CREATE TABLE request(id TEXT PRIMARY KEY,model TEXT,created_at TEXT,estimate INTEGER,actual INTEGER,provider_id TEXT,settled_at TEXT,cumulative INTEGER,prompt_tokens INTEGER,completion_tokens INTEGER);")
+            conn.execute('INSERT INTO budget VALUES(1,?,0)',(repair.budget.LIMIT,))
+            conn.commit();conn.close()
+            def failed_transport(method,path,body):
+                if method=='GET':return dict(id=repair.api.MODEL)
+                raise urllib.error.HTTPError('https://invalid.test',400,'schema error',{},io.BytesIO(b'fixture-secret schema failure'))
+            authorization=dict(provider='anthropic_direct',explicit_user_authorization=True,
+                additional_limit_nanos=repair.budget.CONTINUATION,strict_total_below_nanos=repair.budget.STRICT_TOTAL,
+                authorization_reference='offline fixture only')
+            with mock.patch.object(repair.budget,'LEDGER',ledger), mock.patch.object(repair.api,'transport',return_value=failed_transport), mock.patch.dict('os.environ',{'ANTHROPIC_API_KEY':'fixture-secret'}):
+                with self.assertRaisesRegex(ValueError,'reservation retained'):
+                    repair.extraction.dispatch(recipe_packet,evidence,authorization,'extraction-v41',output_format='contract-v1')
+                held=replay.replay(evidence)
+            self.assertEqual(held['extraction_requests'],1)
+            self.assertEqual(held['ledger']['unsettled'],1)
+            self.assertTrue(held['rows'][0]['pending_reservation'])
+            self.assertFalse(held['rows'][0]['model_response'])
+            self.assertNotIn('fixture-secret',held['rows'][0]['transport_error']['response_body'])
+            self.assertEqual(held['rows'][0]['transport_error']['status'],400)
+            self.assertGreater(held['ledger']['recorded_upper_nanos'],0)
 
         invalid=focused.parse_judgment((root/'focused-haiku-extraction-v32-r1-nested_quote-primary.candidate.json').read_text())
         self.assertFalse(repair.extraction.rust_structure(invalid,case)['valid'])

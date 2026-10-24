@@ -53,13 +53,22 @@ def replay(evidence):
             reader=request.get('reader_index') is not None
             case=source_hashes[request['source_sha256']]
             version=ident.split('-')[3]
-            expected=(repair.reader_body(payload['claim_text'],version) if reader else
-                repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
-                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),
-                    request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41'} else None))
+            kind='reader' if reader else 'review'
+            if ident.startswith('focused-haiku-extraction-'):
+                version='extraction-'+version
+                packet=dict(case=case)
+                if request.get('repair_context') is not None:
+                    packet['repair_context']=request['repair_context']
+                expected=extraction.body(packet,version,request.get('output_format','legacy'))
+                kind='extraction'
+            else:
+                expected=(repair.reader_body(payload['claim_text'],version) if reader else
+                    repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
+                        request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),
+                        request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41'} else None))
             budget.require(body==expected and api.quote(body)==request['quote'],'pending request recipe drift')
             error_path=evidence/(ident+'.transport-error.json')
-            rows.append(dict(id=ident,case=case['id'],kind='reader' if reader else 'review',version=version,
+            rows.append(dict(id=ident,case=case['id'],kind=kind,version=version,
                 complete=False,protocol_valid=False,pending_reservation=True,model_response=False,
                 conservative_upper_nanos=request['quote']['estimate'],
                 request_sha256=focused.sha(path.read_bytes()),payload_sha256=request_identity(body),
@@ -181,7 +190,7 @@ def replay(evidence):
         budget.require(completed.returncode==0,'Rust structural replay failed: '+completed.stderr)
         results={r['id']:r['revalidation'] for r in map(json.loads,dst.read_text().splitlines())}
         for row in rows:
-            if row['kind']=='extraction':
+            if row['kind']=='extraction' and not row.get('pending_reservation'):
                 row['rust_revalidation']=results[row['id']]
                 budget.require(not results[row['id']]['experimental_gate_eligible'],
                                'diagnostic request credited as gate eligible')

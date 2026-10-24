@@ -137,7 +137,8 @@ def dispatch(packet,evidence,authorization,version,replicate='primary',output_fo
         except (urllib.error.HTTPError,urllib.error.URLError,TimeoutError) as error:
             detail=None
             if isinstance(error,urllib.error.HTTPError):
-                raw=error.read(4*1024*1024+1)
+                with error:
+                    raw=error.read(4*1024*1024+1)
                 detail=raw[:4*1024*1024].decode('utf-8',errors='replace').replace(key,'[REDACTED_API_KEY]')
             budget.immutable(evidence/(ident+'.transport-error.json'),dict(
                 status=getattr(error,'code',None),error_type=type(error).__name__,response_body=detail,
