@@ -3,22 +3,24 @@ import json
 import focused_review as f
 import guarded_haiku as g
 
-ROOT=f.ROOT/'prompts/extraction-v39'
+def root(version):
+    g.require(version in {'v39','v40'},'unknown faceted profile')
+    return f.ROOT/('prompts/extraction-'+version)
 
-def definitions():return json.loads((ROOT/'facets.json').read_text())
-def stages():return {s['key']:s['stage'] for s in definitions()}
-def spec(stage):
-    rows=[s for s in definitions() if s['stage']==stage]
+def definitions(version='v39'):return json.loads((root(version)/'facets.json').read_text())
+def stages(version='v39'):return {s['key']:s['stage'] for s in definitions(version)}
+def spec(stage,version='v39'):
+    rows=[s for s in definitions(version) if s['stage']==stage]
     g.require(len(rows)==1,'unknown review responsibility')
     return rows[0]
-def prompt(stage):
-    d=spec(stage)
+def prompt(stage,version='v39'):
+    d=spec(stage,version)
     dims=json.dumps(d['dimensions'],ensure_ascii=False,separators=(',',':'))
-    return (ROOT/'review.txt').read_text()+f'\nACTIVE responsibility: {stage}.\nACTIVE dimensions: {dims}.\nInventory responsibility: '+str(d['inventory']).lower()+'.\n'+d['question']
+    return (root(version)/'review.txt').read_text()+f'\nACTIVE responsibility: {stage}.\nACTIVE dimensions: {dims}.\nInventory responsibility: '+str(d['inventory']).lower()+'.\n'+d['question']
 
-def schema(packet,stage,wire_revision='supported-v2'):
+def schema(packet,stage,wire_revision='supported-v2',version='v39'):
     g.require(wire_revision in {'unsupported-v1','supported-v2'},'unknown faceted wire schema')
-    d=spec(stage);source=packet['case']['source'];claims=packet['candidate']['claims'];n=len(claims)
+    d=spec(stage,version);source=packet['case']['source'];claims=packet['candidate']['claims'];n=len(claims)
     status={'type':'string','enum':['pass','reject','unresolved']}
     string={'type':'string'};strings={'type':'array','items':string}
     evidence={'type':'array','minItems':1,'maxItems':1,'items':{'type':'object','additionalProperties':False,'properties':{'quote':{'type':'string','enum':[source]}},'required':['quote']}}
@@ -50,12 +52,12 @@ def schema(packet,stage,wire_revision='supported-v2'):
         portable(result)
     return result
 
-def body(packet,stage,model,wire_revision='supported-v2'):
+def body(packet,stage,model,wire_revision='supported-v2',version='v39'):
     payload=dict(original_source=packet['case']['source'],candidate_batch=packet['candidate'],authored_at=packet['case'].get('authored_at'),candidate_count=len(packet['candidate']['claims']),required_checked_indices=list(range(len(packet['candidate']['claims']))))
-    return dict(model=model,max_tokens=6000,system=prompt(stage),messages=[dict(role='user',content=f.canonical(payload).decode())],output_config=dict(effort='low',format=dict(type='json_schema',schema=schema(packet,stage,wire_revision))),service_tier='standard_only')
+    return dict(model=model,max_tokens=6000,system=prompt(stage,version),messages=[dict(role='user',content=f.canonical(payload).decode())],output_config=dict(effort='low',format=dict(type='json_schema',schema=schema(packet,stage,wire_revision,version))),service_tier='standard_only')
 
-def check(j,packet,stage,shape):
-    g.require(stage is not None,'review responsibility binding required');d=spec(stage);shape(j,schema(packet,stage))
+def check(j,packet,stage,shape,version='v39'):
+    g.require(stage is not None,'review responsibility binding required');d=spec(stage,version);shape(j,schema(packet,stage,version=version))
     source=packet['case']['source'];claims=packet['candidate']['claims'];g.require(j['stage']==stage,'review responsibility changed')
     g.require(all(s.strip() for s in j['uncertainty_flags']),'empty uncertainty flag')
     unresolved=bool(j['uncertainty_flags']);rejected=False

@@ -1630,6 +1630,13 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     assert!(
         validate_proposal_reviews_bound(&faceted_plan, &disagreement, &batch, &source).is_err()
     );
+    let mut revised_facets = faceted_plan.clone();
+    revised_facets.prompt_version = Some("extraction-v40".into());
+    assert_eq!(revised_facets.review_stages(), faceted_plan.review_stages());
+    assert!(
+        validate_proposal_reviews_bound(&revised_facets, &faceted_reports, &batch, &source).is_ok()
+    );
+    assert_ne!(revised_facets.hash().unwrap(), faceted_plan.hash().unwrap());
     let mut shared_claim = canonical.clone();
     shared_claim["inventory"][0]["claim_indices"] = json!([0, 1]);
     assert!(

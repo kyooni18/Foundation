@@ -16,8 +16,12 @@ pub(super) const STAGES: [&str; 9] = [
     "Source-commentary expansion",
     "whole-batch coverage",
 ];
+pub(super) const DEFINITIONS_40: &str = include_str!("../../prompts/extraction-v40/facets.json");
 pub(super) fn spec(stage: &str) -> Result<Value> {
-    let definitions: Vec<Value> = serde_json::from_str(DEFINITIONS).expect("frozen facets");
+    spec_for(stage, DEFINITIONS)
+}
+pub(super) fn spec_for(stage: &str, definitions: &str) -> Result<Value> {
+    let definitions: Vec<Value> = serde_json::from_str(definitions).expect("frozen facets");
     definitions
         .into_iter()
         .find(|s| s["stage"] == stage)

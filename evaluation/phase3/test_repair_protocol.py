@@ -97,6 +97,13 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertEqual(structured['max_tokens'],6000)
         self.assertEqual(structured['system'],faceted_review.prompt(active))
         self.assertEqual(len(repair.stages('v39')),9)
+        self.assertEqual(repair.stages('v40'),repair.stages('v39'))
+        for key,stage_name in repair.stages('v40').items():
+            a=repair.body(packet,'v39',stage_name)
+            b=repair.body(packet,'v40',stage_name)
+            if key in {'atomicity','source_meta','coverage'}:self.assertNotEqual(a,b)
+            else:self.assertEqual(a,b)
+        self.assertEqual(repair.reader_body('One isolated proposition','v39'),repair.reader_body('One isolated proposition','v40'))
         def supported_arrays(value):
             if isinstance(value,dict):
                 self.assertNotIn('maxItems',value)
