@@ -1,0 +1,35 @@
+--- a/src/budget.rs
++++ b/src/budget.rs
+@@ -7,7 +7,7 @@
+     time::Duration,
+ };
+ 
+-const MAX_LIMIT: i64 = 4_932_653_350;
++const MAX_LIMIT: i64 = 4_982_653_350;
+ #[derive(Clone)]
+ pub struct Budget(PathBuf);
+ fn quota<T>(_: T) -> ProviderError {
+--- a/evaluation/phase3/guarded_haiku.py
++++ b/evaluation/phase3/guarded_haiku.py
+@@ -15,8 +15,8 @@
+ import focused_review as focused
+ 
+ MODEL = 'anthropic/claude-haiku-5.5'
+-LIMIT = 4_932_653_350
+-CONTINUATION = 150_000_000
++LIMIT = 4_982_653_350
++CONTINUATION = 200_000_000
+ OUTPUT = 2400
+ PACKETS = focused.ROOT / 'reports/evidence/phase-3/focused-continuation/replay/packets.json'
+ PACKETS_HASH = '5882ef42d5435a1b23f03235e18275ed00d3b34f7092f61c1474f70c1c00f753'
+--- a/evaluation/phase3/test_policy_proposal.py
++++ b/evaluation/phase3/test_policy_proposal.py
+@@ -24,7 +24,7 @@
+             spec = importlib.util.spec_from_file_location('proposed_guard', root / 'evaluation/phase3/guarded_haiku.py')
+             proposed = importlib.util.module_from_spec(spec)
+             spec.loader.exec_module(proposed)
+-            self.assertEqual(current.LIMIT, 4_932_653_350)
++            self.assertEqual(current.LIMIT, 4_982_653_350)
+             self.assertEqual(proposed.LIMIT, 4_882_653_350)
+             self.assertIn('const MAX_LIMIT: i64 = 4_882_653_350;', (root / 'src/budget.rs').read_text())
+             conn = sqlite3.connect(root / 'fixture.sqlite')

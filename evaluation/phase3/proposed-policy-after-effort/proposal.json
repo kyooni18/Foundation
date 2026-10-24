@@ -1,0 +1,19 @@
+{
+  "status": "inert; approval pending",
+  "starting_commit": "85b4d03",
+  "approved_by_user": false,
+  "old_ceiling_nanos": 4932653350,
+  "proposed_ceiling_nanos": 4982653350,
+  "additional_capacity_nanos": 50000000,
+  "current_cumulative_upper_nanos": 4928823550,
+  "current_remaining_nanos": 3829800,
+  "next_source_reservation_nanos": 4636800,
+  "requests": 76,
+  "unsettled": 0,
+  "historical_charges_unchanged": true,
+  "real_ledger_changed": false,
+  "patch_check": "pass",
+  "private_backup_sql_history_preservation": "pass",
+  "stale_sql_rejected": true,
+  "semantic_acceptance": "incomplete; further investigation and measured repair required, not guaranteed by funding"
+}
