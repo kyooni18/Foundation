@@ -276,3 +276,5 @@ pub(super) const DEFINITIONS_43: &str = include_str!("../../prompts/extraction-v
 pub(super) const DEFINITIONS_44: &str = include_str!("../../prompts/extraction-v44/facets.json");
 
 pub(super) const DEFINITIONS_45: &str = include_str!("../../prompts/extraction-v45/facets.json");
+
+pub(super) const DEFINITIONS_46: &str = include_str!("../../prompts/extraction-v46/facets.json");
