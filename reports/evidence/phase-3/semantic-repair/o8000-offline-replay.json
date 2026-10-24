@@ -1,0 +1,111 @@
+{
+  "evidence": "historical v23/o8000 unchanged; retrospective protocol consistency only",
+  "responses": 9,
+  "aggregate_consistent": 3,
+  "aggregate_inconsistent": 6,
+  "semantic_quality_after": null,
+  "independently_adjudicated_ground_truth": false,
+  "rows": [
+    {
+      "id": "focused-haiku-r1-ambiguous_ref-primary-o8000",
+      "request_sha256": "7353c0f467954a9bc4bd55cf03f0295ba2363e069844c8d7769e02475706ffef",
+      "response_sha256": "a599a9770a46fa169d8aed56f5fa60d8f70c17d8843bf99bbe3fb8cc99b7652d",
+      "model_verdict": "unresolved",
+      "dimension_consistent_verdict": "unresolved",
+      "aggregate_consistent": true,
+      "korean_not_applicable_claims": [],
+      "claim_count": 2,
+      "inventory_count": 2
+    },
+    {
+      "id": "focused-haiku-r1-ambiguous_ref-repeat-o8000",
+      "request_sha256": "0500829132b073c41baa9b4aa15c01f489a4bb3fc5f8d2546124ee799027d33e",
+      "response_sha256": "ae9ef1e56c895e5b54ab0d2d07baeec90b0c4b35eb1a5a6e99895108c6fdb965",
+      "model_verdict": "pass",
+      "dimension_consistent_verdict": "unresolved",
+      "aggregate_consistent": false,
+      "korean_not_applicable_claims": [],
+      "claim_count": 2,
+      "inventory_count": 2
+    },
+    {
+      "id": "focused-haiku-r1-habitual_temporal-primary-o8000",
+      "request_sha256": "93b45e221e1ec23a30ad9a437f3f365da9812b203406e961b7850ad81479b650",
+      "response_sha256": "f4cf37ec87a6ec5d8f364f5f08a06f009b922792727929ef52d22f1da4d571c7",
+      "model_verdict": "pass",
+      "dimension_consistent_verdict": "unresolved",
+      "aggregate_consistent": false,
+      "korean_not_applicable_claims": [],
+      "claim_count": 1,
+      "inventory_count": 1
+    },
+    {
+      "id": "focused-haiku-r1-hypothetical-primary-o8000",
+      "request_sha256": "97ef9511fdd7e8b32fc3d0e109003107b9f29400077064b2c2b9f934a3af3bb2",
+      "response_sha256": "2aa134f2b6e8408892a9f256007808d183c1d82c1751fc07499e86ecef05b0da",
+      "model_verdict": "pass",
+      "dimension_consistent_verdict": "unresolved",
+      "aggregate_consistent": false,
+      "korean_not_applicable_claims": [],
+      "claim_count": 1,
+      "inventory_count": 1
+    },
+    {
+      "id": "focused-haiku-r1-nested_quote-primary-o8000",
+      "request_sha256": "d4416a9345139897d622f5226160aebe283199dcf70e481ad7469c69cd3df48d",
+      "response_sha256": "1d55e5b9dab61ab6e3ce0cc7b17f268078c9463ff2db74f33523c32e7b7ea6f7",
+      "model_verdict": "unresolved",
+      "dimension_consistent_verdict": "unresolved",
+      "aggregate_consistent": true,
+      "korean_not_applicable_claims": [],
+      "claim_count": 2,
+      "inventory_count": 2
+    },
+    {
+      "id": "focused-haiku-r1-nested_quote-repeat-o8000",
+      "request_sha256": "094d7a9aec06df947bcb907dfcd7c1de1c1348cadbb001c038dd45310495dca0",
+      "response_sha256": "3985083fd11e9f221d74b407faa35568cd76a2a19dc5327b0b835b4c2e4cffc2",
+      "model_verdict": "pass",
+      "dimension_consistent_verdict": "unresolved",
+      "aggregate_consistent": false,
+      "korean_not_applicable_claims": [],
+      "claim_count": 2,
+      "inventory_count": 2
+    },
+    {
+      "id": "focused-haiku-v23-fresh-003-primary-o8000",
+      "request_sha256": "283eeb3ffd887d14bbccd3522c78fc41522ad2e402a75d4495329b0964708c67",
+      "response_sha256": "c0e06d4d88d2de56ac07f91fd5632961e4fffbdd752c23e88a92ffcf4679f70c",
+      "model_verdict": "unresolved",
+      "dimension_consistent_verdict": "fail",
+      "aggregate_consistent": false,
+      "korean_not_applicable_claims": [],
+      "claim_count": 1,
+      "inventory_count": 1
+    },
+    {
+      "id": "focused-haiku-v23-fresh-003-repeat-o8000",
+      "request_sha256": "16ef564eb84bb9b4ea24621aa13f416adad9aba3ead199fa2c8be324f5f9eb67",
+      "response_sha256": "355bea6ac7c9db1af19e215282ac50176d1dcd686f9100bca491cf2ff868e1a2",
+      "model_verdict": "unresolved",
+      "dimension_consistent_verdict": "fail",
+      "aggregate_consistent": false,
+      "korean_not_applicable_claims": [],
+      "claim_count": 1,
+      "inventory_count": 1
+    },
+    {
+      "id": "focused-haiku-v23-fresh-004-primary-o8000",
+      "request_sha256": "4bb13ef40d44b4ddecc6bde775e66e68aa5ee8db70a132b8ecc41a73c4f54e7f",
+      "response_sha256": "f528c1bad7a7cfe70cec6d7fd56884320dc9e37a6e20684fd0f7ee1474f460b5",
+      "model_verdict": "unresolved",
+      "dimension_consistent_verdict": "unresolved",
+      "aggregate_consistent": true,
+      "korean_not_applicable_claims": [
+        1
+      ],
+      "claim_count": 2,
+      "inventory_count": 2
+    }
+  ]
+}

@@ -702,3 +702,23 @@ Cross-source citation verification remains deferred: source_citation is Phase 4 
 Phase 3 has no trusted cited-span/semantic-support authority model. Even an existing
 user Source ID supplied by a model cannot confer user authority. Unsupported citation
 fields fail schema validation; non-user speaker=user remains unresolved.
+
+### D-82 — Semantic review remains diagnostic after a coherent false acceptance
+Frozen v23 prompt/evidence is unchanged. V24 corrects contradictory decomposition and
+quoted-reference examples and introduces a source-bound, per-dimension review schema.
+The v24/v25 validator checks exact Claim identity and unique original quotations,
+rejects inconsistent aggregate verdicts, and treats disagreement across its three
+source-grounded reviews as unresolved. The same checks run at proposal quarantine,
+local fidelity inspection, and exact-hash user approval; standalone readers remain
+source-blind and cannot establish entailment. In mixed/Korean Sources,
+`korean_meaning=not_applicable` is rejected conservatively even on an English Claim:
+a model can omit the Korean antecedent from its evidence, so source-dependency
+classification is not yet reliable enough to relax this guard.
+
+This protocol establishes internal consistency, not semantic truth. On 2026-10-24,
+Claude Haiku 5.5 returned a protocol-valid `pass` for the known unsupported
+`r1-nested_quote` candidate under both v24 and v25 prompts. V24 correctly rejected
+the known non-atomic `v23-fresh-003` candidate. These targeted outcomes do not
+justify promoting a new prompt, treating model agreement as ground truth, or tagging
+Phase 3. All proposals remain quarantined pending the existing exact-hash local-user
+review. Reviewer false acceptance and extraction quality remain open acceptance risks.
