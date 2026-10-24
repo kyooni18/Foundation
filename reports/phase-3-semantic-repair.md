@@ -1,6 +1,24 @@
 # Phase 3 semantic repair — acceptance remains incomplete (2026-10-24)
 
-## Latest offline corrections
+## Latest authorized continuation
+
+The user approved the pending up-to-$0.05 increase. Implementation commits
+`1324ca8` and `5b9b993` preserve the existing ledger and add versioned reviewer
+experiments plus faithful replay of invalid judgments. Three v30 batches now have
+complete passing Rust-verified diagnostic traces: recent habit, ambiguous reference,
+and mixed Korean/English meaning. The other three priority cases remain ineligible;
+v31 still produces false-rejection risks and a contradictory pass. Neither profile
+is promoted, and Phase 3 remains incomplete.
+
+All required checks pass (48 Rust, 40 Python, fmt, Clippy). This continuation used
+35 settled calls / $0.04693420 conservative upper bound. Cumulative bound:
+**$4.92664225**, ceiling **$4.93265335**, remaining **$0.00601110**, zero unsettled.
+Provider billing is unknown. Full results, denominators, failures and remaining work:
+[authorized continuation](phase-3-authorized-continuation.md).
+Machine audit: `reports/evidence/phase-3/v30-authorized/completion-audit.json`.
+The sections below preserve earlier checkpoints and their historical budgets.
+
+## Earlier offline corrections
 
 `0038290` and `725c8a7` close repeated-inventory, blank-explanation and decomposed-
 Korean review bypasses, and preserve legitimate empty extractions. All 48 Rust and

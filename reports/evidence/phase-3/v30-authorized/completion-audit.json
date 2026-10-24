@@ -1,0 +1,45 @@
+{
+  "status": "incomplete",
+  "starting_commit": "70d5166",
+  "implementation_commits": [
+    "1324ca8",
+    "5b9b993"
+  ],
+  "scope": "Original Phase 3 semantic correctness repair; unchanged acceptance requirements",
+  "user_authorization": "Added credits - proceed. approved pending up-to-$0.05 proposal.",
+  "new_requests": 35,
+  "new_usage_upper_nanos": 46934200,
+  "ledger": {
+    "ceiling_nanos": 4932653350,
+    "cumulative_upper_nanos": 4926642250,
+    "prior_nanos": 4782653350,
+    "provider_billed_usd": null,
+    "recorded_upper_nanos": 143988900,
+    "remaining_nanos": 6011100,
+    "requests": 75,
+    "unsettled": 0
+  },
+  "production_approvals": 0,
+  "production_default_changed": false,
+  "phase_3_tag": false,
+  "current_v30_priority_batches": 6,
+  "current_v30_generated_claims": 10,
+  "v30_complete_passing_diagnostic_traces": 3,
+  "v31_generated_batches": 1,
+  "v31_complete_passing_diagnostic_traces": 0,
+  "acceptance_obligations": {
+    "atomic_source_grounded_claims": "Three v30 traces pass exact full gate; no independent general quality proof.",
+    "korean_fidelity": "Habit, ambiguous reference and mixed-language cases have complete v30 traces; nested, delay and hypothetical remain ineligible.",
+    "known_false_acceptance": "V31 old nested gloss and fused delay reject; old irritation inference unresolved. All three withheld, but narrow diagnostics are not general reliability proof.",
+    "review_disagreement": "Invalid primary and contradictory pass fail closed. Nested bounded repeat differs. No majority, normalization or substitute passing subset.",
+    "coverage": "Ten core propositions represented in six v30 editorial inventories; exact full source-review agreement proven in three traces only.",
+    "authority": "Required Rust authority/lifecycle/publication tests pass; no Claim approved or published.",
+    "quality_evidence": "Insufficient for full Phase 3 acceptance. V31 false-rejection risks and contradiction remain; no promotion."
+  },
+  "remaining_work": [
+    "Repair reviewer confusion between conservative unknown arguments, source-commentary and genuine uncertainty without weakening entailment.",
+    "Demonstrate full current-profile reader plus three source-review traces on unresolved priority cases.",
+    "Measure known negative controls and bounded repeat agreement under the repaired profile; retain all failures.",
+    "Retain broader missing-profile cases as unassessed and substantiate any broader Korean reliability claim."
+  ]
+}

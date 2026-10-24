@@ -1,0 +1,18 @@
+Diff in /Users/kyooni18/Code/PrimeRadiant/tests/extraction.rs:1528:
+         .as_object_mut()
+         .unwrap()
+         .remove("duplicates");
+-    assert!(validate_proposal_reviews_bound(
+-        &meta_plan,
+-        &reports(&missing_duplicates),
+-        &batch,
+-        &source
+-    )
+-    .is_err());
++    assert!(
++        validate_proposal_reviews_bound(&meta_plan, &reports(&missing_duplicates), &batch, &source)
++            .is_err()
++    );
+     let mut invented = canonical.clone();
+     invented["inventory"][0]["proposition"] = json!("parallel execution is proved");
+     assert!(

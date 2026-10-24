@@ -1,176 +1,184 @@
-# Phase 3 authorized continuation — 2026-10-23
+# Phase 3 authorized continuation — incomplete, 2026-10-24
 
-**Implemented but unverified. Semantic acceptance remains Blocked by the provider-cap
-requirement and incomplete independent semantic evidence. No phase-3 tag.**
+## Checkpoint and decision
 
-Initial HEAD: `1e2a74b081ba9ab50af1e43832efcd22f167fd90`. Implementation commit:
-`ac2121d` (authorized policy and provider refusal). Final delivery HEAD is the commit
-containing this report: `git log -1 --format=%H -- reports/phase-3-authorized-continuation.md`.
-This adds current results to the prior final-continuation report; its earlier results
-and historical evidence remain preserved.
+Started at `70d5166`. Budget amendment: `1324ca8`; implementation checkpoint:
+`5b9b993`. Ending evidence/report commit is the commit containing this document.
+The human's **“Added credits - proceed.”** approved the existing up-to-$0.05
+proposal. Its guarded SQL updated the existing ledger, preserving all 40 prior
+request rows and the carried prior. No historical amount was repriced or reset.
 
-## Complete — authorized local policy amendment
+Three v30 priority batches now have complete passing diagnostic traces, replayed
+through the actual Rust gate with valid reconstructed Plan hashes. That is a
+substantive improvement over the previous checkpoint's zero complete passing
+traces. **Full Phase 3 semantic acceptance is still not established.** The other
+three priority cases remain ineligible, and the v31 reviewer experiment still
+misreads conservative arguments and emits contradictory judgments. Neither profile
+is promoted. No Claim was approved or published; no `phase-3` tag was created.
 
-The human follow-up said: “Then complete phase 3 / Its ok to spend that amount.”
-This authorizes the concrete $0.10 additional proposal described in the previous
-response, retaining the cumulative restriction strictly below $5.
+Evidence: `reports/evidence/phase-3/v30-authorized/`. Original Sources, frozen
+reference labels, earlier prompts and raw results remain unchanged. The five
+missing current-profile cases remain unassessed, not passed. The six priority
+Sources are development regressions after prompt tuning, not fresh holdouts.
 
-Applied the reviewed `evaluation/phase3/proposed-policy/ceiling.patch` to the two
-existing hard limits, and the exact guarded `ceiling.sql` transaction to the existing
-`.local/openrouter-phase2-phase3.sqlite`. Verified no running evaluation/production
-worker before application. No ledger was replaced, reset or newly provisioned.
+## Investigation and changes
 
-| Accounting | Before | After |
-|---|---:|---:|
-| Existing ledger ceiling | $4.50 | $4.88265335 |
-| Conservative historical account-wide prior | $4.78265335 | unchanged |
-| Request rows | 0 | 0 |
-| Settled new cost / pending reservations | $0.00 / $0.00 | $0.00 / $0.00 |
-| Local authorized headroom | $0.00 | $0.10 |
+1. V30's first nested-source review returned `reject` with empty Claim/inventory
+   arrays, despite two supplied Claims. Existing validation correctly rejected it.
+   One bounded identical-input repeat assessed both Claims and passed. The primary
+   failure remains in the denominator; the repeat is not substituted into a
+   successful primary trace.
+2. The diagnostic replay had assumed every saved review had a valid outcome
+   sidecar. It now verifies protocol-invalid rejection artifacts against the raw
+   response and exact failure reason, retaining them in repeat comparisons. It
+   still fails on missing evidence or unexpected replay drift.
+3. Complete-trace replay now supports v30/v31 as well as v29 and preserves failed
+   source-review prefixes. It reconstructs configuration from exact saved requests;
+   this is diagnostic provenance, not a previously quarantined production job.
+4. V30 delay extraction separates the conjecture from lack of verification and
+   retains the unspecified affected target in both. Its reviewer nevertheless
+   treated Korean object ellipsis as unsupported. V31 explains licensed resolution
+   to a sole salient conjecture, distinguishing that proposition from its unknown
+   affected entity. The actual v31 review resolved the object, but emitted `pass`
+   plus uncertainty flags. Validation rejected that contradiction without repair.
+5. V30's hypothetical uses a phrase that can mark the experiment's *target*
+   unknown instead of identifying an unnamed experiment. V31 frames distinguish
+   entity identity from purpose/target. New extraction marks experiment identity
+   unknown, preserving the conditional plan. Its source reviewer misreads the
+   identity phrase as an independently asserted unknown *speaker* and rejects it.
+   This is evidence against promoting the experiment, not a repaired reliability
+   claim.
+6. V31's diagnostic schema requires at least one Claim/inventory row when reviewing
+   a nonempty batch, using the API-supported `minItems: 1`. Valid empty batches
+   retain their empty-array path. Exact count/identity and semantic validation
+   remain necessary; a nonempty array alone proves neither coverage nor truth.
 
-The new cumulative ceiling is $0.11734665 below $5. It constrains all consumers of
-the same ledger. The dispatcher additionally retains its persistent $0.10 continuation
-limit, conservative reservations, bounded requests, no retries-to-pass, and no fallback.
-Historical account-wide usage remains conservative accounting, not exact task cost.
-Authorization and before/after ledger hashes are in
-`reports/evidence/phase-3/authorized-focused/authorization.json` and
-`policy-application.json`. The authorization is now supplied; it is no longer the
-reason local spending is blocked.
+V31 remains an opt-in unsuccessful reliability experiment. Earlier prompt assets
+are frozen. There is no case-specific rewriting of generated Claims, invented
+agreement, new dependency, schema migration or Phase 4 feature.
 
-## Complete — current model and workload preflight
+## All six v30 priority cases
 
-Fresh public catalog and endpoint GETs verify `anthropic/claude-haiku-5.5`:
-1,000,000 context tokens, 128,000 maximum completion, `low` reasoning, `max_tokens`
-and `response_format` support. The frozen evaluation uses low reasoning, JSON output,
-2,400 completion tokens, a pinned endpoint, `require_parameters=true`, and no fallback.
+| Source | Core Source propositions / generated Claims | Actual review result |
+| --- | --- | --- |
+| Nested report | 2 / 2 | Correct full report chain, narrator-bound possessive in both Claims and separate disagreement on editorial inspection. Primary review protocol-invalid; bounded repeat passes. No complete trace. |
+| Ambiguous reference | 2 / 2 | Unknown late third person and independently targeted-as-unknown irritation. No invented lateness cause. Two readers plus three Source reviews pass; Rust gate eligible. |
+| Delay conjecture / verification | 2 / 2 | Separate attributed propositions, conjecture and unknown affected target retained. Two readers pass; first Source review unresolved over elliptical verification object. Stops there. |
+| Hypothetical | 1 / 1 | Condition, threshold and intention preserved; unknown-argument wording questionable. Reader and first Source review pass; fidelity review rejects. Stops there. |
+| Recent habit | 1 / 1 | Recent ongoing daily 6 a.m. habit anchored to original statement; narrator role separate from authenticated user. Reader plus three Source reviews pass; Rust gate eligible. |
+| Mixed Korean/English | 2 / 2 | Worker-count fact and limitation separated. English Claim names Mori/worker_count/4; Korean dependency assessed on both Claims. Two readers plus three Source reviews pass; Rust gate eligible. |
 
-Listed base prices on the selected endpoint are $0.10 input / $0.50 output per million
-tokens. Long-context and cache-write tiers are higher. The unchanged quote logic
-uses the highest advertised tier/cache-write input rate ($1.00 per million) and
-output rate ($2.50 per million), plus its 2× reservation margin and 4096-token envelope.
-It takes no cache discount and supplies no search tools/plugins. These are metadata
-quotes, not billed execution prices.
+This covers **6/6 selected v30 batches, 10 generated Claims and 10 editorial core
+Source propositions**. No core proposition omission was found on this assistant's
+inspection. That does not establish independently adjudicated semantic accuracy:
+the hypothetical's argument wording remains questionable and only **3/6** have
+complete passing gate traces. Five Claims are in those three eligible diagnostic
+batches; eligibility is not approval or publication. `editorial-assessment.json`
+records every batch, including failed/unresolved ones.
 
-All seven frozen candidate packets pass metadata/context/reservation preflight.
-The largest conservative reservation is $0.0307, which fits the local $0.10 allowance.
-Available workload remains seven primaries plus three designated repeats, with a
-maximum permitted 12 primaries and 3 repeats if missing candidates become available.
-No additional extraction call is inferred or silently added to this evaluation workload.
-Fresh metadata, hashes, per-case quotes and missing-case IDs are saved in
-`model-preflight.json` and `workload-preflight.json`.
+The v31 extraction cohort is separately **1 batch / 1 Claim**, the hypothetical,
+with reader pass and Source rejection. It has zero complete passing traces.
+Other v31 reviews assess older candidates and cannot be credited as v31 extraction.
 
-## Blocked — existing credential has no provider cap
+## Review reliability and controls
 
-The actual guarded dispatcher was invoked with the existing credential, the same
-persistent ledger, exact frozen packet and recorded user authorization. It returned:
+V30 Source reviews: **14 requests: 11 pass, 1 reject, 1 unresolved, 1 protocol-invalid**.
+All eight v30 isolated-reader requests pass. The complete traces for habit,
+ambiguous reference and mixed language have exact agreement across their three
+Source reviews on required dimensions, full-Source evidence, proposition inventory,
+Claim mappings and uncertainty. Reasons may differ; semantic statuses and support
+must agree. Rust replay verifies these obligations, not just Python diagnostics.
 
-`provider cap blocked: non-resetting cap required`
+The single bounded v30 identical-input pair has differing returned verdicts
+(`reject` without any assessment versus `pass`) and differing complete signatures:
+**0/1 label agreement, 0/1 complete agreement**. Because the first response is
+invalid, this is not a pair of two valid semantic interpretations. It still
+precludes claiming reliable repeated judgment. No majority vote is used.
 
-This happened after three metadata GETs and before reservation or POST. The API key
-returns `limit=null`, `limit_remaining=null`, `limit_reset=null`: it is uncapped.
-The historical credential-file pointer resolves to the same credential as the current
-environment, so it is not an alternative capped key. No other key or account was used.
+V31 Source reviews: **6 requests: 3 reject, 2 unresolved, 1 protocol-invalid**:
 
-The current policy requires a positive non-resetting provider cap no greater than the
-ledger ceiling, plus enough provider headroom for the conservative reservation. The
-available key's pre-existing lifetime usage already exceeds the cumulative task ceiling.
-Setting that key's absolute cap to $4.88265335 would therefore provide no usable
-headroom. That lifetime usage is not substituted for task cost or added to the ledger.
-No exact account-wide balance/usage is committed in the evidence.
+- Original bad nested gloss: reject.
+- Original fused conjecture/verification: reject, with two inventory items.
+- Original inferred irritation target: unresolved; withheld, not counted a correct rejection.
+- Corrected v30 delay: all dimensions pass, but `pass` with flags is invalid.
+- New v31 hypothetical: reject with an erroneous unknown-speaker rationale.
+- Existing assistant-authored positive nested control: unresolved, confusing unknown
+  narrator identity with the identified professor and adding a certainty concern.
 
-The existing credential also fails the read-only management capability check:
-`GET /api/v1/keys` returns **401**, and no management credential is configured.
-OpenRouter documents a management key requirement for key updates and defines
-`limit=null` as unlimited. See the official
-[limits documentation](https://openrouter.ai/docs/api_reference/limits) and
-[management-key documentation](https://openrouter.ai/docs/guides/overview/auth/management-api-keys).
-No provider setting was mutated.
+Thus all **3/3 known-defective control requests are withheld**, including **2/3
+explicit rejections**. This narrow result does not establish a population false-
+acceptance rate. The positive control and hypothetical expose continuing false-
+rejection risks; there is no defensible independently adjudicated general false-
+rejection rate. One v31 reader passes. V31 does not demonstrate improved overall
+reviewer reliability and is not promoted. Raw outputs and failure classifications
+are retained rather than normalized.
 
-This continuation does not remove the provider guard, reset usage, create a new key,
-or switch accounts. To use this same shared key while retaining an independent
-provider backstop requires **management access to amend that existing key in place**
-and an explicitly reviewed amendment expressing its absolute cap relative to its
-preserved lifetime-usage baseline plus no more than the remaining $0.10 task allowance.
-That changes the existing absolute-cap comparison policy and is outside the applied
-ceiling.patch. The local task ledger must still remain at $4.88265335 with all history.
-Alternatively, a genuinely existing credential already satisfying the current guard
-would need to be identified without creating or rotating a key to bypass limits.
-No such compatible credential was found in the configured paths.
+The complete semantic-repair archive now contains **19 extraction requests** over
+six Sources, **36 Source-review requests** and **10 isolated-reader requests**.
+Those totals include older failed experiments. Historical o8000 remains 9 complete,
+4 protocol-valid, 5 invalid, 0 approved/published and 2 verdict disagreements among
+3 pairs; its earlier 2,400-token truncation stays separate.
 
-The precise current blocker is provider configuration/access, not missing permission
-to spend the already authorized $0.10. Funding alone cannot provide management access
-or prove semantic acceptance.
+## Verification and integrity
 
-## Complete — failure handling and verification
-
-The uncapped response previously reached `Decimal(None)` and produced an incidental
-conversion exception. The dispatcher now identifies absent/null/resettable/incompatible
-caps explicitly and refuses before reservation or POST. A new regression covers null,
-daily-reset and over-ceiling caps, asserting zero request rows and zero POSTs.
-The historical policy-proposal test now starts from pinned pre-amendment source,
-so it continues to test the exact reviewed patch after that patch has been applied.
-Offline preparation/accounting output no longer falsely states authorization is missing.
-
-Executed on implementation commit `ac2121d`, with actual process exit codes **0**:
+All required final commands exit **0** (`verification-final/results.json`):
 
 - `cargo fmt --check`
-- `cargo test --offline --all-targets`: **46 passed**, two subprocess helpers ignored
-  at top level and exercised by parent tests.
+- `cargo test --offline --all-targets`: 48 pass; two ignored subprocess workers
+  are exercised by their parent recovery tests.
 - `cargo clippy --offline --all-targets -- -D warnings`
-- `python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'`: **25 passed**.
-- Build and execute the local extraction revalidator on the identical seven frozen inputs.
-- Frozen 12-case source/reference/candidate/provenance audit.
-- Focused archive preparation and full archived extraction replay.
+- `python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'`: 40 pass.
 
-The Rust suite includes production approval/rejection, Korean routing safety,
-cross-source authority negatives, budget concurrency/restart, HTTP/MCP authorization,
-pagination and publication crash recovery. No model verdict or test bypasses exact-hash
-user-only publication. All model-quality tests remain separate from deterministic safety.
-Full command arguments, tested HEAD, exit codes and log hashes are in
-`reports/evidence/phase-3/authorized-focused/verification-commands.json`.
+Existing tests were extended for actual omitted-review evidence, v31 required
+review dimensions, nonempty-versus-empty output schemas, and the amended budget.
+An initial formatting failure was corrected; its log remains in `verification/`.
+No new Rust or Python test method was added.
 
-## Implemented but unverified — unchanged semantic acceptance
+`replay-final.json` validates exact saved request recipes, Source and response
+hashes, sidecars, usage and ledger charges. Three complete traces pass the Rust
+experimental gate; v30 delay/hypothetical and v31 hypothetical prefixes fail at
+the actual recorded stage. All reconstructed Plan hashes validate. Nested remains
+without a complete trace. No absent response or later review is fabricated.
 
-Before/after frozen results remain 12 selected (8 Korean / 2 mixed / 2 English),
-7 available current-profile batches, 11 Claims, 5 missing, 3 archived protocol-eligible,
-3 reviewer-rejected and 1 incomplete batch. Assistant editorial inspection remains
-5 pass / 0 fail / 2 unresolved batches. Rejected/incomplete/missing batches do not
-count as successful extraction. Editorial-plus-protocol valid Claim counts remain
-5 overall and 1 Korean; independent valid semantic coverage is **unknown**.
+Existing authority, Source immutability, exact-hash user approval, lifecycle,
+transactional publication, Unicode exact-quote anchoring and DeepSeek boundary
+checks pass. No model review supplies user authority. Preexisting `.yeet/` and
+`UI-Agent-Brief.md` remain untouched. Phase 1/2 tags are unchanged.
 
-Missing outputs: `new-003`, `new-007`, `new-018`, `new-025`, `new-042`.
-`r1-ambiguous_ref` retains the identical-text reviewer flip. `v23-fresh-003` retains
-its qualification-versus-independent-report dispute. No new primary or repeated
-Haiku judgment exists. No empirical improvement in reviewer reliability or Korean
-semantic quality is claimed. The frozen manifest, references, protocol and original
-Sources are unchanged; no new production Claims were published.
+## Spending
 
-Full archive replay remains 5,281 rows / 4,752 distinct payloads / 145 Source hashes;
-3,646 structural passes, 4,502 plan-hash passes and 2,624 experimental-gate-eligible
-payloads. Structural/protocol counts are not semantic accuracy.
+Current official [Haiku model pricing](https://platform.claude.com/docs/en/models/haiku-5-5/overview)
+and [structured-output schema support](https://platform.claude.com/docs/en/build-with-claude/structured-outputs)
+were checked on 2026-10-24. Standard/global, no caching/tools, existing conservative
+input-side rates and actual capped output reservation remain in force. Each call
+reserved before dispatch in the same SQLite ledger; no unbounded retry occurred.
 
-**Deferred:** cross-source semantic support and safe arbitrary-document chunking.
-Existing unresolved-authority refusal, 256 KiB intact request refusal, explicit
-Korean-capable Plan configuration, DeepSeek English-only default/Unicode guard,
-source immutability, provenance and exact-hash user approval remain in force.
+| Accounting item | Conservative USD |
+| --- | ---: |
+| Carried prior, unchanged | $4.78265335 |
+| Cumulative before this authorized continuation | $4.87970805 |
+| This continuation: 35 settled calls | $0.04693420 |
+| Recorded request total: 75 settled calls | $0.14398890 |
+| Cumulative upper bound | **$4.92664225** |
+| Approved cumulative ceiling | **$4.93265335** |
+| Remaining authorized headroom | **$0.00601110** |
 
-## Requests, completion and commits
+Zero unsettled requests and zero reservation overruns. All new responses completed;
+no new truncation. Provider-billed USD remains unknown: these are conservative
+computed accounting bounds. Unused capacity is retained. The ceiling stays strictly
+below $5. Historical requests, prior and charge conventions are unchanged.
 
-OpenRouter API calls during this continuation: **8 GETs, 0 completion POSTs**:
-two public model preflight GETs; two read-only checks of the same key; three GETs
-inside the guarded attempt; one management capability GET. Web documentation lookup
-is separate. Confirmed paid requests/tokens/cost: **0 / 0 / $0.00**.
-Request rows and pending reservations remain zero; authorized local budget remains
-**$0.10**, subject to the provider cap and conservative per-request reservations.
+## Remaining acceptance work
 
-Phase 3 cannot be declared complete until the guarded evaluations can run, the five
-missing candidates are obtained under an explicit bounded plan, disputed cases and
-all required semantic dimensions have independent adjudication, Korean quality and
-reviewer disagreement are measured for the claimed scope, and any needed wider
-independent acceptance evidence exists. Twelve diagnostic cases alone do not prove
-universal correctness. No phase-3 tag was created.
+The original acceptance scope remains in force. The model still confuses
+conservative unknown arguments with independently asserted source commentary,
+misclassifies licensed Korean ellipsis as uncertainty, and sometimes contradicts
+its own aggregate verdict. Source-review failure correctly withholds these
+batches; that safety does not demonstrate useful, reliable extraction acceptance.
 
-Commit `ac2121d` contains the applied authorized policy and deterministic regressions;
-the delivery commit contains this report and sanitized evidence. Existing phase-1
-and phase-2 tags are unchanged. Existing untracked `.yeet/` is preserved. Foundation
-Memory was consulted and updated; Jev remains unavailable in the tool inventory.
+Further work must produce a justified general reviewer correction, validate it on
+both positive and defective cases, retain bounded repeat failures, and establish
+complete current-profile traces for the unresolved priority cases. The five
+missing-profile cases remain unassessed and broader Korean quality remains
+unproven. Additional prompt versions or passing tests alone cannot satisfy that
+requirement. The machine-readable completion audit explicitly remains incomplete.

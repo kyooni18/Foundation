@@ -1,0 +1,62 @@
+{
+  "authorship": "assistant editorial inspection; not independent adjudication",
+  "scope": "All six v30 priority batches, including pre-grant nested extraction",
+  "cases": [
+    {
+      "case": "r1-nested_quote",
+      "source_propositions": 2,
+      "generated_claims": 2,
+      "core_editorial_result": "Preserves full professor/reviewer attribution and narrator possessive in both Claims; separate disagreement, no duplicate or team gloss.",
+      "full_trace": false,
+      "blocker": "Primary fidelity review omitted both Claims; bounded repeat passes. Invalid primary retained; repeat not substituted into a passing trace."
+    },
+    {
+      "case": "r1-ambiguous_ref",
+      "source_propositions": 2,
+      "generated_claims": 2,
+      "core_editorial_result": "Unidentified third person is late; independent irritation has explicitly unidentified target, no inferred causal link.",
+      "full_trace": true,
+      "blocker": null
+    },
+    {
+      "case": "v23-fresh-003",
+      "source_propositions": 2,
+      "generated_claims": 2,
+      "core_editorial_result": "Jinwoo conjecture and failure to verify split; unknown affected target retained in both, speech attribution and uncertainty preserved.",
+      "full_trace": false,
+      "blocker": "V30 source review unresolved on elliptical verification object. V31 diagnostic resolves object but pass plus flags is protocol-invalid."
+    },
+    {
+      "case": "r1-hypothetical",
+      "source_propositions": 1,
+      "generated_claims": 1,
+      "core_editorial_result": "Conditional intent, loss threshold and architecture retained. V30 unknown-argument phrase can refer to experiment target rather than experiment identity.",
+      "full_trace": false,
+      "blocker": "V30 source fidelity rejects. V31 new extraction marks unknown experiment identity, but source review misreads it as a separate unknown-speaker assertion and rejects."
+    },
+    {
+      "case": "r1-habitual_temporal",
+      "source_propositions": 1,
+      "generated_claims": 1,
+      "core_editorial_result": "Original-speaker role, original-statement relative recent time, daily 6 a.m. ongoing habit, unknown authenticated speaker.",
+      "full_trace": true,
+      "blocker": null
+    },
+    {
+      "case": "v23-fresh-004",
+      "source_propositions": 2,
+      "generated_claims": 2,
+      "core_editorial_result": "Korean Mori worker_count=4 assertion and English limitation separated; English text names its Korean antecedent. Both Claims assessed for Korean meaning.",
+      "full_trace": true,
+      "blocker": null
+    }
+  ],
+  "missing_current_profile_cases": [
+    "new-003",
+    "new-007",
+    "new-018",
+    "new-025",
+    "new-042"
+  ],
+  "independent_semantic_success_rate": null
+}

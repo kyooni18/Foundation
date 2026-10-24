@@ -791,3 +791,14 @@ check as extraction, including decomposed modern Hangul, rather than only precom
 syllables. Detection does not normalize Source bytes or alter evidence coordinates.
 Regression tests exposed all three prior failure groups and passed after correction;
 no new model-quality or Phase 3 acceptance claim follows from them.
+
+### D-88 — Preserve invalid reviews and retain v31 as an unpromoted experiment
+The authorized five-cent continuation preserves the existing ledger and all historical
+charges. V30 now has full diagnostic gate traces for habit, ambiguous reference and
+mixed Korean/English dependency. An omitted nested review and a contradictory v31
+pass remain invalid evidence, included in replay and comparisons. No passing repeat
+is substituted for a failed primary trace. V31 distinguishes unknown entity identity
+from affected target and clarifies licensed verification ellipsis; actual evaluation
+still shows false-rejection risks and contradictory uncertainty. It is not promoted.
+A full exact-Source quote, nonempty schema array or agreeing models is not independent
+semantic truth. Phase 3 remains incomplete under its unchanged acceptance criteria.
