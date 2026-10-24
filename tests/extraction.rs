@@ -1532,6 +1532,17 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
         validate_proposal_reviews_bound(&meta_plan, &reports(&missing_duplicates), &batch, &source)
             .is_err()
     );
+    let v31_hash = meta_plan.hash().unwrap();
+    meta_plan.prompt_version = Some("extraction-v32".into());
+    assert_ne!(meta_plan.hash().unwrap(), v31_hash);
+    assert!(meta_plan.source_bound_review());
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&canonical), &batch, &source).is_ok()
+    );
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&missing_duplicates), &batch, &source)
+            .is_err()
+    );
     let mut invented = canonical.clone();
     invented["inventory"][0]["proposition"] = json!("parallel execution is proved");
     assert!(

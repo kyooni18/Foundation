@@ -45,6 +45,7 @@ class RepairProtocolTest(unittest.TestCase):
         for row in duplicate_review['claims']:
             row['dimensions']['duplicates']=dict(status='pass',reason='independent source assertions')
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'pass')
+        self.assertEqual(repair.check(duplicate_review,packet,'v32')['verdict'],'pass')
         duplicate_review['claims'][0]['dimensions']['duplicates']['status']='reject'
         duplicate_review['verdict']='reject'
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'reject')

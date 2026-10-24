@@ -182,6 +182,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v31/frames.txt"),
                 include_str!("../../prompts/extraction-v31/review.txt"),
             )),
+            "extraction-v32" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v32/frames.txt"),
+                include_str!("../../prompts/extraction-v32/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -202,7 +207,7 @@ impl Plan {
         let (_, frames, review) = self.components()?;
         if matches!(
             self.version(),
-            "extraction-v29" | "extraction-v30" | "extraction-v31"
+            "extraction-v29" | "extraction-v30" | "extraction-v31" | "extraction-v32"
         ) {
             return Ok(format!(
                 "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
@@ -235,6 +240,7 @@ impl Plan {
             "extraction-v29" => Some(include_str!("../../prompts/extraction-v29/reader.txt")),
             "extraction-v30" => Some(include_str!("../../prompts/extraction-v30/reader.txt")),
             "extraction-v31" => Some(include_str!("../../prompts/extraction-v31/reader.txt")),
+            "extraction-v32" => Some(include_str!("../../prompts/extraction-v32/reader.txt")),
             _ => None,
         }
     }
@@ -255,6 +261,7 @@ impl Plan {
                 | "extraction-v29"
                 | "extraction-v30"
                 | "extraction-v31"
+                | "extraction-v32"
         )
     }
     fn source_meta_review(&self) -> bool {
@@ -265,6 +272,7 @@ impl Plan {
                 | "extraction-v29"
                 | "extraction-v30"
                 | "extraction-v31"
+                | "extraction-v32"
         )
     }
     pub fn hash(&self) -> Result<String> {
@@ -632,9 +640,12 @@ pub fn validate_source_review(
             plan.source_meta_review(),
             matches!(
                 plan.version(),
-                "extraction-v29" | "extraction-v30" | "extraction-v31"
+                "extraction-v29" | "extraction-v30" | "extraction-v31" | "extraction-v32"
             ),
-            matches!(plan.version(), "extraction-v30" | "extraction-v31"),
+            matches!(
+                plan.version(),
+                "extraction-v30" | "extraction-v31" | "extraction-v32"
+            ),
         )
     } else {
         validate_review(raw, batch.claims.len())
