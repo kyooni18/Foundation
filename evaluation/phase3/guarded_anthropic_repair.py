@@ -54,10 +54,13 @@ def check(j,packet):
     budget.require(len(j['claims'])==len(claims),'review omitted Claim')
     rejected=False
     unresolved=bool(j['uncertainty_flags'])
+    def unique(quote):
+        first=source.find(quote)
+        return bool(quote) and first>=0 and source.find(quote,first+1)<0
     for index,(row,claim) in enumerate(zip(j['claims'],claims)):
         budget.require(type(row['index']) is int and row['index']==index and
                        row['text']==claim['text'],'changed Claim identity')
-        budget.require(row['evidence'] and all(e['quote'] and source.count(e['quote'])==1
+        budget.require(row['evidence'] and all(unique(e['quote'])
                        for e in row['evidence']),'ambiguous/nonexact Claim evidence')
         korean=claim['lang']=='ko' or any('\uac00'<=c<='\ud7a3' for c in source)
         for key in DIMENSIONS:
@@ -73,7 +76,7 @@ def check(j,packet):
     budget.require(j['inventory'],'empty source proposition inventory')
     for row in j['inventory']:
         budget.require(row['proposition'].strip() and row['reason'].strip() and row['evidence']
-            and all(e['quote'] and source.count(e['quote'])==1 for e in row['evidence']),
+            and all(unique(e['quote']) for e in row['evidence']),
             'invalid inventory evidence')
         budget.require(all(type(i) is int and 0<=i<len(claims) for i in row['claim_indices']),
                        'invalid inventory Claim index')

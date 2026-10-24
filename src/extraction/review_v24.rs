@@ -25,7 +25,14 @@ fn quote_evidence(value: &Value, source: &str) -> Result<()> {
         let quote = span["quote"]
             .as_str()
             .ok_or_else(|| invalid("schema", "quote text required"))?;
-        if quote.is_empty() || source.matches(quote).count() != 1 {
+        // `matches` skips overlapping occurrences ("aaa" occurs twice in "aaaa").
+        // Count every Unicode-scalar boundary before trusting a unique quotation.
+        let occurrences = source
+            .char_indices()
+            .filter(|(start, _)| source[*start..].starts_with(quote))
+            .take(2)
+            .count();
+        if quote.is_empty() || occurrences != 1 {
             return Err(invalid(
                 "schema",
                 "evidence quote must identify one exact source span",
@@ -185,5 +192,17 @@ pub(super) fn validate(raw: &str, batch: &Batch, source: &SourceView) -> Result<
         Err(invalid("unresolved", "review cannot establish compliance"))
     } else {
         Err(invalid("semantic", "review rejected"))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::quote_evidence;
+    use serde_json::json;
+
+    #[test]
+    fn overlapping_exact_quotations_are_ambiguous() {
+        assert!(quote_evidence(&json!([{"quote":"aaa"}]), "aaaa").is_err());
+        assert!(quote_evidence(&json!([{"quote":"é"}]), "👩🏽‍💻é").is_ok());
     }
 }

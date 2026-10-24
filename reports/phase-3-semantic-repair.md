@@ -78,7 +78,7 @@ offsets. Ambiguous repeated quotes fail the new review protocol.
 
 ## Verification and cost
 
-Exit codes were 0 for `cargo test --offline --all-targets` (47 passing tests,
+Exit codes were 0 for `cargo test --offline --all-targets` (48 passing tests,
 2 ignored subprocess workers), `cargo clippy --offline --all-targets -- -D warnings`,
 `python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'` (38 passing),
 and final `cargo fmt --check`. The targeted v24 review regression passed. Offline
