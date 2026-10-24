@@ -141,6 +141,17 @@ class GuardedHaikuTest(unittest.TestCase):
             self.dispatcher().dispatch(self.packet)
         self.assertFalse(self.calls)
 
+        # The newly authorized cumulative ceiling preserves a hard stop, independent of continuation quota.
+        with sqlite3.connect(':memory:') as boundary:
+            boundary.executescript('CREATE TABLE budget(id INTEGER PRIMARY KEY, ceiling INTEGER, prior INTEGER);'
+                'CREATE TABLE request(id TEXT, estimate INTEGER, actual INTEGER);')
+            boundary.execute('INSERT INTO budget VALUES(1,?,?)',(g.LIMIT,g.LIMIT-1))
+            self.assertEqual(object.__new__(g.Dispatcher).check(boundary,1)[1],g.LIMIT)
+            with self.assertRaisesRegex(ValueError,'budget blocked'):
+                object.__new__(g.Dispatcher).check(boundary,2)
+            self.assertLess(g.LIMIT,g.STRICT_TOTAL)
+        boundary.close()
+
     def test_evidence_protocol_contains_historical_verdict_flip(self):
         record = json.loads((g.focused.ROOT / 'reports/evidence/phase-3/focused-continuation/reviewer-disagreement.json').read_text())
         # Actual legacy responses lack exact Claim identity, source spans and checks.

@@ -207,6 +207,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v36/frames.txt"),
                 include_str!("../../prompts/extraction-v36/review.txt"),
             )),
+            "extraction-v37" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v37/frames.txt"),
+                include_str!("../../prompts/extraction-v37/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -235,6 +240,7 @@ impl Plan {
                 | "extraction-v34"
                 | "extraction-v35"
                 | "extraction-v36"
+                | "extraction-v37"
         ) {
             return Ok(format!(
                 "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
@@ -272,6 +278,7 @@ impl Plan {
             "extraction-v34" => Some(include_str!("../../prompts/extraction-v34/reader.txt")),
             "extraction-v35" => Some(include_str!("../../prompts/extraction-v35/reader.txt")),
             "extraction-v36" => Some(include_str!("../../prompts/extraction-v36/reader.txt")),
+            "extraction-v37" => Some(include_str!("../../prompts/extraction-v37/reader.txt")),
             _ => None,
         }
     }
@@ -297,6 +304,7 @@ impl Plan {
                 | "extraction-v34"
                 | "extraction-v35"
                 | "extraction-v36"
+                | "extraction-v37"
         )
     }
     fn source_meta_review(&self) -> bool {
@@ -312,6 +320,7 @@ impl Plan {
                 | "extraction-v34"
                 | "extraction-v35"
                 | "extraction-v36"
+                | "extraction-v37"
         )
     }
     pub fn hash(&self) -> Result<String> {
@@ -687,6 +696,7 @@ pub fn validate_source_review(
                     | "extraction-v34"
                     | "extraction-v35"
                     | "extraction-v36"
+                    | "extraction-v37"
             ),
             matches!(
                 plan.version(),
@@ -697,10 +707,11 @@ pub fn validate_source_review(
                     | "extraction-v34"
                     | "extraction-v35"
                     | "extraction-v36"
+                    | "extraction-v37"
             ),
             matches!(
                 plan.version(),
-                "extraction-v34" | "extraction-v35" | "extraction-v36"
+                "extraction-v34" | "extraction-v35" | "extraction-v36" | "extraction-v37"
             ),
         )
     } else {
