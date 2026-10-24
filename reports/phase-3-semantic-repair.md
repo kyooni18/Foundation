@@ -1,5 +1,13 @@
 # Phase 3 semantic repair — acceptance remains incomplete (2026-10-24)
 
+## Latest offline corrections
+
+`0038290` and `725c8a7` close repeated-inventory, blank-explanation and decomposed-
+Korean review bypasses, and preserve legitimate empty extractions. All 48 Rust and
+40 Python tests pass. No model calls were made; spending and the pending capacity
+proposal are unchanged. See `reports/phase-3-offline-protocol-followup.md`.
+Semantic acceptance remains incomplete and the completion goal remains active.
+
 ## Current continuation
 
 The latest continuation (`05dc0a1`, `78b93c2`) fixes source-aware evaluation parity

@@ -774,3 +774,20 @@ A live v30 nested example produces two faithful editorially inspected core Claim
 with unknown speaker metadata, but has not completed source review or independent
 adjudication. No current-profile semantic acceptance, production default change or
 Phase 3 tag follows from this isolated improvement.
+
+### D-87 — Distinct inventory evidence, nonblank explanations and valid empty results
+A different explanation does not create another Source proposition. Bound review
+rejects repeated inventory identities based on exact proposition text, quote support
+and Claim mapping, ignoring order only in comparison copies. Raw judgments are
+retained. Required explanations and inventory descriptions must be nonblank.
+
+An empty inventory is valid only for a zero-Claim batch with a nonblank empty reason;
+three coherent, agreeing source reviews and later user approval remain required.
+Nonempty batches cannot omit inventory, and uncertain empty results fail closed.
+These consistency checks do not decide whether a Source truly lacks propositions.
+
+The Korean review obligation now uses the same conservative Hangul/Jamo presence
+check as extraction, including decomposed modern Hangul, rather than only precomposed
+syllables. Detection does not normalize Source bytes or alter evidence coordinates.
+Regression tests exposed all three prior failure groups and passed after correction;
+no new model-quality or Phase 3 acceptance claim follows from them.
