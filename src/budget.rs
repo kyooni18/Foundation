@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-const MAX_LIMIT: i64 = 4_999_999_990;
+const MAX_LIMIT: i64 = 5_999_999_990;
 #[derive(Clone)]
 pub struct Budget(PathBuf);
 fn quota<T>(_: T) -> ProviderError {

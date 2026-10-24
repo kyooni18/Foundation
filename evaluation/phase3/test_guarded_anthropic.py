@@ -41,7 +41,7 @@ class DirectClaudeTest(unittest.TestCase):
                        cache_read_input_tokens=0),
             content=[dict(type='text',text=json.dumps(self.judgment,ensure_ascii=False))])
         self.authorization = dict(explicit_user_authorization=True,
-            additional_limit_nanos=g.CONTINUATION,strict_total_below_nanos=5000000000,
+            additional_limit_nanos=g.CONTINUATION,strict_total_below_nanos=g.STRICT_TOTAL,
             authorization_reference='synthetic unit test only', provider='anthropic_direct')
 
     @contextmanager

@@ -1,0 +1,7 @@
+{
+  "provider": "anthropic_direct",
+  "explicit_user_authorization": true,
+  "authorization_reference": "Human: 한도 6달러로 초기화해줄 테니까 그냥 해. Raise cumulative ceiling to $6; preserve all historical charges.",
+  "additional_limit_nanos": 1217346640,
+  "strict_total_below_nanos": 6000000000
+}

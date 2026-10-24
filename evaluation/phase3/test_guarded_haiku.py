@@ -37,7 +37,7 @@ class GuardedHaikuTest(unittest.TestCase):
         self.response = dict(id='fixture-id', usage=dict(cost='0.001', prompt_tokens=100, completion_tokens=100),
             choices=[dict(finish_reason='stop', message=dict(content=json.dumps(self.judgment)))])
         self.auth = dict(explicit_user_authorization=True, additional_limit_nanos=g.CONTINUATION,
-                         strict_total_below_nanos=5_000_000_000, authorization_reference='TEST ONLY')
+                         strict_total_below_nanos=g.STRICT_TOTAL, authorization_reference='TEST ONLY')
 
     @contextmanager
     def connection(self):

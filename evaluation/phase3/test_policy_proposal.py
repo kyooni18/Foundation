@@ -24,7 +24,7 @@ class PolicyProposalTest(unittest.TestCase):
             spec = importlib.util.spec_from_file_location('proposed_guard', root / 'evaluation/phase3/guarded_haiku.py')
             proposed = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(proposed)
-            self.assertEqual(current.LIMIT, 4_999_999_990)
+            self.assertEqual(current.LIMIT, 5_999_999_990)
             self.assertEqual(proposed.LIMIT, 4_882_653_350)
             self.assertIn('const MAX_LIMIT: i64 = 4_882_653_350;', (root / 'src/budget.rs').read_text())
             conn = sqlite3.connect(root / 'fixture.sqlite')

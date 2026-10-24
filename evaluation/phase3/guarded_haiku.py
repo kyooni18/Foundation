@@ -1,6 +1,6 @@
 """Focused evaluator; never extraction or publication. Default CLI is offline.
 
-Uses the existing Rust ledger schema and authorized $4.99999999 hard ceiling. Authorization
+Uses the existing Rust ledger schema and authorized $5.99999999 hard ceiling. Authorization
 is necessary, never sufficient: no policy amendment or ledger provisioning here.
 Unknown outcomes retain reservations. All prices use Decimal, rounded upward.
 """
@@ -15,8 +15,9 @@ import urllib.request
 import focused_review as focused
 
 MODEL = 'anthropic/claude-haiku-5.5'
-LIMIT = 4_999_999_990
-CONTINUATION = 217_346_640
+LIMIT = 5_999_999_990
+STRICT_TOTAL = 6_000_000_000
+CONTINUATION = 1_217_346_640
 OUTPUT = 2400
 PACKETS = focused.ROOT / 'reports/evidence/phase-3/focused-continuation/replay/packets.json'
 PACKETS_HASH = '5882ef42d5435a1b23f03235e18275ed00d3b34f7092f61c1474f70c1c00f753'
@@ -171,7 +172,7 @@ class Dispatcher:
     def __init__(self, ledger, evidence, transport, authorization):
         require(authorization.get('explicit_user_authorization') is True and
                 authorization.get('additional_limit_nanos') == CONTINUATION and
-                authorization.get('strict_total_below_nanos') == 5_000_000_000 and
+                authorization.get('strict_total_below_nanos') == STRICT_TOTAL and
                 bool(authorization.get('authorization_reference')), 'authorization missing')
         self.ledger, self.evidence = Path(ledger), Path(evidence)
         self.transport, self.authorization = transport, authorization
@@ -190,7 +191,7 @@ class Dispatcher:
             'COUNT(*) FILTER(WHERE actual IS NULL), COUNT(*) FILTER(WHERE actual>estimate) FROM request').fetchone()
         continuation = conn.execute("SELECT COALESCE(SUM(COALESCE(actual,estimate)),0) FROM request WHERE id LIKE 'focused-haiku-%'").fetchone()[0]
         require(0 < ceiling <= LIMIT and prior >= 0 and pending < 4 and overruns == 0 and
-                prior + spent + estimate <= ceiling and prior + spent + estimate < 5_000_000_000 and
+                prior + spent + estimate <= ceiling and prior + spent + estimate < STRICT_TOTAL and
                 continuation + estimate <= CONTINUATION, 'budget blocked')
         return ceiling, prior + spent + estimate
 
