@@ -1551,6 +1551,19 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
             .is_err()
         );
     }
+    let mut contradictory_entailment = canonical.clone();
+    contradictory_entailment["claims"][0]["dimensions"]["unsupported_inference"]["status"] =
+        json!("reject");
+    contradictory_entailment["verdict"] = json!("reject");
+    assert!(
+        validate_source_review(
+            &meta_plan,
+            &contradictory_entailment.to_string(),
+            &batch,
+            &source
+        )
+        .is_err()
+    );
     let mut invented = canonical.clone();
     invented["inventory"][0]["proposition"] = json!("parallel execution is proved");
     assert!(

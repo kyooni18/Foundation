@@ -102,7 +102,9 @@ def shape(value, rule):
             shape(item,rule['items'])
 
 
-def check(j,packet,version):
+def check(j,packet,version,strict_entailment=None):
+    if strict_entailment is None:
+        strict_entailment=version=='v34'
     shape(j,schema(version))
     source=packet['case']['source']
     claims=packet['candidate']['claims']
@@ -130,6 +132,10 @@ def check(j,packet,version):
                            'unassessed Korean dependency')
             rejected |= d['status']=='reject'
             unresolved |= d['status']=='unresolved'
+        dimensions=row['dimensions']
+        budget.require(not (strict_entailment and dimensions['entailment']['status']=='pass' and
+            any(dimensions.get(k,{}).get('status')=='reject' for k in ['unsupported_inference','source_meta_expansion'])),
+            'contradictory complete-claim entailment')
         budget.require(all(f.strip() for f in row['uncertainty_flags']),'empty uncertainty flag')
         unresolved |= bool(row['uncertainty_flags'])
     empty_reason=packet['candidate'].get('empty_reason')
@@ -218,7 +224,7 @@ def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['f
         budget.immutable(evidence/(ident+'.request.json'),dict(id=ident,payload=request,
             packet_sha256=focused.sha(focused.canonical(packet)),
             source_sha256=focused.sha(packet['case']['source'].encode()),
-            review_stage=stage,review_effort=effort,review_output_tokens=output_tokens,reader_index=reader_index,prompt_sha256=focused.sha(
+            review_validation_version='source-checks-v5',review_stage=stage,review_effort=effort,review_output_tokens=output_tokens,reader_index=reader_index,prompt_sha256=focused.sha(
             (focused.ROOT/f"prompts/extraction-{version}/{'review' if reader_index is None else 'reader'}.txt").read_bytes()),
             system_sha256=focused.sha(request['system'].encode()),
             model_info=model,quote=quote,authorization=authorization))

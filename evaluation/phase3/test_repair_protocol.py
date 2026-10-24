@@ -1,6 +1,9 @@
 """Meaningful protocol regressions using a saved live review; no network."""
 import copy
 import unittest
+from unittest import mock
+
+import replay_complete_semantic_trace as complete
 
 import focused_review as focused
 import guarded_anthropic_repair as repair
@@ -59,6 +62,12 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertEqual(extended,regular)
         with self.assertRaisesRegex(ValueError,'unsupported review response budget'):
             repair.body(packet,'v33',output_tokens=6000)
+        contradiction=copy.deepcopy(duplicate_review)
+        contradiction['claims'][0]['dimensions']['unsupported_inference']['status']='reject'
+        contradiction['verdict']='reject'
+        with self.assertRaisesRegex(ValueError,'contradictory complete-claim entailment'):
+            repair.check(contradiction,packet,'v34')
+        self.assertEqual(repair.check(contradiction,packet,'v34',strict_entailment=False)['verdict'],'reject')
         duplicate_review['claims'][0]['dimensions']['duplicates']['status']='reject'
         duplicate_review['verdict']='reject'
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'reject')
@@ -123,3 +132,21 @@ class RepairProtocolTest(unittest.TestCase):
         fixed=copy.deepcopy(invalid)
         fixed['claims'][1]['index_fields']=None
         self.assertTrue(repair.extraction.rust_structure(fixed,case)['valid'])
+
+        for suffix in ['output-6000','repeat-output-6000']:
+            ident='focused-haiku-repair-v34-r1-nested_quote-'+suffix+'-primary'
+            saved=focused.parse_judgment((root/(ident+'.request.json')).read_text())
+            payload=focused.parse_judgment(saved['payload']['messages'][0]['content'])
+            negative=focused.parse_judgment((root/(ident+'.judgment.json')).read_text())
+            with self.assertRaisesRegex(ValueError,'contradictory complete-claim entailment'):
+                repair.check(negative,dict(case=dict(source=payload['original_source']),candidate=payload['candidate_batch']),'v34')
+        trace=complete.replay(root,'r1-nested_quote','extraction-v34','extraction-v33','v33',6000)
+        self.assertTrue(trace['revalidation']['experimental_gate_eligible'])
+        self.assertTrue(trace['complete_review_count'])
+        # Reuse is conditional on exact recipes, including supposedly unchanged components.
+        with mock.patch.object(complete.extraction,'body',return_value={}):
+            with self.assertRaisesRegex(ValueError,'extraction request drift'):
+                complete.replay(root,'r1-nested_quote','extraction-v34','extraction-v33','v33',6000)
+        with mock.patch.object(complete.review,'reader_body',return_value={}):
+            with self.assertRaisesRegex(ValueError,'reader request drift'):
+                complete.replay(root,'r1-nested_quote','extraction-v34','extraction-v33','v33',6000)

@@ -14,7 +14,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 pub const VERSION: &str = "extraction-v1";
-pub const VALIDATION_VERSION: &str = "source-checks-v4";
+pub const VALIDATION_VERSION: &str = "source-checks-v5";
 const CONTRACT: &str = include_str!("../../prompts/extraction-v1/contract.txt");
 const FRAMES: &str = include_str!("../../prompts/extraction-v1/frames.txt");
 const REVIEW: &str = include_str!("../../prompts/extraction-v1/review.txt");
@@ -676,6 +676,7 @@ pub fn validate_source_review(
                     | "extraction-v33"
                     | "extraction-v34"
             ),
+            plan.version() == "extraction-v34",
         )
     } else {
         validate_review(raw, batch.claims.len())

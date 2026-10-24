@@ -53,6 +53,7 @@ pub(super) fn validate(
     require_meta: bool,
     canonical_inventory: bool,
     require_duplicates: bool,
+    strict_entailment: bool,
 ) -> Result<()> {
     if raw.len() > 4 * 1024 * 1024 {
         return Err(invalid("schema", "review too large"));
@@ -129,6 +130,14 @@ pub(super) fn validate(
             }
             rejects |= s == "reject";
             unresolved |= s == "unresolved";
+        }
+        // Entailment assesses the complete Claim, including every added qualifier.
+        if strict_entailment
+            && dimensions["entailment"]["status"] == "pass"
+            && (dimensions["unsupported_inference"]["status"] == "reject"
+                || dimensions["source_meta_expansion"]["status"] == "reject")
+        {
+            return Err(invalid("schema", "contradictory complete-claim entailment"));
         }
         let local_flags = claim["uncertainty_flags"]
             .as_array()
