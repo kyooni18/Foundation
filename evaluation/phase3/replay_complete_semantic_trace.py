@@ -27,11 +27,13 @@ def response_text(path):
     return ''.join(b['text'] for b in value['content'] if b.get('type')=='text')
 
 
-def replay(evidence,case_id,version='extraction-v29'):
+def replay(evidence,case_id,version='extraction-v29',candidate_version=None,reader_version=None,review_output_tokens=None):
     packet=next(p for p in budget.packets()[1] if p['case']['id']==case_id)
-    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33'},'unsupported trace version')
+    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34'},'unsupported trace version')
     review_version=version.removeprefix('extraction-')
-    ident=f'focused-haiku-{version}-{case_id}-primary'
+    candidate_version=candidate_version or version
+    reader_version=reader_version or version.removeprefix('extraction-')
+    ident=f'focused-haiku-{candidate_version}-{case_id}-primary'
     request=read(evidence/(ident+'.request.json'))
     budget.require(request['payload']==extraction.body(packet,version),'extraction request drift')
     raw=response_text(evidence/(ident+'.response.json'))
@@ -40,10 +42,11 @@ def replay(evidence,case_id,version='extraction-v29'):
     budget.require(candidate==read(evidence/(ident+'.candidate.json')),'candidate sidecar drift')
     reviews=[]
     provenance=[ident]
-    prefix=f'focused-haiku-repair-{review_version}-{case_id}-{version}'
+    prefix=f'focused-haiku-repair-{review_version}-{case_id}-{candidate_version}'
+    reader_prefix=f'focused-haiku-repair-{reader_version}-{case_id}-{candidate_version}'
     stop_stage=None
     for index,claim in enumerate(candidate['claims']):
-        reader_id=prefix+f'-reader-{index}-primary'
+        reader_id=reader_prefix+f'-reader-{index}-primary'
         saved=read(evidence/(reader_id+'.request.json'))
         budget.require(saved['payload']==review.reader_body(claim['text'],review_version),'reader request drift')
         budget.require(saved['reader_index']==index,'reader identity drift')
@@ -57,9 +60,9 @@ def replay(evidence,case_id,version='extraction-v29'):
     for key,stage in review.STAGES.items():
         if stop_stage is not None:
             break
-        source_id=prefix+('' if key=='fidelity' else '-'+key)+'-primary'
+        source_id=prefix+('' if key=='fidelity' else '-'+key)+(('-output-'+str(review_output_tokens)) if review_output_tokens else '')+'-primary'
         saved=read(evidence/(source_id+'.request.json'))
-        budget.require(saved['payload']==review.body(packet,review_version,stage),'source review request drift')
+        budget.require(saved['payload']==review.body(packet,review_version,stage,output_tokens=review_output_tokens),'source review request drift')
         text=response_text(evidence/(source_id+'.response.json'))
         reviews.append(dict(stage=stage,raw=text))
         provenance.append(source_id)
@@ -73,7 +76,7 @@ def replay(evidence,case_id,version='extraction-v29'):
     # Match Rust Plan/ModelConfig serialization field order exactly.
     plan=dict(provider='anthropic-direct-diagnostic',prompt_version=version,variant='audited',
         extractor=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=2500),
-        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=3000))
+        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or 3000))
     root=f.ROOT/'prompts'/version
     serialized=json.dumps(plan,ensure_ascii=False,separators=(',',':'))
     material=(f'{version}\n{extraction.prompt(version)}\n'+(root/'review.txt').read_text()+
@@ -108,11 +111,14 @@ def replay(evidence,case_id,version='extraction-v29'):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',required=True)
-    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33'],default='extraction-v29')
+    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34'],default='extraction-v29')
+    parser.add_argument('--review-output-tokens',type=int,choices=[6000])
+    parser.add_argument('--candidate-version')
+    parser.add_argument('--reader-version')
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
-    result=replay(args.evidence,args.case,args.version)
+    result=replay(args.evidence,args.case,args.version,args.candidate_version,args.reader_version,args.review_output_tokens)
     budget.immutable(args.output,result)
     print(json.dumps({k:v for k,v in result.items() if k not in {'receipts','replay_row'}}))
 

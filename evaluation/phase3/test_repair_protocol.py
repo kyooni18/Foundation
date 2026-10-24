@@ -47,6 +47,18 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'pass')
         self.assertEqual(repair.check(duplicate_review,packet,'v32')['verdict'],'pass')
         self.assertEqual(repair.check(duplicate_review,packet,'v33')['verdict'],'pass')
+        self.assertEqual(repair.check(duplicate_review,packet,'v34')['verdict'],'pass')
+        source_root=focused.ROOT/'prompts'
+        for component in ['frames.txt','reader.txt']:
+            self.assertEqual((source_root/'extraction-v33'/component).read_bytes(),
+                             (source_root/'extraction-v34'/component).read_bytes())
+        extended=repair.body(packet,'v34',output_tokens=6000)
+        regular=repair.body(packet,'v34')
+        self.assertNotEqual(replay.request_identity(extended),replay.request_identity(regular))
+        extended['max_tokens']=3000
+        self.assertEqual(extended,regular)
+        with self.assertRaisesRegex(ValueError,'unsupported review response budget'):
+            repair.body(packet,'v33',output_tokens=6000)
         duplicate_review['claims'][0]['dimensions']['duplicates']['status']='reject'
         duplicate_review['verdict']='reject'
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'reject')

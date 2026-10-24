@@ -192,6 +192,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v33/frames.txt"),
                 include_str!("../../prompts/extraction-v33/review.txt"),
             )),
+            "extraction-v34" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v34/frames.txt"),
+                include_str!("../../prompts/extraction-v34/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -217,6 +222,7 @@ impl Plan {
                 | "extraction-v31"
                 | "extraction-v32"
                 | "extraction-v33"
+                | "extraction-v34"
         ) {
             return Ok(format!(
                 "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
@@ -251,6 +257,7 @@ impl Plan {
             "extraction-v31" => Some(include_str!("../../prompts/extraction-v31/reader.txt")),
             "extraction-v32" => Some(include_str!("../../prompts/extraction-v32/reader.txt")),
             "extraction-v33" => Some(include_str!("../../prompts/extraction-v33/reader.txt")),
+            "extraction-v34" => Some(include_str!("../../prompts/extraction-v34/reader.txt")),
             _ => None,
         }
     }
@@ -273,6 +280,7 @@ impl Plan {
                 | "extraction-v31"
                 | "extraction-v32"
                 | "extraction-v33"
+                | "extraction-v34"
         )
     }
     fn source_meta_review(&self) -> bool {
@@ -285,6 +293,7 @@ impl Plan {
                 | "extraction-v31"
                 | "extraction-v32"
                 | "extraction-v33"
+                | "extraction-v34"
         )
     }
     pub fn hash(&self) -> Result<String> {
@@ -657,10 +666,15 @@ pub fn validate_source_review(
                     | "extraction-v31"
                     | "extraction-v32"
                     | "extraction-v33"
+                    | "extraction-v34"
             ),
             matches!(
                 plan.version(),
-                "extraction-v30" | "extraction-v31" | "extraction-v32" | "extraction-v33"
+                "extraction-v30"
+                    | "extraction-v31"
+                    | "extraction-v32"
+                    | "extraction-v33"
+                    | "extraction-v34"
             ),
         )
     } else {

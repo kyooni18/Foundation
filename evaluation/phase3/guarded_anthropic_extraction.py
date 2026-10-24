@@ -47,7 +47,7 @@ def body(packet,version):
     system=prompt(version)
     user=focused.canonical(content).decode()
     budget.require(len(system.encode())+len(user.encode())<=256*1024,'oversized context')
-    return dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33'} else 6000),system=system,
+    return dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34'} else 6000),system=system,
         messages=[dict(role='user',content=user)],
         output_config=dict(effort='low'),service_tier='standard_only')
 
@@ -140,7 +140,7 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33'],
+    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34'],
                         default='extraction-v28')
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()

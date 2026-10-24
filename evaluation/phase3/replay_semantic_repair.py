@@ -76,7 +76,7 @@ def replay(evidence):
             version=ident.split('-')[3]
             expected=(repair.reader_body(payload['claim_text'],version) if reader else
                 repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
-                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low')))
+                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens')))
             budget.require(body==expected,'incomplete request recipe drift')
             reason='stop_reason:'+str(response['stop_reason'])
             budget.require(rejected and saved['status']=='incomplete' and saved['reason']==reason,
@@ -111,7 +111,7 @@ def replay(evidence):
             version=ident.split('-')[3]
             packet=dict(case=case,candidate=payload['candidate_batch'])
             expected=repair.body(packet,version,request.get('review_stage',repair.STAGES['fidelity']),
-                                 request.get('review_effort','low'))
+                                 request.get('review_effort','low'),request.get('review_output_tokens'))
             budget.require(body==expected,'review request recipe drift')
             judgment=focused.parse_judgment(raw_text(response))
             try:
