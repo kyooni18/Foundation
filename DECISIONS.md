@@ -811,3 +811,16 @@ option, not a production change or a proven reliability repair. It keeps the sam
 3,000-token cap. Capped Source reviews retain a durable incomplete rejection after
 usage settlement; replay includes the failure rather than parsing it as a judgment.
 All historical raw evidence and existing authority/approval boundaries are preserved.
+
+### D-90 — Source-relative roles, report scope and structural diagnostic preflight
+V32/v33 distinguish unidentified entity roles from independent document-commentary
+assertions and preserve original-utterance binding without supplying world identity.
+Reported content need not be independently world-verified to preserve a Source's
+report; stripping attribution still fails. A real v32 nested output exposed nullable
+index projection members missed by Python's partial envelope check. Paid diagnostic
+review now runs the actual offline Rust validator first. No malformed raw output is
+repaired. V33 fixes that generated metadata shape, but its three Source reviews still
+disagree on the complete outer-report inventory boundary. The gate withholds the
+batch. V32 delay and v33 hypothetical complete traces are diagnostic evidence only;
+all failures, the truncated negative control and profile distinctions remain visible.
+Phase 3 remains incomplete, with no default promotion or completion tag.

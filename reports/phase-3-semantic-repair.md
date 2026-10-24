@@ -1,6 +1,25 @@
 # Phase 3 semantic repair — acceptance remains incomplete (2026-10-24)
 
-## Latest effort diagnostic
+## Latest authorized boundary validation
+
+The newly approved credit is applied without changing historical charges. Live work
+focused on unknown-argument/Source-commentary boundaries, Korean verification ellipsis
+and nested reporting. V32 delay and v33 hypothetical now have full passing diagnostic
+traces. V33 nested has three passing individual reviews but the gate correctly
+withholds it for inconsistent governing-report inventory boundaries. One old-bad-
+nested v33 control truncates and remains incomplete. Rust preflight now prevents
+paid reviews of structurally invalid saved batches.
+
+All required checks pass (48 Rust, 40 Python, fmt, Clippy). This round: 32 calls /
+$0.05000250 conservative bound, using $0.00000250 of prior unused headroom in addition
+to the new $0.05. Current cumulative bound **$4.97882605**, ceiling **$4.98265335**,
+remaining **$0.00382730**, 108 settled requests, zero overruns/unsettled. Provider
+billing is unknown. **Phase 3 remains incomplete; no profile promotion or completion tag.**
+See the [boundary validation report](phase-3-boundary-validation.md) and
+`reports/evidence/phase-3/boundary-continuation/completion-audit.json`.
+Earlier sections retain their historical results and budgets.
+
+## Previous effort diagnostic
 
 A matched v31 medium-effort experiment still rejects the hypothetical and misreads
 unknown experiment identity as missing speaker details. Higher effort is not a

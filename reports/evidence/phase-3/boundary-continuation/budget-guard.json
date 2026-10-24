@@ -1,0 +1,16 @@
+{
+  "status": "budget blocked",
+  "quote": {
+    "estimate": 5357800,
+    "input_byte_bound": 19289,
+    "output_token_bound": 3000,
+    "worst_input_per_mtok": "0.20",
+    "worst_output_per_mtok": "0.50",
+    "price_checked": "2026-10-24",
+    "charge_type": "conservative_upper_bound_not_provider_billed_cost",
+    "reservation_policy": "utf8-byte-bound-request-output-v2"
+  },
+  "real_request_dispatched": false,
+  "request_count": 108,
+  "remaining_nanos": 3827300
+}

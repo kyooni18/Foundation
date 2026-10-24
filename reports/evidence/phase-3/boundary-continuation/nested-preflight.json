@@ -1,0 +1,7 @@
+{
+  "kind": "offline CLI preflight audit; key removed",
+  "exit_code": 1,
+  "classification": "Rust structural rejection before paid review",
+  "request_rows_unchanged": true,
+  "model_call": false
+}

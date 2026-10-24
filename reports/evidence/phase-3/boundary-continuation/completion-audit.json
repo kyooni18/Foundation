@@ -1,0 +1,42 @@
+{
+  "status": "incomplete",
+  "starting_commit": "493ad4b",
+  "policy_commit": "9845016",
+  "implementation_commits": [
+    "b55e6a2",
+    "9c3d3f4"
+  ],
+  "scope": "Original full Phase 3 repair; live testing concentrated on problematic boundaries per human instruction",
+  "new_requests": 32,
+  "new_conservative_upper_nanos": 50002500,
+  "ledger": {
+    "ceiling_nanos": 4982653350,
+    "cumulative_upper_nanos": 4978826050,
+    "prior_nanos": 4782653350,
+    "provider_billed_usd": null,
+    "recorded_upper_nanos": 196172700,
+    "remaining_nanos": 3827300,
+    "requests": 108,
+    "unsettled": 0
+  },
+  "production_approvals": 0,
+  "default_promoted": false,
+  "phase_3_tag": false,
+  "results": {
+    "v32_delay": "Complete two-reader/three-source trace, exact Rust Plan hash and gate eligible.",
+    "v32_nested": "Generated batch has null index-field values; Rust rejects before model review in the repaired CLI. Earlier paid diagnostic reviews retained, not credited as valid extraction.",
+    "v33_hypothetical": "Complete primary gate-eligible trace and identical-request isolated-reader repeat both pass. No independent truth adjudication; external experiment identity remains unnamed and wording retains 이번 실험 inside narrator reporting scope.",
+    "v33_nested": "Structurally valid, two readers and all three Source judgments individually pass; full gate WITHHOLDS for differing governing-report inventory boundaries.",
+    "v33_old_bad_nested": "max_tokens incomplete; 1990 thinking tokens within 3000 cap. Never credited as semantic rejection or pass."
+  },
+  "acceptance": {
+    "atomicity": "Delay hypothesis and verification now separate and fully validated in v32; other supported examples retained with historical profiles.",
+    "entailment": "Reported content explicitly distinguished from independently verified world facts in v33; nested source chain retained. Broad reliable acceptance still unproven.",
+    "standalone": "Source-bound experiment-role editorial control passes; generated v33 hypothetical has narrator-frame binding and two passing isolated readers but does not use the explicit Source-role phrase. Boundary adjudication remains limited.",
+    "coverage": "Nested inventory differs on full outer report boundary; disagreement remains unresolved despite per-dimension passes.",
+    "false_acceptance": "Current negative Source-commentary case rejects in v32; v33 old-gloss trial incomplete, so current complete negative-control evidence remains insufficient.",
+    "authority": "No model approval/publication, no default promotion, strict source/authority/hash/lifecycle boundaries retained.",
+    "broader_scope": "Five missing-profile cases remain unassessed; six priority cases remain development regressions, not new heldouts."
+  },
+  "next_required": "Justified correction/measurement for complete governing-report inventory boundaries, full negative-control responses, and defensible current-profile semantic acceptance. Do not normalize disagreement or relabel historical profiles."
+}

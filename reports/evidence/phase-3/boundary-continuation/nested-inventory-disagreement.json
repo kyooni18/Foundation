@@ -1,0 +1,150 @@
+{
+  "scope": "All three actual v33 primary Source reviews, no selected replacement",
+  "rows": [
+    {
+      "id": "focused-haiku-repair-v33-r1-nested_quote-extraction-v33-atomicity-primary",
+      "verdict": "pass",
+      "inventory": [
+        {
+          "claim_indices": [
+            0
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다",
+          "reason": "The relayed report is covered by Claim 0.",
+          "status": "pass"
+        },
+        {
+          "claim_indices": [
+            1
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "난 동의 못 함",
+          "reason": "The independent disagreement is covered by Claim 1.",
+          "status": "pass"
+        }
+      ],
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "global",
+        "input_tokens": 6660,
+        "output_tokens": 1684,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    },
+    {
+      "id": "focused-haiku-repair-v33-r1-nested_quote-extraction-v33-primary",
+      "verdict": "pass",
+      "inventory": [
+        {
+          "claim_indices": [
+            0
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다",
+          "reason": "The relayed report is covered by Claim 0.",
+          "status": "pass"
+        },
+        {
+          "claim_indices": [
+            1
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "난 동의 못 함",
+          "reason": "The narrator's disagreement is covered by Claim 1.",
+          "status": "pass"
+        }
+      ],
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "global",
+        "input_tokens": 6667,
+        "output_tokens": 2305,
+        "output_tokens_details": {
+          "thinking_tokens": 800
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    },
+    {
+      "id": "focused-haiku-repair-v33-r1-nested_quote-extraction-v33-coverage-primary",
+      "verdict": "pass",
+      "inventory": [
+        {
+          "claim_indices": [
+            0
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다",
+          "reason": "Covers the professor relay of Reviewer 2's claim.",
+          "status": "pass"
+        },
+        {
+          "claim_indices": [
+            1
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "난 동의 못 함",
+          "reason": "Covers the narrator's separately asserted disagreement.",
+          "status": "pass"
+        }
+      ],
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "inference_geo": "global",
+        "input_tokens": 6674,
+        "output_tokens": 1602,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "result": "withhold: inventory labels differ in governing-report boundary, despite per-dimension passes; not normalized into agreement"
+}

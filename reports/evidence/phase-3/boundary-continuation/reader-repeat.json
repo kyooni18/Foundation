@@ -1,0 +1,29 @@
+{
+  "scope": "One bounded identical-request isolated-reader pair only, not Source review or independent truth",
+  "ids": [
+    "focused-haiku-repair-v33-r1-hypothetical-extraction-v33-reader-0-primary",
+    "focused-haiku-repair-v33-r1-hypothetical-extraction-v33-repeat-reader-0-primary"
+  ],
+  "identical_payload": true,
+  "verdict_agreement": true,
+  "complete_judgment_agreement": true,
+  "judgments": [
+    {
+      "checked": [
+        0
+      ],
+      "coverage_complete": true,
+      "issues": [],
+      "verdict": "pass"
+    },
+    {
+      "checked": [
+        0
+      ],
+      "coverage_complete": true,
+      "issues": [],
+      "verdict": "pass"
+    }
+  ],
+  "production_approval": false
+}
