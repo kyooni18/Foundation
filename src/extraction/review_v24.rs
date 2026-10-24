@@ -48,6 +48,7 @@ pub(super) fn validate(
     source: &SourceView,
     require_meta: bool,
     canonical_inventory: bool,
+    require_duplicates: bool,
 ) -> Result<()> {
     if raw.len() > 4 * 1024 * 1024 {
         return Err(invalid("schema", "review too large"));
@@ -102,6 +103,9 @@ pub(super) fn validate(
         ];
         if require_meta {
             required.push("source_meta_expansion");
+        }
+        if require_duplicates {
+            required.push("duplicates");
         }
         keys(dimensions, &required)?;
         for key in required {

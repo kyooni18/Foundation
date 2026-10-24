@@ -172,6 +172,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v29/frames.txt"),
                 include_str!("../../prompts/extraction-v29/review.txt"),
             )),
+            "extraction-v30" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v30/frames.txt"),
+                include_str!("../../prompts/extraction-v30/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -190,7 +195,7 @@ impl Plan {
     }
     pub fn review_prompt(&self, stage: &str) -> Result<String> {
         let (_, frames, review) = self.components()?;
-        if self.version() == "extraction-v29" {
+        if matches!(self.version(), "extraction-v29" | "extraction-v30") {
             return Ok(format!(
                 "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
             ));
@@ -220,6 +225,7 @@ impl Plan {
             "extraction-v27" => Some(include_str!("../../prompts/extraction-v27/reader.txt")),
             "extraction-v28" => Some(include_str!("../../prompts/extraction-v28/reader.txt")),
             "extraction-v29" => Some(include_str!("../../prompts/extraction-v29/reader.txt")),
+            "extraction-v30" => Some(include_str!("../../prompts/extraction-v30/reader.txt")),
             _ => None,
         }
     }
@@ -238,12 +244,13 @@ impl Plan {
                 | "extraction-v27"
                 | "extraction-v28"
                 | "extraction-v29"
+                | "extraction-v30"
         )
     }
     fn source_meta_review(&self) -> bool {
         matches!(
             self.version(),
-            "extraction-v27" | "extraction-v28" | "extraction-v29"
+            "extraction-v27" | "extraction-v28" | "extraction-v29" | "extraction-v30"
         )
     }
     pub fn hash(&self) -> Result<String> {
@@ -577,6 +584,12 @@ pub fn reader_message(text: &str) -> String {
 }
 
 pub fn validate_proposal_reviews(plan: &Plan, reviews: &[String], n: usize) -> Result<()> {
+    if plan.source_bound_review() {
+        return Err(invalid(
+            "schema",
+            "this review profile requires original Source context",
+        ));
+    }
     let readers = if plan.reader_prompt().is_some() { n } else { 0 };
     if reviews.len() != readers + REVIEW_STAGES.len() {
         return Err(invalid("semantic", "complete review protocol required"));
@@ -603,7 +616,8 @@ pub fn validate_source_review(
             batch,
             source,
             plan.source_meta_review(),
-            plan.version() == "extraction-v29",
+            matches!(plan.version(), "extraction-v29" | "extraction-v30"),
+            plan.version() == "extraction-v30",
         )
     } else {
         validate_review(raw, batch.claims.len())

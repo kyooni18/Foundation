@@ -5,6 +5,7 @@ use prime_radiant::{
     domain::*,
     extraction::{
         Plan, VALIDATION_VERSION, hash, validate, validate_proposal_reviews_bound, validate_review,
+        validate_source_review,
     },
 };
 use serde_json::{Value, json};
@@ -72,19 +73,36 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             } else {
                 0
             };
+        let bound_review_error = if let (Some(plan), Some(batch)) =
+            (plan.as_ref().filter(|p| p.source_bound_review()), batch)
+        {
+            let raw: Option<Vec<String>> = row["reviews"].as_array().and_then(|reviews| {
+                reviews
+                    .iter()
+                    .map(|r| r["raw"].as_str().map(str::to_owned))
+                    .collect()
+            });
+            let raw = raw.unwrap_or_default();
+            let prefix = raw.iter().enumerate().try_for_each(|(index, text)| {
+                if index < batch.claims.len() {
+                    validate_review(text, 1)
+                } else {
+                    validate_source_review(plan, text, batch, &source)
+                }
+            });
+            match prefix.and_then(|_| validate_proposal_reviews_bound(plan, &raw, batch, &source)) {
+                Ok(()) => None,
+                Err(Error::InvalidInput { field, .. }) => Some(field),
+                Err(_) => Some("validation"),
+            }
+        } else {
+            None
+        };
         let eligible = valid
             && plan_hash_valid
             && row["reviews"].as_array().is_some_and(|reviews| {
-                if let (Some(plan), Some(batch)) =
-                    (plan.as_ref().filter(|p| p.source_bound_review()), batch)
-                {
-                    let raw: Option<Vec<String>> = reviews
-                        .iter()
-                        .map(|r| r["raw"].as_str().map(str::to_owned))
-                        .collect();
-                    return raw.is_some_and(|raw| {
-                        validate_proposal_reviews_bound(plan, &raw, batch, &source).is_ok()
-                    });
+                if plan.as_ref().is_some_and(Plan::source_bound_review) {
+                    return bound_review_error.is_none();
                 }
                 reviews.len() == expected
                     && reviews.iter().all(|review| {
@@ -105,6 +123,9 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     })
             });
         row["revalidation"] = json!({"version":VALIDATION_VERSION,"valid":valid,"error":field,"experimental_gate_eligible":eligible,"plan_hash_valid":plan_hash_valid});
+        if plan.as_ref().is_some_and(Plan::source_bound_review) {
+            row["revalidation"]["review_error"] = json!(bound_review_error);
+        }
         writeln!(output, "{}", serde_json::to_string(&row)?)?;
     }
     output.sync_all()?;

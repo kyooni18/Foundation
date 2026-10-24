@@ -35,6 +35,7 @@ def signature(j):
 def replay(evidence):
     packets=budget.packets()[1]
     sources={p['case']['source']:p['case'] for p in packets}
+    source_hashes={focused.sha(s.encode()):case for s,case in sources.items()}
     rows=[]
     structural=[]
     repeated={}
@@ -48,7 +49,9 @@ def replay(evidence):
         budget.require(usage==load(evidence/(ident+'.accounting.json')),'accounting drift')
         body=request['payload']
         payload=focused.parse_judgment(body['messages'][0]['content'])
-        case=sources[payload['original_source']]
+        reader=request.get('reader_index') is not None
+        case=(source_hashes[request['source_sha256']] if reader else
+              sources[payload['original_source']])
         source=case['source']
         row=dict(id=ident,case=case['id'],request_sha256=focused.sha(path.read_bytes()),
             response_sha256=focused.sha(response_path.read_bytes()),
@@ -69,10 +72,18 @@ def replay(evidence):
                        local_structure_valid=True)
             structural.append(dict(id=ident,corpus_case=case,source_hash=focused.sha(source.encode()),
                 raw=raw_text(response),variant='audited',plan=None,reviews=[]))
+        elif reader:
+            version=ident.split('-')[3]
+            budget.require(body==repair.reader_body(payload['claim_text'],version),'reader request drift')
+            judgment=focused.parse_judgment(raw_text(response))
+            checked=repair.reader_check(judgment)
+            budget.require(checked==saved,'reader replay drift')
+            budget.require(judgment==load(evidence/(ident+'.judgment.json')),'reader judgment drift')
+            row.update(kind='reader',version=version,**checked)
         else:
             version=ident.split('-')[3]
             packet=dict(case=case,candidate=payload['candidate_batch'])
-            expected=repair.body(packet,version)
+            expected=repair.body(packet,version,request.get('review_stage',repair.STAGES['fidelity']))
             budget.require(body==expected,'review request recipe drift')
             judgment=focused.parse_judgment(raw_text(response))
             checked=repair.check(judgment,packet,version)
@@ -119,6 +130,7 @@ def replay(evidence):
         extraction_requests=sum(r['kind']=='extraction' for r in rows),
         distinct_extraction_sources=len({r['case'] for r in rows if r['kind']=='extraction'}),
         review_requests=sum(r['kind']=='review' for r in rows),
+        reader_requests=sum(r['kind']=='reader' for r in rows),
         ledger=dict(ceiling_nanos=ceiling,prior_nanos=prior,recorded_upper_nanos=charge,
             cumulative_upper_nanos=prior+charge,remaining_nanos=ceiling-prior-charge,
             unsettled=unsettled,requests=count,provider_billed_usd=None))

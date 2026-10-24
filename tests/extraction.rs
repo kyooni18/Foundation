@@ -1372,6 +1372,22 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     assert_ne!(next.hash().unwrap(), plan.hash().unwrap());
     let reader =
         json!({"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true}).to_string();
+    let old_source_review =
+        json!({"verdict":"pass","issues":[],"checked":[0,1],"coverage_complete":true}).to_string();
+    assert!(
+        validate_proposal_reviews(
+            &plan,
+            &[
+                reader.clone(),
+                reader.clone(),
+                old_source_review.clone(),
+                old_source_review.clone(),
+                old_source_review,
+            ],
+            2
+        )
+        .is_err()
+    );
     let reports = |review: &Value| {
         vec![
             reader.clone(),
@@ -1442,6 +1458,17 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     {
         item["evidence"] = json!([{"quote":content}]);
         item["proposition"] = json!(text.trim_end_matches('.'));
+    }
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&canonical), &batch, &source).is_ok()
+    );
+    meta_plan.prompt_version = Some("extraction-v30".into());
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&canonical), &batch, &source).is_err()
+    );
+    for claim in canonical["claims"].as_array_mut().unwrap() {
+        claim["dimensions"]["duplicates"] =
+            json!({"status":"pass","reason":"independent assertions"});
     }
     assert!(
         validate_proposal_reviews_bound(&meta_plan, &reports(&canonical), &batch, &source).is_ok()

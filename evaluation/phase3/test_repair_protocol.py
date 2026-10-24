@@ -36,6 +36,15 @@ class RepairProtocolTest(unittest.TestCase):
         for row,text in zip(canonical['inventory'],source.split('. ')):
             row.update(proposition=text.rstrip('.'),evidence=[dict(quote=source)])
         self.assertEqual(repair.check(canonical,packet,'v29')['verdict'],'pass')
+        with self.assertRaises(ValueError):
+            repair.check(canonical,packet,'v30')
+        duplicate_review=copy.deepcopy(canonical)
+        for row in duplicate_review['claims']:
+            row['dimensions']['duplicates']=dict(status='pass',reason='independent source assertions')
+        self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'pass')
+        duplicate_review['claims'][0]['dimensions']['duplicates']['status']='reject'
+        duplicate_review['verdict']='reject'
+        self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'reject')
         canonical['inventory'][0]['proposition']='invented interpretation'
         with self.assertRaisesRegex(ValueError,'canonical original inventory'):
             repair.check(canonical,packet,'v29')
