@@ -202,6 +202,20 @@ class RepairProtocolTest(unittest.TestCase):
         linked=dict(recipe_packet,repair_context=dict(context,trace_sha256='a'*64))
         self.assertEqual(repair.extraction.attempt_label(linked,'extraction-v41','repair'),'extraction-v41-repair')
         self.assertEqual(repair.extraction.attempt_label(linked,'extraction-v41'),'extraction-v41')
+        constrained=repair.extraction.body(recipe_packet,'extraction-v41','contract-v1')
+        legacy=repair.extraction.body(recipe_packet,'extraction-v41')
+        self.assertNotIn('format',legacy['output_config'])
+        self.assertNotEqual(replay.request_identity(constrained),replay.request_identity(legacy))
+        wire=constrained['output_config'].pop('format')
+        self.assertEqual(constrained,legacy)
+        self.assertEqual(wire['type'],'json_schema')
+        self.assertEqual(set(wire['schema']['properties']),{'claims','empty_reason'})
+        self.assertEqual(set(wire['schema']['properties']['claims']['items']['required']),set(recipe_packet['candidate']['claims'][0]))
+        self.assertFalse(wire['schema']['additionalProperties'])
+        self.assertEqual(repair.extraction.attempt_label(linked,'extraction-v41','repair','contract-v1'),'extraction-v41-schema-v1-repair')
+        with self.assertRaisesRegex(ValueError,'unknown extraction output format'):
+            repair.extraction.attempt_label(linked,'extraction-v41',output_format='guess')
+
         invalid=focused.parse_judgment((root/'focused-haiku-extraction-v32-r1-nested_quote-primary.candidate.json').read_text())
         self.assertFalse(repair.extraction.rust_structure(invalid,case)['valid'])
         # A private fixture isolates the metadata defect; raw model evidence is immutable.

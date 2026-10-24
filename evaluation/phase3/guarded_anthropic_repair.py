@@ -307,7 +307,7 @@ def main():
     parser.add_argument('--authorization',type=Path,required=True)
     parser.add_argument('--version',choices=['v24','v25','v27','v28','v29','v30','v31','v32','v33','v34','v35','v36','v37','v38','v39','v40','v41'],default='v28')
     selection=parser.add_mutually_exclusive_group()
-    selection.add_argument('--candidate-version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v41-repair'])
+    selection.add_argument('--candidate-version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v41-repair','extraction-v41-schema-v1','extraction-v41-schema-v1-repair'])
     selection.add_argument('--control',choices=['nested-perspective','hypothetical-source-identity','hypothetical-source-role'])
     parser.add_argument('--stage',choices=list(dict(STAGES,**faceted_review.stages())),default='fidelity')
     parser.add_argument('--reader-index',type=int)

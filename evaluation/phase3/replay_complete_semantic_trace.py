@@ -37,7 +37,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
     request=read(evidence/(ident+'.request.json'))
     if request.get('repair_context') is not None:
         packet=dict(packet,repair_context=request['repair_context'])
-    budget.require(request['payload']==extraction.body(packet,version),'extraction request drift')
+    budget.require(request['payload']==extraction.body(packet,version,request.get('output_format','legacy')),'extraction request drift')
     raw=response_text(evidence/(ident+'.response.json'))
     candidate=extraction.structural(raw,packet['case']['source'])
     packet=dict(packet,candidate=candidate)

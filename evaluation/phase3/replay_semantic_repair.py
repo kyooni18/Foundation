@@ -114,7 +114,7 @@ def replay(evidence):
             recipe_packet=dict(case=case)
             if request.get('repair_context') is not None:
                 recipe_packet['repair_context']=request['repair_context']
-            budget.require(body==extraction.body(recipe_packet,version),'extraction request recipe drift')
+            budget.require(body==extraction.body(recipe_packet,version,request.get('output_format','legacy')),'extraction request recipe drift')
             try:
                 result=extraction.structural(raw_text(response),source)
             except (ValueError,KeyError,TypeError) as error:
