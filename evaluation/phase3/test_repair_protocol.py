@@ -135,6 +135,17 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertIn('pattern',protected['dimensions']['properties']['entailment']['properties']['reason'])
         self.assertIn('violations',protected)
         self.assertNotIn('differences',protected)
+        grouped_definitions=faceted_review.definitions('v47')
+        self.assertEqual(len(grouped_definitions),3)
+        self.assertEqual({d for row in grouped_definitions for d in row['dimensions']},{d for row in faceted_review.definitions('v46') for d in row['dimensions']})
+        joint=copy.deepcopy(violation_facet)
+        for row in joint['claims']:row['dimensions']={d:dict(status='pass',reason='Synthetic whole-Claim support') for d in grouped_definitions[1]['dimensions']}
+        self.assertEqual(repair.check(joint,packet,'v47',stage=active)['verdict'],'pass')
+        missing=copy.deepcopy(joint);missing['claims'][0]['dimensions'].pop('korean_meaning')
+        with self.assertRaises(ValueError):repair.check(missing,packet,'v47',stage=active)
+        inconsistent=copy.deepcopy(joint);inconsistent['claims'][0]['dimensions']['source_meta_expansion']['status']='reject';inconsistent['verdict']='reject'
+        with self.assertRaisesRegex(ValueError,'contradictory complete-Claim'):
+            repair.check(inconsistent,packet,'v47',stage=active)
         scalar=copy.deepcopy(violation_facet)
         scalar['stage']=repair.stages('v45')['atomicity']
         for row in scalar['claims']:

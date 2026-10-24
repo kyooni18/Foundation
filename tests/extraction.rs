@@ -233,7 +233,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
     math_claim["speaker"] = json!("unknown");
     let math_raw = output(vec![math_claim]);
     let mut current = plan();
-    current.prompt_version = Some("extraction-v46".into());
+    current.prompt_version = Some("extraction-v47".into());
     let mut replies = vec![
         Ok(math_raw.clone()),
         Ok(
@@ -242,7 +242,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
         ),
     ];
     let definitions: Vec<Value> =
-        serde_json::from_str(include_str!("../prompts/extraction-v46/facets.json")).unwrap();
+        serde_json::from_str(include_str!("../prompts/extraction-v47/facets.json")).unwrap();
     for definition in definitions {
         let dimensions: serde_json::Map<String, Value> = definition["dimensions"]
             .as_array()
@@ -268,7 +268,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
     let packet = faceted_app
         .extraction_review_packet(&user(), &held)
         .unwrap();
-    assert_eq!(packet["model_reviews"].as_array().unwrap().len(), 10);
+    assert_eq!(packet["model_reviews"].as_array().unwrap().len(), 4);
     assert_eq!(packet["validation"]["review_protocol_valid"], true);
     assert!(matches!(
         faceted_app.approve_extraction(&p(PrincipalKind::Agent), &held, &hash(&math_raw)),
@@ -1746,6 +1746,77 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     *scalar_reports.last_mut().unwrap() = swapped.to_string();
     assert!(
         validate_proposal_reviews_bound(&scalar_plan, &scalar_reports, &batch, &source).is_err()
+    );
+    let grouped: Vec<Value> =
+        serde_json::from_str(include_str!("../prompts/extraction-v47/facets.json")).unwrap();
+    let old_dimensions: std::collections::HashSet<&str> = definitions
+        .iter()
+        .flat_map(|d| {
+            d["dimensions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|d| d.as_str().unwrap())
+        })
+        .collect();
+    let grouped_dimensions: std::collections::HashSet<&str> = grouped
+        .iter()
+        .flat_map(|d| {
+            d["dimensions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|d| d.as_str().unwrap())
+        })
+        .collect();
+    assert_eq!(grouped.len(), 3);
+    assert_eq!(grouped_dimensions, old_dimensions);
+    let mut grouped_plan = scalar_plan.clone();
+    grouped_plan.prompt_version = Some("extraction-v47".into());
+    let mut meaning: Value = serde_json::from_str(&violation_reports[3]).unwrap();
+    for i in 0..batch.claims.len() {
+        let mut dims = serde_json::Map::new();
+        for raw in &violation_reports[3..10] {
+            let parsed: Value = serde_json::from_str(raw).unwrap();
+            dims.extend(
+                parsed["claims"][i]["dimensions"]
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            );
+        }
+        meaning["claims"][i]["dimensions"] = json!(dims);
+    }
+    let mut grouped_reports = vec![
+        violation_reports[0].clone(),
+        violation_reports[1].clone(),
+        violation_reports[2].clone(),
+        meaning.to_string(),
+        violation_reports[10].clone(),
+    ];
+    for raw in &mut grouped_reports[2..] {
+        let mut value: Value = serde_json::from_str(raw).unwrap();
+        for item in value["inventory"].as_array_mut().unwrap() {
+            let indices = item
+                .as_object_mut()
+                .unwrap()
+                .remove("claim_indices")
+                .unwrap();
+            item["claim_index"] = indices[0].clone();
+        }
+        *raw = value.to_string();
+    }
+    assert!(
+        validate_proposal_reviews_bound(&grouped_plan, &grouped_reports, &batch, &source).is_ok()
+    );
+    let mut omitted: Value = serde_json::from_str(&grouped_reports[3]).unwrap();
+    omitted["claims"][0]["dimensions"]
+        .as_object_mut()
+        .unwrap()
+        .remove("korean_meaning");
+    grouped_reports[3] = omitted.to_string();
+    assert!(
+        validate_proposal_reviews_bound(&grouped_plan, &grouped_reports, &batch, &source).is_err()
     );
     let dimensions: std::collections::HashSet<&str> = definitions
         .iter()

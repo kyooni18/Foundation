@@ -66,6 +66,7 @@ pub(super) fn validate(
     source: &SourceView,
     violation_key: &str,
     single_mapping: bool,
+    definitions: &str,
 ) -> Result<()> {
     if raw.len() > 4 * 1024 * 1024 {
         return Err(invalid("schema", "review too large"));
@@ -84,7 +85,11 @@ pub(super) fn validate(
     if v["stage"] != stage {
         return Err(invalid("schema", "review responsibility changed"));
     }
-    let definition = spec(stage)?;
+    let definition = if definitions == DEFINITIONS {
+        spec(stage)?
+    } else {
+        spec_for(stage, definitions)?
+    };
     let required: Vec<&str> = definition["dimensions"]
         .as_array()
         .expect("dimensions")
@@ -139,6 +144,19 @@ pub(super) fn validate(
             rejects |= s == "reject";
             unresolved |= s == "unresolved";
             local_failure |= matches!(s, "reject" | "unresolved");
+        }
+        if definitions == DEFINITIONS_47
+            && claim["dimensions"]["entailment"]["status"] == "pass"
+            && ["unsupported_inference", "source_meta_expansion"]
+                .iter()
+                .any(|key| {
+                    matches!(
+                        claim["dimensions"][key]["status"].as_str(),
+                        Some("reject" | "unresolved")
+                    )
+                })
+        {
+            return Err(invalid("schema", "contradictory complete-Claim entailment"));
         }
         let differences = claim[violation_key]
             .as_array()
@@ -278,3 +296,10 @@ pub(super) const DEFINITIONS_44: &str = include_str!("../../prompts/extraction-v
 pub(super) const DEFINITIONS_45: &str = include_str!("../../prompts/extraction-v45/facets.json");
 
 pub(super) const DEFINITIONS_46: &str = include_str!("../../prompts/extraction-v46/facets.json");
+
+pub(super) const DEFINITIONS_47: &str = include_str!("../../prompts/extraction-v47/facets.json");
+pub(super) const STAGES_47: [&str; 3] = [
+    "atomicity and independence",
+    "complete-Claim entailment",
+    "whole-batch coverage",
+];
