@@ -16,6 +16,7 @@ pub(super) const STAGES: [&str; 9] = [
     "Source-commentary expansion",
     "whole-batch coverage",
 ];
+pub(super) const DEFINITIONS_41: &str = include_str!("../../prompts/extraction-v41/facets.json");
 pub(super) const DEFINITIONS_40: &str = include_str!("../../prompts/extraction-v40/facets.json");
 pub(super) fn spec(stage: &str) -> Result<Value> {
     spec_for(stage, DEFINITIONS)
@@ -58,7 +59,13 @@ fn evidence(value: &Value, source: &SourceView) -> Result<()> {
     Ok(())
 }
 
-pub(super) fn validate(raw: &str, stage: &str, batch: &Batch, source: &SourceView) -> Result<()> {
+pub(super) fn validate(
+    raw: &str,
+    stage: &str,
+    batch: &Batch,
+    source: &SourceView,
+    violation_key: &str,
+) -> Result<()> {
     if raw.len() > 4 * 1024 * 1024 {
         return Err(invalid("schema", "review too large"));
     }
@@ -102,7 +109,7 @@ pub(super) fn validate(raw: &str, stage: &str, batch: &Batch, source: &SourceVie
                 "source_meaning",
                 "candidate_meaning",
                 "dimensions",
-                "differences",
+                violation_key,
                 "uncertainty_flags",
             ],
         )?;
@@ -132,7 +139,7 @@ pub(super) fn validate(raw: &str, stage: &str, batch: &Batch, source: &SourceVie
             unresolved |= s == "unresolved";
             local_failure |= matches!(s, "reject" | "unresolved");
         }
-        let differences = claim["differences"]
+        let differences = claim[violation_key]
             .as_array()
             .ok_or_else(|| invalid("schema", "differences required"))?;
         for difference in differences {

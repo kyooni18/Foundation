@@ -222,6 +222,69 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
         app.extraction_review_packet(&user(), &id),
         Err(Error::NotFound)
     ));
+    // Exercise the specialized protocol through the real worker and user-only publication boundary.
+    let (_faceted_dir, faceted_app) = fixture();
+    let math = "2 더하기 2는 4다.";
+    let math_id = faceted_app
+        .record_source(&user(), RecordSource::plain(math))
+        .unwrap()
+        .source_id;
+    let mut math_claim = candidate(math);
+    math_claim["speaker"] = json!("unknown");
+    let math_raw = output(vec![math_claim]);
+    let mut current = plan();
+    current.prompt_version = Some("extraction-v41".into());
+    let mut replies = vec![
+        Ok(math_raw.clone()),
+        Ok(
+            json!({"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true})
+                .to_string(),
+        ),
+    ];
+    let definitions: Vec<Value> =
+        serde_json::from_str(include_str!("../prompts/extraction-v41/facets.json")).unwrap();
+    for definition in definitions {
+        let dimensions: serde_json::Map<String, Value> = definition["dimensions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|d| {
+                (
+                    d.as_str().unwrap().to_owned(),
+                    json!({"status":"pass","reason":"Synthetic exact mathematical assertion"}),
+                )
+            })
+            .collect();
+        replies.push(Ok(json!({"stage":definition["stage"],"verdict":"pass","uncertainty_flags":[],"claims":[{"index":0,"text":math,"evidence":[{"quote":math}],"source_meaning":math,"candidate_meaning":math,"dimensions":dimensions,"violations":[],"uncertainty_flags":[]}],"inventory":if definition["inventory"]==true {json!([{"proposition":math.trim_end_matches('.'),"evidence":[{"quote":math}],"claim_indices":[0],"status":"pass","reason":"One original assertion"}])} else {json!([])}}).to_string()));
+    }
+    let provider = FakeProvider(std::sync::Mutex::new(replies.into()));
+    let held = faceted_app
+        .work_once(&provider, &current)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(provider.0.lock().unwrap().is_empty());
+    assert!(faceted_app.list_claims(&user()).unwrap().is_empty());
+    let packet = faceted_app
+        .extraction_review_packet(&user(), &held)
+        .unwrap();
+    assert_eq!(packet["model_reviews"].as_array().unwrap().len(), 10);
+    assert_eq!(packet["validation"]["review_protocol_valid"], true);
+    assert!(matches!(
+        faceted_app.approve_extraction(&p(PrincipalKind::Agent), &held, &hash(&math_raw)),
+        Err(Error::Forbidden)
+    ));
+    assert_eq!(
+        faceted_app
+            .approve_extraction(&user(), &held, &hash(&math_raw))
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_eq!(
+        faceted_app.get_source(&user(), math_id).unwrap().content,
+        math
+    );
 }
 #[test]
 fn schema_language_anchors_and_dependencies_fail_closed() {
@@ -1637,6 +1700,52 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
         validate_proposal_reviews_bound(&revised_facets, &faceted_reports, &batch, &source).is_ok()
     );
     assert_ne!(revised_facets.hash().unwrap(), faceted_plan.hash().unwrap());
+    let mut explicit_violations = revised_facets.clone();
+    explicit_violations.prompt_version = Some("extraction-v41".into());
+    assert!(
+        validate_proposal_reviews_bound(&explicit_violations, &faceted_reports, &batch, &source)
+            .is_err()
+    );
+    let mut violation_reports = faceted_reports.clone();
+    for raw in &mut violation_reports[2..] {
+        let mut value: Value = serde_json::from_str(raw).unwrap();
+        for c in value["claims"].as_array_mut().unwrap() {
+            let differences = c.as_object_mut().unwrap().remove("differences").unwrap();
+            c["violations"] = differences;
+        }
+        *raw = value.to_string();
+    }
+    assert!(
+        validate_proposal_reviews_bound(&explicit_violations, &violation_reports, &batch, &source)
+            .is_ok()
+    );
+    let dimensions: std::collections::HashSet<&str> = definitions
+        .iter()
+        .flat_map(|s| {
+            s["dimensions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|d| d.as_str().unwrap())
+        })
+        .collect();
+    assert_eq!(
+        dimensions,
+        [
+            "atomicity",
+            "duplicates",
+            "entailment",
+            "attribution",
+            "polarity_scope",
+            "missing_argument",
+            "unsupported_inference",
+            "korean_meaning",
+            "source_meta_expansion",
+            "coverage"
+        ]
+        .into_iter()
+        .collect()
+    );
     let mut shared_claim = canonical.clone();
     shared_claim["inventory"][0]["claim_indices"] = json!([0, 1]);
     assert!(

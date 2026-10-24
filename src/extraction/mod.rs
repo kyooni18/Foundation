@@ -228,6 +228,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v40/frames.txt"),
                 include_str!("../../prompts/extraction-v40/review.txt"),
             )),
+            "extraction-v41" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v41/frames.txt"),
+                include_str!("../../prompts/extraction-v41/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -245,17 +250,25 @@ impl Plan {
         Ok(format!("{contract}\n{examples}\n{strategy}"))
     }
     pub fn review_stages(&self) -> &'static [&'static str] {
-        if matches!(self.version(), "extraction-v39" | "extraction-v40") {
+        if matches!(
+            self.version(),
+            "extraction-v39" | "extraction-v40" | "extraction-v41"
+        ) {
             &review_v39::STAGES
         } else {
             &REVIEW_STAGES
         }
     }
     pub fn review_prompt(&self, stage: &str) -> Result<String> {
-        if matches!(self.version(), "extraction-v39" | "extraction-v40") {
+        if matches!(
+            self.version(),
+            "extraction-v39" | "extraction-v40" | "extraction-v41"
+        ) {
             let spec = review_v39::spec_for(
                 stage,
-                if self.version() == "extraction-v40" {
+                if self.version() == "extraction-v41" {
+                    review_v39::DEFINITIONS_41
+                } else if self.version() == "extraction-v40" {
                     review_v39::DEFINITIONS_40
                 } else {
                     review_v39::DEFINITIONS
@@ -285,6 +298,7 @@ impl Plan {
                 | "extraction-v38"
                 | "extraction-v39"
                 | "extraction-v40"
+                | "extraction-v41"
         ) {
             return Ok(format!(
                 "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
@@ -326,6 +340,7 @@ impl Plan {
             "extraction-v38" => Some(include_str!("../../prompts/extraction-v38/reader.txt")),
             "extraction-v39" => Some(include_str!("../../prompts/extraction-v39/reader.txt")),
             "extraction-v40" => Some(include_str!("../../prompts/extraction-v40/reader.txt")),
+            "extraction-v41" => Some(include_str!("../../prompts/extraction-v41/reader.txt")),
             _ => None,
         }
     }
@@ -355,6 +370,7 @@ impl Plan {
                 | "extraction-v38"
                 | "extraction-v39"
                 | "extraction-v40"
+                | "extraction-v41"
         )
     }
     fn source_meta_review(&self) -> bool {
@@ -374,6 +390,7 @@ impl Plan {
                 | "extraction-v38"
                 | "extraction-v39"
                 | "extraction-v40"
+                | "extraction-v41"
         )
     }
     pub fn hash(&self) -> Result<String> {
@@ -398,9 +415,14 @@ impl Plan {
             material.push('\n');
             material.push_str(reader);
         }
-        if matches!(self.version(), "extraction-v39" | "extraction-v40") {
+        if matches!(
+            self.version(),
+            "extraction-v39" | "extraction-v40" | "extraction-v41"
+        ) {
             material.push('\n');
-            material.push_str(if self.version() == "extraction-v40" {
+            material.push_str(if self.version() == "extraction-v41" {
+                review_v39::DEFINITIONS_41
+            } else if self.version() == "extraction-v40" {
                 review_v39::DEFINITIONS_40
             } else {
                 review_v39::DEFINITIONS
@@ -741,7 +763,10 @@ pub fn validate_source_review(
     batch: &Batch,
     source: &SourceView,
 ) -> Result<()> {
-    if matches!(plan.version(), "extraction-v39" | "extraction-v40") {
+    if matches!(
+        plan.version(),
+        "extraction-v39" | "extraction-v40" | "extraction-v41"
+    ) {
         return Err(invalid("schema", "review responsibility binding required"));
     }
     if plan.source_bound_review() {
@@ -764,6 +789,7 @@ pub fn validate_source_review(
                     | "extraction-v38"
                     | "extraction-v39"
                     | "extraction-v40"
+                    | "extraction-v41"
             ),
             matches!(
                 plan.version(),
@@ -778,6 +804,7 @@ pub fn validate_source_review(
                     | "extraction-v38"
                     | "extraction-v39"
                     | "extraction-v40"
+                    | "extraction-v41"
             ),
             matches!(
                 plan.version(),
@@ -788,6 +815,7 @@ pub fn validate_source_review(
                     | "extraction-v38"
                     | "extraction-v39"
                     | "extraction-v40"
+                    | "extraction-v41"
             ),
         )
     } else {
@@ -803,8 +831,21 @@ pub fn validate_source_review_at(
     batch: &Batch,
     source: &SourceView,
 ) -> Result<()> {
-    if matches!(plan.version(), "extraction-v39" | "extraction-v40") {
-        review_v39::validate(raw, stage, batch, source)
+    if matches!(
+        plan.version(),
+        "extraction-v39" | "extraction-v40" | "extraction-v41"
+    ) {
+        review_v39::validate(
+            raw,
+            stage,
+            batch,
+            source,
+            if plan.version() == "extraction-v41" {
+                "violations"
+            } else {
+                "differences"
+            },
+        )
     } else {
         validate_source_review(plan, raw, batch, source)
     }
@@ -833,7 +874,10 @@ pub fn validate_proposal_reviews_bound(
     for (stage, raw) in plan.review_stages().iter().zip(&reviews[n..]) {
         validate_source_review_at(plan, stage, raw, batch, source)?;
     }
-    if matches!(plan.version(), "extraction-v39" | "extraction-v40") {
+    if matches!(
+        plan.version(),
+        "extraction-v39" | "extraction-v40" | "extraction-v41"
+    ) {
         if review_v39::inventory_signature(&reviews[n])?
             != review_v39::inventory_signature(reviews.last().expect("complete reviews"))?
         {

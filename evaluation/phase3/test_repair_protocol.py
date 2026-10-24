@@ -120,6 +120,15 @@ class RepairProtocolTest(unittest.TestCase):
         changed['claims'][0]['differences']=['Unsupported added grammar commentary']
         with self.assertRaisesRegex(ValueError,'contradicts reported differences'):
             repair.check(changed,packet,'v39',stage=active)
+        violation_facet=copy.deepcopy(facet)
+        for c in violation_facet['claims']:c['violations']=c.pop('differences')
+        self.assertEqual(repair.check(violation_facet,packet,'v41',stage=active)['verdict'],'pass')
+        with self.assertRaises(ValueError):repair.check(facet,packet,'v41',stage=active)
+        protected=repair.body(packet,'v41',active)['output_config']['format']['schema']['properties']['claims']['items']['properties']
+        self.assertIn('pattern',protected['source_meaning'])
+        self.assertIn('pattern',protected['dimensions']['properties']['entailment']['properties']['reason'])
+        self.assertIn('violations',protected)
+        self.assertNotIn('differences',protected)
         duplicate_review['claims'][0]['dimensions']['duplicates']['status']='reject'
         duplicate_review['verdict']='reject'
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'reject')

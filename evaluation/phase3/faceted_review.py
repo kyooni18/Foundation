@@ -4,7 +4,7 @@ import focused_review as f
 import guarded_haiku as g
 
 def root(version):
-    g.require(version in {'v39','v40'},'unknown faceted profile')
+    g.require(version in {'v39','v40','v41'},'unknown faceted profile')
     return f.ROOT/('prompts/extraction-'+version)
 
 def definitions(version='v39'):return json.loads((root(version)/'facets.json').read_text())
@@ -22,7 +22,9 @@ def schema(packet,stage,wire_revision='supported-v2',version='v39'):
     g.require(wire_revision in {'unsupported-v1','supported-v2'},'unknown faceted wire schema')
     d=spec(stage,version);source=packet['case']['source'];claims=packet['candidate']['claims'];n=len(claims)
     status={'type':'string','enum':['pass','reject','unresolved']}
-    string={'type':'string'};strings={'type':'array','items':string}
+    string={'type':'string'}
+    if version=='v41':string['pattern']=r'[^ \t\r\n]'
+    strings={'type':'array','items':string}
     evidence={'type':'array','minItems':1,'maxItems':1,'items':{'type':'object','additionalProperties':False,'properties':{'quote':{'type':'string','enum':[source]}},'required':['quote']}}
     dimensions={}
     for key in d['dimensions']:
@@ -32,6 +34,7 @@ def schema(packet,stage,wire_revision='supported-v2',version='v39'):
         dimensions[key]={'type':'object','additionalProperties':False,'properties':{'status':s,'reason':string},'required':['status','reason']}
     fields=dict(index={'type':'integer'},text=string,evidence=evidence,source_meaning=string,candidate_meaning=string,
         dimensions={'type':'object','additionalProperties':False,'properties':dimensions,'required':d['dimensions']},differences=strings,uncertainty_flags=strings)
+    if version=='v41':fields['violations']=fields.pop('differences')
     if n:
         fields['index']={'type':'integer','enum':list(range(n))}
         fields['text']={'type':'string','enum':[c['text'] for c in claims]}
@@ -58,6 +61,7 @@ def body(packet,stage,model,wire_revision='supported-v2',version='v39'):
 
 def check(j,packet,stage,shape,version='v39'):
     g.require(stage is not None,'review responsibility binding required');d=spec(stage,version);shape(j,schema(packet,stage,version=version))
+    violation_key='violations' if version=='v41' else 'differences'
     source=packet['case']['source'];claims=packet['candidate']['claims'];g.require(j['stage']==stage,'review responsibility changed')
     g.require(all(s.strip() for s in j['uncertainty_flags']),'empty uncertainty flag')
     unresolved=bool(j['uncertainty_flags']);rejected=False
@@ -71,8 +75,8 @@ def check(j,packet,stage,shape,version='v39'):
             dim=row['dimensions'][key];g.require(dim['reason'].strip(),'blank dimension reason');s=dim['status']
             g.require(s!='not_applicable' or not (claim['lang']=='ko' or f.has_korean(source)),'unassessed Korean dependency')
             rejected |= s=='reject';unresolved |= s=='unresolved';failure |= s in {'reject','unresolved'}
-        g.require(all(s.strip() for s in row['differences']+row['uncertainty_flags']),'blank difference/uncertainty')
-        g.require(failure or not (row['differences'] or row['uncertainty_flags']),'passing responsibility contradicts reported differences')
+        g.require(all(s.strip() for s in row[violation_key]+row['uncertainty_flags']),'blank difference/uncertainty')
+        g.require(failure or not (row[violation_key] or row['uncertainty_flags']),'passing responsibility contradicts reported differences')
         unresolved |= bool(row['uncertainty_flags'])
     inventory=j['inventory'];g.require(d['inventory'] or not inventory,'inventory is outside this responsibility')
     g.require(not d['inventory'] or inventory or (not claims and isinstance(packet['candidate'].get('empty_reason'),str) and packet['candidate']['empty_reason'].strip()),'empty inventory requires valid empty extraction')
