@@ -39,11 +39,11 @@ SCHEMA = {'type':'object','additionalProperties':False,'properties':{
 
 def schema(version):
     result=json.loads(json.dumps(SCHEMA))
-    if version in {'v27','v28','v29','v30','v31','v32','v33','v34','v35'}:
+    if version in {'v27','v28','v29','v30','v31','v32','v33','v34','v35','v36'}:
         dimensions=result['properties']['claims']['items']['properties']['dimensions']
         dimensions['properties']['source_meta_expansion']=SCHEMA_DIMENSION
         dimensions['required'].append('source_meta_expansion')
-    if version in {'v30','v31','v32','v33','v34','v35'}:
+    if version in {'v30','v31','v32','v33','v34','v35','v36'}:
         dimensions=result['properties']['claims']['items']['properties']['dimensions']
         dimensions['properties']['duplicates']=SCHEMA_DIMENSION
         dimensions['required'].append('duplicates')
@@ -55,29 +55,29 @@ STAGES={'atomicity':'atomicity and independence','fidelity':'semantic fidelity a
 
 
 def body(packet, version, stage=STAGES['fidelity'], effort='low', output_tokens=None):
-    budget.require(output_tokens is None or (version in {'v34','v35'} and output_tokens==6000), 'unsupported review response budget')
+    budget.require(output_tokens is None or (version in {'v34','v35','v36'} and output_tokens==6000), 'unsupported review response budget')
     budget.require(effort=='low' or (effort=='medium' and version=='v31'),
                    'unsupported diagnostic effort')
     protocol=(focused.ROOT/f'prompts/extraction-{version}/review.txt').read_text()
     if version=='v28':
         frames=(focused.ROOT/'prompts/extraction-v28/frames.txt').read_text()
         protocol+='\n'+frames+'\nIndependent review responsibility: semantic fidelity and epistemic framing. Compare against original, never a translation.'
-    if version in {'v29','v30','v31','v32','v33','v34','v35'}:
+    if version in {'v29','v30','v31','v32','v33','v34','v35','v36'}:
         protocol+=f'\nIndependent review responsibility: {stage}. Compare against original, never a translation.'
     payload=dict(original_source=packet['case']['source'],candidate_batch=packet['candidate'])
-    if version in {'v29','v30','v31','v32','v33','v34','v35'}:
+    if version in {'v29','v30','v31','v32','v33','v34','v35','v36'}:
         payload.update(authored_at=packet['case'].get('authored_at'),candidate_count=len(packet['candidate']['claims']),
             required_checked_indices=list(range(len(packet['candidate']['claims']))))
     content=focused.canonical(payload).decode()
     budget.require(len(protocol.encode())+len(content.encode())<=256*1024,'oversized context')
     output_schema=schema(version)
-    if version in {'v29','v30','v31','v32','v33','v34','v35'}:
+    if version in {'v29','v30','v31','v32','v33','v34','v35','v36'}:
         for section in ('claims','inventory'):
             output_schema['properties'][section]['items']['properties']['evidence']['items']['properties']['quote']['enum']=[packet['case']['source']]
-    if version in {'v31','v32','v33','v34','v35'} and packet['candidate']['claims']:
+    if version in {'v31','v32','v33','v34','v35','v36'} and packet['candidate']['claims']:
         output_schema['properties']['claims']['minItems']=1
         output_schema['properties']['inventory']['minItems']=1
-    return dict(model=api.MODEL,max_tokens=output_tokens or (6000 if version=='v35' else 3000 if version in {'v29','v30','v31','v32','v33','v34','v35'} else 6000),system=protocol,
+    return dict(model=api.MODEL,max_tokens=output_tokens or (6000 if version in {'v35','v36'} else 3000 if version in {'v29','v30','v31','v32','v33','v34','v35','v36'} else 6000),system=protocol,
                 messages=[dict(role='user',content=content)],
                 output_config=dict(effort=effort,format=dict(type='json_schema',schema=output_schema)),
                 service_tier='standard_only')
@@ -104,7 +104,7 @@ def shape(value, rule):
 
 def check(j,packet,version,strict_entailment=None):
     if strict_entailment is None:
-        strict_entailment=version in {'v34','v35'}
+        strict_entailment=version in {'v34','v35','v36'}
     shape(j,schema(version))
     source=packet['case']['source']
     claims=packet['candidate']['claims']
@@ -120,10 +120,10 @@ def check(j,packet,version,strict_entailment=None):
                        row['text']==claim['text'],'changed Claim identity')
         budget.require(row['evidence'] and all(unique(e['quote'])
                        for e in row['evidence']),'ambiguous/nonexact Claim evidence')
-        if version in {'v29','v30','v31','v32','v33','v34','v35'}:
+        if version in {'v29','v30','v31','v32','v33','v34','v35','v36'}:
             budget.require(row['evidence']==[dict(quote=source)],'complete original context required')
         korean=claim['lang']=='ko' or focused.has_korean(source)
-        for key in (*DIMENSIONS, *(['source_meta_expansion'] if version in {'v27','v28','v29','v30','v31','v32','v33','v34','v35'} else []), *(['duplicates'] if version in {'v30','v31','v32','v33','v34','v35'} else [])):
+        for key in (*DIMENSIONS, *(['source_meta_expansion'] if version in {'v27','v28','v29','v30','v31','v32','v33','v34','v35','v36'} else []), *(['duplicates'] if version in {'v30','v31','v32','v33','v34','v35','v36'} else [])):
             d=row['dimensions'][key]
             budget.require(d['reason'].strip() and d['status'] in
                 ({'pass','reject','unresolved','not_applicable'} if key=='korean_meaning' else
@@ -147,7 +147,7 @@ def check(j,packet,version,strict_entailment=None):
         budget.require(row['proposition'].strip() and row['reason'].strip() and row['evidence']
             and all(unique(e['quote']) for e in row['evidence']),
             'invalid inventory evidence')
-        if version in {'v29','v30','v31','v32','v33','v34','v35'}:
+        if version in {'v29','v30','v31','v32','v33','v34','v35','v36'}:
             budget.require(row['evidence']==[dict(quote=source)] and unique(row['proposition']),'canonical original inventory required')
         budget.require(all(type(i) is int and 0<=i<len(claims) for i in row['claim_indices']),
                        'invalid inventory Claim index')
@@ -271,9 +271,9 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['v24','v25','v27','v28','v29','v30','v31','v32','v33','v34','v35'],default='v28')
+    parser.add_argument('--version',choices=['v24','v25','v27','v28','v29','v30','v31','v32','v33','v34','v35','v36'],default='v28')
     selection=parser.add_mutually_exclusive_group()
-    selection.add_argument('--candidate-version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35'])
+    selection.add_argument('--candidate-version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36'])
     selection.add_argument('--control',choices=['nested-perspective','hypothetical-source-identity','hypothetical-source-role'])
     parser.add_argument('--stage',choices=list(STAGES),default='fidelity')
     parser.add_argument('--reader-index',type=int)
@@ -310,7 +310,7 @@ def main():
         label='-control-'+args.control
     if args.replicate=='repeat':
         label+='-repeat'
-    budget.require(args.version in {'v29','v30','v31','v32','v33','v34','v35'} or (args.stage=='fidelity' and args.reader_index is None),'new stages require v29')
+    budget.require(args.version in {'v29','v30','v31','v32','v33','v34','v35','v36'} or (args.stage=='fidelity' and args.reader_index is None),'new stages require v29')
     if args.reader_index is not None:
         budget.require(0<=args.reader_index<len(packet['candidate']['claims']),'invalid reader index')
         label+='-reader-'+str(args.reader_index)

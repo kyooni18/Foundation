@@ -53,6 +53,11 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertEqual(repair.check(duplicate_review,packet,'v34')['verdict'],'pass')
         self.assertEqual(repair.check(duplicate_review,packet,'v35')['verdict'],'pass')
         self.assertEqual(repair.body(packet,'v35')['max_tokens'],6000)
+        self.assertEqual(repair.check(duplicate_review,packet,'v36')['verdict'],'pass')
+        self.assertEqual(repair.body(packet,'v36')['max_tokens'],6000)
+        for component in ['frames.txt','reader.txt']:
+            self.assertEqual((focused.ROOT/'prompts/extraction-v35'/component).read_bytes(),
+                             (focused.ROOT/'prompts/extraction-v36'/component).read_bytes())
         source_root=focused.ROOT/'prompts'
         for component in ['frames.txt','reader.txt']:
             self.assertEqual((source_root/'extraction-v33'/component).read_bytes(),

@@ -1538,6 +1538,7 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
         "extraction-v33",
         "extraction-v34",
         "extraction-v35",
+        "extraction-v36",
     ] {
         meta_plan.prompt_version = Some(version.into());
         assert_ne!(meta_plan.hash().unwrap(), v31_hash);
