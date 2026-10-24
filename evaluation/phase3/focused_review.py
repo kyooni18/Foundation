@@ -30,6 +30,12 @@ def canonical(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode()
 
 
+def has_korean(text):
+    """Mirror the core's conservative Hangul/Jamo presence guard, without normalization."""
+    return any(0x1100 <= ord(c) <= 0x11ff or 0x3130 <= ord(c) <= 0x318f or
+               0xac00 <= ord(c) <= 0xd7af for c in text)
+
+
 def load_manifest():
     assert sha(MANIFEST.read_bytes()) == MANIFEST_SHA256, 'frozen manifest changed'
     assert sha((ROOT / 'evaluation/phase3/focused-protocol.txt').read_bytes()) == PROTOCOL_SHA256

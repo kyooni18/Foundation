@@ -64,3 +64,13 @@ class RepairProtocolTest(unittest.TestCase):
         empty_packet['candidate']['empty_reason']=None
         with self.assertRaises(ValueError):
             repair.check(no_propositions,empty_packet,'v30')
+        decomposed='\u1100\u1161. Four workers are configured.'
+        english='Four workers are configured.'
+        decomposed_packet=dict(case=dict(source=decomposed),candidate=dict(claims=[dict(text=english,lang='en')],empty_reason=None))
+        na_dimensions=copy.deepcopy(judgment['claims'][0]['dimensions'])
+        na_dimensions['korean_meaning']['status']='not_applicable'
+        decomposed_review=dict(verdict='pass',uncertainty_flags=[],claims=[dict(index=0,text=english,
+            evidence=[dict(quote=decomposed)],dimensions=na_dimensions,uncertainty_flags=[])],
+            inventory=[dict(proposition=english,evidence=[dict(quote=decomposed)],claim_indices=[0],status='pass',reason='represented')])
+        with self.assertRaisesRegex(ValueError,'unassessed Korean dependency'):
+            repair.check(decomposed_review,decomposed_packet,'v28')

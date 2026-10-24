@@ -112,7 +112,7 @@ def check(j,packet,version):
                        for e in row['evidence']),'ambiguous/nonexact Claim evidence')
         if version in {'v29','v30'}:
             budget.require(row['evidence']==[dict(quote=source)],'complete original context required')
-        korean=claim['lang']=='ko' or any('\uac00'<=c<='\ud7a3' for c in source)
+        korean=claim['lang']=='ko' or focused.has_korean(source)
         for key in (*DIMENSIONS, *(['source_meta_expansion'] if version in {'v27','v28','v29','v30'} else []), *(['duplicates'] if version=='v30' else [])):
             d=row['dimensions'][key]
             budget.require(d['reason'].strip() and d['status'] in

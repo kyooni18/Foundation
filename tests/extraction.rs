@@ -1398,6 +1398,35 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
         ]
     };
     assert!(validate_proposal_reviews_bound(&plan, &reports(&review), &batch, &source).is_ok());
+    let decomposed = format!("\u{1100}\u{1161}. {second}");
+    let decomposed_id = app
+        .record_source(&user(), RecordSource::plain(&decomposed))
+        .unwrap()
+        .source_id;
+    let decomposed_source = app.get_source(&user(), decomposed_id).unwrap();
+    let mut english_claim = candidate(second);
+    english_claim["lang"] = json!("en");
+    let decomposed_batch = validate(&output(vec![english_claim]), &decomposed_source).unwrap();
+    let mut na_dimensions = dimensions.clone();
+    na_dimensions["korean_meaning"]["status"] = json!("not_applicable");
+    let decomposed_review = json!({"verdict":"pass","uncertainty_flags":[],"claims":[
+        {"index":0,"text":second,"evidence":[{"quote":decomposed}],"dimensions":na_dimensions,"uncertainty_flags":[]}
+    ],"inventory":[{"proposition":second,"evidence":[{"quote":decomposed}],"claim_indices":[0],"status":"pass","reason":"represented"}]}).to_string();
+    let decomposed_reviews = vec![
+        reader.clone(),
+        decomposed_review.clone(),
+        decomposed_review.clone(),
+        decomposed_review,
+    ];
+    assert!(
+        validate_proposal_reviews_bound(
+            &plan,
+            &decomposed_reviews,
+            &decomposed_batch,
+            &decomposed_source
+        )
+        .is_err()
+    );
     let mut duplicated_inventory = review.clone();
     let mut duplicate = duplicated_inventory["inventory"][0].clone();
     duplicate["reason"] = json!("a second explanation does not create another source proposition");

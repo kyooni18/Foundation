@@ -120,11 +120,7 @@ pub(super) fn validate(
             let s = status(&dimensions[key]["status"], key == "korean_meaning")?;
             if key == "korean_meaning"
                 && s == "not_applicable"
-                && (candidate.lang == "ko"
-                    || source
-                        .content
-                        .chars()
-                        .any(|c| ('\u{ac00}'..='\u{d7a3}').contains(&c)))
+                && (candidate.lang == "ko" || super::korean(&source.content))
             {
                 return Err(invalid(
                     "schema",

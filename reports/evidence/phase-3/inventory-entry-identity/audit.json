@@ -1,0 +1,86 @@
+{
+  "status": "offline protocol corrections; semantic acceptance still incomplete",
+  "baseline_regressions": [
+    {
+      "exit_code": 101,
+      "observed": "duplicate inventory with different reason was accepted"
+    },
+    {
+      "exit_code": 101,
+      "observed": "whitespace-only reason accepted and valid empty extraction rejected"
+    },
+    {
+      "exit_code": 101,
+      "observed": "decomposed Hangul Source allowed Korean-meaning N/A on English Claim"
+    }
+  ],
+  "after_checks": [
+    {
+      "check": "rust-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--all-targets"
+      ],
+      "exit_code": 0,
+      "passed": 48
+    },
+    {
+      "check": "python-tests",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "evaluation/phase3",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0,
+      "passed": 40
+    },
+    {
+      "check": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "check": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "historical_replay_byte_identical": true,
+  "current_replay_byte_identical": true,
+  "failed_prefix_replay_byte_identical": true,
+  "source_normalization": false,
+  "raw_judgment_rewrite": false,
+  "new_paid_calls": 0,
+  "ceiling_nanos": 4882653350,
+  "prior_nanos": 4782653350,
+  "recorded_nanos": 97054700,
+  "requests": 40,
+  "unsettled": 0,
+  "remaining_nanos": 2945300,
+  "budget_proposal_applied": false,
+  "complete_current_profile_passing_trace": false,
+  "goal_status": "active",
+  "completion": "not achieved",
+  "funding_blocker_observations": 2,
+  "previous_goal_turn": "progress",
+  "this_goal_turn": "progress"
+}
