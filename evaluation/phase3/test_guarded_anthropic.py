@@ -166,6 +166,19 @@ class DirectClaudeTest(unittest.TestCase):
         self.dispatcher().dispatch(self.packet)
         self.assertEqual(len(list((self.root/'evidence').glob('*.anchoring.json'))),1)
 
+    def test_unicode_reanchoring_never_guesses_repeated_or_normalized_quotes(self):
+        source='👩🏽‍💻 가나다 e\u0301 “안녕” 가나다'
+        quote='“안녕”'
+        evidence=[dict(start=source.index(quote)+3,end=source.index(quote)+3+len(quote),quote=quote),
+                  dict(start=0,end=1,quote='가나다'),
+                  dict(start=0,end=1,quote='é')]
+        judged, corrections=a.anchor_evidence(dict(claims=[dict(index=0,evidence=evidence)],inventory=[]),source)
+        self.assertEqual(len(corrections),1)
+        self.assertEqual(judged['claims'][0]['evidence'][0]['start'],source.index(quote))
+        self.assertEqual(judged['claims'][0]['evidence'][1],evidence[1])
+        self.assertEqual(judged['claims'][0]['evidence'][2],evidence[2])
+        self.assertEqual(source[judged['claims'][0]['evidence'][0]['start']:judged['claims'][0]['evidence'][0]['end']],quote)
+
     def test_pass_verdict_with_uncertainty_is_recorded_not_coerced(self):
         self.judgment['verdict']='pass'
         for c in self.judgment['claims']:

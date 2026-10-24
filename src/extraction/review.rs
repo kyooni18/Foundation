@@ -44,7 +44,7 @@ impl App {
         let structural = validation.is_ok();
         let reports = extraction::stored_reviews(&reviews)?;
         let protocol_valid = validation.as_ref().is_ok_and(|batch| {
-            extraction::validate_proposal_reviews(&plan, &reports, batch.claims.len()).is_ok()
+            extraction::validate_proposal_reviews_bound(&plan, &reports, batch, &source).is_ok()
         });
         let claims=parsed.as_ref().and_then(|value|value["claims"].as_array()).map(|claims|claims.iter().enumerate().map(|(index,claim)|{
             let span=claim["anchor"]["quote"].as_str().zip(claim["anchor"]["occurrence"].as_u64()).and_then(|(quote,occurrence)|{

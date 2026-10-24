@@ -1330,3 +1330,73 @@ async fn review_schema_semantic_and_provider_failures_are_distinct() {
     );
     assert!(retry_app.verify_integrity().unwrap().ok);
 }
+
+#[test]
+fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
+    let (_dir, app) = fixture();
+    let content =
+        "Mori 서비스의 worker_count는 4다. The count alone does not establish parallel execution.";
+    let id = app
+        .record_source(&user(), RecordSource::plain(content))
+        .unwrap()
+        .source_id;
+    let source = app.get_source(&user(), id).unwrap();
+    let first = "Mori 서비스의 worker_count는 4다.";
+    let second = "The count alone does not establish parallel execution.";
+    let mut english = candidate(second);
+    english["lang"] = json!("en");
+    let batch = validate(&output(vec![candidate(first), english]), &source).unwrap();
+    let dimensions = json!({"atomicity":{"status":"pass","reason":"one proposition"},
+        "entailment":{"status":"pass","reason":"stated"},
+        "attribution":{"status":"pass","reason":"speaker preserved"},
+        "polarity_scope":{"status":"pass","reason":"negation preserved"},
+        "missing_argument":{"status":"pass","reason":"arguments present"},
+        "unsupported_inference":{"status":"pass","reason":"no added content"},
+        "korean_meaning":{"status":"pass","reason":"Korean context preserved"}});
+    let mut review = json!({"verdict":"pass","uncertainty_flags":[],"claims":[
+        {"index":0,"text":first,"evidence":[{"quote":first}],"dimensions":dimensions,"uncertainty_flags":[]},
+        {"index":1,"text":second,"evidence":[{"quote":content}],"dimensions":dimensions,"uncertainty_flags":[]}
+    ],"inventory":[
+        {"proposition":"worker count is four","evidence":[{"quote":first}],"claim_indices":[0],"status":"pass","reason":"represented"},
+        {"proposition":"count is insufficient to establish parallel execution","evidence":[{"quote":second}],"claim_indices":[1],"status":"pass","reason":"represented"}
+    ]});
+    let mut plan = plan();
+    plan.prompt_version = Some("extraction-v24".into());
+    assert_ne!(plan.hash().unwrap(), {
+        let mut old = plan.clone();
+        old.prompt_version = Some("extraction-v23".into());
+        old.hash().unwrap()
+    });
+    let mut next = plan.clone();
+    next.prompt_version = Some("extraction-v25".into());
+    assert_ne!(next.hash().unwrap(), plan.hash().unwrap());
+    let reader =
+        json!({"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true}).to_string();
+    let reports = |review: &Value| {
+        vec![
+            reader.clone(),
+            reader.clone(),
+            review.to_string(),
+            review.to_string(),
+            review.to_string(),
+        ]
+    };
+    assert!(validate_proposal_reviews_bound(&plan, &reports(&review), &batch, &source).is_ok());
+    review["claims"][1]["dimensions"]["korean_meaning"]["status"] = json!("not_applicable");
+    assert!(validate_proposal_reviews_bound(&plan, &reports(&review), &batch, &source).is_err());
+    review["claims"][1]["dimensions"]["korean_meaning"]["status"] = json!("pass");
+    review["claims"][1]["dimensions"]["atomicity"]["status"] = json!("reject");
+    assert!(validate_proposal_reviews_bound(&plan, &reports(&review), &batch, &source).is_err());
+    review["claims"][1]["dimensions"]["atomicity"]["status"] = json!("pass");
+    review["uncertainty_flags"] = json!(["contested interpretation"]);
+    assert!(validate_proposal_reviews_bound(&plan, &reports(&review), &batch, &source).is_err());
+    review["uncertainty_flags"] = json!([]);
+    review["claims"][1]["text"] = json!("changed claim");
+    assert!(validate_proposal_reviews_bound(&plan, &reports(&review), &batch, &source).is_err());
+    review["claims"][1]["text"] = json!(second);
+    let mut divergent = reports(&review);
+    let mut alternate = review.clone();
+    alternate["claims"][0]["evidence"] = json!([{"quote":content}]);
+    divergent[4] = alternate.to_string();
+    assert!(validate_proposal_reviews_bound(&plan, &divergent, &batch, &source).is_err());
+}

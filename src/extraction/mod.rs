@@ -1,6 +1,7 @@
 //! Untrusted proposals, deterministic evidence checks, and independent semantic reviews.
 mod json;
 mod review;
+mod review_v24;
 use crate::{
     App,
     domain::*,
@@ -141,6 +142,16 @@ impl Plan {
                 include_str!("../../prompts/extraction-v23/frames.txt"),
                 include_str!("../../prompts/extraction-v23/review.txt"),
             )),
+            "extraction-v24" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v24/frames.txt"),
+                include_str!("../../prompts/extraction-v24/review.txt"),
+            )),
+            "extraction-v25" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v25/frames.txt"),
+                include_str!("../../prompts/extraction-v25/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -178,6 +189,8 @@ impl Plan {
             "extraction-v21" => Some(include_str!("../../prompts/extraction-v21/reader.txt")),
             "extraction-v22" => Some(include_str!("../../prompts/extraction-v22/reader.txt")),
             "extraction-v23" => Some(include_str!("../../prompts/extraction-v23/reader.txt")),
+            "extraction-v24" => Some(include_str!("../../prompts/extraction-v24/reader.txt")),
+            "extraction-v25" => Some(include_str!("../../prompts/extraction-v25/reader.txt")),
             _ => None,
         }
     }
@@ -531,6 +544,50 @@ pub fn validate_proposal_reviews(plan: &Plan, reviews: &[String], n: usize) -> R
     Ok(())
 }
 
+/// Source-bound validation is required by the v24 protocol, including at approval time.
+pub fn validate_proposal_reviews_bound(
+    plan: &Plan,
+    reviews: &[String],
+    batch: &Batch,
+    source: &SourceView,
+) -> Result<()> {
+    if !matches!(plan.version(), "extraction-v24" | "extraction-v25") {
+        return validate_proposal_reviews(plan, reviews, batch.claims.len());
+    }
+    let n = batch.claims.len();
+    if reviews.len() != n + REVIEW_STAGES.len() {
+        return Err(invalid("semantic", "complete review protocol required"));
+    }
+    if reviews.iter().map(String::len).sum::<usize>() > 4 * 1024 * 1024 {
+        return Err(invalid("schema", "review batch too large"));
+    }
+    for raw in &reviews[..n] {
+        validate_review(raw, 1)?;
+    }
+    for raw in &reviews[n..] {
+        review_v24::validate(raw, batch, source)?;
+    }
+    let compared = reviews[n..].iter().map(|raw| {
+        let v = json::parse(raw).map_err(|_| invalid("schema", "invalid review JSON"))?;
+        Ok::<Value, Error>(serde_json::json!({
+            "verdict":v["verdict"],
+            "uncertainty_flags":v["uncertainty_flags"],
+            "claims":v["claims"].as_array().expect("validated claims").iter().map(|c|serde_json::json!({
+                "index":c["index"],"evidence":c["evidence"],"uncertainty_flags":c["uncertainty_flags"],
+                "dimensions":c["dimensions"].as_object().expect("validated dimensions").iter()
+                    .map(|(k,v)|(k.clone(),v["status"].clone())).collect::<serde_json::Map<_,_>>()
+            })).collect::<Vec<_>>(),
+            "inventory":v["inventory"].as_array().expect("validated inventory").iter().map(|i|serde_json::json!({
+                "evidence":i["evidence"],"claim_indices":i["claim_indices"],"status":i["status"]
+            })).collect::<Vec<_>>()
+        }))
+    }).collect::<Result<Vec<_>>>()?;
+    if compared.windows(2).any(|pair| pair[0] != pair[1]) {
+        return Err(invalid("unresolved", "independent review disagreement"));
+    }
+    Ok(())
+}
+
 pub fn validate_review(raw: &str, n: usize) -> Result<()> {
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]
@@ -734,7 +791,12 @@ async fn propose_with_feedback(
             .await
             .map_err(call)?;
         append_review_trace(plan, trace, &result)?;
-        validate_review(&result, batch.claims.len()).map_err(|error| {
+        (if matches!(plan.version(), "extraction-v24" | "extraction-v25") {
+            review_v24::validate(&result, &batch, source)
+        } else {
+            validate_review(&result, batch.claims.len())
+        })
+        .map_err(|error| {
             if matches!(
                 error,
                 Error::InvalidInput {
@@ -756,6 +818,9 @@ async fn propose_with_feedback(
             )
         })?;
         reviews.push(result);
+    }
+    if matches!(plan.version(), "extraction-v24" | "extraction-v25") {
+        validate_proposal_reviews_bound(plan, &reviews, &batch, source)?;
     }
     Ok(Proposal {
         raw,
@@ -820,7 +885,7 @@ impl App {
             return Err(invalid("plan", "prompt hash mismatch"));
         }
         let batch = validate(&proposal.raw, &source)?;
-        validate_proposal_reviews(&plan, &proposal.reviews, batch.claims.len())?;
+        validate_proposal_reviews_bound(&plan, &proposal.reviews, &batch, &source)?;
         let id = ulid::Ulid::new().to_string();
         tx.execute(
             "INSERT INTO extraction_candidate VALUES(?1,?2,?3,?4,?5,?6)",
