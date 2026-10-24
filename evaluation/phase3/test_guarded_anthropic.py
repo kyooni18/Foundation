@@ -6,9 +6,12 @@ from pathlib import Path
 import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import guarded_anthropic as a
 import guarded_haiku as g
+import guarded_anthropic_repair as repair
+import replay_semantic_repair as replay
 
 
 class DirectClaudeTest(unittest.TestCase):
@@ -84,6 +87,22 @@ class DirectClaudeTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'already attempted'):
             self.dispatcher().dispatch(self.packet)
         self.assertEqual([x[0] for x in self.calls],['GET','POST'])
+        # A capped review must settle its usage, retain the raw response, and replay
+        # as incomplete without interpreting even otherwise parseable text.
+        self.response['stop_reason']='max_tokens'
+        evidence=self.root/'repair-evidence'
+        with patch.dict('os.environ',{'ANTHROPIC_API_KEY':'synthetic-fixture-only'}), \
+             patch.object(g,'LEDGER',self.ledger), \
+             patch.object(a,'transport',return_value=self.transport):
+            result=repair.dispatch(self.packet,evidence,self.authorization,'v31',effort='medium')
+            self.assertEqual(result['status'],'incomplete')
+            self.assertEqual(result['reason'],'stop_reason:max_tokens')
+            self.assertTrue((evidence/(result['id']+'.response.json')).is_file())
+            self.assertFalse((evidence/(result['id']+'.judgment.json')).exists())
+            replayed=replay.replay(evidence)
+        self.assertFalse(replayed['rows'][0]['protocol_valid'])
+        self.assertFalse(replayed['rows'][0]['complete'])
+        self.assertEqual(replayed['ledger']['unsettled'],0)
 
     def test_reservation_uses_request_cap_without_double_padding(self):
         body=a.request_body(self.packet)

@@ -53,7 +53,9 @@ STAGES={'atomicity':'atomicity and independence','fidelity':'semantic fidelity a
         'coverage':'whole-batch coverage, duplication and conflicting interpretation'}
 
 
-def body(packet, version, stage=STAGES['fidelity']):
+def body(packet, version, stage=STAGES['fidelity'], effort='low'):
+    budget.require(effort=='low' or (effort=='medium' and version=='v31'),
+                   'unsupported diagnostic effort')
     protocol=(focused.ROOT/f'prompts/extraction-{version}/review.txt').read_text()
     if version=='v28':
         frames=(focused.ROOT/'prompts/extraction-v28/frames.txt').read_text()
@@ -75,7 +77,7 @@ def body(packet, version, stage=STAGES['fidelity']):
         output_schema['properties']['inventory']['minItems']=1
     return dict(model=api.MODEL,max_tokens=(3000 if version in {'v29','v30','v31'} else 6000),system=protocol,
                 messages=[dict(role='user',content=content)],
-                output_config=dict(effort='low',format=dict(type='json_schema',schema=output_schema)),
+                output_config=dict(effort=effort,format=dict(type='json_schema',schema=output_schema)),
                 service_tier='standard_only')
 
 
@@ -182,7 +184,11 @@ def reader_check(j):
         semantic_acceptance=None,production_approval=False)
 
 
-def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['fidelity'], reader_index=None):
+def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['fidelity'], reader_index=None, effort='low'):
+    budget.require(effort=='low' or (effort=='medium' and version=='v31' and reader_index is None),
+                   'unsupported diagnostic effort')
+    if effort!='low':
+        label+='-effort-'+effort
     ident='focused-haiku-repair-'+version+'-'+packet['case']['id']+label+'-primary'
     key=os.environ.get('ANTHROPIC_API_KEY')
     budget.require(key and len(key)<1024 and '\n' not in key and '\r' not in key,
@@ -193,7 +199,7 @@ def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['f
         d.check(conn,1)
         budget.require(conn.execute('SELECT 1 FROM request WHERE id=?',(ident,)).fetchone() is None,
                        'already attempted; no retry')
-        request=(body(packet,version,stage) if reader_index is None else
+        request=(body(packet,version,stage,effort) if reader_index is None else
                  reader_body(packet['candidate']['claims'][reader_index]['text'],version))
         quote=api.quote(request)
         d.check(conn,quote['estimate'])
@@ -207,7 +213,7 @@ def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['f
         budget.immutable(evidence/(ident+'.request.json'),dict(id=ident,payload=request,
             packet_sha256=focused.sha(focused.canonical(packet)),
             source_sha256=focused.sha(packet['case']['source'].encode()),
-            review_stage=stage,reader_index=reader_index,prompt_sha256=focused.sha(
+            review_stage=stage,review_effort=effort,reader_index=reader_index,prompt_sha256=focused.sha(
             (focused.ROOT/f"prompts/extraction-{version}/{'review' if reader_index is None else 'reader'}.txt").read_bytes()),
             system_sha256=focused.sha(request['system'].encode()),
             model_info=model,quote=quote,authorization=authorization))
@@ -228,7 +234,11 @@ def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['f
         conn.commit()
         budget.immutable(evidence/(ident+'.accounting.json'),usage)
         budget.require(usage['conservative_upper_nanos']<=quote['estimate'],'usage bound exceeds reservation; stop')
-        budget.require(response['stop_reason']=='end_turn','incomplete model response')
+        if response['stop_reason']!='end_turn':
+            result=dict(status='incomplete',reason='stop_reason:'+str(response['stop_reason']),
+                semantic_acceptance=None,production_approval=False)
+            budget.immutable(evidence/(ident+'.rejection.json'),result)
+            return dict(id=ident,**result)
         raw=''.join(b['text'] for b in response['content'] if b.get('type')=='text')
         j=focused.parse_judgment(raw)
         try:
@@ -257,8 +267,12 @@ def main():
     parser.add_argument('--stage',choices=list(STAGES),default='fidelity')
     parser.add_argument('--reader-index',type=int)
     parser.add_argument('--replicate',choices=['primary','repeat'],default='primary')
+    parser.add_argument('--effort',choices=['low','medium'],default='low',
+                        help='medium is a separately identified v31 source-review diagnostic only')
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
+    budget.require(args.effort=='low' or (args.version=='v31' and args.reader_index is None),
+                   'medium diagnostic requires v31 source review')
     _,packets=budget.packets()
     selected=[p for p in packets if p['case']['id']==args.case]
     budget.require(len(selected)==1 and args.case in {'r1-nested_quote','v23-fresh-003','r1-ambiguous_ref','r1-hypothetical','r1-habitual_temporal','v23-fresh-004'},
@@ -290,13 +304,14 @@ def main():
         label+='-reader-'+str(args.reader_index)
     elif args.stage!='fidelity':
         label+='-'+args.stage
-    request=(body(packet,args.version,STAGES[args.stage]) if args.reader_index is None else
+    request=(body(packet,args.version,STAGES[args.stage],args.effort) if args.reader_index is None else
              reader_body(packet['candidate']['claims'][args.reader_index]['text'],args.version))
     if not args.execute:
         print(json.dumps(dict(status='dry_run',case=args.case,version=args.version,label=label,
+                              effort=args.effort,
                               quote=api.quote(request))))
         return
     print(json.dumps(dispatch(packet,args.evidence,
-        json.loads(args.authorization.read_text()),args.version,label,STAGES[args.stage],args.reader_index),ensure_ascii=False))
+        json.loads(args.authorization.read_text()),args.version,label,STAGES[args.stage],args.reader_index,args.effort),ensure_ascii=False))
 
 if __name__=='__main__': main()

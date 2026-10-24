@@ -32,6 +32,11 @@ def signature(j):
         inventory=[{k:i[k] for k in ('proposition','evidence','claim_indices','status')} for i in j['inventory']])
 
 
+def request_identity(body):
+    # Repeat trials must also share model, effort, output cap, schema and tier.
+    return focused.sha(focused.canonical(body))
+
+
 def replay(evidence):
     packets=budget.packets()[1]
     sources={p['case']['source']:p['case'] for p in packets}
@@ -44,16 +49,19 @@ def replay(evidence):
         ident=request['id']
         response_path=evidence/(ident+'.response.json')
         response=load(response_path)
-        budget.require(response['stop_reason']=='end_turn','incomplete response: '+ident)
         usage=api.conservative_usage(response)
         budget.require(usage==load(evidence/(ident+'.accounting.json')),'accounting drift')
         body=request['payload']
+        budget.require(request.get('review_effort',body['output_config']['effort'])==
+                       body['output_config']['effort'],'effort receipt drift')
         payload=focused.parse_judgment(body['messages'][0]['content'])
         reader=request.get('reader_index') is not None
         case=(source_hashes[request['source_sha256']] if reader else
               sources[payload['original_source']])
         source=case['source']
         row=dict(id=ident,case=case['id'],request_sha256=focused.sha(path.read_bytes()),
+            payload_sha256=request_identity(body),
+            effort=body['output_config']['effort'],output_token_cap=body['max_tokens'],
             response_sha256=focused.sha(response_path.read_bytes()),
             system_sha256=focused.sha(body['system'].encode()),
             input_sha256=focused.sha(body['messages'][0]['content'].encode()),
@@ -62,6 +70,24 @@ def replay(evidence):
         saved=load(evidence/(ident+('.rejection.json' if rejected else '.outcome.json')))
         budget.require(saved['production_approval'] is False and saved['semantic_acceptance'] is None,
                        'diagnostic boundary changed')
+        if response['stop_reason']!='end_turn':
+            budget.require(ident.startswith('focused-haiku-repair-'),
+                           'unsupported incomplete request')
+            version=ident.split('-')[3]
+            expected=(repair.reader_body(payload['claim_text'],version) if reader else
+                repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
+                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low')))
+            budget.require(body==expected,'incomplete request recipe drift')
+            reason='stop_reason:'+str(response['stop_reason'])
+            budget.require(rejected and saved['status']=='incomplete' and saved['reason']==reason,
+                           'incomplete rejection drift')
+            row.update(kind='reader' if reader else 'review',version=version,protocol_valid=False,complete=False,
+                       failure_reason=reason)
+            if not reader:
+                repeated.setdefault(row['payload_sha256'],[]).append((ident,dict(
+                    verdict=None,protocol_valid=False,failure_reason=reason)))
+            rows.append(row)
+            continue
         if ident.startswith('focused-haiku-extraction-'):
             version=ident.split('-')[3]
             version='extraction-'+version
@@ -84,7 +110,8 @@ def replay(evidence):
         else:
             version=ident.split('-')[3]
             packet=dict(case=case,candidate=payload['candidate_batch'])
-            expected=repair.body(packet,version,request.get('review_stage',repair.STAGES['fidelity']))
+            expected=repair.body(packet,version,request.get('review_stage',repair.STAGES['fidelity']),
+                                 request.get('review_effort','low'))
             budget.require(body==expected,'review request recipe drift')
             judgment=focused.parse_judgment(raw_text(response))
             try:
@@ -95,7 +122,7 @@ def replay(evidence):
                     'rejection replay drift')
                 row.update(kind='review',version=version,protocol_valid=False,
                     failure_reason=str(error),model_verdict=judgment.get('verdict'))
-                key=(row['system_sha256'],row['input_sha256'])
+                key=row['payload_sha256']
                 repeated.setdefault(key,[]).append((ident,dict(verdict=judgment.get('verdict'),
                     protocol_valid=False,failure_reason=str(error))))
                 rows.append(row)
@@ -104,7 +131,7 @@ def replay(evidence):
             budget.require(checked==saved,'protocol replay drift')
             budget.require(judgment==load(evidence/(ident+'.judgment.json')),'judgment drift')
             row.update(kind='review',version=version,**checked)
-            key=(row['system_sha256'],row['input_sha256'])
+            key=row['payload_sha256']
             repeated.setdefault(key,[]).append((ident,signature(judgment)))
         rows.append(row)
     with tempfile.TemporaryDirectory(prefix='prime-radiant-semantic-replay-') as temp:

@@ -4,6 +4,7 @@ import unittest
 
 import focused_review as focused
 import guarded_anthropic_repair as repair
+import replay_semantic_repair as replay
 
 
 class RepairProtocolTest(unittest.TestCase):
@@ -89,3 +90,15 @@ class RepairProtocolTest(unittest.TestCase):
         empty_packet['candidate']['empty_reason']='No assertion.'
         unconstrained=repair.body(empty_packet,'v31')['output_config']['format']['schema']['properties']
         self.assertNotIn('minItems',unconstrained['claims'])
+        low=repair.body(packet,'v31')
+        medium=repair.body(packet,'v31',effort='medium')
+        self.assertNotEqual(replay.request_identity(low),replay.request_identity(medium))
+        self.assertEqual(low['max_tokens'],medium['max_tokens'])
+        medium['output_config']['effort']='low'
+        self.assertEqual(low,medium)
+        for key,value in [('model','another-model'),('max_tokens',2999),('service_tier','auto')]:
+            changed=copy.deepcopy(low)
+            changed[key]=value
+            self.assertNotEqual(replay.request_identity(low),replay.request_identity(changed))
+        with self.assertRaisesRegex(ValueError,'unsupported diagnostic effort'):
+            repair.body(packet,'v30',effort='medium')
