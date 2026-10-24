@@ -2,6 +2,7 @@
 mod json;
 mod review;
 mod review_v24;
+mod review_v39;
 use crate::{
     App,
     domain::*,
@@ -217,6 +218,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v38/frames.txt"),
                 include_str!("../../prompts/extraction-v38/review.txt"),
             )),
+            "extraction-v39" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v39/frames.txt"),
+                include_str!("../../prompts/extraction-v39/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -233,7 +239,25 @@ impl Plan {
         };
         Ok(format!("{contract}\n{examples}\n{strategy}"))
     }
+    pub fn review_stages(&self) -> &'static [&'static str] {
+        if self.version() == "extraction-v39" {
+            &review_v39::STAGES
+        } else {
+            &REVIEW_STAGES
+        }
+    }
     pub fn review_prompt(&self, stage: &str) -> Result<String> {
+        if self.version() == "extraction-v39" {
+            let spec = review_v39::spec(stage)?;
+            return Ok(format!(
+                "{}\nACTIVE responsibility: {stage}.\nACTIVE dimensions: {}.\nInventory responsibility: {}.\n{}",
+                self.components()?.2,
+                spec["dimensions"],
+                spec["inventory"],
+                spec["question"].as_str().expect("question")
+            ));
+        }
+
         let (_, frames, review) = self.components()?;
         if matches!(
             self.version(),
@@ -247,6 +271,7 @@ impl Plan {
                 | "extraction-v36"
                 | "extraction-v37"
                 | "extraction-v38"
+                | "extraction-v39"
         ) {
             return Ok(format!(
                 "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
@@ -286,6 +311,7 @@ impl Plan {
             "extraction-v36" => Some(include_str!("../../prompts/extraction-v36/reader.txt")),
             "extraction-v37" => Some(include_str!("../../prompts/extraction-v37/reader.txt")),
             "extraction-v38" => Some(include_str!("../../prompts/extraction-v38/reader.txt")),
+            "extraction-v39" => Some(include_str!("../../prompts/extraction-v39/reader.txt")),
             _ => None,
         }
     }
@@ -313,6 +339,7 @@ impl Plan {
                 | "extraction-v36"
                 | "extraction-v37"
                 | "extraction-v38"
+                | "extraction-v39"
         )
     }
     fn source_meta_review(&self) -> bool {
@@ -330,6 +357,7 @@ impl Plan {
                 | "extraction-v36"
                 | "extraction-v37"
                 | "extraction-v38"
+                | "extraction-v39"
         )
     }
     pub fn hash(&self) -> Result<String> {
@@ -353,6 +381,10 @@ impl Plan {
         if let Some(reader) = self.reader_prompt() {
             material.push('\n');
             material.push_str(reader);
+        }
+        if self.version() == "extraction-v39" {
+            material.push('\n');
+            material.push_str(review_v39::DEFINITIONS);
         }
         Ok(hash(&material))
     }
@@ -689,6 +721,9 @@ pub fn validate_source_review(
     batch: &Batch,
     source: &SourceView,
 ) -> Result<()> {
+    if plan.version() == "extraction-v39" {
+        return Err(invalid("schema", "review responsibility binding required"));
+    }
     if plan.source_bound_review() {
         review_v24::validate(
             raw,
@@ -707,6 +742,7 @@ pub fn validate_source_review(
                     | "extraction-v36"
                     | "extraction-v37"
                     | "extraction-v38"
+                    | "extraction-v39"
             ),
             matches!(
                 plan.version(),
@@ -719,6 +755,7 @@ pub fn validate_source_review(
                     | "extraction-v36"
                     | "extraction-v37"
                     | "extraction-v38"
+                    | "extraction-v39"
             ),
             matches!(
                 plan.version(),
@@ -727,10 +764,26 @@ pub fn validate_source_review(
                     | "extraction-v36"
                     | "extraction-v37"
                     | "extraction-v38"
+                    | "extraction-v39"
             ),
         )
     } else {
         validate_review(raw, batch.claims.len())
+    }
+}
+
+/// A specialized review must be bound to its actual requested responsibility.
+pub fn validate_source_review_at(
+    plan: &Plan,
+    stage: &str,
+    raw: &str,
+    batch: &Batch,
+    source: &SourceView,
+) -> Result<()> {
+    if plan.version() == "extraction-v39" {
+        review_v39::validate(raw, stage, batch, source)
+    } else {
+        validate_source_review(plan, raw, batch, source)
     }
 }
 
@@ -745,7 +798,7 @@ pub fn validate_proposal_reviews_bound(
         return validate_proposal_reviews(plan, reviews, batch.claims.len());
     }
     let n = batch.claims.len();
-    if reviews.len() != n + REVIEW_STAGES.len() {
+    if reviews.len() != n + plan.review_stages().len() {
         return Err(invalid("semantic", "complete review protocol required"));
     }
     if reviews.iter().map(String::len).sum::<usize>() > 4 * 1024 * 1024 {
@@ -754,8 +807,16 @@ pub fn validate_proposal_reviews_bound(
     for raw in &reviews[..n] {
         validate_review(raw, 1)?;
     }
-    for raw in &reviews[n..] {
-        validate_source_review(plan, raw, batch, source)?;
+    for (stage, raw) in plan.review_stages().iter().zip(&reviews[n..]) {
+        validate_source_review_at(plan, stage, raw, batch, source)?;
+    }
+    if plan.version() == "extraction-v39" {
+        if review_v39::inventory_signature(&reviews[n])?
+            != review_v39::inventory_signature(reviews.last().expect("complete reviews"))?
+        {
+            return Err(invalid("unresolved", "independent inventory disagreement"));
+        }
+        return Ok(());
     }
     let compared = reviews[n..].iter().map(|raw| {
         let v = json::parse(raw).map_err(|_| invalid("schema", "invalid review JSON"))?;
@@ -973,7 +1034,7 @@ async fn propose_with_feedback(
             }
         }
     }
-    for stage in REVIEW_STAGES {
+    for stage in plan.review_stages() {
         let prompt = plan.review_prompt(stage)?;
         let input = review_message(plan, source, &batch);
         let result = provider
@@ -981,7 +1042,7 @@ async fn propose_with_feedback(
             .await
             .map_err(call)?;
         append_review_trace(plan, trace, &result)?;
-        validate_source_review(plan, &result, &batch, source).map_err(|error| {
+        validate_source_review_at(plan, stage, &result, &batch, source).map_err(|error| {
             if matches!(
                 error,
                 Error::InvalidInput {
@@ -1139,7 +1200,11 @@ impl App {
         let budget = plan
             .extractor
             .timeout_seconds
-            .saturating_add(plan.reviewer.timeout_seconds.saturating_mul(3))
+            .saturating_add(
+                plan.reviewer
+                    .timeout_seconds
+                    .saturating_mul(plan.review_stages().len() as u64),
+            )
             .clamp(1, 2400);
         let Some(lease) = self.lease_extraction(
             &ulid::Ulid::new().to_string(),
@@ -1165,7 +1230,7 @@ impl App {
             };
             let repair = repair_row.and_then(|(raw, reports)| {
                 let reports: Value = serde_json::from_str(&reports).ok()?;
-                repair_context(&raw, reports["reviews"].as_array()?)
+                repair_context_bound(plan, &source, &raw, reports["reviews"].as_array()?)
             });
             let prior:Vec<Value>=reader.prepare("SELECT c.id,c.text,COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore') FROM claim c JOIN extraction_request r ON c.job_id=r.base_job WHERE r.job_id=?1 ORDER BY c.id")?.query_map([&lease.id],|r|Ok(serde_json::json!({"id":r.get::<_,String>(0)?,"text":r.get::<_,String>(1)?,"lifecycle_event":r.get::<_,String>(2)?})))?.collect::<std::result::Result<_,_>>()?;
             drop(reader);
@@ -1239,6 +1304,21 @@ impl App {
 /// Private same-job diagnostic context; never evidence or publication approval.
 /// Reports can be stored JSON strings or evaluation envelopes. Preserve their stage.
 pub fn repair_context(raw: &str, reports: &[Value]) -> Option<Value> {
+    repair_context_inner(None, raw, reports)
+}
+pub fn repair_context_bound(
+    plan: &Plan,
+    source: &SourceView,
+    raw: &str,
+    reports: &[Value],
+) -> Option<Value> {
+    repair_context_inner(Some((plan, source)), raw, reports)
+}
+fn repair_context_inner(
+    bound: Option<(&Plan, &SourceView)>,
+    raw: &str,
+    reports: &[Value],
+) -> Option<Value> {
     if raw.len() > 4 * 1024 * 1024 {
         return None;
     }
@@ -1258,13 +1338,22 @@ pub fn repair_context(raw: &str, reports: &[Value]) -> Option<Value> {
         let stage = if i < n {
             format!("standalone candidate {i}")
         } else {
-            let Some(stage) = REVIEW_STAGES.get(i - n) else {
+            let stages = bound.map_or(&REVIEW_STAGES[..], |(plan, _)| plan.review_stages());
+            let Some(stage) = stages.get(i - n) else {
                 break;
             };
             stage.to_string()
         };
         normalized.push(serde_json::json!({"stage":stage,"report":report}));
-        if validate_review(raw, if i < n { 1 } else { n }).is_err() {
+        let checked = if i < n {
+            validate_review(raw, 1)
+        } else if let Some((plan, source)) = bound {
+            let batch = validate(&candidate.to_string(), source).ok()?;
+            validate_source_review_at(plan, &stage, raw, &batch, source)
+        } else {
+            validate_review(raw, n)
+        };
+        if checked.is_err() {
             break;
         }
     }

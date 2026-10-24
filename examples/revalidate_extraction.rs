@@ -5,7 +5,7 @@ use prime_radiant::{
     domain::*,
     extraction::{
         Plan, VALIDATION_VERSION, hash, validate, validate_proposal_reviews_bound, validate_review,
-        validate_source_review,
+        validate_source_review_at,
     },
 };
 use serde_json::{Value, json};
@@ -87,7 +87,18 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                 if index < batch.claims.len() {
                     validate_review(text, 1)
                 } else {
-                    validate_source_review(plan, text, batch, &source)
+                    validate_source_review_at(
+                        plan,
+                        plan.review_stages().get(index - batch.claims.len()).ok_or(
+                            Error::InvalidInput {
+                                field: "schema",
+                                reason: "extra review".into(),
+                            },
+                        )?,
+                        text,
+                        batch,
+                        &source,
+                    )
                 }
             });
             match prefix.and_then(|_| validate_proposal_reviews_bound(plan, &raw, batch, &source)) {

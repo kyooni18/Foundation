@@ -29,7 +29,7 @@ def response_text(path):
 
 def replay(evidence,case_id,version='extraction-v29',candidate_version=None,reader_version=None,review_output_tokens=None):
     packet=next(p for p in budget.packets()[1] if p['case']['id']==case_id)
-    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38'},'unsupported trace version')
+    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39'},'unsupported trace version')
     review_version=version.removeprefix('extraction-')
     candidate_version=candidate_version or version
     reader_version=reader_version or version.removeprefix('extraction-')
@@ -59,7 +59,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
         if checked['verdict']!='pass':
             stop_stage=f'standalone-{index}'
             break
-    for key,stage in review.STAGES.items():
+    for key,stage in review.stages(review_version).items():
         if stop_stage is not None:
             break
         source_id=prefix+('' if key=='fidelity' else '-'+key)+(('-output-'+str(review_output_tokens)) if review_output_tokens else '')+'-primary'
@@ -69,7 +69,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
         reviews.append(dict(stage=stage,raw=text))
         provenance.append(source_id)
         try:
-            checked=review.check(f.parse_judgment(text),packet,review_version)
+            checked=review.check(f.parse_judgment(text),packet,review_version,stage=stage)
         except (ValueError,KeyError,TypeError):
             stop_stage=stage
             break
@@ -78,11 +78,13 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
     # Match Rust Plan/ModelConfig serialization field order exactly.
     plan=dict(provider='anthropic-direct-diagnostic',prompt_version=version,variant='audited',
         extractor=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=2500),
-        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or (6000 if review_version in {'v35','v36','v37','v38'} else 3000)))
+        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or (6000 if review_version in {'v35','v36','v37','v38','v39'} else 3000)))
     root=f.ROOT/'prompts'/version
     serialized=json.dumps(plan,ensure_ascii=False,separators=(',',':'))
     material=(f'{version}\n{extraction.prompt(version)}\n'+(root/'review.txt').read_text()+
         '\n'+(root/'frames.txt').read_text()+'\n'+serialized+'\n'+(root/'reader.txt').read_text())
+    if version=='extraction-v39':
+        material+='\n'+(root/'facets.json').read_text()
     row=dict(case_id=case_id,corpus_case=packet['case'],source_hash=f.sha(packet['case']['source'].encode()),
         raw=raw,variant='audited',plan=plan,prompt_hash=f.sha(material.encode()),reviews=reviews)
     with tempfile.TemporaryDirectory(prefix='prime-radiant-complete-trace-') as temporary:
@@ -102,7 +104,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
             response_sha256=f.sha((evidence/(ident+'.response.json')).read_bytes()),
             usage_upper_nanos=usage['conservative_upper_nanos']))
     return dict(status='saved execution replay; diagnostic only',case_id=case_id,
-        stopped_at=stop_stage,complete_review_count=len(reviews)==len(candidate['claims'])+3,
+        stopped_at=stop_stage,complete_review_count=len(reviews)==len(candidate['claims'])+len(review.stages(review_version)),
         production_approval=False,independent_semantic_adjudication=False,
         configuration_provenance='reconstructed from exact immutable API requests; no production job Plan',
         revalidation=replayed['revalidation'],claim_count=len(candidate['claims']),
@@ -113,7 +115,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',required=True)
-    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38'],default='extraction-v29')
+    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39'],default='extraction-v29')
     parser.add_argument('--review-output-tokens',type=int,choices=[6000])
     parser.add_argument('--candidate-version')
     parser.add_argument('--reader-version')

@@ -4,9 +4,9 @@ use prime_radiant::{
     App,
     domain::*,
     extraction::{
-        Plan, REVIEW_STAGES, VALIDATION_VERSION, extraction_message, hash, locate, reader_message,
-        repair_context, review_message, validate, validate_proposal_reviews_bound, validate_review,
-        validate_source_review,
+        Plan, VALIDATION_VERSION, extraction_message, hash, locate, reader_message,
+        repair_context_bound, review_message, validate, validate_proposal_reviews_bound,
+        validate_review, validate_source_review_at,
     },
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
@@ -193,11 +193,13 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                     result["structural_valid"] = json!(true);
                                     result["claim_count"] = json!(batch.claims.len());
                                     let stages = match variant {
-                                        "atomicity-review" => vec![REVIEW_STAGES[0]],
+                                        "atomicity-review" => vec![plan.review_stages()[0]],
                                         "fidelity-review" => {
-                                            vec![REVIEW_STAGES[1]]
+                                            vec![plan.review_stages()[1]]
                                         }
-                                        "audited" | "english-staged" => REVIEW_STAGES.to_vec(),
+                                        "audited" | "english-staged" => {
+                                            plan.review_stages().to_vec()
+                                        }
                                         _ => vec![],
                                     };
                                     let mut reviews = Vec::new();
@@ -292,8 +294,9 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                 let checked = if count != 1
                                     || !review["stage"].as_str().unwrap().starts_with("standalone")
                                 {
-                                    validate_source_review(
+                                    validate_source_review_at(
                                         &plan,
+                                        review["stage"].as_str().expect("review stage"),
                                         raw,
                                         &validate(result["raw"].as_str().unwrap(), &source)
                                             .expect("structural validation"),
@@ -381,9 +384,14 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                     if failure.is_none() {
                         break;
                     }
-                    previous_attempt = result["raw"]
-                        .as_str()
-                        .and_then(|raw| repair_context(raw, result["reviews"].as_array().unwrap()));
+                    previous_attempt = result["raw"].as_str().and_then(|raw| {
+                        repair_context_bound(
+                            &plan,
+                            &source,
+                            raw,
+                            result["reviews"].as_array().unwrap(),
+                        )
+                    });
                     previous_failure = failure.map(str::to_owned);
                 }
             }

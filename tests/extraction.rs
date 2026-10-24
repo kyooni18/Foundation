@@ -1559,6 +1559,77 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
             .is_err()
         );
     }
+    let mut faceted_plan = meta_plan.clone();
+    faceted_plan.prompt_version = Some("extraction-v39".into());
+    assert_eq!(faceted_plan.review_stages().len(), 9);
+    let definitions: Vec<Value> =
+        serde_json::from_str(include_str!("../prompts/extraction-v39/facets.json")).unwrap();
+    let mut faceted_reports = vec![reader.clone(), reader.clone()];
+    for definition in &definitions {
+        let dimensions: serde_json::Map<String, Value> = definition["dimensions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|d| {
+                (
+                    d.as_str().unwrap().to_owned(),
+                    json!({"status":"pass","reason":"Synthetic responsibility-specific support"}),
+                )
+            })
+            .collect();
+        let claims: Vec<Value> = batch.claims.iter().enumerate().map(|(i,c)| json!({"index":i,"text":c.text,"evidence":[{"quote":source.content}],"source_meaning":c.text,"candidate_meaning":c.text,"dimensions":dimensions,"differences":[],"uncertainty_flags":[]})).collect();
+        faceted_reports.push(json!({"stage":definition["stage"],"verdict":"pass","uncertainty_flags":[],"claims":claims,"inventory":if definition["inventory"]==true {canonical["inventory"].clone()} else {json!([])}}).to_string());
+    }
+    assert!(
+        validate_proposal_reviews_bound(&faceted_plan, &faceted_reports, &batch, &source).is_ok()
+    );
+    assert!(
+        validate_proposal_reviews_bound(
+            &faceted_plan,
+            &faceted_reports[..faceted_reports.len() - 1],
+            &batch,
+            &source
+        )
+        .is_err()
+    );
+    assert!(validate_source_review(&faceted_plan, &faceted_reports[2], &batch, &source).is_err());
+    assert!(
+        validate_source_review_at(
+            &faceted_plan,
+            faceted_plan.review_stages()[1],
+            &faceted_reports[2],
+            &batch,
+            &source
+        )
+        .is_err()
+    );
+    let mut contradictory_facets: Value = serde_json::from_str(&faceted_reports[3]).unwrap();
+    contradictory_facets["claims"][0]["differences"] = json!(["unsupported extra qualifier"]);
+    assert!(
+        validate_source_review_at(
+            &faceted_plan,
+            faceted_plan.review_stages()[1],
+            &contradictory_facets.to_string(),
+            &batch,
+            &source
+        )
+        .is_err()
+    );
+    let raw_batch = serde_json::to_string(&batch).unwrap();
+    let envelopes: Vec<Value> = faceted_reports.iter().map(|s| json!(s)).collect();
+    let repair = repair_context_bound(&faceted_plan, &source, &raw_batch, &envelopes).unwrap();
+    assert_eq!(
+        repair["review_reports"].as_array().unwrap().len(),
+        faceted_reports.len()
+    );
+    let mut disagreement = faceted_reports.clone();
+    let mut last: Value = serde_json::from_str(disagreement.last().unwrap()).unwrap();
+    last["inventory"][0]["claim_indices"] = json!([1]);
+    last["inventory"][1]["claim_indices"] = json!([0]);
+    *disagreement.last_mut().unwrap() = last.to_string();
+    assert!(
+        validate_proposal_reviews_bound(&faceted_plan, &disagreement, &batch, &source).is_err()
+    );
     let mut shared_claim = canonical.clone();
     shared_claim["inventory"][0]["claim_indices"] = json!([0, 1]);
     assert!(

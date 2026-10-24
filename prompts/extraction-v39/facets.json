@@ -1,0 +1,84 @@
+[
+  {
+    "key": "atomicity",
+    "stage": "atomicity and independence",
+    "dimensions": [
+      "atomicity",
+      "duplicates"
+    ],
+    "inventory": true,
+    "question": "Count independently truth-evaluable assertions and compare Claims for redundant assertion layers. Keep defining attribution, uncertainty, condition, negation and exceptions attached. A conjecture and a separately asserted act/status of checking split. A full relay and its embedded content are not two separately asserted original propositions. Inventory the original independent propositions before mapping. Do not judge unrelated fidelity criteria."
+  },
+  {
+    "key": "fidelity",
+    "stage": "complete-Claim entailment",
+    "dimensions": [
+      "entailment"
+    ],
+    "inventory": false,
+    "question": "Interpret ORIGINAL first, then reconstruct the ENTIRE meaning of each candidate including every modifier. Compare the two meanings and list unsupported additions or lost defining arguments. A verification object can resolve to the same speaker’s sole salient conjecture; grammatical-omission commentary cannot replace that target. Do not pass only a supported core while ignoring extra or missing content. Judge only exact entailment, not atomicity or coverage."
+  },
+  {
+    "key": "attribution",
+    "stage": "attribution and perspective",
+    "dimensions": [
+      "attribution"
+    ],
+    "inventory": false,
+    "question": "Verify actual original speaker, owner of the complete assertion, every nested report layer and quoted first-person perspective, including metadata speaker attribution. Intrinsic narrator/source roles do not identify an authenticated user. Do not infer group membership from a quoted possessive. A report of X does not establish X in the world."
+  },
+  {
+    "key": "scope",
+    "stage": "polarity and scope",
+    "dimensions": [
+      "polarity_scope"
+    ],
+    "inventory": false,
+    "question": "Verify negation, modality, uncertainty, conditional, comparison, temporal and epistemic scope of the complete Claim against ORIGINAL. Preserve not(A and B), exceptions, future intentions and source-relative time. A past-tense original-utterance reporting frame does not assert completion of its embedded future action."
+  },
+  {
+    "key": "arguments",
+    "stage": "argument binding",
+    "dimensions": [
+      "missing_argument"
+    ],
+    "inventory": false,
+    "question": "Check every argument and reference required by the actual proposition. Each Claim binds its own speaker, referents, affected entities and verification target. Unknown identity must stay unknown without invented details. Intrinsic Source-bound entity labels are valid. A checking object can resolve to the same speaker’s sole salient conjecture; commentary that a verb’s object is omitted does not bind the proposition being checked. Emotion has no entailed cause/target merely from adjacency."
+  },
+  {
+    "key": "inference",
+    "stage": "unsupported inference",
+    "dimensions": [
+      "unsupported_inference"
+    ],
+    "inventory": false,
+    "question": "Inspect ALL candidate content, including modifiers and metadata, for assertions not licensed by ORIGINAL. Resolve valid grammar/discourse, not only explicit word repetition. Unknown-identity noun phrases and intrinsic provenance roles are permitted; invented group/details, world verification and adjacency-based emotional causes are not. Candidate dependencies/informed_by are untrusted proposals, never Source support."
+  },
+  {
+    "key": "korean",
+    "stage": "Korean meaning",
+    "dimensions": [
+      "korean_meaning"
+    ],
+    "inventory": false,
+    "question": "Assess Korean dependencies against ORIGINAL even for an English Claim. Preserve particles, omitted subjects, negation, conjecture, report and quoted perspective, condition and relative time. Licensed same-speaker verification ellipsis is valid. Use not_applicable only when neither Source dependencies nor the Claim involve Korean."
+  },
+  {
+    "key": "source_meta",
+    "stage": "Source-commentary expansion",
+    "dimensions": [
+      "source_meta_expansion"
+    ],
+    "inventory": false,
+    "question": "Distinguish the original proposition from added commentary ABOUT document details or grammar. An unknown entity noun phrase or intrinsic original-speaker/source attribution is valid, not a second document assertion. Stating that the original omits details or a verb’s object, or substituting such grammar commentary for the actual verification target, adds content and fails. Original-source/assertion framing is conservative provenance when it adds no audience, publication, new historical event or account identity."
+  },
+  {
+    "key": "coverage",
+    "stage": "whole-batch coverage",
+    "dimensions": [
+      "coverage"
+    ],
+    "inventory": true,
+    "question": "Inventory ALL independently meaningful ORIGINAL assertions before mapping, without inventing an outer report in addition to every separately quoted assertion. A multi-proposition quote uses distinct complete INNER clauses as identities; shared named-speaker attribution stays in full-Source evidence and each Claim. A single relay retains its complete outer predicate. Map every proposition and Claim one-to-one on pass; fused, split, duplicate, missing or unsupported mappings fail. Do not rejudge other responsibilities."
+  }
+]

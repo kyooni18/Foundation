@@ -17,7 +17,7 @@ fn status(value: &Value, allow_na: bool) -> Result<&str> {
         Err(invalid("schema", "invalid review status"))
     }
 }
-fn quote_evidence(value: &Value, source: &str) -> Result<()> {
+pub(super) fn quote_evidence(value: &Value, source: &str) -> Result<()> {
     let spans = value
         .as_array()
         .ok_or_else(|| invalid("schema", "evidence array required"))?;

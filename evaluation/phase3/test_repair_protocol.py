@@ -91,6 +91,20 @@ class RepairProtocolTest(unittest.TestCase):
         shared['inventory'][1]['proposition']=shared['inventory'][0]['proposition']
         with self.assertRaisesRegex(ValueError,'one-to-one'):
             repair.check(shared,packet,'v38')
+        import faceted_review
+        active=repair.stages('v39')['fidelity']
+        structured=repair.body(packet,'v39',active)
+        self.assertEqual(structured['max_tokens'],6000)
+        self.assertEqual(structured['system'],faceted_review.prompt(active))
+        self.assertEqual(len(repair.stages('v39')),9)
+        facet=dict(stage=active,verdict='pass',uncertainty_flags=[],inventory=[],claims=[dict(index=i,text=c['text'],evidence=[dict(quote=source)],source_meaning=c['text'],candidate_meaning=c['text'],dimensions=dict(entailment=dict(status='pass',reason='Synthetic exact support')),differences=[],uncertainty_flags=[]) for i,c in enumerate(packet['candidate']['claims'])])
+        self.assertEqual(repair.check(facet,packet,'v39',stage=active)['verdict'],'pass')
+        with self.assertRaisesRegex(ValueError,'responsibility binding'):
+            repair.check(facet,packet,'v39')
+        changed=copy.deepcopy(facet)
+        changed['claims'][0]['differences']=['Unsupported added grammar commentary']
+        with self.assertRaisesRegex(ValueError,'contradicts reported differences'):
+            repair.check(changed,packet,'v39',stage=active)
         duplicate_review['claims'][0]['dimensions']['duplicates']['status']='reject'
         duplicate_review['verdict']='reject'
         self.assertEqual(repair.check(duplicate_review,packet,'v30')['verdict'],'reject')

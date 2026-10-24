@@ -117,7 +117,7 @@ def replay(evidence):
             try:
                 checked=repair.check(judgment,packet,version,
                     strict_entailment=request.get('review_validation_version') in {'source-checks-v5','source-checks-v6'} and version in {'v34','v35','v36','v37','v38'},
-                    strict_bijection=request.get('review_validation_version')=='source-checks-v6')
+                    strict_bijection=request.get('review_validation_version')=='source-checks-v6',stage=request.get('review_stage'))
             except (ValueError,KeyError,TypeError) as error:
                 budget.require(rejected and saved['status']=='protocol_invalid' and
                     saved['reason']==str(error) and saved['model_verdict']==judgment.get('verdict'),
@@ -134,7 +134,7 @@ def replay(evidence):
             budget.require(judgment==load(evidence/(ident+'.judgment.json')),'judgment drift')
             row.update(kind='review',version=version,**checked)
             try:
-                repair.check(judgment,packet,version)
+                repair.check(judgment,packet,version,stage=request.get('review_stage'))
                 row['current_protocol_valid']=True
             except (ValueError,KeyError,TypeError) as error:
                 row.update(current_protocol_valid=False,current_protocol_error=str(error))
