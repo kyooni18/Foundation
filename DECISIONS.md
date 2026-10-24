@@ -722,3 +722,22 @@ the known non-atomic `v23-fresh-003` candidate. These targeted outcomes do not
 justify promoting a new prompt, treating model agreement as ground truth, or tagging
 Phase 3. All proposals remain quarantined pending the existing exact-hash local-user
 review. Reviewer false acceptance and extraction quality remain open acceptance risks.
+
+### D-83 — Source commentary is not a substitute for a faithful unknown argument
+V27+ source-bound review requires a separate `source_meta_expansion` dimension.
+An explicit unknown actor/affected-target marker can make a Claim standalone;
+appending an assertion about absent document details can instead add an independent
+proposition. V28 distinguishes licensed grammatical/discourse reference resolution
+from invented causal, ownership or method-content assertions. Its targeted reviewer
+rejects the old nested gloss twice, while a corrected narrator-perspective editorial
+control passes twice. Both repeated pairs still disagree on evidence/inventory,
+and the shorter v28 extractor invents new team ownership and loses a delay target.
+These results do not justify production promotion or a Phase 3 tag.
+
+A passing inventory must account for every candidate Claim. Three-review comparison
+also includes proposition text, so incompatible inventories sharing the same evidence
+and index mappings cannot masquerade as agreement. Textually different paraphrases
+remain unresolved: deterministic code does not prove their semantic equivalence.
+Raw outputs remain immutable and reviews remain diagnostic, with exact-hash user
+approval and lifecycle/authority checks required separately. Full results and the
+unchanged budget ceiling are recorded in reports/phase-3-semantic-repair.md.

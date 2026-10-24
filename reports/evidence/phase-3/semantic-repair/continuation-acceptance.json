@@ -1,0 +1,87 @@
+{
+  "status": "incomplete; semantic acceptance not established",
+  "implementation_commit": "cb2c98b",
+  "report": "reports/phase-3-semantic-repair.md",
+  "production_promoted": false,
+  "completion_tag_created": false,
+  "accepted_claims": 0,
+  "extraction_requests": 10,
+  "generated_claims": 18,
+  "distinct_sources": 6,
+  "review_requests": 13,
+  "v28_review_requests": 8,
+  "independently_adjudicated_ground_truth": false,
+  "identical_input_repeat_pairs": 2,
+  "repeat_verdict_disagreements": 0,
+  "repeat_full_signature_disagreements": 2,
+  "verification": [
+    {
+      "check": "rust-tests",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--all-targets"
+      ],
+      "exit_code": 0
+    },
+    {
+      "check": "python-tests",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "evaluation/phase3",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "check": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "check": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "ledger": {
+    "ceiling_nanos": 4882653350,
+    "cumulative_upper_nanos": 4868751550,
+    "prior_nanos": 4782653350,
+    "provider_billed_usd": null,
+    "recorded_upper_nanos": 86098200,
+    "remaining_nanos": 13901800,
+    "requests": 33,
+    "unsettled": 0
+  },
+  "next_relevant_request_reserve_nanos": 15960400,
+  "next_request_dispatched": false,
+  "remaining": [
+    "fresh extraction still has perspective/argument/source-commentary failures",
+    "review evidence and proposition inventory disagree across repeated calls",
+    "new profiles lack a complete live standalone-reader and three-source-review gate",
+    "independent whole-corpus adjudication unavailable"
+  ],
+  "old_tags": {
+    "phase-1": "50dbccb34fc3b5960fe02de2af56c8c33f7b5916",
+    "phase-2": "ec11625f53f1bc12cb1f9e3e9849044f8e0d7d0d"
+  }
+}

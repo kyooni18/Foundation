@@ -1,111 +1,200 @@
-# Phase 3 semantic repair — incomplete checkpoint (2026-10-24)
+# Phase 3 semantic repair — acceptance remains incomplete (2026-10-24)
 
-## State and provenance
+## State, commits and scope
 
-Starting commit: `3033136` on `main`, with pre-existing untracked `.yeet/` and
-`UI-Agent-Brief.md` left untouched. Implementation checkpoint: `c458334`.
-The ending report/evidence commit is the commit containing this file; see Git history.
-Phase 1 and Phase 2 tags were not moved. No `phase-3` tag was created.
+This continuation started at `f793f16` on `main`. Its verified implementation
+checkpoints are `15f3c92`, `afd1982` and **`cb2c98b`**. The report/evidence delivery
+commit is the Git commit containing this revision. Earlier repair checkpoints
+`c458334` and `2737efa` remain in history. Phase 1/2 tags are unchanged; there is
+**no `phase-3` tag**. The pre-existing `.yeet/` and `UI-Agent-Brief.md` are untouched.
 
-The original Sources, frozen reference labels, v23 prompts, prior direct-Anthropic
-request/response artifacts, and historical 2,400-token truncated attempt remain
-unchanged. No production Claim was published or approved.
+The implementation and authorized evaluation work below are complete, but the
+requested semantic acceptance is **not established**. New extraction still produced
+incorrect Claims, and coherent reviews still disagreed on evidence/inventory.
+No Claim was approved or published. No new profile became the production default.
+This report supersedes the earlier checkpoint narrative; the historical root
+`reports/evidence/phase-3/acceptance-status.json` remains an immutable older snapshot.
+Current machine-readable state is `semantic-repair/continuation-acceptance.json`.
 
-## Reconstructed defects and changes
+All paths below are relative to `reports/evidence/phase-3/` unless stated otherwise.
+Original Sources, frozen reference labels, v23 prompts, raw historical responses,
+and the separate 2,400-token truncated attempt remain unchanged. The six priority
+Sources now serve as development regressions; their historical “heldout” origin
+is not a claim of fresh independent holdout evaluation after this tuning.
 
-| Defect | Saved evidence and root cause | Repair / observed limit |
+## Root causes and implemented corrections
+
+| Mechanism | Correction | Demonstrated result / limitation |
 | --- | --- | --- |
-| `v23-fresh-003` joined propositions | One candidate combined Jinwoo's possibility of an unspecified delay with his separate statement that he had not confirmed it. V23 examples urged attaching verification status and could override semantic independence. | V24 frames explicitly split separately asserted speech acts while retaining their attribution and uncertainty. A v24 live review rejected the old combined candidate with two inventory items. No v24 extraction output was generated, so generator improvement is unmeasured. |
-| `r1-nested_quote` unsupported gloss | V23's own example expanded `우리 방법` into a statement about an unspecified group's contents. The original only supports the nested report and the narrator's disagreement; it does not supply that explanation. | V24 removes the example and preserves the narrator's quoted perspective. V25 added a candidate-added-meaning counterfactual audit. Both live reviewer versions still returned a coherent false `pass` on the old candidate. This mechanism remains open. |
-| `r1-ambiguous_ref` causal object | The second Claim attributed the narrator's irritation to the unidentified person's lateness. Adjacency does not establish the irritation's cause or object. | V24 extraction/review instructions require an unspecified irritation target unless the Source licenses a link. No corrected live candidate or independent adjudication was obtained. |
-| Contradictory review output | Four of nine o8000 responses said `pass` while carrying uncertainty flags. The two `v23-fresh-003` responses said `unresolved` despite an atomicity `fail`. | New v24/v25 protocol uses required per-Claim atomicity, entailment, attribution, polarity/scope, missing-argument, unsupported-inference and Korean-meaning results, explicit reasons, original-source inventory/evidence, and deterministic aggregate consistency. It retains raw responses and rejects contradictions. Three independent source reviews must agree on verdict, dimensions, evidence, inventory coverage, and uncertainty. |
-| `v23-fresh-004` mixed-language assessment | The historic review marked Korean meaning N/A on an English Claim whose “count” referent depends on Korean context. V23 validator correctly rejected it under its conservative mixed-source rule. | New validator keeps that conservative protection because a reviewer can omit a Korean antecedent from its evidence. It does not post-hoc pass the historical response. Source-dependency-specific relaxation remains unproven. |
+| A conjecture and a separate verification statement were merged. | V24+ decomposition separates independently assessable speech acts while copying actual attribution and uncertainty. | V25/v26 fresh extraction produces two Claims for `v23-fresh-003`. V24 and v28 reviewers reject the old fused Claim. The shorter v28 extractor regresses on argument completeness. |
+| A quoted `우리 방법` was expanded into unsupported method/group commentary. | V27 adds required `source_meta_expansion`; v28 distinguishes necessary unknown-argument markers from added assertions about document contents. Every separate Claim must bind quoted possessive perspective. | V27 rejects the old gloss once; v28 rejects it twice and rejects new `사용자 팀` inventions. V25/v26 extraction still leaves the second Claim's quoted perspective ambiguous. |
+| Irritation was assigned a target/cause from adjacency. | Extraction/review instructions distinguish reference resolution licensed by discourse from an unasserted causal relation. | V25 no longer invents the irritation target, but adds an independent source-commentary clause. V28 rejects the original unsupported target. |
+| Overly restrictive entailment review rejected contextual reference resolution. | V28 permits an omitted disagreement object to resolve to the sole salient preceding assessment, with evidence for both clauses. | A corrected narrator-perspective control passes twice. It is assistant-authored editorial material, not independently adjudicated gold. |
+| A reader copied from v23 still endorsed the bad gloss and merged verification example. | V27 removes those contradictory examples; source-blind reading remains limited to isolation and atomicity. | Deterministic protocol integration is verified. No new live standalone-reader trial or full worker acceptance trial is credited. |
+| Schema-valid review could omit a generated Claim from a passing inventory. | All Claim indices must have passing inventory support before aggregate pass. Three-review comparison now includes inventory proposition text as well as mappings, status and evidence. | Targeted regression rejects an orphaned candidate and an incompatible inventory with otherwise identical evidence/mappings. Different inventory wording remains unresolved because deterministic code cannot prove equivalence. |
+| Contradictory aggregate verdicts and invalid evidence could pass weaker protocols. | V24+ source-bound checks retain exact text/index identity, unique original quotations, required dimensions, explicit uncertainty, coherent aggregate verdicts and three-review agreement. Python diagnostic checking now also rejects malformed field types, duplicate inventory indices and absent coverage. | All 13 saved repair reviews replay as internally coherent. Coherence does not establish semantic truth. |
+| English output depended on Korean antecedents. | Keep conservative Korean assessment for any Korean-containing Source; evidence cannot safely determine all omitted dependencies. | V28 assesses Korean meaning on both Claims of corrected `v23-fresh-004`, including its English Claim, and passes. Historical N/A rejection is unchanged. |
 
-All v24/v25 Claims remain subject to the exact original-source and prompt-hash
-checks, quarantine, local-user exact-hash approval, lifecycle validation, and
-transactional publication. The new review protocol supplies diagnostic evidence;
-it does not grant model authority. No schema migration or new dependency was added.
+V26's added isolation audit did not resolve the tested perspective problem. V28's
+shorter extractor introduced new errors despite its improved reviewer contrast.
+Those approaches are retained as **unsuccessful experiments**, not promoted repairs.
+There is no case-specific postprocessing, approximate evidence matching, schema
+migration, added dependency, or Phase 4 feature.
 
-## Before/after evidence with denominators
+Existing Source hashes, prompt versions, quarantine, exact-hash local-user approval,
+recorder authority, lifecycle validation and transactional publication remain the
+publication boundaries. The new source-bound checks run again at approval. A model
+review cannot supply user authority or override a stale/forgotten Source.
 
-The frozen o8000 baseline had **9/9 complete responses**, **0 truncated**, **4/9
-protocol-valid**, **5/9 protocol-invalid**, **0 accepted Claims**, and **2 verdict
-disagreements among 3 repeated pairs**. Nine responses cover six distinct selected
-cases; five of the original 12 lacked current-profile v23 candidates and are not
-counted as passes. One earlier 2,400-token truncation remains a separate attempt.
+## Baseline and fresh extraction results
 
-Read-only replay of all nine raw responses in
-`reports/evidence/phase-3/semantic-repair/o8000-offline-replay.json` finds **6/9
-aggregate verdicts inconsistent** with their own dimensions/uncertainty. Applying
-the stricter aggregate rule retrospectively would leave **2/9** responses coherent
-and protocol eligible after retaining the historical mixed-Korean N/A rejection.
-This is a protocol reclassification, not a semantic improvement or a change to
-historical v23 judgments. The replay records each original request/response hash.
+The frozen v23/o8000 baseline remains **9 complete / 9 responses**, **0 truncated**,
+**4 protocol-valid**, **5 protocol-invalid**, **0 accepted Claims**, and **2 verdict
+disagreements / 3 repeated pairs**. Six distinct selected Sources were represented.
+The earlier truncated 2,400-token attempt remains separate. Retrospective replay
+still detects **6/9 aggregate inconsistencies**; this reclassification is not a
+change to historical results or a semantic improvement.
 
-Three new targeted reviewer calls on two distinct *old* candidates were completed:
+This continuation made **10 extraction requests**, producing **18 Claims** from
+**6 distinct priority Sources**: v25 covers all six; v26 and v28 each revisit the
+two central failures under distinct frozen prompts. All 10 responses completed;
+all 10 pass both local envelope/anchor checks and Rust `source-checks-v4` structural
+replay. **None has a complete Plan + standalone-reader + three-source-review proof**,
+so all 10 remain ineligible for experimental gate credit. The replay's null Plan
+and false Plan-hash result mean missing gate evidence, not a fabricated prompt hash
+or a semantic failure classification. Exact actual request-system hashes are retained.
 
-| Prompt | Case | Protocol | Model verdict | Assistant source inspection |
-| --- | --- | --- | --- | --- |
-| v24 | `r1-nested_quote` | valid | pass | False acceptance of the known added gloss. |
-| v24 | `v23-fresh-003` | valid | reject | Correctly flags one Claim containing two propositions; inventory has two items. |
-| v25 | `r1-nested_quote` | valid | pass | The added-meaning instruction still failed to prevent false acceptance. |
+| Source | Source inventory / v25 generated Claims | Editorial inspection of v25 output |
+| --- | --- | --- |
+| `r1-nested_quote` | 2 / 2 | Both central propositions represented; no old method-content gloss. Second Claim still ambiguously owns `우리 방법`. |
+| `v23-fresh-003` | 2 / 2 | Conjecture and lack of confirmation split; uncertainty and Jinwoo attribution preserved; affected target explicitly unidentified in both. Demonstrative isolation remains unverified by a live reader. |
+| `r1-ambiguous_ref` | 2 / 2 | Unknown late person and irritation preserved without a causal target. Second Claim has one extra assertion about the Source's absent target/cause; this is an atomicity/source-commentary defect. |
+| `r1-hypothetical` | 1 / 1 | Loss threshold, conditional intention and unidentified experiment retained. Wording narrows the architecture to one used in that experiment; exact argument fidelity remains unresolved. |
+| `r1-habitual_temporal` | 1 / 1 | Original-speaker and recent habitual time frame retained; no invented date or permanent habit. |
+| `v23-fresh-004` | 2 / 2 | Korean worker-count assertion and English limit on what it establishes preserved. English `count` explicitly resolves to Mori `worker_count=4`. |
 
-Thus **3/3** new judgments were protocol coherent, but **2/3** accepted a known
-unsupported candidate; those two calls concern the same case under different
-prompts. This is not an independent quality rate. No new extraction outputs or
-independently adjudicated whole-corpus ground truth were obtained. Generated-Claim
-coverage, missing-proposition rate, Korean fidelity rate, and false-rejection rate
-for the new prompt remain unknown. No accepted or published Claims are credited.
+These are editorial inspections of all generated v25 batches, not a passing-subset
+success rate. `continuation-editorial-assessment.json` records generated counts,
+source inventories, visible atomicity/unsupported-assertion defects, omissions and
+unknown measurements for **all 10 extraction attempts**. Core proposition recognition
+does not mean complete Claim validity. V28's nested report adds team ownership in
+**both** Claims; its delay batch loses the verification target and the faithful
+representation of one source proposition. These failures are included in the
+population. Independently validated Korean-fidelity and general false-rejection
+rates remain unknown. No semantic success rate is calculated from structural passes.
 
-The raw request, response, token usage, judgment and outcome for each call are in
-`reports/evidence/phase-3/semantic-repair/`. No retry-to-pass or majority vote was
-used. The v24 and v25 live results rule out claiming reliable reviewer repair.
+The five original missing-profile cases (`new-003`, `new-007`, `new-018`, `new-025`,
+`new-042`) remain missing current-profile evidence; they are not counted as passes.
+Existing broader archive replay remains historical and is not relabeled a fresh
+trial. The frozen editorial reference entries that merge the delay speech acts or
+infer an irritation target are not silently substituted for the user's corrected
+requirements. They remain unchanged; the new editorial inventory is separate.
 
-## Korean and evidence findings
+## Reviewer results and repeated disagreement
 
-The direct Korean nested-report test shows that a well-formed, fully reasoned
-review can still rationalize an unsupported expansion of `우리 방법`. V24 instructions
-also cover omitted subjects, nested reports, unknown referents, deictic time,
-uncertainty, and causal scope, but none of those corrections has a measured new
-extraction success rate. The ambiguous-irritation case remains unresolved.
+Across the earlier repair checkpoint and this continuation there are **13 repair
+review requests**: v24=2, v25=1, v27=2, v28=8. All completed and are protocol-valid;
+there were no new truncations or retries. The earlier two false passes remain in
+this denominator. No result is normalized into a fabricated agreement.
 
-The original character-offset re-anchoring remains limited to a unique exact
-quotation; no fuzzy matching was added. Targeted tests cover Korean Unicode scalar
-indices, repeated text, nested quotations, emoji, combining characters, and mixed
-spans. An exact anchor establishes a location, never semantic entailment. V24/v25
-review evidence uses unique exact Source quotes and does not rely on model-generated
-offsets. Ambiguous repeated quotes fail the new review protocol.
+| Version / candidate | Calls | Result |
+| --- | ---: | --- |
+| v24 / old nested gloss | 1 | False pass. |
+| v24 / old fused delay Claim | 1 | Reject; two source propositions inventoried. |
+| v25 / old nested gloss | 1 | False pass. |
+| v27 / old nested gloss | 1 | Reject for added source commentary/interpretation. |
+| v27 / v25 nested output | 1 | Reject for ambiguous perspective; reasoning also over-restricts contextual disagreement resolution. |
+| v28 / old nested gloss, identical requests | 2 | Both reject; no new false pass on this known defect. |
+| v28 / new team-ownership invention | 1 | Rejects both Claims. |
+| v28 / corrected nested editorial control, identical requests | 2 | Both pass; expected label is excluded from reviewer input. |
+| v28 / old fused delay Claim | 1 | Rejects atomicity and added commentary. |
+| v28 / old irritation-target Claim | 1 | Rejects invented target, entailment and Korean meaning. |
+| v28 / corrected mixed-language output | 1 | Pass; Korean dependency assessed on English output. |
 
-## Verification and cost
+V28 returned reject on **5/5 targeted defective-candidate requests** and pass on
+**3/3 positive-candidate requests**. These are narrow diagnostic counts, including
+repeated inputs and two assistant-authored control reviews; they are not independent
+population estimates of false acceptance/rejection. The same known gloss previously
+passed v24/v25, so the new rejection is useful evidence about that mechanism.
 
-Exit codes were 0 for `cargo test --offline --all-targets` (48 passing tests,
-2 ignored subprocess workers), `cargo clippy --offline --all-targets -- -D warnings`,
-`python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'` (38 passing),
-and final `cargo fmt --check`. The targeted v24 review regression passed. Offline
-replay regenerated byte-identical output in a fresh `/tmp` file. Evidence was
-scanned for credential strings; none was found.
+For the **2 identical-input repeated pairs**, verdict disagreement is **0/2**, but
+complete evidence/inventory agreement is **0/2**. Dimension statuses agree; quotations
+and inventory wording/support differ. The corrected control's second inventory
+sometimes cites only the disagreement, omitting the preceding assessment needed to
+support its target. The final gate therefore withholds acceptance. Exact inventory
+text comparison strengthens this conservative rule further. Agreement alone would
+still not be independent evidence of truth. There is no majority vote.
 
-Before paid execution, the [official Haiku 5.5 price card](https://platform.claude.com/docs/en/models/haiku-5-5/overview)
-and [Messages structured-output reference](https://platform.claude.com/docs/en/api/http/messages)
-were checked on 2026-10-24. The existing direct Anthropic transport, immutable
-receipts and SQLite ledger were reused. All three requests were durably reserved
-before dispatch and settled; there are **0 unsettled requests**. Their combined
-conservative token-price upper bound is **$0.00597390**, not a confirmed provider
-bill. The carried-forward historical amount is **$4.78265335**; all recorded
-request upper bounds total **$0.03501600**; cumulative conservative accounting is
-**$4.81766935** against the unchanged **$4.88265335** ceiling. Remaining ceiling:
-**$0.06498400**. The aggregate remains strictly below $5. No budget reset or
-alternate billing account was used.
+These calls use a diagnostic direct-Anthropic request recipe. V28's system contains
+the same review/frames/fidelity-stage composition as the corresponding Plan, but
+these requests do not constitute full production worker runs, reader validation,
+three-stage consensus, user approval or publication. Earlier review receipts hash
+the review asset in `prompt_sha256`; the immutable payload and replay also record
+the complete actual system hash, including appended frames/stage. Later receipts
+add `system_sha256` explicitly. No historical receipt is rewritten.
 
-## Remaining acceptance risk
+## Offline verification and evidence integrity
 
-A protocol-valid Haiku `pass` still accepted the known unsupported nested-quote
-gloss twice. The new prompt's ability to produce atomic Claims has not been
-measured with fresh extraction. Mixed-language dependency judgments can still be
-wrong, and no independent adjudicator has reviewed the full corpus. Three source
-reviews and exact-hash user approval reduce exposure but do not prove semantic
-correctness. Phase 3 is **not semantically accepted**; v24/v25 remain experimental
-and are not production defaults. The five missing current-profile cases are not
-counted as successes. Further work should obtain corrected extraction candidates,
-independent source-level adjudication, and repeated source-grounded reviewer
-measurements before promotion or a completion tag.
+All required commands exited **0** on the final implementation:
+
+- `cargo fmt --check`
+- `cargo test --offline --all-targets`: **48 passing**, 2 ignored subprocess workers
+  exercised by their parent recovery tests.
+- `cargo clippy --offline --all-targets -- -D warnings`
+- `python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'`: **39 passing**.
+
+Logs and exact exit codes are in `semantic-repair/continuation-verification/`.
+The existing targeted source-bound review test was extended for new dimensions,
+orphaned inventory and inconsistent proposition identities. One Python regression
+uses a saved live control to reject contradictory flags, omitted dimensions,
+duplicate indices, boolean indices, uncovered Claims and Korean N/A. Tests establish
+protocol behavior, not model semantics.
+
+`evaluation/phase3/replay_semantic_repair.py` performs no network calls. It verifies
+saved raw output against candidate/judgment sidecars, exact frozen Source and request
+recipes, actual prompt-system hashes, token accounting and the read-only SQLite
+ledger; it invokes Rust structural validation in a temporary database. Final output
+is `semantic-repair/continuation-replay-v2.json`. V1 is retained as a prior audit
+snapshot; v2 additionally compares proposition text. A fresh replay matches v2
+byte-for-byte. Historical o8000 replay also matches its saved artifact.
+
+Unique exact-quote re-anchoring and Unicode protections remain intact: scalar/byte
+differences, overlapping/repeated quotations, nested quotes, emoji, combining marks
+and mixed spans are covered by existing tests. A valid coordinate never establishes
+entailment. The DeepSeek English boundary is unchanged. New evidence was scanned
+for credential values; none was found. Foundation was recalled and updated; Jev
+was unavailable in the enabled tool inventory.
+
+## Budget and remaining acceptance work
+
+The [official Haiku 5.5 price card](https://platform.claude.com/docs/en/models/haiku-5-5/overview)
+and [Messages structured-output schema](https://platform.claude.com/docs/en/api/http/messages)
+were rechecked before paid execution. Every call used the existing direct adapter's
+transport, model identity check, conservative usage accounting, durable reservation
+and shared ledger. The interrupted request settled successfully and was not retried.
+
+Final conservative accounting, **not confirmed provider billing**:
+
+| Item | USD |
+| --- | ---: |
+| Carried historical amount | $4.78265335 |
+| All 33 recorded request upper bounds | $0.08609820 |
+| Cumulative upper bound | **$4.86875155** |
+| Unchanged authorized ceiling | $4.88265335 |
+| Remaining capacity | **$0.01390180** |
+| This continuation: 20 calls beyond `f793f16` | $0.05108220 |
+
+There are **0 unsettled requests**. The next relevant review of corrected delay
+output requires a **$0.01596040** reservation, exceeding remaining capacity; it was
+dry-run only. No further paid dispatch, budget reset, account substitution or
+ceiling increase occurred. The total remains strictly below $5.
+
+The current evidence supports stronger rejection of the observed gloss, causal
+target and fused-speech-act defects, and preserves user authority. It does **not**
+support reliable accepted standalone Korean Claims across the claimed scope.
+Extraction still has perspective/argument errors; repeated reviews still lack
+complete evidence/inventory agreement; live reader and full worker acceptance
+remain unmeasured for these repairs; independent whole-corpus adjudication is
+unavailable. The next acceptance work requires a validated extraction profile,
+source-level adjudication and complete reader/review evidence. **Phase 3 remains
+explicitly incomplete; no completion tag or production promotion is justified.**
