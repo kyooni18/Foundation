@@ -85,6 +85,26 @@ class DirectClaudeTest(unittest.TestCase):
             self.dispatcher().dispatch(self.packet)
         self.assertEqual([x[0] for x in self.calls],['GET','POST'])
 
+    def test_reservation_uses_request_cap_without_double_padding(self):
+        body=a.request_body(self.packet)
+        body['max_tokens']=6000
+        quote=a.quote(body,today=a.PRICE_CHECK_DATE)
+        size=len(g.focused.canonical(body))+a.OVERHEAD_TOKENS
+        inp,out=a.rates(size)
+        expected=g.nanos((size*inp+6000*out)/1_000_000)
+        old=g.nanos(2*(size*inp+8000*out)/1_000_000)
+        self.assertEqual(quote['estimate'],expected)
+        self.assertLess(quote['estimate'],old//2)
+        self.assertEqual(quote['output_token_bound'],body['max_tokens'])
+        self.assertEqual(quote['input_byte_bound'],size)
+        worst=a.conservative_usage(dict(usage=dict(input_tokens=size,output_tokens=6000)))
+        self.assertGreaterEqual(quote['estimate'],worst['conservative_upper_nanos'])
+        for bad in (None,False,0,-1,6000.0,'6000',a.MAX_OUTPUT_TOKENS+1):
+            with self.subTest(output_bound=bad):
+                body['max_tokens']=bad
+                with self.assertRaisesRegex(ValueError,'invalid request output bound'):
+                    a.quote(body,today=a.PRICE_CHECK_DATE)
+
     def test_budget_blocks_before_any_provider_request(self):
         with self.connection() as conn:
             conn.execute('UPDATE budget SET prior=4882653350')

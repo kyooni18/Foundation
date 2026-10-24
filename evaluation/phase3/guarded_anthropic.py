@@ -89,21 +89,29 @@ def request_body(packet):
 
 
 def quote(body, today=None):
-    """A twofold reserve using upper-tier pricing and one token per UTF-8 byte."""
+    """Reserve the byte-bound input plus the request's actual output cap.
+
+    The one-token-per-UTF-8-byte input bound already includes the entire request
+    and 4096 extra framing tokens. A second blanket multiplier is unnecessary.
+    This changes future reservations only, never recorded usage or old receipts.
+    """
     today = today or date.today()
     existing.require(0 <= (today - PRICE_CHECK_DATE).days <= MAX_PRICE_AGE_DAYS,
                      'pricing must be re-verified against the official Claude API rate card')
+    output_bound = body.get('max_tokens')
+    existing.require(type(output_bound) is int and 0 < output_bound <= MAX_OUTPUT_TOKENS,
+                     'invalid request output bound')
     size = len(focused.canonical(body))
     # One token per UTF-8 byte bounds the prompt, so the bound also selects the tier.
     inp, out = rates(size + OVERHEAD_TOKENS)
-    estimated = existing.nanos(Decimal(2) * (
-        (Decimal(size + OVERHEAD_TOKENS) * inp +
-         Decimal(MAX_OUTPUT_TOKENS) * out) / Decimal(1_000_000)))
+    estimated = existing.nanos((Decimal(size + OVERHEAD_TOKENS) * inp +
+                                Decimal(output_bound) * out) / Decimal(1_000_000))
     existing.require(0 < estimated <= existing.CONTINUATION, 'request exceeds reserved budget')
     return dict(estimate=estimated, input_byte_bound=size + OVERHEAD_TOKENS,
-                output_token_bound=MAX_OUTPUT_TOKENS, worst_input_per_mtok=str(inp),
+                output_token_bound=output_bound, worst_input_per_mtok=str(inp),
                 worst_output_per_mtok=str(out), price_checked=PRICE_CHECK_DATE.isoformat(),
-                charge_type='conservative_upper_bound_not_provider_billed_cost')
+                charge_type='conservative_upper_bound_not_provider_billed_cost',
+                reservation_policy='utf8-byte-bound-request-output-v2')
 
 
 def conservative_usage(response):
