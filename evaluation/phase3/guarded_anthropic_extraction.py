@@ -34,16 +34,16 @@ def rust_structure(candidate,case):
 
 def prompt(version):
     root=focused.ROOT/'prompts'
-    contract=(root/('extraction-v43' if version=='extraction-v43' else 'extraction-v12')/'contract.txt').read_text()
+    contract=(root/(version if version in {'extraction-v43','extraction-v44'} else 'extraction-v12')/'contract.txt').read_text()
     frames=(root/version/'frames.txt').read_text()
     variant=json.loads((root/'extraction-v1/variants.json').read_text())[VARIANT]
     return f'{contract}\n{frames}\n{variant}'
 
 def output_schema(output_format):
-    budget.require(output_format in {'legacy','contract-v1','grounded-v2'},'unknown extraction output format')
+    budget.require(output_format in {'legacy','contract-v1','grounded-v2','grounded-v3'},'unknown extraction output format')
     if output_format=='legacy':
         return None
-    return json.loads(Path(__file__).with_name('extraction_output_schema_v2.json' if output_format=='grounded-v2' else 'extraction_output_schema_v1.json').read_text())
+    return json.loads(Path(__file__).with_name('extraction_output_schema_v3.json' if output_format=='grounded-v3' else 'extraction_output_schema_v2.json' if output_format=='grounded-v2' else 'extraction_output_schema_v1.json').read_text())
 
 def body(packet,version,output_format='legacy'):
     source=packet['case']
@@ -60,12 +60,20 @@ def body(packet,version,output_format='legacy'):
     system=prompt(version)
     user=focused.canonical(content).decode()
     budget.require(len(system.encode())+len(user.encode())<=256*1024,'oversized context')
-    request = dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43'} else 6000),system=system,
+    request = dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44'} else 6000),system=system,
         messages=[dict(role='user',content=user)],
         output_config=dict(effort='low'),service_tier='standard_only')
     schema=output_schema(output_format)
     if schema is not None:
-        budget.require(version in {'extraction-v41','extraction-v42','extraction-v43'},'structured extraction requires the current explicit profile')
+        budget.require(version in {'extraction-v41','extraction-v42','extraction-v43','extraction-v44'},'structured extraction requires the current explicit profile')
+        if output_format=='grounded-v3':
+            budget.require(version=='extraction-v44','ordered grounded wire requires its explicit profile')
+            from faceted_review import exact_inventory_vocabulary
+            vocabulary=exact_inventory_vocabulary(source['source'])
+            if len(vocabulary)<=512:
+                anchor=schema['properties']['claims']['items']['properties']['anchor']['properties']
+                anchor['quote']=dict(type='string',enum=vocabulary)
+                anchor['occurrence']=dict(type='integer',enum=[0])
         request['output_config']['format']=dict(type='json_schema',schema=schema)
     return request
 
@@ -101,7 +109,7 @@ def attempt_label(packet,version,replicate='primary',output_format='legacy'):
         budget.require(context.get('failure_code') and context.get('trace_sha256') and
             context.get('candidate_batch',{}).get('claims') is not None,
             'one bounded repair requires an actual failed trace')
-    return version+('-schema-v1' if output_format=='contract-v1' else '-schema-v2' if output_format=='grounded-v2' else '')+('-repair' if replicate=='repair' else '')
+    return version+('-schema-v1' if output_format=='contract-v1' else '-schema-v2' if output_format=='grounded-v2' else '-schema-v3' if output_format=='grounded-v3' else '')+('-repair' if replicate=='repair' else '')
 
 def dispatch(packet,evidence,authorization,*args,**kwargs):
     with budget.dispatch_slot(budget.LEDGER,authorization):
@@ -114,7 +122,8 @@ def _dispatch(packet,evidence,authorization,version,replicate='primary',output_f
     key=os.environ.get('ANTHROPIC_API_KEY')
     budget.require(key and len(key)<1024 and '\n' not in key and '\r' not in key,
                    'ANTHROPIC_API_KEY not configured')
-    d=api.Dispatcher(budget.LEDGER,evidence,api.transport(key),authorization)
+    mode=api.request_mode(version)
+    d=api.Dispatcher(budget.LEDGER,evidence,api.transport(key,mode),authorization)
     conn=d.connection()
     try:
         d.check(conn,1)
@@ -130,7 +139,7 @@ def _dispatch(packet,evidence,authorization,version,replicate='primary',output_f
         conn.execute('INSERT INTO request(id,model,created_at,estimate,cumulative) '
                      "VALUES(?,?,datetime('now'),?,?)",
                      (ident,'anthropic/'+api.MODEL,quote['estimate'],cumulative))
-        budget.immutable(evidence/(ident+'.request.json'),dict(id=ident,payload=request,output_format=output_format,repair_context=packet.get('repair_context'),
+        budget.immutable(evidence/(ident+'.request.json'),dict(id=ident,payload=request,transport_serialization=mode,wire_sha256=focused.sha(api.serialize_request(request,mode)),output_format=output_format,repair_context=packet.get('repair_context'),
             source_sha256=focused.sha(packet['case']['source'].encode()),
             frozen_packet_sha256=focused.sha(focused.canonical(packet)),
             prompt_sha256=focused.sha(request['system'].encode()),quote=quote,
@@ -184,11 +193,11 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43'],
+    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44'],
                         default='extraction-v28')
     parser.add_argument('--repair-from-trace',type=Path)
     parser.add_argument('--replicate',choices=['primary','repair'],default='primary')
-    parser.add_argument('--output-format',choices=['legacy','contract-v1','grounded-v2'],default='legacy')
+    parser.add_argument('--output-format',choices=['legacy','contract-v1','grounded-v2','grounded-v3'],default='legacy')
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
     _,packets=budget.packets()

@@ -65,8 +65,9 @@ def replay(evidence):
                 expected=(repair.reader_body(payload['claim_text'],version) if reader else
                     repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
                         request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),
-                        request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43'} else None))
+                        request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44'} else None))
             budget.require(body==expected and api.quote(body)==request['quote'],'pending request recipe drift')
+            api.verify_request_serialization(request,expected,api.request_mode(version))
             error_path=evidence/(ident+'.transport-error.json')
             rows.append(dict(id=ident,case=case['id'],kind=kind,version=version,
                 complete=False,protocol_valid=False,pending_reservation=True,model_response=False,
@@ -103,8 +104,9 @@ def replay(evidence):
             version=ident.split('-')[3]
             expected=(repair.reader_body(payload['claim_text'],version) if reader else
                 repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
-                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43'} else None))
+                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44'} else None))
             budget.require(body==expected,'incomplete request recipe drift')
+            api.verify_request_serialization(request,expected,api.request_mode(version))
             reason='stop_reason:'+str(response['stop_reason'])
             budget.require(rejected and saved['status']=='incomplete' and saved['reason']==reason,
                            'incomplete rejection drift')
@@ -123,7 +125,9 @@ def replay(evidence):
             recipe_packet=dict(case=case)
             if request.get('repair_context') is not None:
                 recipe_packet['repair_context']=request['repair_context']
-            budget.require(body==extraction.body(recipe_packet,version,request.get('output_format','legacy')),'extraction request recipe drift')
+            expected=extraction.body(recipe_packet,version,request.get('output_format','legacy'))
+            budget.require(body==expected,'extraction request recipe drift')
+            api.verify_request_serialization(request,expected,api.request_mode(version))
             try:
                 result=extraction.structural(raw_text(response),source)
             except (ValueError,KeyError,TypeError) as error:
@@ -139,7 +143,9 @@ def replay(evidence):
                 raw=raw_text(response),variant='audited',plan=None,reviews=[]))
         elif reader:
             version=ident.split('-')[3]
-            budget.require(body==repair.reader_body(payload['claim_text'],version),'reader request drift')
+            expected=repair.reader_body(payload['claim_text'],version)
+            budget.require(body==expected,'reader request drift')
+            api.verify_request_serialization(request,expected,api.request_mode(version))
             judgment=focused.parse_judgment(raw_text(response))
             checked=repair.reader_check(judgment)
             budget.require(checked==saved,'reader replay drift')
@@ -149,8 +155,9 @@ def replay(evidence):
             version=ident.split('-')[3]
             packet=dict(case=case,candidate=payload['candidate_batch'])
             expected=repair.body(packet,version,request.get('review_stage',repair.STAGES['fidelity']),
-                                 request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43'} else None)
+                                 request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44'} else None)
             budget.require(body==expected,'review request recipe drift')
+            api.verify_request_serialization(request,expected,api.request_mode(version))
             judgment=focused.parse_judgment(raw_text(response))
             try:
                 checked=repair.check(judgment,packet,version,

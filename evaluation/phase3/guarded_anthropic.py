@@ -288,7 +288,21 @@ class Dispatcher(existing.Dispatcher):
                                json.loads((self.evidence / (ident + '.response.json')).read_text()), repeat)
 
 
-def transport(key):
+def request_mode(version):
+    return 'ordered-json-v2' if version in {'v44','extraction-v44'} else 'canonical-v1'
+
+def serialize_request(body,mode='canonical-v1'):
+    existing.require(mode in {'canonical-v1','ordered-json-v2'},'unknown request serialization')
+    return focused.canonical(body) if mode=='canonical-v1' else json.dumps(body,ensure_ascii=False,separators=(',',':')).encode()
+
+def verify_request_serialization(receipt,expected,mode):
+    actual=receipt.get('transport_serialization','canonical-v1')
+    existing.require(actual==mode,'request serialization changed')
+    digest=receipt.get('wire_sha256')
+    existing.require(actual=='canonical-v1' or digest,'ordered request wire receipt required')
+    if digest:existing.require(digest==focused.sha(serialize_request(expected,mode)),'request byte order drift')
+
+def transport(key,mode='canonical-v1'):
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self, *args, **kwargs):
             return None
@@ -296,7 +310,7 @@ def transport(key):
     def call(method,path,body):
         existing.require(path in {'/v1/models/' + MODEL, '/v1/messages'},'unsupported endpoint')
         request = urllib.request.Request(BASE + path,method=method,
-            data=None if body is None else focused.canonical(body),
+            data=None if body is None else serialize_request(body,mode),
             headers={'x-api-key':key, 'anthropic-version':VERSION,
                      'content-type':'application/json'})
         with opener.open(request,timeout=120) as response:

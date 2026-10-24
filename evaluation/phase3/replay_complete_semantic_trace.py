@@ -29,7 +29,7 @@ def response_text(path):
 
 def replay(evidence,case_id,version='extraction-v29',candidate_version=None,reader_version=None,review_output_tokens=None,source_versions=None):
     packet=next(p for p in budget.packets()[1] if p['case']['id']==case_id)
-    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43'},'unsupported trace version')
+    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44'},'unsupported trace version')
     review_version=version.removeprefix('extraction-')
     candidate_version=candidate_version or version
     reader_version=reader_version or version.removeprefix('extraction-')
@@ -37,7 +37,9 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
     request=read(evidence/(ident+'.request.json'))
     if request.get('repair_context') is not None:
         packet=dict(packet,repair_context=request['repair_context'])
-    budget.require(request['payload']==extraction.body(packet,version,request.get('output_format','legacy')),'extraction request drift')
+    expected_extraction=extraction.body(packet,version,request.get('output_format','legacy'))
+    budget.require(request['payload']==expected_extraction,'extraction request drift')
+    api.verify_request_serialization(request,expected_extraction,api.request_mode(version))
     raw=response_text(evidence/(ident+'.response.json'))
     candidate=extraction.structural(raw,packet['case']['source'])
     packet=dict(packet,candidate=candidate)
@@ -50,7 +52,9 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
     for index,claim in enumerate(candidate['claims']):
         reader_id=reader_prefix+f'-reader-{index}-primary'
         saved=read(evidence/(reader_id+'.request.json'))
-        budget.require(saved['payload']==review.reader_body(claim['text'],review_version),'reader request drift')
+        expected_reader=review.reader_body(claim['text'],review_version)
+        budget.require(saved['payload']==expected_reader,'reader request drift')
+        api.verify_request_serialization(saved,expected_reader,api.request_mode(review_version))
         budget.require(saved['reader_index']==index,'reader identity drift')
         text=response_text(evidence/(reader_id+'.response.json'))
         checked=review.reader_check(f.parse_judgment(text))
@@ -64,9 +68,11 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
             break
         source_version=(source_versions or {}).get(key,review_version)
         source_prefix=f'focused-haiku-repair-{source_version}-{case_id}-{candidate_version}'
-        source_id=source_prefix+('' if key=='fidelity' else '-'+key)+(('-output-'+str(review_output_tokens)) if review_output_tokens else '')+(('-schema-v3' if review_version=='v43' else '-schema-v2') if review_version in {'v39','v40','v41','v42','v43'} else '')+'-primary'
+        source_id=source_prefix+('' if key=='fidelity' else '-'+key)+(('-output-'+str(review_output_tokens)) if review_output_tokens else '')+(('-schema-v3' if review_version in {'v43','v44'} else '-schema-v2') if review_version in {'v39','v40','v41','v42','v43','v44'} else '')+'-primary'
         saved=read(evidence/(source_id+'.request.json'))
-        budget.require(saved['payload']==review.body(packet,review_version,stage,output_tokens=review_output_tokens),'source review request drift')
+        expected_review=review.body(packet,review_version,stage,output_tokens=review_output_tokens)
+        budget.require(saved['payload']==expected_review,'source review request drift')
+        api.verify_request_serialization(saved,expected_review,api.request_mode(review_version))
         text=response_text(evidence/(source_id+'.response.json'))
         reviews.append(dict(stage=stage,raw=text))
         provenance.append(source_id)
@@ -80,12 +86,12 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
     # Match Rust Plan/ModelConfig serialization field order exactly.
     plan=dict(provider='anthropic-direct-diagnostic',prompt_version=version,variant='audited',
         extractor=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=2500),
-        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or (6000 if review_version in {'v35','v36','v37','v38','v39','v40','v41','v42','v43'} else 3000)))
+        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or (6000 if review_version in {'v35','v36','v37','v38','v39','v40','v41','v42','v43','v44'} else 3000)))
     root=f.ROOT/'prompts'/version
     serialized=json.dumps(plan,ensure_ascii=False,separators=(',',':'))
     material=(f'{version}\n{extraction.prompt(version)}\n'+(root/'review.txt').read_text()+
         '\n'+(root/'frames.txt').read_text()+'\n'+serialized+'\n'+(root/'reader.txt').read_text())
-    if version in {'extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43'}:
+    if version in {'extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44'}:
         material+='\n'+(root/'facets.json').read_text()
     row=dict(case_id=case_id,corpus_case=packet['case'],source_hash=f.sha(packet['case']['source'].encode()),
         raw=raw,variant='audited',plan=plan,prompt_hash=f.sha(material.encode()),reviews=reviews)
@@ -117,7 +123,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',required=True)
-    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43'],default='extraction-v29')
+    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44'],default='extraction-v29')
     parser.add_argument('--review-output-tokens',type=int,choices=[6000])
     parser.add_argument('--source-versions',type=Path)
     parser.add_argument('--candidate-version')
