@@ -1,0 +1,67 @@
+{
+  "status": "not accepted; no completion tag",
+  "provider_key": "valid; credential content excluded",
+  "provider_failure": "historical HTTP402; current funded real calls work; conservative local reservation refusals retained",
+  "further_model_calls": "blocked by stricter $4.50 ceiling with carried-forward $4.78265335 conservative historical account delta; no budget reset",
+  "fresh_extraction_heldout": "v21 original20 partially evaluated with confirmed framing failure; v22 fresh8 partially evaluated; v23 targeted fresh4 evaluated against R2 in separate requests, one original quota failure retained; no independent whole-benchmark human gold",
+  "independent_korean_review": "Explicit user unknown-reference, temporal, Korean narrator, independent-cause and assertion-layer judgments incorporated; whole-corpus independent human review not completed",
+  "implementation_commit": "e2f47bf",
+  "completed_offline_commands": [
+    "cargo fmt --check",
+    "cargo test --offline --all-targets",
+    "cargo clippy --offline --all-targets -- -D warnings"
+  ],
+  "offline_top_level_passed": 43,
+  "live_worker_http_mcp_v11": "passed on two synthetic reported Claims; no semantic corpus-wide acceptance inference",
+  "current_opt_in_prompt": "extraction-v23",
+  "remaining_acceptance": [
+    "full final-profile development corpus rerun and semantic audit",
+    "repeated broad fresh held-out comparison",
+    "independent review of whole benchmark",
+    "resolve reviewer false-positive/false-negative reliability limitations",
+    "reviewer emits pass with uncertainty flags in 4 of 9 judgments; repeat-vs-primary verdict disagreement on 2 of 3 repeated cases"
+  ],
+  "completion_tag_created": false,
+  "final_profile_focused_results": {
+    "lena_omar_regression": {
+      "passing_requests": 2,
+      "claim_texts": 4
+    },
+    "user_boundary_regressions": {
+      "passing_requests": 7,
+      "distinct_sources": 6,
+      "claim_texts": 10,
+      "note": "conditional passing subset, not all-request success rate; quota failures retained"
+    },
+    "fresh_challenges": {
+      "passing_audited_sources": 4,
+      "audited_claim_texts": 7,
+      "known_errors_in_assistant_inspected_final_texts": 0,
+      "note": "small targeted editorial set; not universal quality proof"
+    }
+  },
+  "provider_access": "funded access verified; account not reported exhausted",
+  "all_paid_children_joined": true,
+  "conservative_usage_delta_usd": 4.78265335,
+  "unspent_authorized_ceiling_usd": 0.21734665,
+  "current_continuation_report": "reports/phase-3-offline-review.md",
+  "current_new_requests": 0,
+  "current_confirmed_spending_usd": 0,
+  "current_spendable_remaining_usd": 0,
+  "current_validation_version": "source-checks-v4",
+  "offline_distinct_replayed_attempts": 4752,
+  "offline_distinct_replayed_sources": 145,
+  "direct_anthropic_o8000": {
+    "summary": "reports/evidence/phase-3/direct-anthropic/o8000-summary.json",
+    "paid_calls": 9,
+    "complete": 9,
+    "truncated": 0,
+    "protocol_valid": 4,
+    "protocol_invalid": 5,
+    "accepted_claims": 0,
+    "conservative_upper_bound_usd": 0.0180851,
+    "cumulative_conservative_usd": 4.81169545,
+    "remaining_ceiling_usd": 0.0709579,
+    "semantic_acceptance": null
+  }
+}

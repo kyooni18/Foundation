@@ -1,0 +1,188 @@
+{
+  "starting_commit": "f1fbb75",
+  "previous_goal_turn": "progress: complete nested trace, coherence guard, measured repeat, commits",
+  "blocking_audit_turn": 1,
+  "scope": "Original full Phase 3 semantic acceptance",
+  "result": "not achieved",
+  "new_paid_calls": 0,
+  "ledger_unchanged": true,
+  "missing_case_scan": {
+    "root": "reports/evidence/phase-3/*.jsonl.gz",
+    "occurrences_may_repeat_across_archives": true,
+    "current_profile": "extraction-v34",
+    "cases": {
+      "new-042": {
+        "profiles": {
+          "extraction-v10": 2,
+          "extraction-v11": 8,
+          "extraction-v12": 2,
+          "extraction-v13": 2,
+          "extraction-v14": 2,
+          "extraction-v15": 2,
+          "extraction-v6": 5,
+          "extraction-v8": 2,
+          "extraction-v9": 2
+        },
+        "raw_rows": 21,
+        "artifacts": [
+          "reports/evidence/phase-3/pro-v10-development.jsonl.gz",
+          "reports/evidence/phase-3/pro-v11-development-quota-limited.jsonl.gz",
+          "reports/evidence/phase-3/pro-v11-pilot.jsonl.gz",
+          "reports/evidence/phase-3/pro-v12-funded-pilot.jsonl.gz",
+          "reports/evidence/phase-3/pro-v13-funded-pilot.jsonl.gz",
+          "reports/evidence/phase-3/pro-v14-funded-development.jsonl.gz",
+          "reports/evidence/phase-3/pro-v15-regression.jsonl.gz",
+          "reports/evidence/phase-3/pro-v6-heldout.jsonl.gz",
+          "reports/evidence/phase-3/v8-exposed-regressions.jsonl.gz",
+          "reports/evidence/phase-3/v9-exposed-regressions.jsonl.gz"
+        ],
+        "current_profile_candidates": 0,
+        "source_sha256": "1caf95dbecf6ed7b15d6ddeaf5fe0cb740978a8cdffd98213a7c4c9e3a3f0853",
+        "conclusion": "Historical profiles only; no current-profile candidate or semantic acceptance credit."
+      },
+      "new-018": {
+        "profiles": {
+          "None": 28,
+          "extraction-v2": 6,
+          "extraction-v3": 22,
+          "extraction-v4": 12,
+          "extraction-v5": 7,
+          "extraction-v6": 8,
+          "extraction-v10": 3,
+          "extraction-v11": 6
+        },
+        "raw_rows": 78,
+        "artifacts": [
+          "reports/evidence/phase-3/dev-v1.jsonl.gz",
+          "reports/evidence/phase-3/dev-v2.jsonl.gz",
+          "reports/evidence/phase-3/dev-v3-reservation-failed.jsonl.gz",
+          "reports/evidence/phase-3/english-staged-request-failed.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v1.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v3-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v3.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v4-repair-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v4-repair.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v5-repair.jsonl.gz",
+          "reports/evidence/phase-3/luna-english-staged-v3.jsonl.gz",
+          "reports/evidence/phase-3/luna-pro-v5-controls.jsonl.gz",
+          "reports/evidence/phase-3/luna-pro-v6-calibration-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-pro-v6-calibration.jsonl.gz",
+          "reports/evidence/phase-3/pro-v10-development.jsonl.gz",
+          "reports/evidence/phase-3/pro-v11-development-quota-limited.jsonl.gz",
+          "reports/evidence/phase-3/pro-v6-development.jsonl.gz"
+        ],
+        "current_profile_candidates": 0,
+        "source_sha256": "fcd3cadad2e69bfa0bd89bc1247c74699b1fea1dcdbb80862f58be2804f6d193",
+        "conclusion": "Historical profiles only; no current-profile candidate or semantic acceptance credit."
+      },
+      "new-003": {
+        "profiles": {
+          "None": 28,
+          "extraction-v2": 6,
+          "extraction-v3": 22,
+          "extraction-v4": 8,
+          "extraction-v5": 2,
+          "extraction-v10": 2,
+          "extraction-v11": 8,
+          "extraction-v6": 4
+        },
+        "raw_rows": 66,
+        "artifacts": [
+          "reports/evidence/phase-3/dev-v1.jsonl.gz",
+          "reports/evidence/phase-3/dev-v2.jsonl.gz",
+          "reports/evidence/phase-3/dev-v3-reservation-failed.jsonl.gz",
+          "reports/evidence/phase-3/english-staged-request-failed.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v1.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v3-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v3.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v4-repair-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v4-repair.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v5-repair.jsonl.gz",
+          "reports/evidence/phase-3/luna-english-staged-v3.jsonl.gz",
+          "reports/evidence/phase-3/pro-v10-development.jsonl.gz",
+          "reports/evidence/phase-3/pro-v11-development-quota-limited.jsonl.gz",
+          "reports/evidence/phase-3/pro-v11-pilot.jsonl.gz",
+          "reports/evidence/phase-3/pro-v6-development.jsonl.gz"
+        ],
+        "current_profile_candidates": 0,
+        "source_sha256": "41c6179a5bb5c7e9e9be18aca020de7592d24836f7b95647ac639b8663dbb4dc",
+        "conclusion": "Historical profiles only; no current-profile candidate or semantic acceptance credit."
+      },
+      "new-025": {
+        "profiles": {
+          "None": 28,
+          "extraction-v2": 6,
+          "extraction-v3": 22,
+          "extraction-v4": 12,
+          "extraction-v5": 7,
+          "extraction-v6": 10,
+          "extraction-v10": 2,
+          "extraction-v11": 8
+        },
+        "raw_rows": 81,
+        "artifacts": [
+          "reports/evidence/phase-3/dev-v1.jsonl.gz",
+          "reports/evidence/phase-3/dev-v2.jsonl.gz",
+          "reports/evidence/phase-3/dev-v3-reservation-failed.jsonl.gz",
+          "reports/evidence/phase-3/english-staged-request-failed.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v1.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v3-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v3.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v4-repair-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v4-repair.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v5-repair.jsonl.gz",
+          "reports/evidence/phase-3/luna-english-staged-v3.jsonl.gz",
+          "reports/evidence/phase-3/luna-pro-v5-controls.jsonl.gz",
+          "reports/evidence/phase-3/luna-pro-v6-calibration-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-pro-v6-calibration.jsonl.gz",
+          "reports/evidence/phase-3/pro-v10-development.jsonl.gz",
+          "reports/evidence/phase-3/pro-v11-development-quota-limited.jsonl.gz",
+          "reports/evidence/phase-3/pro-v11-pilot.jsonl.gz",
+          "reports/evidence/phase-3/pro-v6-development.jsonl.gz"
+        ],
+        "current_profile_candidates": 0,
+        "source_sha256": "ccd3589d0daaf5d38fe0716aa3e47aa4ea14addbf79da3ae4f4a91ef72620515",
+        "conclusion": "Historical profiles only; no current-profile candidate or semantic acceptance credit."
+      },
+      "new-007": {
+        "profiles": {
+          "None": 28,
+          "extraction-v2": 6,
+          "extraction-v3": 22,
+          "extraction-v4": 12,
+          "extraction-v5": 9,
+          "extraction-v6": 8,
+          "extraction-v10": 2,
+          "extraction-v11": 6
+        },
+        "raw_rows": 79,
+        "artifacts": [
+          "reports/evidence/phase-3/dev-v1.jsonl.gz",
+          "reports/evidence/phase-3/dev-v2.jsonl.gz",
+          "reports/evidence/phase-3/dev-v3-reservation-failed.jsonl.gz",
+          "reports/evidence/phase-3/english-staged-request-failed.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v1.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v3-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v3.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v4-repair-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v4-repair.jsonl.gz",
+          "reports/evidence/phase-3/luna-dev-v5-repair.jsonl.gz",
+          "reports/evidence/phase-3/luna-english-staged-v3.jsonl.gz",
+          "reports/evidence/phase-3/luna-pro-v5-controls.jsonl.gz",
+          "reports/evidence/phase-3/luna-pro-v6-calibration-revalidated.jsonl.gz",
+          "reports/evidence/phase-3/luna-pro-v6-calibration.jsonl.gz",
+          "reports/evidence/phase-3/pro-v10-development.jsonl.gz",
+          "reports/evidence/phase-3/pro-v11-development-quota-limited.jsonl.gz",
+          "reports/evidence/phase-3/pro-v6-development.jsonl.gz"
+        ],
+        "current_profile_candidates": 0,
+        "source_sha256": "3c05759d363daccb6b83fc3ff97cd4fbe55c11969d09d865246b817458f28432",
+        "conclusion": "Historical profiles only; no current-profile candidate or semantic acceptance credit."
+      }
+    }
+  },
+  "finding": "Older v2-v15 archives exist for the five gap cases; none supplies an exact current-profile extraction/reader/source trace. Frozen new-042 reference fuses conjecture and unchecked status, so it cannot be independent atomicity gold under the requested invariant; original label remains unchanged.",
+  "status_repair": "Refreshed the mutable acceptance-status pointer from obsolete $4.50/v4 data; preserved byte-exact historical snapshot.",
+  "blocking_condition": "Completion requires additional credible semantic validation; available capacity cannot reserve the next relevant source review. No justified semantic change has independent validation available.",
+  "next_safe_action": "Revalidate exact cap/ledger and whether a new usable external adjudication/result has arrived; do not churn unmeasured prompt versions, reprice old charges or request another grant automatically."
+}
