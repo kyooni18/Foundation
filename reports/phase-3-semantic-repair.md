@@ -1,5 +1,19 @@
 # Phase 3 semantic repair — acceptance remains incomplete (2026-10-24)
 
+## Reservation follow-up
+
+Commit `8992fb1` removes duplicate reservation padding and uses the request's actual
+output cap. The formerly blocked review now reserves **$0.00698020** instead of
+$0.01596040 (56% less) and completed with a protocol-valid pass at a conservative
+usage cost of **$0.00264480**. Current cumulative accounting is **$4.87139635**, with
+**$0.01125700** remaining and zero unsettled requests. Historical charges and the
+total ceiling are unchanged. This reduces reservations, not the price of tokens or
+historical spending. Phase 3 remains semantically incomplete. Details and current
+machine-readable state: `reports/phase-3-reservation-repair.md` and
+`reports/evidence/phase-3/reservation-v2/acceptance.json`.
+
+The remaining sections preserve the `853e657` semantic-repair checkpoint.
+
 ## State, commits and scope
 
 This continuation started at `f793f16` on `main`. Its verified implementation
@@ -14,7 +28,7 @@ incorrect Claims, and coherent reviews still disagreed on evidence/inventory.
 No Claim was approved or published. No new profile became the production default.
 This report supersedes the earlier checkpoint narrative; the historical root
 `reports/evidence/phase-3/acceptance-status.json` remains an immutable older snapshot.
-Current machine-readable state is `semantic-repair/continuation-acceptance.json`.
+The checkpoint machine-readable state is `semantic-repair/continuation-acceptance.json`.
 
 All paths below are relative to `reports/evidence/phase-3/` unless stated otherwise.
 Original Sources, frozen reference labels, v23 prompts, raw historical responses,
@@ -173,7 +187,7 @@ were rechecked before paid execution. Every call used the existing direct adapte
 transport, model identity check, conservative usage accounting, durable reservation
 and shared ledger. The interrupted request settled successfully and was not retried.
 
-Final conservative accounting, **not confirmed provider billing**:
+Conservative accounting at `853e657`, **not confirmed provider billing**:
 
 | Item | USD |
 | --- | ---: |

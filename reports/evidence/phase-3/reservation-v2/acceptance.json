@@ -1,0 +1,29 @@
+{
+  "status": "Phase 3 incomplete; prior reservation blocker removed",
+  "implementation_commit": "8992fb1",
+  "old_reservation_nanos": 15960400,
+  "new_reservation_nanos": 6980200,
+  "output_token_limit_unchanged": 6000,
+  "actual_api_bill_halved": false,
+  "historical_charges_changed": false,
+  "paid_requests_this_followup": 1,
+  "new_review_verdict": "pass",
+  "new_review_usage_upper_nanos": 2644800,
+  "production_approvals": 0,
+  "python_tests_passed": 40,
+  "ledger": {
+    "ceiling_nanos": 4882653350,
+    "cumulative_upper_nanos": 4871396350,
+    "prior_nanos": 4782653350,
+    "provider_billed_usd": null,
+    "recorded_upper_nanos": 88743000,
+    "remaining_nanos": 11257000,
+    "requests": 34,
+    "unsettled": 0
+  },
+  "remaining_semantic_limits": [
+    "No complete live standalone-reader and three-source-review gate for repaired outputs",
+    "Repeated evidence/inventory disagreement remains unresolved",
+    "Extraction perspective and argument defects remain in evaluated profiles"
+  ]
+}

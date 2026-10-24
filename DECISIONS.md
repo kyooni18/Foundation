@@ -741,3 +741,15 @@ remain unresolved: deterministic code does not prove their semantic equivalence.
 Raw outputs remain immutable and reviews remain diagnostic, with exact-hash user
 approval and lifecycle/authority checks required separately. Full results and the
 unchanged budget ceiling are recorded in reports/phase-3-semantic-repair.md.
+
+### D-84 — Reserve a bounded request once, using its actual output cap
+The direct-Anthropic evaluator's future reservations use one token per serialized
+request UTF-8 byte plus 4,096 framing tokens, select pricing from that upper input
+bound, and price the request's validated output cap. The prior blanket 2x multiplier
+and fixed 8,000-token reservation duplicated padding for a 6,000-token request.
+Removing that duplication lowers the next review's reserve by 56% while preserving
+full output and the aggregate ceiling. Historical reservations, charges and receipts
+are not recalculated. Reservation reductions are not reductions in actual token
+prices or historical spending. All 33 prior requests' token usage fit the new bound
+at current verified prices. One formerly blocked review completed and passed at a
+$0.00264480 conservative usage upper bound; this does not establish Phase 3 acceptance.
