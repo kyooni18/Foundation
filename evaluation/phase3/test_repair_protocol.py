@@ -245,6 +245,9 @@ class RepairProtocolTest(unittest.TestCase):
             repair.api.verify_request_serialization(receipt,reordered,'ordered-json-v2')
         anchor=ordered_request['output_config']['format']['schema']['properties']['claims']['items']['properties']['anchor']['properties']
         self.assertEqual(anchor['occurrence']['enum'],[0])
+        extended=repair.extraction.body(recipe_packet,'extraction-v45','grounded-v3',6000)
+        self.assertEqual(extended['max_tokens'],6000)
+        self.assertEqual(repair.extraction.attempt_label(linked,'extraction-v45','repair','grounded-v3',6000),'extraction-v45-schema-v3-output-6000-repair')
         self.assertTrue(all(t in recipe_packet['case']['source'] for t in anchor['quote']['enum']))
         self.assertEqual(set(wire['schema']['properties']),{'claims','empty_reason'})
         self.assertEqual(set(wire['schema']['properties']['claims']['items']['required']),set(recipe_packet['candidate']['claims'][0]))

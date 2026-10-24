@@ -59,7 +59,7 @@ def replay(evidence):
                 packet=dict(case=case)
                 if request.get('repair_context') is not None:
                     packet['repair_context']=request['repair_context']
-                expected=extraction.body(packet,version,request.get('output_format','legacy'))
+                expected=extraction.body(packet,version,request.get('output_format','legacy'),request.get('extraction_output_tokens'))
                 kind='extraction'
             else:
                 expected=(repair.reader_body(payload['claim_text'],version) if reader else
@@ -99,20 +99,25 @@ def replay(evidence):
         budget.require(saved['production_approval'] is False and saved['semantic_acceptance'] is None,
                        'diagnostic boundary changed')
         if response['stop_reason']!='end_turn':
-            budget.require(ident.startswith('focused-haiku-repair-'),
-                           'unsupported incomplete request')
             version=ident.split('-')[3]
-            expected=(repair.reader_body(payload['claim_text'],version) if reader else
-                repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
-                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45'} else None))
+            kind='reader' if reader else 'review'
+            if ident.startswith('focused-haiku-extraction-'):
+                version='extraction-'+version;kind='extraction'
+                packet=dict(case=case)
+                if request.get('repair_context') is not None:packet['repair_context']=request['repair_context']
+                expected=extraction.body(packet,version,request.get('output_format','legacy'),request.get('extraction_output_tokens'))
+            else:
+                expected=(repair.reader_body(payload['claim_text'],version) if reader else
+                    repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
+                        request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45'} else None))
             budget.require(body==expected,'incomplete request recipe drift')
             api.verify_request_serialization(request,expected,api.request_mode(version))
             reason='stop_reason:'+str(response['stop_reason'])
             budget.require(rejected and saved['status']=='incomplete' and saved['reason']==reason,
                            'incomplete rejection drift')
-            row.update(kind='reader' if reader else 'review',version=version,protocol_valid=False,complete=False,
+            row.update(kind=kind,version=version,protocol_valid=False,complete=False,
                        failure_reason=reason)
-            if not reader:
+            if kind=='review':
                 repeated.setdefault(row['payload_sha256'],[]).append((ident,dict(
                     verdict=None,protocol_valid=False,failure_reason=reason)))
             rows.append(row)
@@ -125,7 +130,7 @@ def replay(evidence):
             recipe_packet=dict(case=case)
             if request.get('repair_context') is not None:
                 recipe_packet['repair_context']=request['repair_context']
-            expected=extraction.body(recipe_packet,version,request.get('output_format','legacy'))
+            expected=extraction.body(recipe_packet,version,request.get('output_format','legacy'),request.get('extraction_output_tokens'))
             budget.require(body==expected,'extraction request recipe drift')
             api.verify_request_serialization(request,expected,api.request_mode(version))
             try:
@@ -197,7 +202,7 @@ def replay(evidence):
         budget.require(completed.returncode==0,'Rust structural replay failed: '+completed.stderr)
         results={r['id']:r['revalidation'] for r in map(json.loads,dst.read_text().splitlines())}
         for row in rows:
-            if row['kind']=='extraction' and not row.get('pending_reservation'):
+            if row['kind']=='extraction' and row['id'] in results:
                 row['rust_revalidation']=results[row['id']]
                 budget.require(not results[row['id']]['experimental_gate_eligible'],
                                'diagnostic request credited as gate eligible')

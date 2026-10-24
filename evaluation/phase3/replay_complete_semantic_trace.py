@@ -37,7 +37,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
     request=read(evidence/(ident+'.request.json'))
     if request.get('repair_context') is not None:
         packet=dict(packet,repair_context=request['repair_context'])
-    expected_extraction=extraction.body(packet,version,request.get('output_format','legacy'))
+    expected_extraction=extraction.body(packet,version,request.get('output_format','legacy'),request.get('extraction_output_tokens'))
     budget.require(request['payload']==expected_extraction,'extraction request drift')
     api.verify_request_serialization(request,expected_extraction,api.request_mode(version))
     raw=response_text(evidence/(ident+'.response.json'))
@@ -85,7 +85,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
             stop_stage=stage
     # Match Rust Plan/ModelConfig serialization field order exactly.
     plan=dict(provider='anthropic-direct-diagnostic',prompt_version=version,variant='audited',
-        extractor=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=2500),
+        extractor=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=request['payload']['max_tokens']),
         reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or (6000 if review_version in {'v35','v36','v37','v38','v39','v40','v41','v42','v43','v44','v45'} else 3000)))
     root=f.ROOT/'prompts'/version
     serialized=json.dumps(plan,ensure_ascii=False,separators=(',',':'))
