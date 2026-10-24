@@ -34,16 +34,16 @@ def rust_structure(candidate,case):
 
 def prompt(version):
     root=focused.ROOT/'prompts'
-    contract=(root/'extraction-v12/contract.txt').read_text()
+    contract=(root/('extraction-v43' if version=='extraction-v43' else 'extraction-v12')/'contract.txt').read_text()
     frames=(root/version/'frames.txt').read_text()
     variant=json.loads((root/'extraction-v1/variants.json').read_text())[VARIANT]
     return f'{contract}\n{frames}\n{variant}'
 
 def output_schema(output_format):
-    budget.require(output_format in {'legacy','contract-v1'},'unknown extraction output format')
+    budget.require(output_format in {'legacy','contract-v1','grounded-v2'},'unknown extraction output format')
     if output_format=='legacy':
         return None
-    return json.loads(Path(__file__).with_name('extraction_output_schema_v1.json').read_text())
+    return json.loads(Path(__file__).with_name('extraction_output_schema_v2.json' if output_format=='grounded-v2' else 'extraction_output_schema_v1.json').read_text())
 
 def body(packet,version,output_format='legacy'):
     source=packet['case']
@@ -60,12 +60,12 @@ def body(packet,version,output_format='legacy'):
     system=prompt(version)
     user=focused.canonical(content).decode()
     budget.require(len(system.encode())+len(user.encode())<=256*1024,'oversized context')
-    request = dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42'} else 6000),system=system,
+    request = dict(model=api.MODEL,max_tokens=(2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43'} else 6000),system=system,
         messages=[dict(role='user',content=user)],
         output_config=dict(effort='low'),service_tier='standard_only')
     schema=output_schema(output_format)
     if schema is not None:
-        budget.require(version in {'extraction-v41','extraction-v42'},'structured extraction requires the current explicit profile')
+        budget.require(version in {'extraction-v41','extraction-v42','extraction-v43'},'structured extraction requires the current explicit profile')
         request['output_config']['format']=dict(type='json_schema',schema=schema)
     return request
 
@@ -101,7 +101,7 @@ def attempt_label(packet,version,replicate='primary',output_format='legacy'):
         budget.require(context.get('failure_code') and context.get('trace_sha256') and
             context.get('candidate_batch',{}).get('claims') is not None,
             'one bounded repair requires an actual failed trace')
-    return version+('-schema-v1' if output_format=='contract-v1' else '')+('-repair' if replicate=='repair' else '')
+    return version+('-schema-v1' if output_format=='contract-v1' else '-schema-v2' if output_format=='grounded-v2' else '')+('-repair' if replicate=='repair' else '')
 
 def dispatch(packet,evidence,authorization,*args,**kwargs):
     with budget.dispatch_slot(budget.LEDGER,authorization):
@@ -184,11 +184,11 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42'],
+    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43'],
                         default='extraction-v28')
     parser.add_argument('--repair-from-trace',type=Path)
     parser.add_argument('--replicate',choices=['primary','repair'],default='primary')
-    parser.add_argument('--output-format',choices=['legacy','contract-v1'],default='legacy')
+    parser.add_argument('--output-format',choices=['legacy','contract-v1','grounded-v2'],default='legacy')
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
     _,packets=budget.packets()

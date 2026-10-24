@@ -1,10 +1,11 @@
 """Version-39 responsibility-specific Source protocol; never approval/publication."""
 import json
+import string
 import focused_review as f
 import guarded_haiku as g
 
 def root(version):
-    g.require(version in {'v39','v40','v41','v42'},'unknown faceted profile')
+    g.require(version in {'v39','v40','v41','v42','v43'},'unknown faceted profile')
     return f.ROOT/('prompts/extraction-'+version)
 
 def definitions(version='v39'):return json.loads((root(version)/'facets.json').read_text())
@@ -18,8 +19,22 @@ def prompt(stage,version='v39'):
     dims=json.dumps(d['dimensions'],ensure_ascii=False,separators=(',',':'))
     return (root(version)/'review.txt').read_text()+f'\nACTIVE responsibility: {stage}.\nACTIVE dimensions: {dims}.\nInventory responsibility: '+str(d['inventory']).lower()+'.\n'+d['question']
 
+def exact_inventory_vocabulary(source):
+    # Candidate span vocabulary, not a proposition inventory or semantic gold.
+    separators=set(string.whitespace+string.punctuation+'“”‘’。，、！？')
+    starts={0};ends={len(source)}
+    for i,c in enumerate(source):
+        if c in separators:starts.add(i+1);ends.add(i)
+    values={source}
+    for a in starts:
+        for b in ends:
+            text=source[a:b]
+            if a<b and text.strip() and text==text.strip() and source.find(text,source.find(text)+1)<0:
+                values.add(text)
+    return sorted(values)
+
 def schema(packet,stage,wire_revision='supported-v2',version='v39'):
-    g.require(wire_revision in {'unsupported-v1','supported-v2'},'unknown faceted wire schema')
+    g.require(wire_revision in {'unsupported-v1','supported-v2','supported-v3'},'unknown faceted wire schema')
     d=spec(stage,version);source=packet['case']['source'];claims=packet['candidate']['claims'];n=len(claims)
     status={'type':'string','enum':['pass','reject','unresolved']}
     string={'type':'string'}
@@ -34,17 +49,22 @@ def schema(packet,stage,wire_revision='supported-v2',version='v39'):
         dimensions[key]={'type':'object','additionalProperties':False,'properties':{'status':s,'reason':string},'required':['status','reason']}
     fields=dict(index={'type':'integer'},text=string,evidence=evidence,source_meaning=string,candidate_meaning=string,
         dimensions={'type':'object','additionalProperties':False,'properties':dimensions,'required':d['dimensions']},differences=strings,uncertainty_flags=strings)
-    if version in {'v41','v42'}:fields['violations']=fields.pop('differences')
+    if version in {'v41','v42','v43'}:fields['violations']=fields.pop('differences')
     if n:
         fields['index']={'type':'integer','enum':list(range(n))}
         fields['text']={'type':'string','enum':[c['text'] for c in claims]}
-    inventory_fields=dict(proposition=string,evidence=evidence,claim_indices={'type':'array','items':{'type':'integer'}},status=status,reason=string)
+    proposition=string
+    if wire_revision=='supported-v3' and d['inventory']:
+        g.require(version=='v43','grounded inventory requires its explicit profile')
+        vocabulary=exact_inventory_vocabulary(source)
+        if len(vocabulary)<=512:proposition=dict(type='string',enum=vocabulary)
+    inventory_fields=dict(proposition=proposition,evidence=evidence,claim_indices={'type':'array','items':{'type':'integer'}},status=status,reason=string)
     inventory={'type':'array','items':{'type':'object','additionalProperties':False,'properties':inventory_fields,'required':list(inventory_fields)}}
     if not d['inventory']:inventory['maxItems']=0
     props=dict(stage={'type':'string','enum':[stage]},verdict=status,uncertainty_flags=strings,
         claims={'type':'array','minItems':n,'maxItems':n,'items':{'type':'object','additionalProperties':False,'properties':fields,'required':list(fields)}},inventory=inventory)
     result={'type':'object','additionalProperties':False,'properties':props,'required':list(props)}
-    if wire_revision=='supported-v2':
+    if wire_revision in {'supported-v2','supported-v3'}:
         def portable(value):
             if isinstance(value,dict):
                 value.pop('maxItems',None)
@@ -60,8 +80,8 @@ def body(packet,stage,model,wire_revision='supported-v2',version='v39'):
     return dict(model=model,max_tokens=6000,system=prompt(stage,version),messages=[dict(role='user',content=f.canonical(payload).decode())],output_config=dict(effort='low',format=dict(type='json_schema',schema=schema(packet,stage,wire_revision,version))),service_tier='standard_only')
 
 def check(j,packet,stage,shape,version='v39'):
-    g.require(stage is not None,'review responsibility binding required');d=spec(stage,version);shape(j,schema(packet,stage,version=version))
-    violation_key='violations' if version in {'v41','v42'} else 'differences'
+    g.require(stage is not None,'review responsibility binding required');d=spec(stage,version);shape(j,schema(packet,stage,'supported-v3' if version=='v43' else 'supported-v2',version))
+    violation_key='violations' if version in {'v41','v42','v43'} else 'differences'
     source=packet['case']['source'];claims=packet['candidate']['claims'];g.require(j['stage']==stage,'review responsibility changed')
     g.require(all(s.strip() for s in j['uncertainty_flags']),'empty uncertainty flag')
     unresolved=bool(j['uncertainty_flags']);rejected=False

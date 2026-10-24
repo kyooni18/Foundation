@@ -233,7 +233,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
     math_claim["speaker"] = json!("unknown");
     let math_raw = output(vec![math_claim]);
     let mut current = plan();
-    current.prompt_version = Some("extraction-v42".into());
+    current.prompt_version = Some("extraction-v43".into());
     let mut replies = vec![
         Ok(math_raw.clone()),
         Ok(
@@ -242,7 +242,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
         ),
     ];
     let definitions: Vec<Value> =
-        serde_json::from_str(include_str!("../prompts/extraction-v42/facets.json")).unwrap();
+        serde_json::from_str(include_str!("../prompts/extraction-v43/facets.json")).unwrap();
     for definition in definitions {
         let dimensions: serde_json::Map<String, Value> = definition["dimensions"]
             .as_array()

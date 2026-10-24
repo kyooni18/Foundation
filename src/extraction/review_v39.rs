@@ -255,3 +255,5 @@ pub(super) fn inventory_signature(raw: &str) -> Result<Value> {
 }
 
 pub(super) const DEFINITIONS_42: &str = include_str!("../../prompts/extraction-v42/facets.json");
+
+pub(super) const DEFINITIONS_43: &str = include_str!("../../prompts/extraction-v43/facets.json");

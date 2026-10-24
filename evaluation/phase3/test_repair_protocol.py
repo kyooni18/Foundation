@@ -215,6 +215,14 @@ class RepairProtocolTest(unittest.TestCase):
         wire=constrained['output_config'].pop('format')
         self.assertEqual(constrained,legacy)
         self.assertEqual(wire['type'],'json_schema')
+        ordered=repair.extraction.body(recipe_packet,'extraction-v43','grounded-v2')['output_config']['format']['schema']['properties']['claims']['items']
+        self.assertEqual(list(ordered['properties'])[:2],['anchor','lang'])
+        from faceted_review import exact_inventory_vocabulary
+        spans=exact_inventory_vocabulary(recipe_packet['case']['source'])
+        self.assertIn(recipe_packet['case']['source'],spans)
+        self.assertTrue(all(recipe_packet['case']['source'].find(t)>=0 and recipe_packet['case']['source'].find(t,recipe_packet['case']['source'].find(t)+1)<0 for t in spans))
+        self.assertLess(ordered['required'].index('text'),ordered['required'].index('mentions'))
+        self.assertEqual(repair.extraction.attempt_label(linked,'extraction-v43',output_format='grounded-v2'),'extraction-v43-schema-v2')
         self.assertEqual(set(wire['schema']['properties']),{'claims','empty_reason'})
         self.assertEqual(set(wire['schema']['properties']['claims']['items']['required']),set(recipe_packet['candidate']['claims'][0]))
         self.assertFalse(wire['schema']['additionalProperties'])
