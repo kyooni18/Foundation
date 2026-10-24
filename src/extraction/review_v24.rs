@@ -47,6 +47,7 @@ pub(super) fn validate(
     batch: &Batch,
     source: &SourceView,
     require_meta: bool,
+    canonical_inventory: bool,
 ) -> Result<()> {
     if raw.len() > 4 * 1024 * 1024 {
         return Err(invalid("schema", "review too large"));
@@ -85,6 +86,10 @@ pub(super) fn validate(
             return Err(invalid("schema", "review changed claim identity"));
         }
         quote_evidence(&claim["evidence"], &source.content)?;
+        if canonical_inventory && claim["evidence"] != serde_json::json!([{"quote":source.content}])
+        {
+            return Err(invalid("schema", "complete original context required"));
+        }
         let dimensions = &claim["dimensions"];
         let mut required = vec![
             "atomicity",
@@ -156,6 +161,15 @@ pub(super) fn validate(
             return Err(invalid("schema", "inventory explanation required"));
         }
         quote_evidence(&row["evidence"], &source.content)?;
+        if canonical_inventory {
+            if row["evidence"] != serde_json::json!([{"quote":source.content}]) {
+                return Err(invalid("schema", "complete inventory context required"));
+            }
+            quote_evidence(
+                &serde_json::json!([{"quote":row["proposition"]}]),
+                &source.content,
+            )?;
+        }
         let indices = row["claim_indices"]
             .as_array()
             .ok_or_else(|| invalid("schema", "inventory claim indices required"))?;

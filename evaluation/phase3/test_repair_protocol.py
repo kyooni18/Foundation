@@ -29,6 +29,21 @@ class RepairProtocolTest(unittest.TestCase):
                 mutate(changed)
                 with self.assertRaises(ValueError):
                     repair.check(changed,packet,'v28')
+        canonical=copy.deepcopy(judgment)
+        source=packet['case']['source']
+        for row in canonical['claims']:
+            row['evidence']=[dict(quote=source)]
+        for row,text in zip(canonical['inventory'],source.split('. ')):
+            row.update(proposition=text.rstrip('.'),evidence=[dict(quote=source)])
+        self.assertEqual(repair.check(canonical,packet,'v29')['verdict'],'pass')
+        canonical['inventory'][0]['proposition']='invented interpretation'
+        with self.assertRaisesRegex(ValueError,'canonical original inventory'):
+            repair.check(canonical,packet,'v29')
+        blind=repair.reader_body('ONE isolated Claim','v29')
+        self.assertNotIn('original_source',blind['messages'][0]['content'])
+        self.assertEqual(repair.reader_check(dict(verdict='pass',issues=[],checked=[0],coverage_complete=True))['verdict'],'pass')
+        with self.assertRaises(ValueError):
+            repair.reader_check(dict(verdict='pass',issues=['reference'],checked=[0],coverage_complete=True))
         request_text=repair.body(packet,'v28')['messages'][0]['content']
         self.assertNotIn('expected_verdict',request_text)
         self.assertNotIn('authorship',request_text)

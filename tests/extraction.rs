@@ -1425,6 +1425,33 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     assert!(
         validate_proposal_reviews_bound(&meta_plan, &reports(&review), &batch, &source).is_ok()
     );
+    let mut canonical = review.clone();
+    meta_plan.prompt_version = Some("extraction-v29".into());
+    assert!(meta_plan.source_bound_review());
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&canonical), &batch, &source).is_err()
+    );
+    for claim in canonical["claims"].as_array_mut().unwrap() {
+        claim["evidence"] = json!([{"quote":content}]);
+    }
+    for (item, text) in canonical["inventory"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .zip([first, second])
+    {
+        item["evidence"] = json!([{"quote":content}]);
+        item["proposition"] = json!(text.trim_end_matches('.'));
+    }
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&canonical), &batch, &source).is_ok()
+    );
+    let mut invented = canonical.clone();
+    invented["inventory"][0]["proposition"] = json!("parallel execution is proved");
+    assert!(
+        validate_proposal_reviews_bound(&meta_plan, &reports(&invented), &batch, &source).is_err()
+    );
+    meta_plan.prompt_version = Some("extraction-v28".into());
     review["claims"][0]["dimensions"]["source_meta_expansion"]["status"] = json!("reject");
     assert!(
         validate_proposal_reviews_bound(&meta_plan, &reports(&review), &batch, &source).is_err()

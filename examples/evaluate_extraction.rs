@@ -5,7 +5,8 @@ use prime_radiant::{
     domain::*,
     extraction::{
         Plan, REVIEW_STAGES, VALIDATION_VERSION, extraction_message, hash, locate, reader_message,
-        repair_context, review_message, validate, validate_review,
+        repair_context, review_message, validate, validate_proposal_reviews_bound, validate_review,
+        validate_source_review,
     },
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
@@ -288,7 +289,20 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                 } else {
                                     result["claim_count"].as_u64().unwrap() as usize
                                 };
-                                match validate_review(raw, count) {
+                                let checked = if count != 1
+                                    || !review["stage"].as_str().unwrap().starts_with("standalone")
+                                {
+                                    validate_source_review(
+                                        &plan,
+                                        raw,
+                                        &validate(result["raw"].as_str().unwrap(), &source)
+                                            .expect("structural validation"),
+                                        &source,
+                                    )
+                                } else {
+                                    validate_review(raw, count)
+                                };
+                                match checked {
                                     Ok(()) => None,
                                     Err(Error::InvalidInput {
                                         field: "schema", ..
@@ -321,6 +335,30 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                 }
                             })
                     };
+                    let failure = failure.or_else(|| {
+                        if !plan.source_bound_review() {
+                            return None;
+                        }
+                        let batch = validate(result["raw"].as_str()?, &source).ok()?;
+                        let reviews: Option<Vec<String>> = result["reviews"]
+                            .as_array()?
+                            .iter()
+                            .map(|r| r["raw"].as_str().map(str::to_owned))
+                            .collect();
+                        match reviews.and_then(|reviews| {
+                            validate_proposal_reviews_bound(&plan, &reviews, &batch, &source).err()
+                        }) {
+                            Some(Error::InvalidInput {
+                                field: "unresolved",
+                                ..
+                            }) => Some("unresolved"),
+                            Some(Error::InvalidInput {
+                                field: "schema", ..
+                            }) => Some("schema"),
+                            Some(_) => Some("fidelity"),
+                            None => None,
+                        }
+                    });
                     result["failure_code"] = json!(failure);
                     result["terminal"] = json!(
                         failure.is_none()

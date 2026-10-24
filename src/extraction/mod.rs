@@ -167,6 +167,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v28/frames.txt"),
                 include_str!("../../prompts/extraction-v28/review.txt"),
             )),
+            "extraction-v29" => Ok((
+                include_str!("../../prompts/extraction-v12/contract.txt"),
+                include_str!("../../prompts/extraction-v29/frames.txt"),
+                include_str!("../../prompts/extraction-v29/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -185,6 +190,11 @@ impl Plan {
     }
     pub fn review_prompt(&self, stage: &str) -> Result<String> {
         let (_, frames, review) = self.components()?;
+        if self.version() == "extraction-v29" {
+            return Ok(format!(
+                "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
+            ));
+        }
         Ok(format!(
             "{review}\n{frames}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
         ))
@@ -209,6 +219,7 @@ impl Plan {
             "extraction-v26" => Some(include_str!("../../prompts/extraction-v26/reader.txt")),
             "extraction-v27" => Some(include_str!("../../prompts/extraction-v27/reader.txt")),
             "extraction-v28" => Some(include_str!("../../prompts/extraction-v28/reader.txt")),
+            "extraction-v29" => Some(include_str!("../../prompts/extraction-v29/reader.txt")),
             _ => None,
         }
     }
@@ -217,6 +228,23 @@ impl Plan {
     /// diverge between the core worker and evaluation harness.
     pub fn supports_repair(&self) -> bool {
         self.reader_prompt().is_some() && self.version() != "extraction-v11"
+    }
+    pub fn source_bound_review(&self) -> bool {
+        matches!(
+            self.version(),
+            "extraction-v24"
+                | "extraction-v25"
+                | "extraction-v26"
+                | "extraction-v27"
+                | "extraction-v28"
+                | "extraction-v29"
+        )
+    }
+    fn source_meta_review(&self) -> bool {
+        matches!(
+            self.version(),
+            "extraction-v27" | "extraction-v28" | "extraction-v29"
+        )
     }
     pub fn hash(&self) -> Result<String> {
         for config in [&self.extractor, &self.reviewer] {
@@ -562,6 +590,26 @@ pub fn validate_proposal_reviews(plan: &Plan, reviews: &[String], n: usize) -> R
     Ok(())
 }
 
+/// Use the same source review protocol in the worker, evaluator and offline replay.
+pub fn validate_source_review(
+    plan: &Plan,
+    raw: &str,
+    batch: &Batch,
+    source: &SourceView,
+) -> Result<()> {
+    if plan.source_bound_review() {
+        review_v24::validate(
+            raw,
+            batch,
+            source,
+            plan.source_meta_review(),
+            plan.version() == "extraction-v29",
+        )
+    } else {
+        validate_review(raw, batch.claims.len())
+    }
+}
+
 /// Source-bound validation is required by the v24 protocol, including at approval time.
 pub fn validate_proposal_reviews_bound(
     plan: &Plan,
@@ -569,14 +617,7 @@ pub fn validate_proposal_reviews_bound(
     batch: &Batch,
     source: &SourceView,
 ) -> Result<()> {
-    if !matches!(
-        plan.version(),
-        "extraction-v24"
-            | "extraction-v25"
-            | "extraction-v26"
-            | "extraction-v27"
-            | "extraction-v28"
-    ) {
+    if !plan.source_bound_review() {
         return validate_proposal_reviews(plan, reviews, batch.claims.len());
     }
     let n = batch.claims.len();
@@ -590,12 +631,7 @@ pub fn validate_proposal_reviews_bound(
         validate_review(raw, 1)?;
     }
     for raw in &reviews[n..] {
-        review_v24::validate(
-            raw,
-            batch,
-            source,
-            matches!(plan.version(), "extraction-v27" | "extraction-v28"),
-        )?;
+        validate_source_review(plan, raw, batch, source)?;
     }
     let compared = reviews[n..].iter().map(|raw| {
         let v = json::parse(raw).map_err(|_| invalid("schema", "invalid review JSON"))?;
@@ -821,24 +857,7 @@ async fn propose_with_feedback(
             .await
             .map_err(call)?;
         append_review_trace(plan, trace, &result)?;
-        (if matches!(
-            plan.version(),
-            "extraction-v24"
-                | "extraction-v25"
-                | "extraction-v26"
-                | "extraction-v27"
-                | "extraction-v28"
-        ) {
-            review_v24::validate(
-                &result,
-                &batch,
-                source,
-                matches!(plan.version(), "extraction-v27" | "extraction-v28"),
-            )
-        } else {
-            validate_review(&result, batch.claims.len())
-        })
-        .map_err(|error| {
+        validate_source_review(plan, &result, &batch, source).map_err(|error| {
             if matches!(
                 error,
                 Error::InvalidInput {
@@ -861,14 +880,7 @@ async fn propose_with_feedback(
         })?;
         reviews.push(result);
     }
-    if matches!(
-        plan.version(),
-        "extraction-v24"
-            | "extraction-v25"
-            | "extraction-v26"
-            | "extraction-v27"
-            | "extraction-v28"
-    ) {
+    if plan.source_bound_review() {
         validate_proposal_reviews_bound(plan, &reviews, &batch, source)?;
     }
     Ok(Proposal {

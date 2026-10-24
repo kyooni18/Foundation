@@ -3,7 +3,9 @@ use clap::Parser;
 use prime_radiant::{
     App,
     domain::*,
-    extraction::{Plan, VALIDATION_VERSION, hash, validate, validate_review},
+    extraction::{
+        Plan, VALIDATION_VERSION, hash, validate, validate_proposal_reviews_bound, validate_review,
+    },
 };
 use serde_json::{Value, json};
 use std::{
@@ -44,9 +46,10 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         let id = app.record_source(&user, request)?.source_id;
         let source = app.get_source(&user, id)?;
         let checked = row["raw"].as_str().map(|raw| validate(raw, &source));
-        let (valid, field, count) = match checked {
+        let batch = checked.as_ref().and_then(|result| result.as_ref().ok());
+        let (valid, field, count) = match &checked {
             Some(Ok(batch)) => (true, None, batch.claims.len()),
-            Some(Err(Error::InvalidInput { field, .. })) => (false, Some(field), 0),
+            Some(Err(Error::InvalidInput { field, .. })) => (false, Some(*field), 0),
             _ => (false, Some("provider_or_schema"), 0),
         };
         let expected = match row["variant"].as_str() {
@@ -72,6 +75,17 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         let eligible = valid
             && plan_hash_valid
             && row["reviews"].as_array().is_some_and(|reviews| {
+                if let (Some(plan), Some(batch)) =
+                    (plan.as_ref().filter(|p| p.source_bound_review()), batch)
+                {
+                    let raw: Option<Vec<String>> = reviews
+                        .iter()
+                        .map(|r| r["raw"].as_str().map(str::to_owned))
+                        .collect();
+                    return raw.is_some_and(|raw| {
+                        validate_proposal_reviews_bound(plan, &raw, batch, &source).is_ok()
+                    });
+                }
                 reviews.len() == expected
                     && reviews.iter().all(|review| {
                         review["raw"].as_str().is_some_and(|raw| {

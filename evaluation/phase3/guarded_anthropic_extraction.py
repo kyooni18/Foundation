@@ -32,7 +32,7 @@ def body(packet,version):
     system=prompt(version)
     user=focused.canonical(content).decode()
     budget.require(len(system.encode())+len(user.encode())<=256*1024,'oversized context')
-    return dict(model=api.MODEL,max_tokens=6000,system=system,
+    return dict(model=api.MODEL,max_tokens=(2500 if version=='extraction-v29' else 6000),system=system,
         messages=[dict(role='user',content=user)],
         output_config=dict(effort='low'),service_tier='standard_only')
 
@@ -103,6 +103,7 @@ def dispatch(packet,evidence,authorization,version):
                      'SUM(COALESCE(actual,estimate)) FROM request) WHERE id=?',(ident,))
         conn.commit()
         budget.immutable(evidence/(ident+'.accounting.json'),usage)
+        budget.require(usage['conservative_upper_nanos']<=quote['estimate'],'usage bound exceeds reservation; stop')
         budget.require(response['stop_reason']=='end_turn','incomplete model response')
         raw=''.join(b['text'] for b in response['content'] if b.get('type')=='text')
         try:
@@ -124,7 +125,7 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28'],
+    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29'],
                         default='extraction-v28')
     parser.add_argument('--execute',action='store_true')
     args=parser.parse_args()
