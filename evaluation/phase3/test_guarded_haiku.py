@@ -151,6 +151,25 @@ class GuardedHaikuTest(unittest.TestCase):
                 object.__new__(g.Dispatcher).check(boundary,2)
             self.assertLess(g.LIMIT,g.STRICT_TOTAL)
         boundary.close()
+        # Unknown outcomes retain every full hold; only an exclusive authorized slot
+        # replaces the old cumulative count gate. Money limits still apply.
+        with self.connection() as conn:
+            conn.execute('DELETE FROM request')
+            for i in range(4):
+                conn.execute('INSERT INTO request(id,estimate) VALUES(?,?)',(f'unknown-{i}',1000))
+        dispatcher=self.dispatcher()
+        dispatcher.authorization=dict(dispatcher.authorization,unsettled_policy=g.UNSETTLED_POLICY)
+        with self.connection() as conn:
+            with self.assertRaisesRegex(ValueError,'budget blocked'):
+                dispatcher.check(conn,1)
+            with g.dispatch_slot(self.ledger,dispatcher.authorization):
+                self.assertEqual(dispatcher.check(conn,1)[1],conn.execute('SELECT prior FROM budget').fetchone()[0]+4001)
+                with self.assertRaisesRegex(ValueError,'another paid dispatch'):
+                    with g.dispatch_slot(self.ledger,dispatcher.authorization):pass
+                conn.execute('UPDATE budget SET ceiling=prior+4000')
+                with self.assertRaisesRegex(ValueError,'budget blocked'):
+                    dispatcher.check(conn,1)
+            self.assertEqual(conn.execute('SELECT COUNT(*) FROM request WHERE actual IS NULL').fetchone()[0],4)
 
     def test_evidence_protocol_contains_historical_verdict_flip(self):
         record = json.loads((g.focused.ROOT / 'reports/evidence/phase-3/focused-continuation/reviewer-disagreement.json').read_text())

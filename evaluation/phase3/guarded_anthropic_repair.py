@@ -212,7 +212,11 @@ def reader_check(j):
         semantic_acceptance=None,production_approval=False)
 
 
-def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['fidelity'], reader_index=None, effort='low', output_tokens=None):
+def dispatch(packet,evidence,authorization,*args,**kwargs):
+    with budget.dispatch_slot(budget.LEDGER,authorization):
+        return _dispatch(packet,evidence,authorization,*args,**kwargs)
+
+def _dispatch(packet, evidence, authorization, version, label='', stage=STAGES['fidelity'], reader_index=None, effort='low', output_tokens=None):
     budget.require(effort=='low' or (effort=='medium' and version=='v31' and reader_index is None),
                    'unsupported diagnostic effort')
     if version in {'v39','v40','v41'} and stage==STAGES['fidelity']:

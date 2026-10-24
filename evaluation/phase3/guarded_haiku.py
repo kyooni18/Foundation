@@ -5,6 +5,9 @@ is necessary, never sufficient: no policy amendment or ledger provisioning here.
 Unknown outcomes retain reservations. All prices use Decimal, rounded upward.
 """
 import argparse
+from contextlib import contextmanager
+from contextvars import ContextVar
+import fcntl
 from decimal import Decimal, ROUND_CEILING
 import json
 import os
@@ -19,6 +22,26 @@ LIMIT = 5_999_999_990
 STRICT_TOTAL = 6_000_000_000
 CONTINUATION = 1_217_346_640
 OUTPUT = 2400
+UNSETTLED_POLICY = 'retain-full-reservations-serialize-v1'
+_SERIALIZED_LEDGER = ContextVar('serialized_budget_ledger',default=None)
+
+@contextmanager
+def dispatch_slot(ledger,authorization):
+    policy=authorization.get('unsettled_policy')
+    require(policy in {None,UNSETTLED_POLICY},'unknown unsettled-request policy')
+    if policy is None:
+        yield
+        return
+    path=Path(ledger).resolve()
+    fd=os.open(str(path)+'.dispatch.lock',os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600)
+    try:
+        try:fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:raise ValueError('another paid dispatch is active') from None
+        token=_SERIALIZED_LEDGER.set(str(path))
+        try:yield
+        finally:_SERIALIZED_LEDGER.reset(token)
+    finally:os.close(fd)
+
 PACKETS = focused.ROOT / 'reports/evidence/phase-3/focused-continuation/replay/packets.json'
 PACKETS_HASH = '5882ef42d5435a1b23f03235e18275ed00d3b34f7092f61c1474f70c1c00f753'
 LEDGER = focused.ROOT / '.local/openrouter-phase2-phase3.sqlite'
@@ -190,7 +213,9 @@ class Dispatcher:
         spent, pending, overruns = conn.execute('SELECT COALESCE(SUM(COALESCE(actual,estimate)),0), '
             'COUNT(*) FILTER(WHERE actual IS NULL), COUNT(*) FILTER(WHERE actual>estimate) FROM request').fetchone()
         continuation = conn.execute("SELECT COALESCE(SUM(COALESCE(actual,estimate)),0) FROM request WHERE id LIKE 'focused-haiku-%'").fetchone()[0]
-        require(0 < ceiling <= LIMIT and prior >= 0 and pending < 4 and overruns == 0 and
+        serialized=(getattr(self,'authorization',{}).get('unsettled_policy')==UNSETTLED_POLICY and
+            _SERIALIZED_LEDGER.get()==str(Path(self.ledger).resolve()))
+        require(0 < ceiling <= LIMIT and prior >= 0 and (pending < 4 or serialized) and overruns == 0 and
                 prior + spent + estimate <= ceiling and prior + spent + estimate < STRICT_TOTAL and
                 continuation + estimate <= CONTINUATION, 'budget blocked')
         return ceiling, prior + spent + estimate

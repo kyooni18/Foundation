@@ -1,0 +1,9 @@
+{
+  "provider": "anthropic_direct",
+  "explicit_user_authorization": true,
+  "authorization_reference": "Human: ~/.zshrc에 ANTHROPIC_API_KEY로 Antropic API 키 지정해놨으니, Haiku 5.5 사용해서 계속해. API 크레딧은 약 5달러 정도. Continuation after count-policy blocker; original strict cumulative $6 authorization retained.",
+  "additional_limit_nanos": 1217346640,
+  "strict_total_below_nanos": 6000000000,
+  "unsettled_policy": "retain-full-reservations-serialize-v1",
+  "policy_change_basis": "Resume requested after blocker explanation. Replace count of all historical unknown outcomes with an exclusive live-dispatch lock; every old reservation remains fully included in the spending bound. No balance reset or additional cumulative allowance."
+}

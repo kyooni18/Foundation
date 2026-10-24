@@ -103,7 +103,11 @@ def attempt_label(packet,version,replicate='primary',output_format='legacy'):
             'one bounded repair requires an actual failed trace')
     return version+('-schema-v1' if output_format=='contract-v1' else '')+('-repair' if replicate=='repair' else '')
 
-def dispatch(packet,evidence,authorization,version,replicate='primary',output_format='legacy'):
+def dispatch(packet,evidence,authorization,*args,**kwargs):
+    with budget.dispatch_slot(budget.LEDGER,authorization):
+        return _dispatch(packet,evidence,authorization,*args,**kwargs)
+
+def _dispatch(packet,evidence,authorization,version,replicate='primary',output_format='legacy'):
     label=attempt_label(packet,version,replicate,output_format)
     case=packet['case']['id']
     ident=f'focused-haiku-{label}-{case}-primary'
