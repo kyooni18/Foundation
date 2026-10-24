@@ -1,0 +1,14 @@
+[
+  {
+    "id": "focused-haiku-extraction-v33-r1-nested_quote-primary",
+    "exact_payload_equal": true
+  },
+  {
+    "id": "focused-haiku-repair-v33-r1-nested_quote-extraction-v33-reader-0-primary",
+    "exact_payload_equal": true
+  },
+  {
+    "id": "focused-haiku-repair-v33-r1-nested_quote-extraction-v33-reader-1-primary",
+    "exact_payload_equal": true
+  }
+]

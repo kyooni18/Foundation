@@ -1,0 +1,16 @@
+{
+  "status": "offline reservation precheck; no dispatch",
+  "quote": {
+    "estimate": 5523600,
+    "input_byte_bound": 20118,
+    "output_token_bound": 3000,
+    "worst_input_per_mtok": "0.20",
+    "worst_output_per_mtok": "0.50",
+    "price_checked": "2026-10-24",
+    "charge_type": "conservative_upper_bound_not_provider_billed_cost",
+    "reservation_policy": "utf8-byte-bound-request-output-v2"
+  },
+  "remaining_nanos": 4395640,
+  "fits": false,
+  "historical_rows_unchanged": true
+}

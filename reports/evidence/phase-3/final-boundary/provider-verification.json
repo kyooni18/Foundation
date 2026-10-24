@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-24",
+  "model": "claude-haiku-5-5",
+  "sources": [
+    "https://platform.claude.com/docs/en/models/haiku-5-5/overview",
+    "https://platform.claude.com/docs/en/build-with-claude/structured-outputs"
+  ],
+  "input_per_mtok_up_to_100k": "0.10",
+  "cache_write_1h_upper_per_mtok": "0.20",
+  "output_per_mtok_up_to_100k": "0.50",
+  "json_schema_path": "output_config.format",
+  "billed_cost_usd": null
+}

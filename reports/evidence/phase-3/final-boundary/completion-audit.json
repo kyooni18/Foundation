@@ -1,0 +1,49 @@
+{
+  "status": "incomplete",
+  "starting_commit": "da5e952",
+  "policy_commit": "460a152",
+  "implementation_commits": [
+    "d8578e6",
+    "cf64c34"
+  ],
+  "new_requests": 6,
+  "new_conservative_upper_nanos": 16778300,
+  "ledger": {
+    "ceiling_nanos": 4999999990,
+    "cumulative_upper_nanos": 4995604350,
+    "prior_nanos": 4782653350,
+    "provider_billed_usd": null,
+    "recorded_upper_nanos": 212951000,
+    "remaining_nanos": 4395640,
+    "requests": 114,
+    "unsettled": 0
+  },
+  "new_source_reviews": {
+    "total": 6,
+    "completed": 5,
+    "incomplete": 1,
+    "historical_protocol_valid": 5,
+    "historical_verdicts": {
+      "pass_count": 3,
+      "reject_count": 2
+    },
+    "current_protocol_valid": 3,
+    "current_protocol_invalid": 2
+  },
+  "nested_trace": "Two unchanged v33 Claims, unchanged readers and extraction reused only after exact complete payload equality; three v34 source reviews agree; full source-checks-v5 Rust gate eligible.",
+  "negative_repeat": "Same complete request; both raw aggregate reject, verdict agreement true, complete signature agreement false. Both CURRENTLY protocol-invalid for entailment-pass plus unsupported-content-reject. Raw outcomes preserved, no semantic rejection credit.",
+  "acceptance": {
+    "atomicity": "Delay split remains validated under v32; nested complete report scope now validated under v34; other historical profile evidence unchanged.",
+    "fidelity": "No group/detail gloss in corrected nested candidate; current negative-control contradictions fail closed rather than becoming valid reviews.",
+    "coverage": "Nested complete governing report inventory agreement fixed in one positive batch; broad source-inventory reliability not established.",
+    "standalone": "Two unchanged nested isolated readers have exact request equality with v34 recipe. Hypothetical identity ambiguity remains unadjudicated.",
+    "reliability": "Only one repeated negative batch: verdict agrees, dimensions and coverage differ. Full reliable semantic acceptance not established.",
+    "broader_scope": "Six priority Sources have historical diagnostic passing traces across different profiles; not one current-profile corpus result. Five missing-profile cases remain unassessed.",
+    "authority": "No approval/publication, default promotion or phase-3 tag."
+  },
+  "production_approvals": 0,
+  "default_promoted": false,
+  "phase_3_tag": false,
+  "independent_semantic_adjudication": false,
+  "ending_implementation_commit": "cf64c34"
+}

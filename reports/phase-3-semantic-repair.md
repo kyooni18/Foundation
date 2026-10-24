@@ -1,6 +1,21 @@
 # Phase 3 semantic repair — acceptance remains incomplete (2026-10-24)
 
-## Latest authorized boundary validation
+## Latest complete governing-report repair
+
+V34 fixes the nested inventory's cut inside `했다고`; the unchanged two-Claim
+candidate and readers plus three new Source reviews now pass the full Rust gate.
+Exact complete request checks justify archived extraction/reader reuse. A bounded
+negative repeat returns reject twice but has contradictory entailment components;
+source-checks-v5 rejects both objects without changing raw judgments or outcomes.
+
+Six targeted calls cost $0.01677830 conservatively. Cumulative bound **$4.99560435**,
+ceiling **$4.99999999**, remaining **$0.00439564**, 114 settled, none unsettled.
+All required checks pass (48 Rust, 40 Python, fmt, Clippy). Full semantic acceptance
+remains incomplete; no default promotion or completion tag. See the
+[final boundary report](phase-3-final-boundary.md) and its requirement audit in
+`reports/evidence/phase-3/final-boundary/completion-audit.json`.
+
+## Previous authorized boundary validation
 
 The newly approved credit is applied without changing historical charges. Live work
 focused on unknown-argument/Source-commentary boundaries, Korean verification ellipsis

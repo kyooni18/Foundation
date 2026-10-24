@@ -1,0 +1,76 @@
+{
+  "stages": 3,
+  "complete_signature_agreement": true,
+  "signature": {
+    "verdict": "pass",
+    "uncertainty": [],
+    "claims": [
+      {
+        "index": 0,
+        "evidence": [
+          {
+            "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+          }
+        ],
+        "uncertainty": [],
+        "dimensions": {
+          "atomicity": "pass",
+          "attribution": "pass",
+          "duplicates": "pass",
+          "entailment": "pass",
+          "korean_meaning": "pass",
+          "missing_argument": "pass",
+          "polarity_scope": "pass",
+          "source_meta_expansion": "pass",
+          "unsupported_inference": "pass"
+        }
+      },
+      {
+        "index": 1,
+        "evidence": [
+          {
+            "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+          }
+        ],
+        "uncertainty": [],
+        "dimensions": {
+          "atomicity": "pass",
+          "attribution": "pass",
+          "duplicates": "pass",
+          "entailment": "pass",
+          "korean_meaning": "pass",
+          "missing_argument": "pass",
+          "polarity_scope": "pass",
+          "source_meta_expansion": "pass",
+          "unsupported_inference": "pass"
+        }
+      }
+    ],
+    "inventory": [
+      {
+        "proposition": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다",
+        "evidence": [
+          {
+            "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+          }
+        ],
+        "claim_indices": [
+          0
+        ],
+        "status": "pass"
+      },
+      {
+        "proposition": "난 동의 못 함",
+        "evidence": [
+          {
+            "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+          }
+        ],
+        "claim_indices": [
+          1
+        ],
+        "status": "pass"
+      }
+    ]
+  }
+}

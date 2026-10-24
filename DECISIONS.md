@@ -824,3 +824,20 @@ disagree on the complete outer-report inventory boundary. The gate withholds the
 batch. V32 delay and v33 hypothetical complete traces are diagnostic evidence only;
 all failures, the truncated negative control and profile distinctions remain visible.
 Phase 3 remains incomplete, with no default promotion or completion tag.
+
+### D-91 — Complete governing predicates and complete-Claim entailment
+V34 inventory identities retain all governing report layers and cannot stop inside
+Korean inflection/connective endings. Its unchanged v33 extraction/reader components
+may reuse archived results only after complete request equality; provenance keeps
+actual IDs. An explicit 6,000-token Source diagnostic cap is a different configuration,
+not an identical retry or replacement for the initial truncated 3,000-token attempt.
+The nested report now has a coherent full diagnostic trace with exact Plan hash.
+
+A negative repeated batch exposes entailment pass despite rejected unsupported
+content. Source-checks-v5 rejects that cross-dimension contradiction for v34 in both
+Rust and Python, without normalizing model output. Replay retains historical receipt
+classifications and separately reports stricter current validity. Both negative raw
+aggregates reject, but their full signatures disagree and both current objects are
+invalid. This is safe failure, not demonstrated general reviewer reliability. No
+profile promotion or Phase 3 completion follows. The original strictly-below-$5 cap
+is respected; final cumulative upper bound is $4.99560435 with no unsettled requests.

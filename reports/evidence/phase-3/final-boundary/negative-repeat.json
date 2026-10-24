@@ -1,0 +1,154 @@
+{
+  "complete_signature_agreement": false,
+  "ids": [
+    "focused-haiku-repair-v34-r1-nested_quote-output-6000-primary",
+    "focused-haiku-repair-v34-r1-nested_quote-repeat-output-6000-primary"
+  ],
+  "signatures": [
+    {
+      "claims": [
+        {
+          "dimensions": {
+            "atomicity": "reject",
+            "attribution": "pass",
+            "duplicates": "pass",
+            "entailment": "reject",
+            "korean_meaning": "pass",
+            "missing_argument": "pass",
+            "polarity_scope": "pass",
+            "source_meta_expansion": "reject",
+            "unsupported_inference": "reject"
+          },
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "index": 0,
+          "uncertainty": []
+        },
+        {
+          "dimensions": {
+            "atomicity": "pass",
+            "attribution": "pass",
+            "duplicates": "pass",
+            "entailment": "pass",
+            "korean_meaning": "pass",
+            "missing_argument": "pass",
+            "polarity_scope": "pass",
+            "source_meta_expansion": "reject",
+            "unsupported_inference": "reject"
+          },
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "index": 1,
+          "uncertainty": []
+        }
+      ],
+      "inventory": [
+        {
+          "claim_indices": [
+            0
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다",
+          "status": "reject"
+        },
+        {
+          "claim_indices": [
+            1
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "난 동의 못 함",
+          "status": "reject"
+        }
+      ],
+      "uncertainty": [],
+      "verdict": "reject"
+    },
+    {
+      "claims": [
+        {
+          "dimensions": {
+            "atomicity": "pass",
+            "attribution": "pass",
+            "duplicates": "pass",
+            "entailment": "pass",
+            "korean_meaning": "pass",
+            "missing_argument": "pass",
+            "polarity_scope": "pass",
+            "source_meta_expansion": "reject",
+            "unsupported_inference": "reject"
+          },
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "index": 0,
+          "uncertainty": []
+        },
+        {
+          "dimensions": {
+            "atomicity": "pass",
+            "attribution": "pass",
+            "duplicates": "pass",
+            "entailment": "pass",
+            "korean_meaning": "pass",
+            "missing_argument": "pass",
+            "polarity_scope": "pass",
+            "source_meta_expansion": "reject",
+            "unsupported_inference": "reject"
+          },
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "index": 1,
+          "uncertainty": []
+        }
+      ],
+      "inventory": [
+        {
+          "claim_indices": [
+            0
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다",
+          "status": "pass"
+        },
+        {
+          "claim_indices": [
+            1
+          ],
+          "evidence": [
+            {
+              "quote": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함."
+            }
+          ],
+          "proposition": "난 동의 못 함",
+          "status": "pass"
+        }
+      ],
+      "uncertainty": [],
+      "verdict": "reject"
+    }
+  ],
+  "verdict_agreement": true
+}
