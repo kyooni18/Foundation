@@ -1,0 +1,79 @@
+{
+  "objective": "complete phase 3",
+  "completion": "not achieved",
+  "goal_status": "active",
+  "requirements": [
+    {
+      "requirement": "1 baseline and source reconstruction",
+      "state": "proved",
+      "evidence": "Git start 8ffe895; frozen packets manifest/hash checks in every evaluator; historical o8000 replay unchanged"
+    },
+    {
+      "requirement": "2 confirmed defects A-E",
+      "state": "incomplete",
+      "evidence": "v30 nested text improved; v29 duplicate inventory and habit attribution uncertainty remain; other defects evaluated in older profiles"
+    },
+    {
+      "requirement": "3 one semantic proposition per accepted Claim",
+      "state": "unproved",
+      "evidence": "No current-profile accepted batch; structural checks alone not credited"
+    },
+    {
+      "requirement": "4 extraction mechanism repair",
+      "state": "partially proved",
+      "evidence": "Frozen v29/v30 frames correct quoted perspective and embedded-report duplication; one live v30 nested example improved"
+    },
+    {
+      "requirement": "5 coherent source review and disagreement",
+      "state": "partially proved",
+      "evidence": "Shared bound validator, required dimensions and raw contradictions/uncertainty fail closed; live reliability still unresolved"
+    },
+    {
+      "requirement": "6 Korean semantic fidelity",
+      "state": "incomplete",
+      "evidence": "Nested perspective improved; omitted-subject review still unresolved in v29; current v30 profile-wide data absent"
+    },
+    {
+      "requirement": "7 exact evidence and Unicode",
+      "state": "proved for implemented gate",
+      "evidence": "Existing Unicode/overlap tests and exact-source checks pass; anchors not treated as entailment"
+    },
+    {
+      "requirement": "8 validation blind spots and authority",
+      "state": "partially proved",
+      "evidence": "Worker/evaluation/replay share source validator; source-free helper refuses bound profiles; duplicate dimension required in v30; semantic false accepts remain a measured risk"
+    },
+    {
+      "requirement": "9 budget",
+      "state": "proved; next paid validation needs new authorization",
+      "evidence": "Same ledger; 40 settled requests; ceiling unchanged 4882653350 nanos; remaining 2945300 vs next reserve 4491800"
+    },
+    {
+      "requirement": "10 fair evaluation with all denominators",
+      "state": "proved for reported observations; acceptance incomplete",
+      "evidence": "All six new calls retained; failed trace stops at unresolved atomicity; missing/profile-unreviewed cases not credited"
+    },
+    {
+      "requirement": "11 implementation invariants",
+      "state": "proved for exercised boundaries",
+      "evidence": "No migration/dependency; user-only exact-hash publication/lifecycle/authority and DeepSeek tests pass"
+    },
+    {
+      "requirement": "12 required verification",
+      "state": "proved",
+      "evidence": "48 Rust + 40 Python passing; fmt/clippy exit 0; saved receipts and failure prefix replayed"
+    },
+    {
+      "requirement": "13 report and logical commits",
+      "state": "proved for delivery; completion gate unproved",
+      "evidence": "05dc0a1 and 78b93c2 implementation; reports/phase-3-semantic-repair.md links current report; no phase-3 tag"
+    }
+  ],
+  "missing_acceptance": [
+    "source and repeated reviews of current v30 corrected nested extraction",
+    "complete passing current-profile reader/three-review trace and relevant proposition coverage",
+    "current-profile priority/held-out Korean fidelity and false-acceptance evidence",
+    "independent adjudication unavailable; cannot substitute model agreement"
+  ],
+  "additional_budget_proposal_applied": false
+}

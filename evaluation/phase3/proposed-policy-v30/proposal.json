@@ -1,0 +1,17 @@
+{
+  "status": "INERT; explicit additional user approval required",
+  "user_authorized": false,
+  "additional_capacity_nanos": 50000000,
+  "old_ceiling_nanos": 4882653350,
+  "proposed_ceiling_nanos": 4932653350,
+  "global_strict_below_nanos": 5000000000,
+  "prior_unchanged_nanos": 4782653350,
+  "historical_requests_unchanged": true,
+  "existing_ledger_used": true,
+  "scope": "Remaining Phase 3 semantic validation through the existing direct Anthropic adapter; no alternate account or budget reset",
+  "verification": {
+    "patch_check_exit_code": 0,
+    "sql_on_private_copy_passed": true,
+    "real_ledger_unchanged": true
+  }
+}

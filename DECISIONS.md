@@ -753,3 +753,24 @@ are not recalculated. Reservation reductions are not reductions in actual token
 prices or historical spending. All 33 prior requests' token usage fit the new bound
 at current verified prices. One formerly blocked review completed and passed at a
 $0.00264480 conservative usage upper bound; this does not establish Phase 3 acceptance.
+
+### D-85 — Worker and evaluators must share the source-bound review protocol
+V24+ source reviews are not old reader-checklist objects. The live evaluator and
+archived-output revalidator now call the worker's public source-aware validator;
+full gate eligibility includes the complete group and disagreement checks. The
+source-free proposal-review helper refuses bound profiles. Offline replay reports
+an actual failed prefix before an incomplete-group error, matching worker failure
+behavior, and never fabricates later review calls. Original results remain intact.
+
+### D-86 — Preserve assertion layers and distinguish canonical context from truth
+V29 replaces an extraction example that itself left a quoted narrator possessive
+unbound in the second Claim. It uses full original-Source review context and unique
+verbatim original clauses for inventory identity. Exact context and literal clauses
+do not prove correct semantics: a v29 review still counted a relay and its embedded
+report separately. V30 requires an explicit duplicates dimension and tells extraction
+to keep the complete attribution chain without emitting its redundant inner report.
+It also separates a linguistic original-narrator role from authenticated-user identity.
+A live v30 nested example produces two faithful editorially inspected core Claims
+with unknown speaker metadata, but has not completed source review or independent
+adjudication. No current-profile semantic acceptance, production default change or
+Phase 3 tag follows from this isolated improvement.

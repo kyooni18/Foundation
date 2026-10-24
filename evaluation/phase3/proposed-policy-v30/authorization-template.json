@@ -1,0 +1,7 @@
+{
+  "provider": "anthropic_direct",
+  "explicit_user_authorization": false,
+  "authorization_reference": "PENDING USER APPROVAL; not permission to dispatch",
+  "additional_limit_nanos": 150000000,
+  "strict_total_below_nanos": 5000000000
+}

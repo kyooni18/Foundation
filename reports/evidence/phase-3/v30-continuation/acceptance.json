@@ -1,0 +1,46 @@
+{
+  "status": "incomplete; v30 extraction improved but current-profile semantic acceptance unproved",
+  "starting_commit": "8ffe895",
+  "implementation_commits": [
+    "05dc0a1",
+    "78b93c2"
+  ],
+  "previous_turn_classification": "progress: 8992fb1/8ffe895 changed reservation policy and settled a new targeted review",
+  "this_turn_classification": "progress: source-bound evaluator parity, canonical context protocol, fixed nested extraction, live failed-prefix evidence",
+  "extraction_requests_this_turn": 3,
+  "source_reviews_this_turn": 2,
+  "standalone_reads_this_turn": 1,
+  "generated_claims_this_turn": 6,
+  "complete_responses_this_turn": 6,
+  "truncated_this_turn": 0,
+  "new_usage_upper_nanos": 8311700,
+  "source_review_verdicts": [
+    "unresolved",
+    "unresolved"
+  ],
+  "standalone_verdict": "pass",
+  "v30_nested_generated_claims": 2,
+  "v30_nested_editorial_inspection": "two independent supported core propositions; narrator-owned quoted perspective and report chain retained; no invented group contents/team or redundant inner report; speaker metadata unknown",
+  "independent_adjudication": false,
+  "complete_passing_current_profile_traces": 0,
+  "production_approvals": 0,
+  "current_profile_default_promoted": false,
+  "completion_tag_created": false,
+  "next_required_review_reservation_nanos": 4491800,
+  "ledger": {
+    "ceiling_nanos": 4882653350,
+    "cumulative_upper_nanos": 4879708050,
+    "prior_nanos": 4782653350,
+    "provider_billed_usd": null,
+    "recorded_upper_nanos": 97054700,
+    "remaining_nanos": 2945300,
+    "requests": 40,
+    "unsettled": 0
+  },
+  "proposal": "evaluation/phase3/proposed-policy-v30",
+  "proposal_applied": false,
+  "old_tags": {
+    "phase-1": "50dbccb34fc3b5960fe02de2af56c8c33f7b5916",
+    "phase-2": "ec11625f53f1bc12cb1f9e3e9849044f8e0d7d0d"
+  }
+}

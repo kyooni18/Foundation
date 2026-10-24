@@ -1,0 +1,26 @@
+{
+  "implementation_commit": "78b93c2",
+  "checks": [
+    {
+      "command": "cargo test --offline --all-targets",
+      "exit_code": 0,
+      "passed": 48,
+      "ignored_subprocess_workers": 2
+    },
+    {
+      "command": "cargo fmt --check",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo clippy --offline --all-targets -- -D warnings",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'",
+      "exit_code": 0,
+      "passed": 40
+    }
+  ],
+  "historical_o8000_replay_byte_identical": true,
+  "independent_semantic_proof": false
+}

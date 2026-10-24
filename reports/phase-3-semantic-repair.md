@@ -1,5 +1,16 @@
 # Phase 3 semantic repair — acceptance remains incomplete (2026-10-24)
 
+## Current continuation
+
+The latest continuation (`05dc0a1`, `78b93c2`) fixes source-aware evaluation parity
+and produces a faithful two-Claim nested-report candidate under v30. A complete
+passing current-profile review trace is still missing. Cumulative conservative
+accounting is $4.87970805; $0.00294530 remains under the unchanged ceiling. The next
+source review requires $0.00449180. The $0.05 capacity proposal is inert and unapplied.
+See `reports/phase-3-v30-continuation.md` and
+`reports/evidence/phase-3/v30-continuation/completion-audit.json` for current state.
+Phase 3 is not complete, tagged or promoted.
+
 ## Reservation follow-up
 
 Commit `8992fb1` removes duplicate reservation padding and uses the request's actual
