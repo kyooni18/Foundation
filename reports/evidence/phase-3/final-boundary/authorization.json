@@ -1,0 +1,7 @@
+{
+  "provider": "anthropic_direct",
+  "explicit_user_authorization": true,
+  "authorization_reference": "Human approved pending final headroom: \ub410\uc73c\ub2c8\uae4c \uadf8\ub0e5 \uc880 \ud574",
+  "additional_limit_nanos": 217346640,
+  "strict_total_below_nanos": 5000000000
+}

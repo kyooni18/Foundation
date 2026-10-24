@@ -1,6 +1,6 @@
 """Focused evaluator; never extraction or publication. Default CLI is offline.
 
-Uses the existing Rust ledger schema and authorized $4.98265335 hard ceiling. Authorization
+Uses the existing Rust ledger schema and authorized $4.99999999 hard ceiling. Authorization
 is necessary, never sufficient: no policy amendment or ledger provisioning here.
 Unknown outcomes retain reservations. All prices use Decimal, rounded upward.
 """
@@ -15,8 +15,8 @@ import urllib.request
 import focused_review as focused
 
 MODEL = 'anthropic/claude-haiku-5.5'
-LIMIT = 4_982_653_350
-CONTINUATION = 200_000_000
+LIMIT = 4_999_999_990
+CONTINUATION = 217_346_640
 OUTPUT = 2400
 PACKETS = focused.ROOT / 'reports/evidence/phase-3/focused-continuation/replay/packets.json'
 PACKETS_HASH = '5882ef42d5435a1b23f03235e18275ed00d3b34f7092f61c1474f70c1c00f753'
