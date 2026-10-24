@@ -48,6 +48,24 @@ def replay(evidence):
         request=load(path)
         ident=request['id']
         response_path=evidence/(ident+'.response.json')
+        if not response_path.is_file():
+            body=request['payload'];payload=focused.parse_judgment(body['messages'][0]['content'])
+            reader=request.get('reader_index') is not None
+            case=source_hashes[request['source_sha256']]
+            version=ident.split('-')[3]
+            expected=(repair.reader_body(payload['claim_text'],version) if reader else
+                repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
+                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),
+                    request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version=='v39' else None))
+            budget.require(body==expected and api.quote(body)==request['quote'],'pending request recipe drift')
+            error_path=evidence/(ident+'.transport-error.json')
+            rows.append(dict(id=ident,case=case['id'],kind='reader' if reader else 'review',version=version,
+                complete=False,protocol_valid=False,pending_reservation=True,model_response=False,
+                conservative_upper_nanos=request['quote']['estimate'],
+                request_sha256=focused.sha(path.read_bytes()),payload_sha256=request_identity(body),
+                transport_error=load(error_path) if error_path.exists() else None,
+                failure_reason='no model response; reservation retained; no completion inferred',production_approval=False))
+            continue
         response=load(response_path)
         usage=api.conservative_usage(response)
         budget.require(usage==load(evidence/(ident+'.accounting.json')),'accounting drift')
@@ -76,7 +94,7 @@ def replay(evidence):
             version=ident.split('-')[3]
             expected=(repair.reader_body(payload['claim_text'],version) if reader else
                 repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
-                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens')))
+                    request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version=='v39' else None))
             budget.require(body==expected,'incomplete request recipe drift')
             reason='stop_reason:'+str(response['stop_reason'])
             budget.require(rejected and saved['status']=='incomplete' and saved['reason']==reason,
@@ -111,7 +129,7 @@ def replay(evidence):
             version=ident.split('-')[3]
             packet=dict(case=case,candidate=payload['candidate_batch'])
             expected=repair.body(packet,version,request.get('review_stage',repair.STAGES['fidelity']),
-                                 request.get('review_effort','low'),request.get('review_output_tokens'))
+                                 request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version=='v39' else None)
             budget.require(body==expected,'review request recipe drift')
             judgment=focused.parse_judgment(raw_text(response))
             try:
@@ -170,8 +188,10 @@ def replay(evidence):
         ceiling,prior=conn.execute('SELECT ceiling,prior FROM budget').fetchone()
         charge,unsettled,count=conn.execute('SELECT SUM(COALESCE(actual,estimate)),SUM(actual IS NULL),COUNT(*) FROM request').fetchone()
         for row in rows:
-            actual=conn.execute('SELECT actual FROM request WHERE id=?',(row['id'],)).fetchone()
-            budget.require(actual and actual[0]==row['conservative_upper_nanos'],'ledger receipt mismatch')
+            actual=conn.execute('SELECT actual,estimate FROM request WHERE id=?',(row['id'],)).fetchone()
+            if row.get('pending_reservation'):
+                budget.require(actual and actual[0] is None and actual[1]==row['conservative_upper_nanos'],'pending reservation mismatch')
+            else:budget.require(actual and actual[0]==row['conservative_upper_nanos'],'ledger receipt mismatch')
     finally:
         conn.close()
     return dict(status='diagnostic_replay_only',independent_semantic_ground_truth=False,

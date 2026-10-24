@@ -1,0 +1,9 @@
+{
+  "status": 400,
+  "error_type": "HTTPError",
+  "response_body": null,
+  "body_unavailable": true,
+  "observed_by": "Codex exec session 78530 terminal exit 1",
+  "reservation_retained": true,
+  "production_approval": false
+}

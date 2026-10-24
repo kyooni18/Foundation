@@ -16,7 +16,8 @@ def prompt(stage):
     dims=json.dumps(d['dimensions'],ensure_ascii=False,separators=(',',':'))
     return (ROOT/'review.txt').read_text()+f'\nACTIVE responsibility: {stage}.\nACTIVE dimensions: {dims}.\nInventory responsibility: '+str(d['inventory']).lower()+'.\n'+d['question']
 
-def schema(packet,stage):
+def schema(packet,stage,wire_revision='supported-v2'):
+    g.require(wire_revision in {'unsupported-v1','supported-v2'},'unknown faceted wire schema')
     d=spec(stage);source=packet['case']['source'];claims=packet['candidate']['claims'];n=len(claims)
     status={'type':'string','enum':['pass','reject','unresolved']}
     string={'type':'string'};strings={'type':'array','items':string}
@@ -37,11 +38,21 @@ def schema(packet,stage):
     if not d['inventory']:inventory['maxItems']=0
     props=dict(stage={'type':'string','enum':[stage]},verdict=status,uncertainty_flags=strings,
         claims={'type':'array','minItems':n,'maxItems':n,'items':{'type':'object','additionalProperties':False,'properties':fields,'required':list(fields)}},inventory=inventory)
-    return {'type':'object','additionalProperties':False,'properties':props,'required':list(props)}
+    result={'type':'object','additionalProperties':False,'properties':props,'required':list(props)}
+    if wire_revision=='supported-v2':
+        def portable(value):
+            if isinstance(value,dict):
+                value.pop('maxItems',None)
+                if 'minItems' in value:value['minItems']=min(value['minItems'],1)
+                for child in value.values():portable(child)
+            elif isinstance(value,list):
+                for child in value:portable(child)
+        portable(result)
+    return result
 
-def body(packet,stage,model):
+def body(packet,stage,model,wire_revision='supported-v2'):
     payload=dict(original_source=packet['case']['source'],candidate_batch=packet['candidate'],authored_at=packet['case'].get('authored_at'),candidate_count=len(packet['candidate']['claims']),required_checked_indices=list(range(len(packet['candidate']['claims']))))
-    return dict(model=model,max_tokens=6000,system=prompt(stage),messages=[dict(role='user',content=f.canonical(payload).decode())],output_config=dict(effort='low',format=dict(type='json_schema',schema=schema(packet,stage))),service_tier='standard_only')
+    return dict(model=model,max_tokens=6000,system=prompt(stage),messages=[dict(role='user',content=f.canonical(payload).decode())],output_config=dict(effort='low',format=dict(type='json_schema',schema=schema(packet,stage,wire_revision))),service_tier='standard_only')
 
 def check(j,packet,stage,shape):
     g.require(stage is not None,'review responsibility binding required');d=spec(stage);shape(j,schema(packet,stage))

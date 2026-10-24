@@ -62,7 +62,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
     for key,stage in review.stages(review_version).items():
         if stop_stage is not None:
             break
-        source_id=prefix+('' if key=='fidelity' else '-'+key)+(('-output-'+str(review_output_tokens)) if review_output_tokens else '')+'-primary'
+        source_id=prefix+('' if key=='fidelity' else '-'+key)+(('-output-'+str(review_output_tokens)) if review_output_tokens else '')+('-schema-v2' if review_version=='v39' else '')+'-primary'
         saved=read(evidence/(source_id+'.request.json'))
         budget.require(saved['payload']==review.body(packet,review_version,stage,output_tokens=review_output_tokens),'source review request drift')
         text=response_text(evidence/(source_id+'.response.json'))

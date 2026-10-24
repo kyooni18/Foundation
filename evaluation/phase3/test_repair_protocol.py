@@ -97,6 +97,14 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertEqual(structured['max_tokens'],6000)
         self.assertEqual(structured['system'],faceted_review.prompt(active))
         self.assertEqual(len(repair.stages('v39')),9)
+        def supported_arrays(value):
+            if isinstance(value,dict):
+                self.assertNotIn('maxItems',value)
+                self.assertIn(value.get('minItems',0),[0,1])
+                for child in value.values():supported_arrays(child)
+            elif isinstance(value,list):
+                for child in value:supported_arrays(child)
+        supported_arrays(structured['output_config']['format']['schema'])
         facet=dict(stage=active,verdict='pass',uncertainty_flags=[],inventory=[],claims=[dict(index=i,text=c['text'],evidence=[dict(quote=source)],source_meaning=c['text'],candidate_meaning=c['text'],dimensions=dict(entailment=dict(status='pass',reason='Synthetic exact support')),differences=[],uncertainty_flags=[]) for i,c in enumerate(packet['candidate']['claims'])])
         self.assertEqual(repair.check(facet,packet,'v39',stage=active)['verdict'],'pass')
         with self.assertRaisesRegex(ValueError,'responsibility binding'):

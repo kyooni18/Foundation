@@ -6,6 +6,7 @@ Never publishes or approves Claims. No retries, fallback, or alternate billing a
 import argparse
 import json
 import os
+import urllib.error
 from pathlib import Path
 
 import focused_review as focused
@@ -58,11 +59,11 @@ STAGES={'atomicity':'atomicity and independence','fidelity':'semantic fidelity a
 def stages(version):
     return faceted_review.stages() if version=='v39' else STAGES
 
-def body(packet, version, stage=None, effort='low', output_tokens=None):
+def body(packet, version, stage=None, effort='low', output_tokens=None, schema_revision=None):
     stage=stage or stages(version)['fidelity']
     if version=='v39':
         budget.require(effort=='low' and output_tokens in {None,6000},'unsupported faceted configuration')
-        return faceted_review.body(packet,stage,api.MODEL)
+        return faceted_review.body(packet,stage,api.MODEL,schema_revision or 'supported-v2')
     budget.require(output_tokens is None or (version in {'v34','v35','v36','v37','v38','v39'} and output_tokens==6000), 'unsupported review response budget')
     budget.require(effort=='low' or (effort=='medium' and version=='v31'),
                    'unsupported diagnostic effort')
@@ -221,6 +222,8 @@ def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['f
     if output_tokens is not None:
         budget.require(reader_index is None, 'Source review response budget only')
         label+='-output-'+str(output_tokens)
+    if version=='v39' and reader_index is None:
+        label+='-schema-v2'
     ident='focused-haiku-repair-'+version+'-'+packet['case']['id']+label+'-primary'
     key=os.environ.get('ANTHROPIC_API_KEY')
     budget.require(key and len(key)<1024 and '\n' not in key and '\r' not in key,
@@ -245,12 +248,22 @@ def dispatch(packet, evidence, authorization, version, label='', stage=STAGES['f
         budget.immutable(evidence/(ident+'.request.json'),dict(id=ident,payload=request,
             packet_sha256=focused.sha(focused.canonical(packet)),
             source_sha256=focused.sha(packet['case']['source'].encode()),
-            review_validation_version='source-checks-v6',review_stage=stage,review_effort=effort,review_output_tokens=output_tokens,reader_index=reader_index,prompt_sha256=focused.sha(
+            schema_revision='supported-v2' if version=='v39' else None,review_validation_version='source-checks-v6',review_stage=stage,review_effort=effort,review_output_tokens=output_tokens,reader_index=reader_index,prompt_sha256=focused.sha(
             (focused.ROOT/f"prompts/extraction-{version}/{'review' if reader_index is None else 'reader'}.txt").read_bytes()),
             system_sha256=focused.sha(request['system'].encode()),
             model_info=model,quote=quote,authorization=authorization))
         conn.commit()
-        response=d.transport('POST','/v1/messages',request)
+        try:
+            response=d.transport('POST','/v1/messages',request)
+        except (urllib.error.HTTPError,urllib.error.URLError,TimeoutError) as error:
+            detail=None
+            if isinstance(error,urllib.error.HTTPError):
+                raw=error.read(4*1024*1024+1)
+                detail=raw[:4*1024*1024].decode('utf-8',errors='replace').replace(key,'[REDACTED_API_KEY]')
+            budget.immutable(evidence/(ident+'.transport-error.json'),dict(
+                status=getattr(error,'code',None),error_type=type(error).__name__,response_body=detail,
+                reservation_retained=True,production_approval=False))
+            raise ValueError('provider transport failure; reservation retained; no automatic retry') from None
         budget.immutable(evidence/(ident+'.response.json'),response)
         usage=api.conservative_usage(response)
         budget.require(isinstance(response.get('id'),str) and 0<len(response['id'])<=256,
