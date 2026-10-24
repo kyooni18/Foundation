@@ -280,11 +280,15 @@ pub(super) fn validate(
     }
 }
 
-pub(super) fn inventory_signature(raw: &str) -> Result<Value> {
+pub(super) fn inventory_signature(raw: &str, unordered: bool) -> Result<Value> {
     let v = super::json::parse(raw).map_err(|_| invalid("schema", "invalid review JSON"))?;
-    Ok(Value::Array(v["inventory"].as_array().expect("validated inventory").iter().map(|i|serde_json::json!({
+    let mut rows:Vec<Value>=v["inventory"].as_array().expect("validated inventory").iter().map(|i|serde_json::json!({
         "proposition":i["proposition"],"evidence":i["evidence"],"claim_indices":if let Some(index)=i.get("claim_index") {if index.is_null() {serde_json::json!([])} else {serde_json::json!([index])}} else {i["claim_indices"].clone()},"status":i["status"]
-    })).collect()))
+    })).collect();
+    if unordered {
+        rows.sort_by_cached_key(Value::to_string);
+    }
+    Ok(Value::Array(rows))
 }
 
 pub(super) const DEFINITIONS_42: &str = include_str!("../../prompts/extraction-v42/facets.json");

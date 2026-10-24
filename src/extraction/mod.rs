@@ -1043,8 +1043,11 @@ pub fn validate_proposal_reviews_bound(
             | "extraction-v46"
             | "extraction-v47"
     ) {
-        if review_v39::inventory_signature(&reviews[n])?
-            != review_v39::inventory_signature(reviews.last().expect("complete reviews"))?
+        if review_v39::inventory_signature(&reviews[n], plan.version() == "extraction-v47")?
+            != review_v39::inventory_signature(
+                reviews.last().expect("complete reviews"),
+                plan.version() == "extraction-v47",
+            )?
         {
             return Err(invalid("unresolved", "independent inventory disagreement"));
         }

@@ -1809,6 +1809,20 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     assert!(
         validate_proposal_reviews_bound(&grouped_plan, &grouped_reports, &batch, &source).is_ok()
     );
+    let mut reordered: Value = serde_json::from_str(grouped_reports.last().unwrap()).unwrap();
+    reordered["inventory"].as_array_mut().unwrap().reverse();
+    let original_last = grouped_reports.last().unwrap().clone();
+    *grouped_reports.last_mut().unwrap() = reordered.to_string();
+    assert!(
+        validate_proposal_reviews_bound(&grouped_plan, &grouped_reports, &batch, &source).is_ok()
+    );
+    reordered["inventory"][0]["claim_index"] = json!(0);
+    reordered["inventory"][1]["claim_index"] = json!(1);
+    *grouped_reports.last_mut().unwrap() = reordered.to_string();
+    assert!(
+        validate_proposal_reviews_bound(&grouped_plan, &grouped_reports, &batch, &source).is_err()
+    );
+    *grouped_reports.last_mut().unwrap() = original_last;
     let mut omitted: Value = serde_json::from_str(&grouped_reports[3]).unwrap();
     omitted["claims"][0]["dimensions"]
         .as_object_mut()
