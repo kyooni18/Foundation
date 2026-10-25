@@ -1,0 +1,9 @@
+{
+  "bind": "127.0.0.1:8790",
+  "public_host": "auth.example.com",
+  "path": "/realms/radiant/clients-registrations/openid-connect",
+  "upstream": "https://private-keycloak.example.com/realms/radiant/clients-registrations/openid-connect",
+  "initial_access_token_file": "/credentials/registration-initial.token",
+  "registry": "/credentials/dcr-clients.db",
+  "chatgpt_callback_uris": []
+}

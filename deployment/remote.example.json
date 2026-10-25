@@ -1,0 +1,27 @@
+{
+  "resource": "https://memory.example.com/mcp",
+  "issuer": "https://auth.example.com/realms/radiant",
+  "discovery_url": "https://auth.example.com/realms/radiant/.well-known/openid-configuration",
+  "jwks_uri": "https://auth.example.com/realms/radiant/protocol/openid-connect/certs",
+  "introspection": {
+    "endpoint": "https://auth.example.com/realms/radiant/protocol/openid-connect/token/introspect",
+    "client_id": "https://memory.example.com/mcp",
+    "secret_file": "/credentials/introspection.secret"
+  },
+  "bind": "127.0.0.1:8787",
+  "keys": "/credentials/remote-keys.db",
+  "bindings": [
+    {
+      "subject": "REPLACE_WITH_YOUR_IMMUTABLE_OAUTH_SUBJECT",
+      "client_id": "https://chatgpt.com/oauth/client.json",
+      "kind": "agent",
+      "label": "ChatGPT"
+    },
+    {
+      "subject": "REPLACE_WITH_YOUR_IMMUTABLE_OAUTH_SUBJECT",
+      "client_id": "https://claude.ai/oauth/mcp-oauth-client-metadata",
+      "kind": "agent",
+      "label": "Claude"
+    }
+  ]
+}

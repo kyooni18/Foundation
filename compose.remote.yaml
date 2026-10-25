@@ -1,0 +1,24 @@
+# Explicit opt-in overlay. Reuses the existing DB owner and all named volumes.
+# A named Cloudflare Tunnel reaches ONLY the public router, not /v1 or the DB.
+services:
+  radiant:
+    environment:
+      REMOTE_MCP: "on"
+      REMOTE_CONFIG_FILE: ""
+      MCP_HTTP_PORT: "8787"
+  mcp-tunnel:
+    image: cloudflare/cloudflared:2026.10.0
+    profiles: [remote]
+    network_mode: service:radiant
+    depends_on:
+      radiant:
+        condition: service_healthy
+    command: [tunnel, --no-autoupdate, run, --token-file, /run/secrets/mcp_tunnel_token]
+    secrets: [mcp_tunnel_token]
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    restart: unless-stopped
+secrets:
+  mcp_tunnel_token:
+    file: ${MCP_TUNNEL_TOKEN_FILE:?Set the path to the private Cloudflare tunnel token file}

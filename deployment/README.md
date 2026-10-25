@@ -4,6 +4,9 @@ Run commands from `~/Code/PrimeRadiant`. Docker must be running. No host HTTP po
 published; the API remains `127.0.0.1:7823` **inside** the container. Restart policy is
 `no`; nothing starts at login. macOS Metal is not available to Linux containers.
 
+For opt-in public MCP with OAuth/API keys, see [the remote deployment guide](../REMOTE_MCP.md)
+and [observed compatibility results](../reports/remote-mcp-verification.md).
+
 ## First run
 
 ```sh

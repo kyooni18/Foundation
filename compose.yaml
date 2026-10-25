@@ -11,6 +11,8 @@ services:
       EXTRACTION_MODEL: ${EXTRACTION_MODEL:-}
       EXTRACTION_REVIEWER: ${EXTRACTION_REVIEWER:-}
       EXTRACTION_PROMPT_VERSION: ${EXTRACTION_PROMPT_VERSION:-}
+      # Remote MCP is opt-in; see compose.remote.yaml.
+      MCP_HTTP_PORT: ${MCP_HTTP_PORT:-8787}
       OPENROUTER_API_KEY_FILE: /credentials/openrouter-key
       PRIMERADIANT_OPENROUTER_LEDGER: /credentials/budget.db
     volumes:

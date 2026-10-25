@@ -18,6 +18,12 @@ if [ "$1" = serve ]; then
   esac
   test -s /credentials/registry.json || { echo 'Run compose run --rm radiant init first' >&2; exit 1; }
   set -- serve --credentials /credentials/registry.json
+  if [ "${REMOTE_MCP:-off}" = on ]; then
+    test -s /credentials/remote.json || { echo 'Provision /credentials/remote.json (0600) first' >&2; exit 1; }
+    python3 -c 'import json,os; c=json.load(open("/credentials/remote.json")); assert c["bind"].rsplit(":",1)[-1] == os.environ.get("MCP_HTTP_PORT","8787"), "remote MCP port mismatch"'
+    set -- "$@" --remote-config /credentials/remote.json
+  fi
+
   if [ -n "${EXTRACTION_MODEL:-}" ] || [ -n "${EXTRACTION_REVIEWER:-}" ]; then
     test -n "${EXTRACTION_MODEL:-}" && test -n "${EXTRACTION_REVIEWER:-}"
     test -s /credentials/openrouter-key && test -s /credentials/budget.db

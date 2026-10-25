@@ -23,6 +23,28 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     Init,
+    /// Initialize a separate private remote API key registry (never overwrites).
+    RemoteKeyInit {
+        path: PathBuf,
+    },
+    RemoteKeyList { path: PathBuf },
+    /// Print one new remote API key ONCE; redirect stdout to a private file.
+    RemoteKeyIssue {
+        path: PathBuf,
+        #[arg(long)]
+        kind: PrincipalKind,
+        #[arg(long)]
+        label: String,
+        #[arg(long, default_value = "memory.read memory.write memory.forget")]
+        scopes: String,
+        /// Unix timestamp, mandatory.
+        #[arg(long)]
+        expires: i64,
+    },
+    RemoteKeyRevoke {
+        path: PathBuf,
+        id: String,
+    },
     /// Create a new persistent spending ledger; never resets an existing ledger.
     BudgetInit {
         path: PathBuf,
@@ -83,6 +105,9 @@ enum Command {
     },
     /// Own the DB and serve the authenticated loopback API.
     Serve {
+        /// Opt-in public MCP listener; private 0600 JSON configuration.
+        #[arg(long)]
+        remote_config: Option<PathBuf>,
         #[arg(long)]
         credentials: PathBuf,
         #[arg(long, default_value = "127.0.0.1:7823")]
@@ -221,6 +246,31 @@ fn output(value: impl serde::Serialize) {
 fn run() -> Result<()> {
     let cli = Cli::parse();
     match &cli.command {
+        Command::RemoteKeyInit { path } => {
+            prime_radiant::transport::remote::key_init(path)?;
+            return Ok(());
+        }
+        Command::RemoteKeyList { path } => {
+            output(prime_radiant::transport::remote::key_list(path)?);
+            return Ok(());
+        }
+        Command::RemoteKeyIssue {
+            path,
+            kind,
+            label,
+            scopes,
+            expires,
+        } => {
+            println!(
+                "{}",
+                prime_radiant::transport::remote::key_issue(path, *kind, label, scopes, *expires)?
+            );
+            return Ok(());
+        }
+        Command::RemoteKeyRevoke { path, id } => {
+            prime_radiant::transport::remote::key_revoke(path, id)?;
+            return Ok(());
+        }
         Command::BudgetInit {
             path,
             limit_usd,
@@ -288,6 +338,7 @@ fn run() -> Result<()> {
         return Ok(());
     }
     if let Command::Serve {
+        remote_config,
         credentials,
         bind,
         extraction_model,
@@ -328,6 +379,17 @@ fn run() -> Result<()> {
             let revalidation = service.start_revalidation_worker();
             let indexing = service.start_index_workers();
             let listener = prime_radiant::transport::http::bind(bind).await?;
+            let remote = if let Some(path) = remote_config {
+                let config = prime_radiant::transport::remote::Config::load(&path)?;
+                let remote_listener = tokio::net::TcpListener::bind(config.bind).await?;
+                let router =
+                    prime_radiant::transport::remote::router(service.clone(), config).await?;
+                Some(tokio::spawn(async move {
+                    axum::serve(remote_listener, router).await
+                }))
+            } else {
+                None
+            };
             eprintln!("listening {}", listener.local_addr()?);
             axum::serve(listener, prime_radiant::transport::http::router(service))
                 .with_graceful_shutdown(async {
@@ -348,6 +410,9 @@ fn run() -> Result<()> {
                 .await?;
             if let Some(worker) = worker {
                 worker.abort();
+            }
+            if let Some(remote) = remote {
+                remote.abort();
             }
             revalidation.abort();
             indexing.iter().for_each(|h| h.abort());
@@ -580,6 +645,10 @@ fn run() -> Result<()> {
             serde_json::json!({"resumed":app.resume_deferred(&Principal::for_local_cli(PrincipalKind::User, None, None), None)?}),
         ),
         Command::Restore { .. }
+        | Command::RemoteKeyInit { .. }
+        | Command::RemoteKeyList { .. }
+        | Command::RemoteKeyIssue { .. }
+        | Command::RemoteKeyRevoke { .. }
         | Command::Serve { .. }
         | Command::Mcp { .. }
         | Command::BudgetInit { .. }

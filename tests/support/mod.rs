@@ -48,7 +48,9 @@ impl Server {
         let mut child = Command::new(env!("CARGO_BIN_EXE_primeradiant"))
             .args(["--db"])
             .arg(root.join("db"))
-            .args(["serve", "--credentials"])
+            // Transport fixtures must not load host model files or use paid
+            // providers. Embedding behavior has separate deterministic tests.
+            .args(["--embedding", "off", "serve", "--credentials"])
             .arg(root.join("credentials"))
             .args(["--bind", "127.0.0.1:0"])
             .stdout(Stdio::piped())

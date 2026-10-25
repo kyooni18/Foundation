@@ -4,6 +4,10 @@
 backup/restore and verification](deployment/README.md). This deployment uses separate
 named volumes and never imports the development database automatically.
 
+**Opt-in remote MCP:** [OAuth/API keys, ChatGPT and Claude setup, HTTPS deployment,
+and compatibility status](REMOTE_MCP.md). Native consumer linking remains unverified;
+see the [observed test report](reports/remote-mcp-verification.md).
+
 Phase 4: knowledge integrity (dependency validity propagation, provenance, identity,
 temporal reads) over Phase 3's durable extraction, source-bound semantic gates and
 exact-hash user review, with immutable persistence, authenticated loopback HTTP, and stdio MCP.
