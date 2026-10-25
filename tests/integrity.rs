@@ -1491,3 +1491,151 @@ fn dependency_insertion_order_does_not_change_validity() {
     assert!(outcomes[0].iter().any(|s| s.starts_with("invalid")));
     assert!(outcomes[0].iter().any(|s| s == "valid"));
 }
+
+/// A database at schema v2 (Phase 3) with lifecycle history, extraction provenance,
+/// Claims, mentions and declarations migrates to v3 without losing or renumbering anything.
+#[test]
+fn phase3_database_migrates_losslessly_with_validity_and_backup() {
+    use rusqlite::params;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("db");
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    conn.execute_batch("PRAGMA foreign_keys=ON;").unwrap();
+    for (v, name, sql) in [
+        (1, "0001_init", include_str!("../src/store/migrations/0001_init.sql")),
+        (2, "0002_extraction", include_str!("../src/store/migrations/0002_extraction.sql")),
+    ] {
+        conn.execute_batch(sql).unwrap();
+        conn.execute(
+            "INSERT INTO schema_migration VALUES(?1,?2,?3,'2026-01-01T00:00:00.000Z')",
+            params![v, name, hash(sql)],
+        )
+        .unwrap();
+        conn.pragma_update(None, "user_version", v).unwrap();
+    }
+    let t = "2026-02-01T00:00:00.000Z";
+    let mut claims = Vec::new();
+    for (i, (recorder, session, text)) in [
+        ("user", None, "사용자 원문 👩‍💻 first."),
+        ("agent", Some("legacy-session"), "agent original\r\nsecond."),
+        ("import", None, "imported third."),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let source = format!("01K00000000000000000000S0{i}");
+        conn.execute("INSERT INTO source(id,recorder,session_id,content,content_sha256,media_type,captured_at,retention_request,request_digest) VALUES(?1,?2,?3,?4,?5,'text/plain',?6,'none',?5)",params![source,recorder,session,text,hash(text),t]).unwrap();
+        let job = format!("01K00000000000000000000J0{i}");
+        conn.execute("INSERT INTO job(id,kind,target_id,idem_key,state,attempts,run_after,created_at,updated_at) VALUES(?1,'extract',?2,?3,'done',1,?4,?4,?4)",params![job,source,format!("initial/{source}"),t]).unwrap();
+        conn.execute("INSERT INTO extraction_request(job_id,plan_json,prompt_hash,created_at) VALUES(?1,'{}','h',?2)",params![job,t]).unwrap();
+        conn.execute("INSERT INTO extraction_candidate VALUES(?1,?2,'{}',?3,'[]',?4)",params![format!("01K00000000000000000000C0{i}"),job,hash("{}"),t]).unwrap();
+        conn.execute("INSERT INTO extraction_run(job_id,source_id,extractor_id,output_hash,approval_actor,created_at) VALUES(?1,?2,'legacy',?3,'user',?4)",params![job,source,hash("{}"),t]).unwrap();
+        let claim = format!("01K00000000000000000000L0{i}");
+        conn.execute("INSERT INTO claim(id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,standing,extractor_id,job_id,created_at) VALUES(?1,?2,?3,'en','Fact','unknown','verbatim',0,?4,?3,0,'legacy',?5,?6)",params![claim,source,text,text.len(),job,t]).unwrap();
+        let first = text.chars().next().unwrap();
+        let span = json!({"start":0,"end":first.len_utf8()}).to_string();
+        conn.execute("INSERT INTO mention VALUES(?1,?2,?3,?4)",params![format!("01K00000000000000000000M0{i}"),claim,first.to_string(),span]).unwrap();
+        claims.push(claim);
+    }
+    // A pending job and an exhausted failure keep their operational state.
+    conn.execute("INSERT INTO job(id,kind,target_id,idem_key,state,attempts,run_after,last_error,created_at,updated_at) VALUES('01K00000000000000000000J09','extract','01K00000000000000000000S00','revision/x','failed',3,?1,'review_required',?1,?1)",[t]).unwrap();
+    conn.execute("INSERT INTO claim_dependency VALUES('01K00000000000000000000D01',?1,?2,'premise','system',?3)",params![claims[1],claims[0],t]).unwrap();
+    conn.execute("INSERT INTO claim_dependency VALUES('01K00000000000000000000D02',?1,?2,'informed_by','system',?3)",params![claims[2],claims[1],t]).unwrap();
+    for (seq, kind, target, event, actor) in [
+        (7, "source", "01K00000000000000000000S02", "retract", "user"),
+        (11, "claim", claims[0].as_str(), "confirm", "user"),
+        (12, "claim", claims[1].as_str(), "retract", "agent"),
+        (15, "source", "01K00000000000000000000S02", "restore", "user"),
+    ] {
+        conn.execute("INSERT INTO status_event VALUES(?1,?2,?3,?4,?5,'audit',?6)",params![seq,kind,target,event,actor,t]).unwrap();
+    }
+    let tables = [
+        "source",
+        "status_event",
+        "job",
+        "extraction_request",
+        "extraction_candidate",
+        "extraction_run",
+        "claim",
+        "mention",
+        "claim_dependency",
+        "schema_migration",
+    ];
+    let dump = |conn: &rusqlite::Connection, table: &str| -> Vec<String> {
+        let mut stmt = conn
+            .prepare(&format!("SELECT * FROM {table} ORDER BY rowid"))
+            .unwrap();
+        let n = stmt.column_count();
+        stmt.query_map([], |r| {
+            Ok((0..n)
+                .map(|i| format!("{:?}", r.get_ref(i).unwrap()))
+                .collect::<Vec<_>>()
+                .join("|"))
+        })
+        .unwrap()
+        .map(|row| row.unwrap())
+        .collect()
+    };
+    let before: Vec<Vec<String>> = tables.iter().map(|t| dump(&conn, t)).collect();
+    drop(conn);
+
+    let app = App::open(&path).unwrap();
+    assert!(app.verify_integrity().unwrap().ok);
+    let conn = synthetic::connect(&path);
+    assert_eq!(
+        conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0)).unwrap(),
+        3
+    );
+    for (table, old) in tables.iter().zip(&before) {
+        let new = dump(&conn, table);
+        if *table == "schema_migration" {
+            assert_eq!(&new[..2], &old[..]);
+            assert_eq!(new.len(), 3);
+            let name: String = conn
+                .query_row("SELECT name FROM schema_migration WHERE version=3", [], |r| r.get(0))
+                .unwrap();
+            assert_eq!(name, "0003_knowledge_integrity");
+        } else {
+            assert_eq!(&new, old, "{table}");
+        }
+    }
+    // Validity is derived for legacy Claims: the agent-retracted Claim invalidates nothing
+    // mandatory beyond itself; its advisory dependent becomes uncertain, not invalid.
+    assert_eq!(short(&path, &claims[0]), "valid");
+    assert_eq!(short(&path, &claims[1]), "invalid:retracted");
+    assert_eq!(short(&path, &claims[2]), "needs_revalidation:advisory_invalid");
+    // New events continue after the preserved maximum sequence number.
+    app.set_claim_status(&user(), &claims[1], "restore").unwrap();
+    assert_eq!(
+        conn.query_row("SELECT max(seq) FROM status_event", [], |r| r.get::<_, i64>(0)).unwrap(),
+        16
+    );
+    assert_eq!(short(&path, &claims[2]), "valid");
+    // Constraints, foreign keys and append-only triggers are in force after the rebuild.
+    for sql in [
+        "UPDATE status_event SET reason='x'",
+        "DELETE FROM claim_dependency",
+        "UPDATE claim SET text='x'",
+        "INSERT INTO claim_dependency VALUES('Z','missing','missing','premise','user','t')",
+        "INSERT INTO status_event(target_kind,target_id,event,actor,created_at) VALUES('dependency','missing','retract','user','t')",
+        "INSERT INTO job(id,kind,target_id,idem_key,state,run_after,created_at,updated_at) VALUES('Z','revalidate','missing','k','pending','t','t','t')",
+        "UPDATE job SET kind='revalidate'",
+        "INSERT INTO source_citation VALUES('Z','01K00000000000000000000S00','01K00000000000000000000S01','agent','t')",
+    ] {
+        assert!(conn.execute(sql, []).is_err(), "{sql}");
+    }
+    // The pre-migration backup is a verified v2 snapshot with identical authoritative rows.
+    let backup = std::fs::read_dir(dir.path())
+        .unwrap()
+        .map(|e| e.unwrap().path())
+        .find(|p| p.to_string_lossy().contains(".pre-v3.") && p.extension().is_some_and(|x| x == "bak"))
+        .unwrap();
+    let old = rusqlite::Connection::open(backup).unwrap();
+    assert_eq!(
+        old.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0)).unwrap(),
+        2
+    );
+    for (table, rows) in tables.iter().zip(&before) {
+        assert_eq!(&dump(&old, table), rows, "{table}");
+    }
+}

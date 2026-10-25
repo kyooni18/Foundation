@@ -379,3 +379,8 @@ impl crate::App {
         Ok(validity::oracle(&tx)?.len())
     }
 }
+/// Diagnostic over a raw connection (e.g. a database inspected after a crash, before an App
+/// repairs derived tables): Claims whose materialized validity differs from the oracle.
+pub fn validity_mismatches_on(conn: &Connection) -> Result<Vec<String>> {
+    validity::mismatches(conn)
+}

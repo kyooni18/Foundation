@@ -131,3 +131,57 @@ pub fn connect(path: &std::path::Path) -> Connection {
     conn.execute_batch("PRAGMA foreign_keys=ON;").unwrap();
     conn
 }
+/// A schema-v2 (Phase 3) database built with the original migration SQL, holding
+/// `sources * per` Claims in premise chains plus lifecycle history.
+pub fn v2_fixture(path: &std::path::Path, sources: usize, per: usize) {
+    let mut conn = Connection::open(path).unwrap();
+    conn.execute_batch("PRAGMA foreign_keys=ON;").unwrap();
+    let tx = conn.transaction().unwrap();
+    for (v, name, sql) in [
+        (1, "0001_init", include_str!("../../src/store/migrations/0001_init.sql")),
+        (2, "0002_extraction", include_str!("../../src/store/migrations/0002_extraction.sql")),
+    ] {
+        tx.execute_batch(sql).unwrap();
+        tx.execute(
+            "INSERT INTO schema_migration VALUES(?1,?2,?3,'2026-01-01T00:00:00.000Z')",
+            params![v, name, hash(sql)],
+        )
+        .unwrap();
+        tx.pragma_update(None, "user_version", v).unwrap();
+    }
+    let t = "2026-01-01T00:00:00.000Z";
+    let mut previous: Option<String> = None;
+    for s in 0..sources {
+        let texts: Vec<String> = (0..per).map(|i| format!("legacy {s}.{i}.")).collect();
+        let content = texts.join(" ");
+        let id = ulid();
+        tx.execute("INSERT INTO source(id,recorder,content,content_sha256,media_type,captured_at,retention_request,request_digest) VALUES(?1,?2,?3,?4,'text/plain',?5,'none',?4)",params![id,["user","agent"][s%2],content,hash(&content),t]).unwrap();
+        let job = ulid();
+        tx.execute("INSERT INTO job(id,kind,target_id,idem_key,state,attempts,run_after,created_at,updated_at) VALUES(?1,'extract',?2,?3,'done',1,?4,?4,?4)",params![job,id,format!("initial/{id}"),t]).unwrap();
+        tx.execute("INSERT INTO extraction_run(job_id,source_id,extractor_id,output_hash,approval_actor,created_at) VALUES(?1,?2,'legacy',?3,'user',?4)",params![job,id,hash(&job),t]).unwrap();
+        let mut offset = 0;
+        for text in &texts {
+            let claim = ulid();
+            tx.execute("INSERT INTO claim(id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,standing,extractor_id,job_id,created_at) VALUES(?1,?2,?3,'en','Fact','unknown','verbatim',?4,?5,?3,0,'legacy',?6,?7)",params![claim,id,text,offset,offset+text.len(),job,t]).unwrap();
+            offset += text.len() + 1;
+            if let Some(parent) = &previous {
+                tx.execute("INSERT INTO claim_dependency VALUES(?1,?2,?3,'premise','system',?4)",params![ulid(),claim,parent,t]).unwrap();
+            }
+            previous = Some(claim);
+        }
+        if s % 7 == 3 {
+            tx.execute("INSERT INTO status_event(target_kind,target_id,event,actor,reason,created_at) VALUES('source',?1,'retract','user','fixture',?2)",params![id,t]).unwrap();
+            tx.execute("INSERT INTO status_event(target_kind,target_id,event,actor,reason,created_at) VALUES('source',?1,'restore','user','fixture',?2)",params![id,t]).unwrap();
+        }
+    }
+    tx.commit().unwrap();
+}
+pub fn counts(conn: &Connection) -> Vec<i64> {
+    ["source", "claim", "claim_dependency", "status_event", "job", "extraction_run"]
+        .iter()
+        .map(|t| {
+            conn.query_row(&format!("SELECT count(*) FROM {t}"), [], |r| r.get(0))
+                .unwrap()
+        })
+        .collect()
+}
