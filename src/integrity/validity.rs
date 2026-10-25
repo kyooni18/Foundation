@@ -235,9 +235,11 @@ fn write(conn: &Connection, id: &str, s: &State) -> Result<()> {
 }
 fn children(conn: &Connection, id: &str) -> Result<Vec<String>> {
     // Declared live edges, plus agent Claims whose undeclared session read included `id`.
+    // CROSS JOIN pins the plan to start from the read (session_read_claim index); otherwise
+    // SQLite may scan every agent Source per call.
     Ok(conn
         .prepare_cached(&format!(
-            "SELECT child FROM claim_dependency d WHERE parent=?1 AND {}='restore' UNION SELECT c.id FROM session_read r JOIN source s ON s.session_id=r.session_id AND s.recorder='agent' AND s.captured_at>=r.at JOIN claim c ON c.source_id=s.id WHERE r.claim_id=?1 AND c.id<>?1",
+            "SELECT child FROM claim_dependency d WHERE parent=?1 AND {}='restore' UNION SELECT c.id FROM session_read r CROSS JOIN source s ON s.session_id=r.session_id AND s.recorder='agent' AND s.captured_at>=r.at JOIN claim c ON c.source_id=s.id WHERE r.claim_id=?1 AND c.id<>?1",
             lifecycle_sql("dependency", "d.id")
         ))?
         .query_map([id], |r| r.get(0))?

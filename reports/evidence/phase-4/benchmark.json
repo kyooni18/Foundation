@@ -1,0 +1,70 @@
+{
+  "baseline_non_valid": 0,
+  "claims": 100000,
+  "correctness": "validity_mismatches() empty after every measured operation",
+  "db_bytes": 84885504,
+  "dependency_edges": 99986,
+  "edge_kinds": {
+    "alternative": 21401,
+    "informed_by": 21060,
+    "premise": 31304,
+    "restates": 26221
+  },
+  "environment": {
+    "cpu": "Apple M4 Pro",
+    "journal": "WAL, synchronous=FULL",
+    "memory_bytes": "25769803776",
+    "model": "Mac16,8",
+    "os": "Darwin 27.2.0 arm64",
+    "profile": "release",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+    "sqlite": "3.50.2",
+    "storage": "tempdir on local disk"
+  },
+  "generate_s": 19.551908167,
+  "open_with_rebuild_s": 2.620780708,
+  "operations": {
+    "claim_chain_root": {
+      "affected_claims": 100,
+      "restore_ms_median": 1.509292,
+      "retract_ms_median": 1.5243749999999998,
+      "runs": 5
+    },
+    "claim_hub": {
+      "affected_claims": 5001,
+      "restore_ms_median": 59.06375,
+      "retract_ms_median": 59.812875,
+      "runs": 5
+    },
+    "claim_leaf": {
+      "affected_claims": 1,
+      "restore_ms_median": 0.278708,
+      "retract_ms_median": 0.283125,
+      "runs": 5
+    },
+    "source_hub": {
+      "affected_claims": 5001,
+      "restore_ms_median": 60.187625000000004,
+      "retract_ms_median": 60.427458,
+      "runs": 5
+    },
+    "source_mid": {
+      "affected_claims": 22,
+      "restore_ms_median": 1.279125,
+      "retract_ms_median": 1.355833,
+      "runs": 5
+    }
+  },
+  "oracle_compare_ms": 305.619583,
+  "oracle_full_recompute_ms": 260.4235,
+  "rebuild_derived_ms": 603.341417,
+  "revalidation_jobs_total": 9,
+  "shape": {
+    "chain_len": 100,
+    "chains": 100,
+    "hub_children": 5000,
+    "random_dag": "0-2 parents within previous 5000 Claims, uniform kinds",
+    "seed": "0x9a4ebe0c"
+  },
+  "sources": 10000
+}
