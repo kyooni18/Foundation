@@ -27,7 +27,7 @@ def response_text(path):
     return ''.join(b['text'] for b in value['content'] if b.get('type')=='text')
 
 
-def replay(evidence,case_id,version='extraction-v29',candidate_version=None,reader_version=None,review_output_tokens=None,source_versions=None):
+def replay(evidence,case_id,version='extraction-v29',candidate_version=None,reader_version=None,review_output_tokens=None,source_versions=None,source_replicates=None):
     packet=next(p for p in budget.packets()[1] if p['case']['id']==case_id)
     budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48'},'unsupported trace version')
     review_version=version.removeprefix('extraction-')
@@ -67,7 +67,11 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
         if stop_stage is not None:
             break
         source_version=(source_versions or {}).get(key,review_version)
+        replicate=(source_replicates or {}).get(key,'primary')
+        budget.require(replicate in {'primary','repeat'},'unsupported Source replicate')
         source_prefix=f'focused-haiku-repair-{source_version}-{case_id}-{candidate_version}'
+        if replicate=='repeat':
+            source_prefix+='-repeat'
         source_id=source_prefix+('' if key=='fidelity' else '-'+key)+(('-output-'+str(review_output_tokens)) if review_output_tokens else '')+(('-schema-v3' if review_version in {'v43','v44','v45','v46','v47','v48'} else '-schema-v2') if review_version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48'} else '')+'-primary'
         saved=read(evidence/(source_id+'.request.json'))
         expected_review=review.body(packet,review_version,stage,output_tokens=review_output_tokens)

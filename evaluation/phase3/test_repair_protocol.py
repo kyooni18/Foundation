@@ -313,6 +313,15 @@ class RepairProtocolTest(unittest.TestCase):
         trace=complete.replay(root,'r1-nested_quote','extraction-v34','extraction-v33','v33',6000)
         self.assertTrue(trace['revalidation']['experimental_gate_eligible'])
         self.assertTrue(trace['complete_review_count'])
+        # An actual repeated rejection remains a distinct frozen request, never a vote.
+        repeated=complete.replay(root,'v23-fresh-003','extraction-v48',
+            'extraction-v44-schema-v3',source_replicates={'fidelity':'repeat'})
+        self.assertFalse(repeated['revalidation']['experimental_gate_eligible'])
+        self.assertEqual(repeated['revalidation']['review_error'],'semantic')
+        self.assertIn('-repeat-schema-v3-primary',repeated['receipts'][-1]['id'])
+        with self.assertRaisesRegex(ValueError,'unsupported Source replicate'):
+            complete.replay(root,'v23-fresh-003','extraction-v48',
+                'extraction-v44-schema-v3',source_replicates={'atomicity':'invented'})
         # Reuse is conditional on exact recipes, including supposedly unchanged components.
         with mock.patch.object(complete.extraction,'body',return_value={}):
             with self.assertRaisesRegex(ValueError,'extraction request drift'):
