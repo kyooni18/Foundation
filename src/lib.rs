@@ -3,6 +3,7 @@ pub mod authentication;
 pub mod authz;
 pub mod budget;
 pub mod claims;
+pub mod embedding;
 pub mod extraction;
 pub mod integrity;
 pub mod jobs;

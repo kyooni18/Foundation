@@ -134,6 +134,29 @@ impl Budget {
         tx.commit().map_err(quota)?;
         Ok(id)
     }
+    /// Settle with an amount computed by the caller (embedding responses carry no completion count).
+    pub(crate) fn settle_amount(
+        &self,
+        id: &str,
+        provider_id: &str,
+        actual: i64,
+        prompt_tokens: i64,
+    ) -> Result<(), ProviderError> {
+        if provider_id.is_empty() || provider_id.len() > 256 || actual < 0 || prompt_tokens < 0 {
+            return Err(ProviderError::Quota);
+        }
+        let mut conn = self.connection()?;
+        let tx = conn
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .map_err(quota)?;
+        let changed = tx.execute("UPDATE request SET actual=?2,provider_id=?3,settled_at=?4,prompt_tokens=?5,completion_tokens=0 WHERE id=?1 AND actual IS NULL",params![id,actual,provider_id,crate::domain::Timestamp::now().as_str(),prompt_tokens]).map_err(quota)?;
+        if changed != 1 {
+            return Err(ProviderError::Quota);
+        }
+        tx.execute("UPDATE request SET cumulative=(SELECT prior FROM budget)+(SELECT SUM(COALESCE(actual,estimate)) FROM request) WHERE id=?1",[id]).map_err(quota)?;
+        tx.commit().map_err(quota)?;
+        Ok(())
+    }
     pub(crate) fn settle(&self, id: &str, body: &serde_json::Value) -> Result<(), ProviderError> {
         let provider_id = body["id"]
             .as_str()
