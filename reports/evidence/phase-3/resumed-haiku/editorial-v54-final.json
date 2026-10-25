@@ -1,0 +1,150 @@
+{
+  "authority": "assistant Source-to-Claim audit, NOT independent human ground truth or user approval",
+  "scope": "all ten selected Claims over all six priority Sources",
+  "rows": [
+    {
+      "case": "r1-ambiguous_ref",
+      "source": "걔가 또 늦었어. 진짜 짜증나.",
+      "source_sha256": "d48c52c2087b46684a3aeecac61cfcd2f31c182b9284830efa6f733a61cf9bfe",
+      "claims": [
+        {
+          "index": 0,
+          "text": "원문 화자가 원문 발화 시점에, 원문에서 '걔'로 지칭된 사람이 또 늦었다고 말했다.",
+          "meaning": "Unknown Source-labelled third person was late again",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        },
+        {
+          "index": 1,
+          "text": "원문 화자는 원문 발화 시점에 진짜 짜증이 난 상태였다.",
+          "meaning": "Original speaker really felt irritation at original utterance time; no cause/target asserted",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        }
+      ],
+      "relevant_propositions_omitted_found": 0,
+      "actual_review_count": 5,
+      "complete_gate": true
+    },
+    {
+      "case": "v23-fresh-003",
+      "source": "진우는 “지연이 있을지도 몰라. 확인은 못 했어”라고 말했다.",
+      "source_sha256": "a14e6643cc68632ef317835f85512e581eee7355b76118edaea86bc5bba92e24",
+      "claims": [
+        {
+          "index": 0,
+          "text": "진우는 특정되지 않은 대상에 지연이 있을지도 모른다고 말했다.",
+          "meaning": "Jinwoo reported possible delay affecting an explicitly unidentified target",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        },
+        {
+          "index": 1,
+          "text": "진우는 특정되지 않은 대상에 지연이 있는지 확인하지 못했다고 말했다.",
+          "meaning": "Jinwoo reported inability to check whether that possible delay existed, with its target repeated inside this Claim",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        }
+      ],
+      "relevant_propositions_omitted_found": 0,
+      "actual_review_count": 5,
+      "complete_gate": true
+    },
+    {
+      "case": "r1-hypothetical",
+      "source": "만약 이번 실험에서 loss가 0.1 아래로 안 떨어지면 아키텍처를 갈아엎을 거야.",
+      "source_sha256": "8db325edbaa59e36d8eac3e8961287262d74ff9a68ef3780de39c0e576a9bb04",
+      "claims": [
+        {
+          "index": 0,
+          "text": "원문 화자는 원문 발화 시점에 기준으로 언급된 이번 실험에서 loss가 0.1 아래로 떨어지지 않으면 원문에서 지칭한 아키텍처를 갈아엎을 계획이다.",
+          "meaning": "Original speaker has one utterance-relative conditional overhaul intention with Source-bound experiment and architecture, loss not below0.1 as antecedent, no unconditional action",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        }
+      ],
+      "relevant_propositions_omitted_found": 0,
+      "actual_review_count": 4,
+      "complete_gate": true
+    },
+    {
+      "case": "r1-nested_quote",
+      "source": "교수님이 리뷰어 2가 우리 방법이 새롭지 않다고 했다고 전해주셨다. 난 동의 못 함.",
+      "source_sha256": "9f9259757e0e286bfa7239b895ee1cc5809c946c929a68a4db5d9c11a7125de9",
+      "claims": [
+        {
+          "index": 0,
+          "text": "원문 화자에게 교수님이 전해주었는데, 교수님에 따르면 리뷰어 2가 원문 화자의 '우리 방법'이 새롭지 않다고 했다.",
+          "meaning": "Professor-to-original-speaker relay retains Reviewer2 assessment, narrator-relative quoted our-method perspective, no method contents assertion",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        },
+        {
+          "index": 1,
+          "text": "원문 화자는 원문 발화 시점에 리뷰어 2가 원문 화자의 '우리 방법'이 새롭지 않다고 한 평가에 동의하지 못한다.",
+          "meaning": "Original speaker cannot agree with that complete attributed assessment at original utterance time; no assertion that the method is actually novel",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        }
+      ],
+      "relevant_propositions_omitted_found": 0,
+      "actual_review_count": 5,
+      "complete_gate": true
+    },
+    {
+      "case": "v23-fresh-004",
+      "source": "Mori 서비스의 worker_count는 4다. The count alone does not establish parallel execution.",
+      "source_sha256": "dd77589c47ace7c6a3fb31e685503f1034d941e3d4f7ed635e8129b454130d56",
+      "claims": [
+        {
+          "index": 0,
+          "text": "Mori 서비스의 worker_count는 4다.",
+          "meaning": "Mori worker_count given as4",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        },
+        {
+          "index": 1,
+          "text": "The worker_count of the Mori service (4) alone does not establish parallel execution.",
+          "meaning": "That given Mori count alone does not establish parallel execution; no assertion that actual execution is sequential",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        }
+      ],
+      "relevant_propositions_omitted_found": 0,
+      "actual_review_count": 5,
+      "complete_gate": true
+    },
+    {
+      "case": "r1-habitual_temporal",
+      "source": "요즘 매일 아침 6시에 일어나는 중",
+      "source_sha256": "f6f8034df5036df572c323aef58b791165067cc8ba337d33919c7ee1d29a598b",
+      "claims": [
+        {
+          "index": 0,
+          "text": "원문 작성 시점에 원문 화자는 요즘 매일 아침 6시에 일어나는 중이다.",
+          "meaning": "Original-speaker current-period daily6 waking pattern, ongoing at original statement time; not permanent",
+          "independently_asserted_propositions": 1,
+          "unsupported_assertions_found": 0,
+          "meaning_preserved_in_assistant_audit": true
+        }
+      ],
+      "relevant_propositions_omitted_found": 0,
+      "actual_review_count": 4,
+      "complete_gate": true
+    }
+  ],
+  "limitations": [
+    "Awkward Korean particle wording in the conditional is retained as raw output; no semantic alteration or grammar cleanup was made",
+    "Source labels are limited identifiers; real-world entity resolution and endorsement are not established"
+  ]
+}

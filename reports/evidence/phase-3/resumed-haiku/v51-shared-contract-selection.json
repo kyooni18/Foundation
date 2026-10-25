@@ -1,0 +1,16 @@
+{
+  "previous_checkpoint": "v50 four of six eligible; $0.15088324 headroom",
+  "reason_for_new_profile": "Actual v50 failure shows conflicting obligations between isolated reader and Source entailment for the SAME explicitly unidentified affected argument. New v51 shares one exact reference contract between those two prompts; it does not just request a different verdict. The contract also prohibits invented ownership/activity/time in candidate interpretations.",
+  "change_scope": "Reference contract shared by both reviewer prompts; extractor contract/frames and all wire shapes unchanged. v50 sources and receipts remain frozen.",
+  "amends": "v50 no-profile-churn cohort policy: one mechanism-based shared-contract experiment after new contradiction was demonstrated; no unbounded retries",
+  "maximum_negative_calls": 8,
+  "positive_sources": 6,
+  "maximum_primary_generations": 0,
+  "maximum_bounded_repair_generations": 1,
+  "repair_only": "conditional plan only if the actual current trace fails; do not erase an editorial objection by repeated passing reviews",
+  "known_remaining_risks": [
+    "model reasons may still invent bindings",
+    "proof that the agreement is semantic rather than only formal remains required"
+  ],
+  "no_additional_budget": true
+}

@@ -1,0 +1,17 @@
+{
+  "change": "v53 derived inventory framing identity",
+  "scope": "Only a unique exact Source label with an unmatched curly-double delimiter is projected to the same exact coordinates as the unframed label when a balanced ORIGINAL counterpart exists outside that label. Paired quotation, all actual words, all evidence, mappings and status remain unchanged. No approximate matching or raw output rewriting.",
+  "observed_case": "v52 delay has two coherent full semantic review passes but one identity begins with the original opening quote; v53 complete gate passes on exactly those saved receipts.",
+  "frozen_profiles": "v52 and older comparisons unchanged; existing regression proves actual v52 unresolved remains, v53 eligible, a shortened scope or fabricated closing quote still rejects",
+  "model_calls_for_this_fix": 0,
+  "other_reference_contract": "v51/v52 shared semantics are unchanged; v53 bodies match v52, allowing byte-verified receipt reuse.",
+  "bounded_extra_generations": {
+    "cases": [
+      "r1-hypothetical",
+      "r1-nested_quote"
+    ],
+    "maximum": 2,
+    "reason": "Each current v52 reader actually rejected; conditional missing binding, nested current stance time/unbound Reviewer2 label. One repair per Source, no fabricated feedback."
+  },
+  "historical_cohort_policy_amendment": "The second bounded repair is justified by the newly observed current nested temporal rejection, rather than rerunning an already passing primary."
+}

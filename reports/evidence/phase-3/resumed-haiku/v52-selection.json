@@ -1,0 +1,11 @@
+{
+  "reason": "One known representation defect remains: whole-Source inventory identities randomly include/exclude the final sentence period. v52 selects one exact substring spelling BEFORE generation through the enum vocabulary and inventory instructions. No saved raw is trimmed, no distinct condition or mapping equated. Reader and fidelity prompts are byte-identical to v51; extractor byte-identical to v50. Frozen v51 negative calls remain evidence, not overwritten.",
+  "mechanism": "shared reference contract plus pre-decision canonical inventory-label spelling",
+  "new_negative_calls": 2,
+  "reused_negative_fidelity_receipts": 6,
+  "maximum_positive_sources": 6,
+  "maximum_extra_generations": 1,
+  "extra_generation_case": "r1-hypothetical only after actual failed trace",
+  "all_ten_dimensions": true,
+  "no_new_budget": true
+}

@@ -1,0 +1,1 @@
+{"all_ten_dimensions_retained":true,"controls":[["v23-fresh-003",null,"atomicity"]],"maximum_calls":2,"policy":"Probe all four known bad boundaries and one exact-request repeat each before positive evaluation. Any non-reject is retained and blocks promotion of this experimental protocol; no majority or substituted primary.","source_questions":3}

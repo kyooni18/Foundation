@@ -1,0 +1,11 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running unittests src/lib.rs (target/debug/deps/prime_radiant-6eb1fe363ac8eb08)
+     Running unittests src/bin/primeradiant.rs (target/debug/deps/primeradiant-336624f04bdeccf5)
+     Running tests/authorization.rs (target/debug/deps/authorization-b60389975526df88)
+     Running tests/crash.rs (target/debug/deps/crash-b9b36e1db11d316e)
+     Running tests/extraction.rs (target/debug/deps/extraction-a81c3319dc0f51b4)
+     Running tests/persistence.rs (target/debug/deps/persistence-eaf1cbdfeee18fd3)
+     Running tests/transports.rs (target/debug/deps/transports-816a31d73a8574e6)
+     Running unittests examples/evaluate_extraction.rs (target/debug/examples/evaluate_extraction-a743e63c65c1977d)
+     Running unittests examples/guarded_completion.rs (target/debug/examples/guarded_completion-24e7bc73dc663992)
+     Running unittests examples/revalidate_extraction.rs (target/debug/examples/revalidate_extraction-d11e19037171cb44)

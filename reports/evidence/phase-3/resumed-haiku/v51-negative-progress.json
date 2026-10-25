@@ -1,0 +1,174 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "evaluation/phase3/guarded_anthropic_repair.py",
+      "--case",
+      "r1-nested_quote",
+      "--version",
+      "v51",
+      "--stage",
+      "fidelity",
+      "--evidence",
+      "reports/evidence/phase-3/semantic-repair",
+      "--authorization",
+      "reports/evidence/phase-3/resumed-haiku/authorization.json",
+      "--execute"
+    ],
+    "exit_code": 0,
+    "stdout": "{\"id\": \"focused-haiku-repair-v51-r1-nested_quote-schema-v3-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 2, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "evaluation/phase3/guarded_anthropic_repair.py",
+      "--case",
+      "v23-fresh-003",
+      "--version",
+      "v51",
+      "--stage",
+      "atomicity",
+      "--evidence",
+      "reports/evidence/phase-3/semantic-repair",
+      "--authorization",
+      "reports/evidence/phase-3/resumed-haiku/authorization.json",
+      "--execute"
+    ],
+    "exit_code": 0,
+    "stdout": "{\"id\": \"focused-haiku-repair-v51-v23-fresh-003-atomicity-schema-v3-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 1, \"inventory_count\": 2, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "evaluation/phase3/guarded_anthropic_repair.py",
+      "--case",
+      "r1-ambiguous_ref",
+      "--version",
+      "v51",
+      "--stage",
+      "fidelity",
+      "--evidence",
+      "reports/evidence/phase-3/semantic-repair",
+      "--authorization",
+      "reports/evidence/phase-3/resumed-haiku/authorization.json",
+      "--execute"
+    ],
+    "exit_code": 0,
+    "stdout": "{\"id\": \"focused-haiku-repair-v51-r1-ambiguous_ref-schema-v3-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 2, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "evaluation/phase3/guarded_anthropic_repair.py",
+      "--case",
+      "v23-fresh-003",
+      "--version",
+      "v51",
+      "--stage",
+      "fidelity",
+      "--evidence",
+      "reports/evidence/phase-3/semantic-repair",
+      "--authorization",
+      "reports/evidence/phase-3/resumed-haiku/authorization.json",
+      "--execute",
+      "--candidate-version",
+      "extraction-v38"
+    ],
+    "exit_code": 0,
+    "stdout": "{\"id\": \"focused-haiku-repair-v51-v23-fresh-003-extraction-v38-schema-v3-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 2, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "evaluation/phase3/guarded_anthropic_repair.py",
+      "--case",
+      "r1-nested_quote",
+      "--version",
+      "v51",
+      "--stage",
+      "fidelity",
+      "--evidence",
+      "reports/evidence/phase-3/semantic-repair",
+      "--authorization",
+      "reports/evidence/phase-3/resumed-haiku/authorization.json",
+      "--execute",
+      "--replicate",
+      "repeat"
+    ],
+    "exit_code": 0,
+    "stdout": "{\"id\": \"focused-haiku-repair-v51-r1-nested_quote-repeat-schema-v3-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 2, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "evaluation/phase3/guarded_anthropic_repair.py",
+      "--case",
+      "v23-fresh-003",
+      "--version",
+      "v51",
+      "--stage",
+      "atomicity",
+      "--evidence",
+      "reports/evidence/phase-3/semantic-repair",
+      "--authorization",
+      "reports/evidence/phase-3/resumed-haiku/authorization.json",
+      "--execute",
+      "--replicate",
+      "repeat"
+    ],
+    "exit_code": 0,
+    "stdout": "{\"id\": \"focused-haiku-repair-v51-v23-fresh-003-repeat-atomicity-schema-v3-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 1, \"inventory_count\": 2, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "evaluation/phase3/guarded_anthropic_repair.py",
+      "--case",
+      "r1-ambiguous_ref",
+      "--version",
+      "v51",
+      "--stage",
+      "fidelity",
+      "--evidence",
+      "reports/evidence/phase-3/semantic-repair",
+      "--authorization",
+      "reports/evidence/phase-3/resumed-haiku/authorization.json",
+      "--execute",
+      "--replicate",
+      "repeat"
+    ],
+    "exit_code": 0,
+    "stdout": "{\"id\": \"focused-haiku-repair-v51-r1-ambiguous_ref-repeat-schema-v3-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 2, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/python@3.15/bin/python3.15",
+      "evaluation/phase3/guarded_anthropic_repair.py",
+      "--case",
+      "v23-fresh-003",
+      "--version",
+      "v51",
+      "--stage",
+      "fidelity",
+      "--evidence",
+      "reports/evidence/phase-3/semantic-repair",
+      "--authorization",
+      "reports/evidence/phase-3/resumed-haiku/authorization.json",
+      "--execute",
+      "--candidate-version",
+      "extraction-v38",
+      "--replicate",
+      "repeat"
+    ],
+    "exit_code": 0,
+    "stdout": "{\"id\": \"focused-haiku-repair-v51-v23-fresh-003-extraction-v38-repeat-schema-v3-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 2, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n",
+    "stderr": ""
+  }
+]
