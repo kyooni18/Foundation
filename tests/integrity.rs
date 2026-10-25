@@ -1639,3 +1639,66 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
         assert_eq!(&dump(&old, table), rows, "{table}");
     }
 }
+#[test]
+fn concurrent_readers_never_observe_lifecycle_without_its_validity() {
+    let (_d, path) = fresh();
+    let conn = synthetic::connect(&path);
+    let (_, hub) = synthetic::source(&conn, &spec("user", &["hub premise."]));
+    let mut children = Vec::new();
+    for i in 0..400 {
+        let (_, c) = synthetic::source(&conn, &spec("user", &[&format!("child {i}.")]));
+        synthetic::dependency(&conn, &c[0], &hub[0], "premise");
+        children.push(c[0].clone());
+    }
+    drop(conn);
+    let app = std::sync::Arc::new(App::open(&path).unwrap());
+    let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let writer = {
+        let (app, hub, stop) = (app.clone(), hub[0].clone(), stop.clone());
+        std::thread::spawn(move || {
+            let mut toggles = 0;
+            while !stop.load(std::sync::atomic::Ordering::Relaxed) {
+                let event = ["retract", "restore"][toggles % 2];
+                app.set_claim_status(&user(), &hub, event).unwrap();
+                toggles += 1;
+            }
+            toggles
+        })
+    };
+    let readers: Vec<_> = (0..3)
+        .map(|r| {
+            let (path, hub, children, app) =
+                (path.clone(), hub[0].clone(), children.clone(), app.clone());
+            std::thread::spawn(move || {
+                let mut conn = rusqlite::Connection::open(&path).unwrap();
+                let mut snapshots = [0usize; 2];
+                for i in 0..300 {
+                    // Raw snapshot: the newest hub event and every child's state agree.
+                    let tx = conn.transaction().unwrap();
+                    let last: String = tx.query_row("SELECT event FROM status_event WHERE target_kind='claim' AND target_id=?1 ORDER BY seq DESC LIMIT 1", [&hub], |r| r.get(0)).unwrap_or_else(|_| "restore".into());
+                    let invalid: usize = tx.query_row(&format!("SELECT count(*) FROM claim_validity WHERE state='invalid' AND claim_id IN ({})", children.iter().map(|c| format!("'{c}'")).collect::<Vec<_>>().join(",")), [], |r| r.get(0)).unwrap();
+                    let retracted = last == "retract";
+                    assert_eq!(invalid, if retracted { children.len() } else { 0 }, "reader {r} snapshot {i}");
+                    snapshots[retracted as usize] += 1;
+                    drop(tx);
+                    // Projection: the user never sees a child alongside a retracted hub.
+                    let listed = app.list_claims(&user()).unwrap();
+                    let hub_seen = listed.iter().any(|c| c.id.as_str() == hub);
+                    let kids = listed.iter().filter(|c| c.id.as_str() != hub).count();
+                    assert_eq!(kids, if hub_seen { children.len() } else { 0 }, "reader {r} list {i}");
+                }
+                snapshots
+            })
+        })
+        .collect();
+    let mut seen = [0usize; 2];
+    for r in readers {
+        let s = r.join().unwrap();
+        seen[0] += s[0];
+        seen[1] += s[1];
+    }
+    stop.store(true, std::sync::atomic::Ordering::Relaxed);
+    let toggles = writer.join().unwrap();
+    assert!(seen[0] > 0 && seen[1] > 0 && toggles > 2, "no interleaving: {seen:?} {toggles}");
+    assert!(app.validity_mismatches().unwrap().is_empty());
+}
