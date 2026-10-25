@@ -285,3 +285,21 @@ Evidence: [Phase 4 report](reports/phase-4.md), decisions D-92–D-104. Benchmar
 ```sh
 cargo test --release --offline --test integrity_benchmark -- --ignored --nocapture
 ```
+
+## Retrieval and queue-driven processing
+Search is adaptive, local-first and authorization-scoped. Recording only stores the Source and
+enqueues extraction; lexical and embedding indexing run as queued jobs.
+
+```bash
+# fetch the pinned local embedding model (hash-verified), then check it
+scripts/fetch-embedding-model.sh
+primeradiant --db prime.db model-check
+# run queued indexing, search, and inspect the queue
+primeradiant --db prime.db index-work
+primeradiant --db prime.db search --principal user "배포 스크립트 어디 있지?"
+primeradiant --db prime.db queue-status
+```
+`--embedding local|openrouter|off` selects the provider (default local; no automatic fallback;
+cloud use is opt-in). `serve` starts the indexing workers; MCP/HTTP expose `search`,
+`source_processing`, `queue_status`, `queue_jobs`, `queue_retry`. Measurements and limitations:
+reports/retrieval.md.

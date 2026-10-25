@@ -1069,3 +1069,45 @@ the first measurement exposed SQLite scanning every agent Source for each closur
 in the session-read half of `children()` (5,001-Claim hub: 7.1 s). The query now starts
 from `session_read` (`CROSS JOIN` pins the order); the same hub takes ~60 ms. Numbers,
 shape and environment are in reports/evidence/phase-4/benchmark.json.
+
+### D-105 — Derived retrieval work is queue-first; visibility is never a job effect
+Recording a Source stores it and enqueues its extraction job in one transaction (refused with
+`queue_full` beyond `max_open_jobs`). Approval publishes Claims and, in the same transaction,
+enqueues `index_lexical` (priority 90) and `index_embed` (priority 20, model key in `detail`)
+with idempotency keys `…/{source}/{run_seq}`; `generation` is the extraction-run seq. Handlers
+recompute their work from authoritative rows at execution time, so duplicate, late or stale
+deliveries are idempotent; a job whose generation is no longer current is cancelled and replaced
+for the current expression. Inference runs with no transaction open; write-back is a short
+transaction that re-checks the lease fence, visibility and text digest. A provider that is
+unavailable defers jobs without consuming attempts and nothing is sent anywhere else.
+
+### D-106 — `claim_access` is the retrieval authorization projection
+`claim_access(claim_id, user_visible, agent_visible)` is rewritten in the same transaction as
+every lifecycle, validity, confirmation or publication change, so forgetting/retracting excludes
+a Claim from every retrieval path immediately. It is derived, rebuildable and checked by
+`verify_integrity`. Indexes only propose candidates; every returned Claim is re-read through the
+authoritative visibility query. Corpus statistics (N, average length, document frequency) are
+computed inside the caller's projection, so hidden records cannot influence scores or counts.
+
+### D-107 — Embeddings: pinned local model, selectable provider, vectors isolated by identity
+Default is `nvidia/Nemotron-3-Embed-1B` at a pinned revision with verified file digests, run
+locally with candle (Metal/CPU), 1024-d Matryoshka slice, mandatory `query: `/`passage: `
+prefixes. `EmbeddingConfig` selects Local, OpenRouter (opt-in; paid models require a separate
+budget ledger, `:free` models still send text to a third party) or Off; there is no automatic
+fallback. Vectors are keyed by an identity hash of provider/model/revision/dimensions/prefixes,
+so a model change invalidates only that model's vectors. Search is exact brute-force cosine;
+ANN is not introduced because latency at 100k Claims does not require it.
+
+### D-108 — The planner is deterministic; fusion is gated rank fusion
+Intent (exact/lexical/semantic/relational/temporal/comprehensive) and depth are a pure function
+of the query text, hints and request shape; hints are never authorization and ambiguity selects
+complementary paths. Lexical evidence counts only if it shares a script with the query and
+covers ≥0.50 of the informative terms; semantic evidence only if cosine ≥0.35 (both chosen on the
+development split only, see reports/retrieval.md). Surviving lists are fused with RRF(k=60);
+exact matches form a first tier; duplicates collapse; per-Source overflow is demoted, not
+dropped. Scores are ordering aids, never probabilities.
+
+### D-109 — Coverage is reported, never assumed
+Responses carry `coverage.status` (complete/degraded/incomplete) with reasons. Semantic
+retrieval always adds `semantic_similarity_bounded`, so `exhaustive` is true only for purely
+lexical/exact answers over a fully indexed projection with no truncation.

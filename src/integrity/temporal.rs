@@ -455,7 +455,11 @@ pub(crate) fn evaluate(
     for id in &ids {
         facts_of.insert(id, facts(conn, p, id)?);
     }
-    let relations = visible_relations(conn, p)?;
+    // Edges to Claims outside the supplied set do not exist for this evaluation.
+    let relations: Vec<_> = visible_relations(conn, p)?
+        .into_iter()
+        .filter(|r| ids.contains(r.subject.as_str()) && ids.contains(r.object.as_str()))
+        .collect();
     let unsupported = |id: &str| facts_of[id].validity == Validity::Invalid;
     // Effective supersession: live relations (subject still supported) and, for non-user
     // views, model `supersedes` hints not overridden by any user relation on the pair.
@@ -505,6 +509,9 @@ pub(crate) fn evaluate(
         })
         .collect();
     for j in visible_judgments(conn, p)? {
+        if !ids.contains(j.claim_a.as_str()) || !ids.contains(j.claim_b.as_str()) {
+            continue;
+        }
         if j.raw_label != "supersedes"
             || policy.blocked_temporal_models.contains(&j.model_id)
             || unsupported(&j.claim_a)

@@ -587,13 +587,19 @@ impl App {
         };
         // ---- Sufficiency decides whether optional semantic work is needed.
         let semantic_available = self.embedder().is_some();
+        // Enough strong evidence: one verbatim hit settles an exact lookup; otherwise a few.
+        let needed = if plan.intent == Intent::Exact {
+            1
+        } else {
+            req.limit.min(3)
+        };
         let mut run_semantic = match req.strategy {
             Strategy::LexicalOnly => false,
             Strategy::SemanticOnly | Strategy::FusedAll => true,
             Strategy::Adaptive => {
                 wants("semantic")
                     && (!optional("semantic")
-                        || strong(&evidence) < plan.sufficient_results.max(req.limit.min(3))
+                        || strong(&evidence) < needed
                         || plan.depth == Depth::Exhaustive)
             }
         };

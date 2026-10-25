@@ -109,3 +109,10 @@ P4와 P5는 P3 이후 병렬 가능(파일 겹침: `store` 마이그레이션 �
 7. 수락: 측정된 목표 문서화 + 위 테스트 녹색.
 8. 범위 밖: UI, 다중 사용자, 원격 동기화.
 9. 체크포인트: `phase-8`, `v0.1.0`.
+
+## Phase 5 — Adaptive retrieval and queue-driven processing (implemented)
+Delivered: schema v4, queued lexical/embedding indexing with leases/fencing/backpressure,
+`claim_access` projection, deterministic planner, gated fusion, graph/temporal expansion, API/MCP/CLI,
+local Nemotron-3-Embed-1B runtime with selectable cloud provider, evaluation and benchmark
+harnesses (`examples/retrieval_eval.rs`, `examples/retrieval_bench.rs`, `evaluation/retrieval/`).
+Open items are listed in reports/retrieval.md §Limitations.

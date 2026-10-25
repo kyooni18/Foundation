@@ -135,3 +135,6 @@ flowchart LR
   W -->|repair if stale| P
   O[validity::oracle: replay events] -. compare .- CV
 ```
+
+## 7. Phase 5 구현: `retrieval` 모듈
+`record`는 인증·검증 후 한 트랜잭션에서 Source와 추출 job만 저장하고 영수증을 반환한다. 파생 작업(어휘 색인, 임베딩)은 승인 트랜잭션에서 큐에 들어가고 워커가 처리한다(`retrieval::queue`). 검색은 `planner`(결정적 계획) → `search`(exact/lexical → 필요 시 semantic → 제한된 graph/temporal 확장) → `fusion`(게이트 + RRF) → 권위 재확인 순서다. `access`는 인증 투영, `lexical`/`tokenizer`는 FTS5 기반 어휘 검색, `semantic`은 정확 코사인 스캔과 질의 임베딩 캐시, `status`는 단계·큐 관측이다. 임베딩 provider는 `embedding`(로컬 Nemotron-3-Embed-1B 기본, OpenRouter 선택, Off). 자세한 내용과 측정은 reports/retrieval.md.

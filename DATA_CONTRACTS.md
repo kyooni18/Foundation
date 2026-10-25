@@ -244,3 +244,11 @@
 | 마이그레이션 | 한 버전 = 한 트랜잭션 + schema_migration 행 |
 
 모델·네트워크 호출은 어떤 트랜잭션 안에도 두지 않는다.
+
+## 14. 검색과 처리 큐 (Phase 5)
+- 스키마 v4: `job.kind ∈ {extract, revalidate, index_lexical, index_embed}`, `state ∈ {pending, leased, done, failed, deferred, cancelled}`, `priority`, `generation`(= extraction_run seq), `detail`(embedding model key), `first_leased_at/started_at/finished_at`.
+- `claim_access`(파생): Claim별 user/agent 가시성. 생명주기·유효성·확정·게시와 같은 트랜잭션에서 갱신. 검색 후보는 이 투영 안에서만 만들고, 반환 직전에 권위 쿼리로 재확인한다.
+- `claim_lex` + FTS5 `claim_fts`(파생, tokenizer 버전 기록), `embedding_model`, `claim_vec`(model_key별 격리, f16), `index_epoch`.
+- 영수증: `record`는 `{source_id, created, processing}`를 돌려준다. `processing`은 단계(stored_not_extracted → awaiting_approval → published_awaiting_lexical → awaiting_embedding → fully_indexed / failed / deferred / stale)이며 색인 완료를 뜻하지 않는다.
+- API: `search`, `source_processing`, `queue_status`, `queue_jobs`, `queue_retry`(큐 관리는 user 전용; 원문 provider 오류는 저장·반환하지 않고 고정 코드만).
+- `search` 응답: results(match_type, evidence, score, why, related, temporal), plan, executed, semantic_used, graph_used, coverage, indexing, continuation(서명된 커서), timing.

@@ -1,0 +1,198 @@
+{
+  "claims": 100000,
+  "cold_start_open_seconds": 9.873303833,
+  "concurrent_ingest_and_search": {
+    "note": "background lexical and embedding workers running",
+    "record": {
+      "n": 100,
+      "p50_ms": 0.779041,
+      "p95_ms": 6.744542,
+      "p99_ms": 10.554833
+    },
+    "search": {
+      "n": 100,
+      "p50_ms": 1275.919375,
+      "p95_ms": 2694.119625,
+      "p99_ms": 2911.373042
+    }
+  },
+  "db_bytes": 605126656,
+  "embedding": {
+    "claims": 85766,
+    "claims_per_s": 44.79144312367556,
+    "provider_calls": 1523,
+    "seconds": 1914.785370125
+  },
+  "full_lexical_rebuild_seconds": 56.732544458,
+  "generate_insert_seconds": 8.896482375,
+  "ingest": {
+    "enqueue_throughput_per_s": 373.3968817486381,
+    "latency": {
+      "n": 2000,
+      "p50_ms": 2.556625,
+      "p95_ms": 3.497792,
+      "p99_ms": 4.3165000000000004
+    }
+  },
+  "integrity_ok": true,
+  "lexical_index": {
+    "claims": 97033,
+    "claims_per_s": 13967.47913829138,
+    "seconds": 6.947066041
+  },
+  "machine": {
+    "arch": "aarch64",
+    "cpus": 12,
+    "os": "macos"
+  },
+  "peak_rss_mb": 2639.331328,
+  "queue_after_open": {
+    "extract": 0,
+    "index_embed": 33138,
+    "index_lexical": 33138,
+    "revalidate": 0
+  },
+  "queue_timing": {
+    "extract": {
+      "cancelled": 0,
+      "deferred": 0,
+      "done": 33337,
+      "end_to_end": {
+        "count": 5000,
+        "p50_ms": 0,
+        "p95_ms": 0,
+        "p99_ms": 0
+      },
+      "failed": 0,
+      "leased": 0,
+      "oldest_pending_age_ms": 2197942,
+      "pending": 2100,
+      "processing": {
+        "count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null
+      },
+      "retries": 0,
+      "wait": {
+        "count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null
+      }
+    },
+    "index_embed": {
+      "cancelled": 0,
+      "deferred": 0,
+      "done": 31552,
+      "end_to_end": {
+        "count": 5000,
+        "p50_ms": 1915309,
+        "p95_ms": 2186276,
+        "p99_ms": 2199407
+      },
+      "failed": 0,
+      "leased": 0,
+      "oldest_pending_age_ms": 2199409,
+      "pending": 1586,
+      "processing": {
+        "count": 5000,
+        "p50_ms": 3990,
+        "p95_ms": 4953,
+        "p99_ms": 5651
+      },
+      "retries": 0,
+      "wait": {
+        "count": 5000,
+        "p50_ms": 1911519,
+        "p95_ms": 2181212,
+        "p99_ms": 2195464
+      }
+    },
+    "index_lexical": {
+      "cancelled": 0,
+      "deferred": 0,
+      "done": 33138,
+      "end_to_end": {
+        "count": 5000,
+        "p50_ms": 16359,
+        "p95_ms": 16633,
+        "p99_ms": 16654
+      },
+      "failed": 0,
+      "leased": 0,
+      "oldest_pending_age_ms": null,
+      "pending": 0,
+      "processing": {
+        "count": 5000,
+        "p50_ms": 10,
+        "p95_ms": 12,
+        "p99_ms": 13
+      },
+      "retries": 0,
+      "wait": {
+        "count": 5000,
+        "p50_ms": 16349,
+        "p95_ms": 16624,
+        "p99_ms": 16645
+      }
+    },
+    "revalidate": {
+      "cancelled": 0,
+      "deferred": 0,
+      "done": 0,
+      "end_to_end": {
+        "count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null
+      },
+      "failed": 0,
+      "leased": 0,
+      "oldest_pending_age_ms": null,
+      "pending": 0,
+      "processing": {
+        "count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null
+      },
+      "retries": 0,
+      "wait": {
+        "count": 0,
+        "p50_ms": null,
+        "p95_ms": null,
+        "p99_ms": null
+      }
+    }
+  },
+  "search": {
+    "adaptive": {
+      "known_item_recall@10_visible_and_indexed": 0.05,
+      "latency": {
+        "n": 200,
+        "p50_ms": 246.749042,
+        "p95_ms": 299.123833,
+        "p99_ms": 346.276458
+      }
+    },
+    "lexical_only": {
+      "known_item_recall@10_visible_and_indexed": 0.045,
+      "latency": {
+        "n": 200,
+        "p50_ms": 197.054708,
+        "p95_ms": 228.256167,
+        "p99_ms": 241.57825
+      }
+    },
+    "semantic_only": {
+      "known_item_recall@10_visible_and_indexed": 0.04,
+      "latency": {
+        "n": 200,
+        "p50_ms": 156.074042,
+        "p95_ms": 184.688459,
+        "p99_ms": 201.635459
+      }
+    }
+  }
+}

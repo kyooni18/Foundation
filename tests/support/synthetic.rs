@@ -218,15 +218,24 @@ pub fn bulk_source(
     captured_at: &str,
     claims: &[BulkClaim],
 ) -> (String, Vec<String>) {
+    bulk_source_at(conn, recorder, captured_at, None, claims)
+}
+pub fn bulk_source_at(
+    conn: &Connection,
+    recorder: &str,
+    captured_at: &str,
+    authored_at: Option<&str>,
+    claims: &[BulkClaim],
+) -> (String, Vec<String>) {
     let content = claims
         .iter()
         .map(|c| c.text.as_str())
         .collect::<Vec<_>>()
         .join(" ");
     let id = ulid();
-    conn.prepare_cached("INSERT INTO source(id,recorder,content,content_sha256,media_type,captured_at,retention_request,request_digest) VALUES(?1,?2,?3,?4,'text/plain',?5,'none',?4)")
+    conn.prepare_cached("INSERT INTO source(id,recorder,content,content_sha256,media_type,captured_at,authored_at,retention_request,request_digest) VALUES(?1,?2,?3,?4,'text/plain',?5,?6,'none',?4)")
         .unwrap()
-        .execute(params![id, recorder, content, hash(&content), captured_at])
+        .execute(params![id, recorder, content, hash(&content), captured_at, authored_at])
         .unwrap();
     let job = ulid();
     conn.prepare_cached("INSERT INTO job(id,kind,target_id,idem_key,state,attempts,run_after,created_at,updated_at,finished_at) VALUES(?1,'extract',?2,?3,'done',1,?4,?4,?4,?4)")

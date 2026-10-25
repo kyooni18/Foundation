@@ -57,6 +57,10 @@ impl App {
         app.repair_derived()?;
         Ok(app)
     }
+    /// Drop cached query embeddings (cold-latency measurements).
+    pub fn clear_query_cache(&self) {
+        *self.query_cache.lock().expect("query cache") = Default::default();
+    }
     pub fn policy_embedding_identity(&self) -> Option<embedding::EmbeddingIdentity> {
         self.policy.embedding.identity()
     }
