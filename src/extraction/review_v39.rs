@@ -307,3 +307,5 @@ pub(super) const STAGES_47: [&str; 3] = [
     "complete-Claim entailment",
     "whole-batch coverage",
 ];
+
+pub(super) const DEFINITIONS_48: &str = include_str!("../../prompts/extraction-v48/facets.json");

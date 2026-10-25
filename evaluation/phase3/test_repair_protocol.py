@@ -137,6 +137,10 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertNotIn('differences',protected)
         grouped_definitions=faceted_review.definitions('v47')
         self.assertEqual(len(grouped_definitions),3)
+        fixed_order=repair.body(packet,'v48',active)['output_config']['format']['schema']['properties']['claims']['items']['properties']['dimensions']['properties']
+        self.assertTrue(all(list(row['properties'])==['reason','status'] for row in fixed_order.values()))
+        self.assertEqual(repair.body(packet,'v48',active)['max_tokens'],8000)
+        self.assertEqual(repair.reader_body('One isolated Claim','v48')['max_tokens'],8000)
         self.assertEqual({d for row in grouped_definitions for d in row['dimensions']},{d for row in faceted_review.definitions('v46') for d in row['dimensions']})
         joint=copy.deepcopy(violation_facet)
         for row in joint['claims']:row['dimensions']={d:dict(status='pass',reason='Synthetic whole-Claim support') for d in grouped_definitions[1]['dimensions']}

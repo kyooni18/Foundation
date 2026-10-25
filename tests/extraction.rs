@@ -233,7 +233,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
     math_claim["speaker"] = json!("unknown");
     let math_raw = output(vec![math_claim]);
     let mut current = plan();
-    current.prompt_version = Some("extraction-v47".into());
+    current.prompt_version = Some("extraction-v48".into());
     let mut replies = vec![
         Ok(math_raw.clone()),
         Ok(
@@ -242,7 +242,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
         ),
     ];
     let definitions: Vec<Value> =
-        serde_json::from_str(include_str!("../prompts/extraction-v47/facets.json")).unwrap();
+        serde_json::from_str(include_str!("../prompts/extraction-v48/facets.json")).unwrap();
     for definition in definitions {
         let dimensions: serde_json::Map<String, Value> = definition["dimensions"]
             .as_array()
@@ -1748,7 +1748,7 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
         validate_proposal_reviews_bound(&scalar_plan, &scalar_reports, &batch, &source).is_err()
     );
     let grouped: Vec<Value> =
-        serde_json::from_str(include_str!("../prompts/extraction-v47/facets.json")).unwrap();
+        serde_json::from_str(include_str!("../prompts/extraction-v48/facets.json")).unwrap();
     let old_dimensions: std::collections::HashSet<&str> = definitions
         .iter()
         .flat_map(|d| {
