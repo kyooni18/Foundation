@@ -23,7 +23,10 @@ fn wait_for(reader: &mut impl BufRead, prefix: &str) {
     let mut line = String::new();
     loop {
         line.clear();
-        assert!(reader.read_line(&mut line).unwrap() > 0, "worker exited early");
+        assert!(
+            reader.read_line(&mut line).unwrap() > 0,
+            "worker exited early"
+        );
         if line.starts_with(prefix) {
             return;
         }
@@ -56,7 +59,9 @@ fn sigkill_during_migration_is_atomic() {
         child.wait().unwrap();
         // Inspect before any App recovery: schema is either wholly v2 or wholly v3.
         let conn = synthetic::connect(&db);
-        let version: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0)).unwrap();
+        let version: u32 = conn
+            .pragma_query_value(None, "user_version", |r| r.get(0))
+            .unwrap();
         let tables: i64 = conn
             .query_row("SELECT count(*) FROM sqlite_schema WHERE name IN ('claim_validity','status_event_v2','claim_dependency_v2','job_v3')", [], |r| r.get(0))
             .unwrap();
@@ -81,7 +86,9 @@ fn propagation_worker() {
     let user = Principal::for_local_cli(PrincipalKind::User, None, None);
     let hub: String = rusqlite::Connection::open(&path)
         .unwrap()
-        .query_row("SELECT id FROM claim ORDER BY rowid LIMIT 1", [], |r| r.get(0))
+        .query_row("SELECT id FROM claim ORDER BY rowid LIMIT 1", [], |r| {
+            r.get(0)
+        })
         .unwrap();
     for i in 0.. {
         let event = if i % 2 == 0 { "retract" } else { "restore" };

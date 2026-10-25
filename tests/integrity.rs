@@ -486,9 +486,11 @@ fn identity_resolution_is_precedence_ordered_reversible_and_durable() {
     drop(conn);
     let app = App::open(&path).unwrap();
     let (u, a) = (user(), agent());
-    let e: Vec<String> = (0..5)
+    // Sorted so member lists (ordered by id) match index order despite same-ms ULIDs.
+    let mut e: Vec<String> = (0..5)
         .map(|_| app.create_entity(&u, "person").unwrap())
         .collect();
+    e.sort();
     let rep = |who: &Principal, id: &str| app.get_entity(who, id).unwrap().representative;
     // Sharing a name or alias never merges entities.
     app.assert_identity(&u, "alias", &e[0], "Minsu", None)
@@ -1502,8 +1504,16 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
     let conn = rusqlite::Connection::open(&path).unwrap();
     conn.execute_batch("PRAGMA foreign_keys=ON;").unwrap();
     for (v, name, sql) in [
-        (1, "0001_init", include_str!("../src/store/migrations/0001_init.sql")),
-        (2, "0002_extraction", include_str!("../src/store/migrations/0002_extraction.sql")),
+        (
+            1,
+            "0001_init",
+            include_str!("../src/store/migrations/0001_init.sql"),
+        ),
+        (
+            2,
+            "0002_extraction",
+            include_str!("../src/store/migrations/0002_extraction.sql"),
+        ),
     ] {
         conn.execute_batch(sql).unwrap();
         conn.execute(
@@ -1528,13 +1538,26 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
         let job = format!("01K00000000000000000000J0{i}");
         conn.execute("INSERT INTO job(id,kind,target_id,idem_key,state,attempts,run_after,created_at,updated_at) VALUES(?1,'extract',?2,?3,'done',1,?4,?4,?4)",params![job,source,format!("initial/{source}"),t]).unwrap();
         conn.execute("INSERT INTO extraction_request(job_id,plan_json,prompt_hash,created_at) VALUES(?1,'{}','h',?2)",params![job,t]).unwrap();
-        conn.execute("INSERT INTO extraction_candidate VALUES(?1,?2,'{}',?3,'[]',?4)",params![format!("01K00000000000000000000C0{i}"),job,hash("{}"),t]).unwrap();
+        conn.execute(
+            "INSERT INTO extraction_candidate VALUES(?1,?2,'{}',?3,'[]',?4)",
+            params![format!("01K00000000000000000000C0{i}"), job, hash("{}"), t],
+        )
+        .unwrap();
         conn.execute("INSERT INTO extraction_run(job_id,source_id,extractor_id,output_hash,approval_actor,created_at) VALUES(?1,?2,'legacy',?3,'user',?4)",params![job,source,hash("{}"),t]).unwrap();
         let claim = format!("01K00000000000000000000L0{i}");
         conn.execute("INSERT INTO claim(id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,standing,extractor_id,job_id,created_at) VALUES(?1,?2,?3,'en','Fact','unknown','verbatim',0,?4,?3,0,'legacy',?5,?6)",params![claim,source,text,text.len(),job,t]).unwrap();
         let first = text.chars().next().unwrap();
         let span = json!({"start":0,"end":first.len_utf8()}).to_string();
-        conn.execute("INSERT INTO mention VALUES(?1,?2,?3,?4)",params![format!("01K00000000000000000000M0{i}"),claim,first.to_string(),span]).unwrap();
+        conn.execute(
+            "INSERT INTO mention VALUES(?1,?2,?3,?4)",
+            params![
+                format!("01K00000000000000000000M0{i}"),
+                claim,
+                first.to_string(),
+                span
+            ],
+        )
+        .unwrap();
         claims.push(claim);
     }
     // A pending job and an exhausted failure keep their operational state.
@@ -1545,9 +1568,19 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
         (7, "source", "01K00000000000000000000S02", "retract", "user"),
         (11, "claim", claims[0].as_str(), "confirm", "user"),
         (12, "claim", claims[1].as_str(), "retract", "agent"),
-        (15, "source", "01K00000000000000000000S02", "restore", "user"),
+        (
+            15,
+            "source",
+            "01K00000000000000000000S02",
+            "restore",
+            "user",
+        ),
     ] {
-        conn.execute("INSERT INTO status_event VALUES(?1,?2,?3,?4,?5,'audit',?6)",params![seq,kind,target,event,actor,t]).unwrap();
+        conn.execute(
+            "INSERT INTO status_event VALUES(?1,?2,?3,?4,?5,'audit',?6)",
+            params![seq, kind, target, event, actor, t],
+        )
+        .unwrap();
     }
     let tables = [
         "source",
@@ -1583,7 +1616,8 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
     assert!(app.verify_integrity().unwrap().ok);
     let conn = synthetic::connect(&path);
     assert_eq!(
-        conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0)).unwrap(),
+        conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
+            .unwrap(),
         3
     );
     for (table, old) in tables.iter().zip(&before) {
@@ -1592,7 +1626,11 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
             assert_eq!(&new[..2], &old[..]);
             assert_eq!(new.len(), 3);
             let name: String = conn
-                .query_row("SELECT name FROM schema_migration WHERE version=3", [], |r| r.get(0))
+                .query_row(
+                    "SELECT name FROM schema_migration WHERE version=3",
+                    [],
+                    |r| r.get(0),
+                )
                 .unwrap();
             assert_eq!(name, "0003_knowledge_integrity");
         } else {
@@ -1603,11 +1641,17 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
     // mandatory beyond itself; its advisory dependent becomes uncertain, not invalid.
     assert_eq!(short(&path, &claims[0]), "valid");
     assert_eq!(short(&path, &claims[1]), "invalid:retracted");
-    assert_eq!(short(&path, &claims[2]), "needs_revalidation:advisory_invalid");
-    // New events continue after the preserved maximum sequence number.
-    app.set_claim_status(&user(), &claims[1], "restore").unwrap();
     assert_eq!(
-        conn.query_row("SELECT max(seq) FROM status_event", [], |r| r.get::<_, i64>(0)).unwrap(),
+        short(&path, &claims[2]),
+        "needs_revalidation:advisory_invalid"
+    );
+    // New events continue after the preserved maximum sequence number.
+    app.set_claim_status(&user(), &claims[1], "restore")
+        .unwrap();
+    assert_eq!(
+        conn.query_row("SELECT max(seq) FROM status_event", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
         16
     );
     assert_eq!(short(&path, &claims[2]), "valid");
@@ -1628,11 +1672,14 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
     let backup = std::fs::read_dir(dir.path())
         .unwrap()
         .map(|e| e.unwrap().path())
-        .find(|p| p.to_string_lossy().contains(".pre-v3.") && p.extension().is_some_and(|x| x == "bak"))
+        .find(|p| {
+            p.to_string_lossy().contains(".pre-v3.") && p.extension().is_some_and(|x| x == "bak")
+        })
         .unwrap();
     let old = rusqlite::Connection::open(backup).unwrap();
     assert_eq!(
-        old.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0)).unwrap(),
+        old.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
+            .unwrap(),
         2
     );
     for (table, rows) in tables.iter().zip(&before) {
@@ -1699,6 +1746,9 @@ fn concurrent_readers_never_observe_lifecycle_without_its_validity() {
     }
     stop.store(true, std::sync::atomic::Ordering::Relaxed);
     let toggles = writer.join().unwrap();
-    assert!(seen[0] > 0 && seen[1] > 0 && toggles > 2, "no interleaving: {seen:?} {toggles}");
+    assert!(
+        seen[0] > 0 && seen[1] > 0 && toggles > 2,
+        "no interleaving: {seen:?} {toggles}"
+    );
     assert!(app.validity_mismatches().unwrap().is_empty());
 }

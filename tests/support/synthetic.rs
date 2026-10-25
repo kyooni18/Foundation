@@ -138,8 +138,16 @@ pub fn v2_fixture(path: &std::path::Path, sources: usize, per: usize) {
     conn.execute_batch("PRAGMA foreign_keys=ON;").unwrap();
     let tx = conn.transaction().unwrap();
     for (v, name, sql) in [
-        (1, "0001_init", include_str!("../../src/store/migrations/0001_init.sql")),
-        (2, "0002_extraction", include_str!("../../src/store/migrations/0002_extraction.sql")),
+        (
+            1,
+            "0001_init",
+            include_str!("../../src/store/migrations/0001_init.sql"),
+        ),
+        (
+            2,
+            "0002_extraction",
+            include_str!("../../src/store/migrations/0002_extraction.sql"),
+        ),
     ] {
         tx.execute_batch(sql).unwrap();
         tx.execute(
@@ -165,7 +173,11 @@ pub fn v2_fixture(path: &std::path::Path, sources: usize, per: usize) {
             tx.execute("INSERT INTO claim(id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,standing,extractor_id,job_id,created_at) VALUES(?1,?2,?3,'en','Fact','unknown','verbatim',?4,?5,?3,0,'legacy',?6,?7)",params![claim,id,text,offset,offset+text.len(),job,t]).unwrap();
             offset += text.len() + 1;
             if let Some(parent) = &previous {
-                tx.execute("INSERT INTO claim_dependency VALUES(?1,?2,?3,'premise','system',?4)",params![ulid(),claim,parent,t]).unwrap();
+                tx.execute(
+                    "INSERT INTO claim_dependency VALUES(?1,?2,?3,'premise','system',?4)",
+                    params![ulid(), claim, parent, t],
+                )
+                .unwrap();
             }
             previous = Some(claim);
         }
@@ -177,11 +189,18 @@ pub fn v2_fixture(path: &std::path::Path, sources: usize, per: usize) {
     tx.commit().unwrap();
 }
 pub fn counts(conn: &Connection) -> Vec<i64> {
-    ["source", "claim", "claim_dependency", "status_event", "job", "extraction_run"]
-        .iter()
-        .map(|t| {
-            conn.query_row(&format!("SELECT count(*) FROM {t}"), [], |r| r.get(0))
-                .unwrap()
-        })
-        .collect()
+    [
+        "source",
+        "claim",
+        "claim_dependency",
+        "status_event",
+        "job",
+        "extraction_run",
+    ]
+    .iter()
+    .map(|t| {
+        conn.query_row(&format!("SELECT count(*) FROM {t}"), [], |r| r.get(0))
+            .unwrap()
+    })
+    .collect()
 }
