@@ -3,7 +3,7 @@
 pub(crate) mod identity;
 pub(crate) mod provenance;
 pub(crate) mod revalidation;
-pub(crate) mod temporal;
+pub mod temporal;
 pub(crate) mod validity;
 pub use identity::{EntityView, IdentityPolicy};
 pub use provenance::Support;
