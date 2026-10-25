@@ -118,9 +118,19 @@ pub fn embed(
     Ok(vectors)
 }
 
+/// A caller-supplied provider (embedding applications and tests).
+#[derive(Clone)]
+pub struct Injected(pub Arc<dyn EmbeddingProvider>);
+impl std::fmt::Debug for Injected {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Injected({})", self.0.identity().key)
+    }
+}
 /// User-selectable provider configuration.
 #[derive(Debug, Clone)]
 pub enum EmbeddingConfig {
+    /// A provider constructed by the embedding application.
+    Custom(Injected),
     /// No semantic retrieval: lexical, structured and graph retrieval only.
     Off,
     Local(local::LocalConfig),
@@ -136,6 +146,7 @@ impl EmbeddingConfig {
     pub fn identity(&self) -> Option<EmbeddingIdentity> {
         match self {
             Self::Off => None,
+            Self::Custom(i) => Some(i.0.identity().clone()),
             Self::Local(c) => Some(c.identity()),
             Self::OpenRouter(c) => Some(c.identity()),
         }
@@ -144,6 +155,7 @@ impl EmbeddingConfig {
     pub fn provider(&self) -> Option<Arc<dyn EmbeddingProvider>> {
         match self {
             Self::Off => None,
+            Self::Custom(i) => Some(i.0.clone()),
             Self::Local(c) => Some(Arc::new(local::LocalProvider::new(c.clone()))),
             Self::OpenRouter(c) => openrouter::CloudProvider::from_environment(c.clone())
                 .ok()

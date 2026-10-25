@@ -1,3 +1,4 @@
+#![recursion_limit = "512"]
 pub mod api;
 pub mod authentication;
 pub mod authz;
@@ -22,6 +23,9 @@ pub struct App {
     pub(crate) store: store::Store,
     cursor_key: [u8; 32],
     pub(crate) policy: Policy,
+    embedder: std::sync::OnceLock<Option<std::sync::Arc<dyn embedding::EmbeddingProvider>>>,
+    pub(crate) vectors: std::sync::Mutex<retrieval::semantic::VectorCache>,
+    pub(crate) query_cache: std::sync::Mutex<retrieval::semantic::QueryCache>,
 }
 /// Configurable settings. None of them are semantic truth rules or contracts.
 #[derive(Debug, Clone, Default)]
@@ -34,6 +38,8 @@ pub struct Policy {
     pub embedding: embedding::EmbeddingConfig,
     /// Queue and indexing resource limits.
     pub queue: retrieval::queue::QueueLimits,
+    /// Retrieval gates (calibrated on development data).
+    pub retrieval: retrieval::fusion::Params,
 }
 impl App {
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
@@ -44,9 +50,19 @@ impl App {
             store: store::Store::open(path.as_ref())?,
             cursor_key: authentication::random_bytes()?,
             policy,
+            embedder: Default::default(),
+            vectors: Default::default(),
+            query_cache: Default::default(),
         };
         app.repair_derived()?;
         Ok(app)
+    }
+    pub fn policy_embedding_identity(&self) -> Option<embedding::EmbeddingIdentity> {
+        self.policy.embedding.identity()
+    }
+    /// The configured embedding provider (constructed on first use; model weights load lazily).
+    pub fn embedder(&self) -> Option<std::sync::Arc<dyn embedding::EmbeddingProvider>> {
+        self.embedder.get_or_init(|| self.policy.embedding.provider()).clone()
     }
     /// Derived tables are rebuilt from authoritative rows when missing or inconsistent
     /// (first open after migration, restored backups, a changed identity policy).

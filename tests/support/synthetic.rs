@@ -204,3 +204,42 @@ pub fn counts(conn: &Connection) -> Vec<i64> {
     })
     .collect()
 }
+
+/// One Claim for bulk fixtures (language and category are explicit).
+pub struct BulkClaim {
+    pub text: String,
+    pub lang: &'static str,
+}
+/// Insert a user-verbatim (or agent) Source with one accepted run and its Claims quickly, using
+/// cached statements. Derived tables (validity, access, index jobs) are produced by `App::open`.
+pub fn bulk_source(conn: &Connection, recorder: &str, captured_at: &str, claims: &[BulkClaim]) -> (String, Vec<String>) {
+    let content = claims.iter().map(|c| c.text.as_str()).collect::<Vec<_>>().join(" ");
+    let id = ulid();
+    conn.prepare_cached("INSERT INTO source(id,recorder,content,content_sha256,media_type,captured_at,retention_request,request_digest) VALUES(?1,?2,?3,?4,'text/plain',?5,'none',?4)")
+        .unwrap()
+        .execute(params![id, recorder, content, hash(&content), captured_at])
+        .unwrap();
+    let job = ulid();
+    conn.prepare_cached("INSERT INTO job(id,kind,target_id,idem_key,state,attempts,run_after,created_at,updated_at,finished_at) VALUES(?1,'extract',?2,?3,'done',1,?4,?4,?4,?4)")
+        .unwrap()
+        .execute(params![job, id, format!("initial/{id}"), captured_at])
+        .unwrap();
+    conn.prepare_cached("INSERT INTO extraction_run(job_id,source_id,extractor_id,output_hash,approval_actor,created_at) VALUES(?1,?2,'synthetic',?3,'user',?4)")
+        .unwrap()
+        .execute(params![job, id, hash(&job), captured_at])
+        .unwrap();
+    let speaker = if recorder == "user" { "user" } else { "agent" };
+    let mut offset = 0;
+    let mut ids = Vec::new();
+    for c in claims {
+        let claim = ulid();
+        let end = offset + c.text.len();
+        conn.prepare_cached("INSERT INTO claim(id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,standing,extractor_id,job_id,created_at) VALUES(?1,?2,?3,?4,'Fact',?5,'verbatim',?6,?7,?3,0,'synthetic',?8,?9)")
+            .unwrap()
+            .execute(params![claim, id, c.text, c.lang, speaker, offset, end, job, captured_at])
+            .unwrap();
+        offset = end + 1;
+        ids.push(claim);
+    }
+    (id, ids)
+}

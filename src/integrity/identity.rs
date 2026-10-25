@@ -727,3 +727,60 @@ pub(crate) fn claim_mentions(
     }
     Ok(out)
 }
+
+/// Claims (not yet visibility-filtered) mentioning an entity, given an entity id or a surface
+/// string, resolved the way the caller's projection resolves identity: users only through
+/// user-asserted identity, other principals through the materialized resolution. Callers still
+/// intersect the result with their authorized candidate set.
+pub(crate) fn claims_of_entity(conn: &Connection, p: &Principal, key: &str) -> Result<Vec<String>> {
+    let rows: Vec<(String, String, String)> = conn
+        .prepare("SELECT id,claim_id,surface FROM mention ORDER BY id")?
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
+        .collect::<std::result::Result<_, _>>()?;
+    let user = if p.kind() == PrincipalKind::User {
+        let usable: Vec<Assertion> = live_assertions(conn)?.into_iter().filter(|a| a.actor == "user").collect();
+        Some(resolve(&entities(conn)?, &usable, &["user"], IdentityPolicy::default()))
+    } else {
+        None
+    };
+    let rep_of_entity = |entity: &str| -> Result<String> {
+        Ok(match &user {
+            Some(res) => res.representative.get(entity).cloned().unwrap_or_else(|| entity.to_owned()),
+            None => conn
+                .prepare_cached("SELECT representative FROM entity_resolution WHERE entity_id=?1")?
+                .query_row([entity], |r| r.get(0))
+                .optional()?
+                .unwrap_or_else(|| entity.to_owned()),
+        })
+    };
+    let rep_of_mention = |mention: &str| -> Result<Option<String>> {
+        Ok(match &user {
+            Some(res) => res.mentions.get(mention).map(|(e, _)| res.representative.get(e).cloned().unwrap_or_else(|| e.clone())),
+            None => conn
+                .prepare_cached("SELECT r.representative FROM mention_resolution m JOIN entity_resolution r ON r.entity_id=m.entity_id WHERE m.mention_id=?1")?
+                .query_row([mention], |r| r.get(0))
+                .optional()?,
+        })
+    };
+    let lowered = key.to_lowercase();
+    let is_entity: bool = conn.query_row("SELECT EXISTS(SELECT 1 FROM entity WHERE id=?1)", [key], |r| r.get(0))?;
+    let mut reps = std::collections::BTreeSet::new();
+    if is_entity {
+        reps.insert(rep_of_entity(key)?);
+    } else {
+        for (mention, _, surface) in &rows {
+            if surface.to_lowercase() == lowered {
+                reps.extend(rep_of_mention(mention)?);
+            }
+        }
+    }
+    let mut claims = std::collections::BTreeSet::new();
+    for (mention, claim, surface) in &rows {
+        let hit = (!is_entity && surface.to_lowercase() == lowered)
+            || rep_of_mention(mention)?.is_some_and(|r| reps.contains(&r));
+        if hit {
+            claims.insert(claim.clone());
+        }
+    }
+    Ok(claims.into_iter().collect())
+}

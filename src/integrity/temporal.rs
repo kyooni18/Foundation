@@ -434,7 +434,7 @@ fn visible_judgments(conn: &Connection, p: &Principal) -> Result<Vec<JudgmentVie
     }
     Ok(out)
 }
-type Status = (
+pub(crate) type Status = (
     &'static str,
     Vec<String>,
     Vec<String>,
@@ -442,7 +442,7 @@ type Status = (
     Vec<&'static str>,
 );
 /// The R2 `history` read rule over the projection's Claims and relations.
-fn evaluate(
+pub(crate) fn evaluate(
     conn: &Connection,
     p: &Principal,
     visible: &[ClaimView],

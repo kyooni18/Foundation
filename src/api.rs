@@ -47,6 +47,53 @@ impl Service {
             }
         })
     }
+    /// Queue-driven derived processing: lexical indexing at normal priority and embedding on a
+    /// background-QoS thread so ingestion and interactive search are never starved. Jobs left
+    /// by a previous process are picked up through the durable queue (leases expire).
+    pub fn start_index_workers(&self) -> Vec<tokio::task::JoinHandle<()>> {
+        let owner = format!("serve-{}", ulid::Ulid::new());
+        let lexical = {
+            let app = self.app.clone();
+            let owner = owner.clone();
+            tokio::spawn(async move {
+                loop {
+                    let worker = app.clone();
+                    let owner = owner.clone();
+                    let busy = tokio::task::spawn_blocking(move || worker.process_lexical_once(&owner))
+                        .await
+                        .ok()
+                        .and_then(|r| r.ok())
+                        .is_some_and(|r| r.jobs + r.cancelled > 0);
+                    if !busy {
+                        tokio::time::sleep(std::time::Duration::from_millis(250)).await;
+                    }
+                }
+            })
+        };
+        let embed = {
+            let app = self.app.clone();
+            tokio::spawn(async move {
+                let Some(provider) = app.embedder() else { return };
+                loop {
+                    let worker = app.clone();
+                    let provider = provider.clone();
+                    let owner = owner.clone();
+                    let busy = tokio::task::spawn_blocking(move || {
+                        crate::retrieval::queue::background_qos();
+                        worker.process_embeddings_once(provider.as_ref(), &owner)
+                    })
+                    .await
+                    .ok()
+                    .and_then(|r| r.ok())
+                    .is_some_and(|r| r.jobs + r.cancelled > 0 && r.failed == 0 && r.deferred == 0);
+                    if !busy {
+                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                    }
+                }
+            })
+        };
+        vec![lexical, embed]
+    }
     pub fn authenticate(&self, bearer: &str) -> Result<Principal> {
         self.credentials.authenticate(bearer)
     }
@@ -186,6 +233,26 @@ impl Service {
                     )?;
                     Ok(json!({}))
                 }
+                "search" => {
+                    let r: crate::retrieval::search::SearchRequest = parse(arguments)?;
+                    to_value(self.app.search(p, r)?)
+                }
+                "source_processing" => {
+                    let r: Id = parse(arguments)?;
+                    to_value(self.app.source_processing(p, &r.id.parse()?)?)
+                }
+                "queue_status" => {
+                    let _: Empty = parse(arguments)?;
+                    to_value(self.app.queue_status(p)?)
+                }
+                "queue_jobs" => {
+                    let r: QueueJobs = parse(arguments)?;
+                    to_value(self.app.queue_jobs(p, r.state.as_deref(), r.limit)?)
+                }
+                "queue_retry" => {
+                    let r: Id = parse(arguments)?;
+                    Ok(json!({"requeued": self.app.retry_job(p, &r.id)?}))
+                }
                 "list" => to_value(self.app.list_sources(p, parse::<ListSources>(arguments)?)?),
                 "retract" | "forget" | "restore" => {
                     let r: Transition = parse(arguments)?;
@@ -304,6 +371,16 @@ struct IntegrityLifecycle {
     id: String,
     event: String,
     reason: Option<String>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct QueueJobs {
+    state: Option<String>,
+    #[serde(default = "default_jobs")]
+    limit: usize,
+}
+fn default_jobs() -> usize {
+    50
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]

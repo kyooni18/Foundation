@@ -422,3 +422,16 @@ pub(crate) fn decode(bytes: &[u8]) -> Vec<f32> {
         .map(|b| half::f16::from_le_bytes([b[0], b[1]]).to_f32())
         .collect()
 }
+
+/// Run the calling thread at background priority (macOS QoS; a nice value elsewhere) so model
+/// inference yields to ingestion and interactive search.
+pub fn background_qos() {
+    #[cfg(target_os = "macos")]
+    unsafe {
+        libc::pthread_set_qos_class_self_np(libc::qos_class_t::QOS_CLASS_BACKGROUND, 0);
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
+    unsafe {
+        libc::setpriority(libc::PRIO_PROCESS, 0, 10);
+    }
+}

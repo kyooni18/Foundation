@@ -9,6 +9,14 @@ use std::{io::Read, path::PathBuf};
 struct Cli {
     #[arg(long, global = true)]
     db: Option<PathBuf>,
+    /// Embedding provider for semantic retrieval: local (default, runs on this machine),
+    /// openrouter (opt-in cloud; sends Claim text to a third party) or off.
+    #[arg(long, global = true, default_value = "local")]
+    embedding: String,
+    #[arg(long, global = true)]
+    embedding_model: Option<String>,
+    #[arg(long, global = true)]
+    embedding_model_dir: Option<PathBuf>,
     #[command(subcommand)]
     command: Command,
 }
@@ -141,6 +149,50 @@ enum Command {
         #[arg(long, default_value_t = 1000)]
         max_jobs: usize,
     },
+    /// Run queued lexical and embedding jobs until the queue is idle (or limits are reached).
+    IndexWork {
+        #[arg(long, default_value = "all")]
+        kind: String,
+        #[arg(long, default_value_t = 100000)]
+        max_rounds: usize,
+    },
+    /// Re-enqueue derived work missing for visible Claims (idempotent).
+    IndexReconcile,
+    /// Drop a derived index and let the queue rebuild it from authoritative Claims.
+    IndexRebuild {
+        /// lexical | vectors
+        which: String,
+    },
+    /// Verify local model files against the pinned digests without loading weights.
+    ModelCheck,
+    /// Adaptive retrieval as the given principal.
+    Search {
+        #[arg(long)]
+        principal: PrincipalKind,
+        query: String,
+        #[arg(long, default_value = "auto")]
+        intent: String,
+        #[arg(long, default_value = "auto")]
+        depth: String,
+        #[arg(long, default_value_t = 10)]
+        limit: usize,
+        #[arg(long)]
+        as_of: Option<String>,
+        #[arg(long, default_value = "adaptive")]
+        strategy: String,
+    },
+    QueueStatus,
+    QueueJobs {
+        #[arg(long)]
+        state: Option<String>,
+        #[arg(long, default_value_t = 50)]
+        limit: usize,
+    },
+    QueueRetry {
+        job: String,
+    },
+    /// Return jobs deferred because the provider was unavailable to the queue.
+    QueueResume,
     Backup {
         path: PathBuf,
     },
@@ -209,6 +261,11 @@ fn run() -> Result<()> {
             })
         })
         .ok_or_else(|| invalid("db", "HOME unavailable; supply --db"))?;
+    let policy = prime_radiant::Policy {
+        embedding: prime_radiant::embedding::EmbeddingConfig::parse(&cli.embedding, cli.embedding_model.clone(), cli.embedding_model_dir.clone())
+            .ok_or_else(|| invalid("embedding", "expected local, openrouter or off"))?,
+        ..Default::default()
+    };
     if let Command::Restore { backup } = cli.command {
         App::restore_from(backup, path)?;
         output(serde_json::json!({"restored":true}));
@@ -225,7 +282,7 @@ fn run() -> Result<()> {
     } = cli.command
     {
         let credentials = prime_radiant::authentication::Credentials::open(credentials)?;
-        let service = prime_radiant::api::Service::new(App::open(path)?, credentials);
+        let service = prime_radiant::api::Service::new(App::open_with_policy(path, policy)?, credentials);
         return tokio::runtime::Runtime::new()?.block_on(async move {
             let worker =
                 if let (Some(model), Some(reviewer)) = (extraction_model, extraction_reviewer) {
@@ -252,6 +309,7 @@ fn run() -> Result<()> {
                     None
                 };
             let revalidation = service.start_revalidation_worker();
+            let indexing = service.start_index_workers();
             let listener = prime_radiant::transport::http::bind(bind).await?;
             eprintln!("listening {}", listener.local_addr()?);
             axum::serve(listener, prime_radiant::transport::http::router(service))
@@ -263,10 +321,11 @@ fn run() -> Result<()> {
                 worker.abort();
             }
             revalidation.abort();
+            indexing.iter().for_each(|h| h.abort());
             Ok(())
         });
     }
-    let app = App::open(path)?;
+    let app = App::open_with_policy(path, policy)?;
     match cli.command {
         Command::Init | Command::Migrate => output(serde_json::json!({"schema_version":4})),
         Command::IntegrityRebuild => output(serde_json::json!({"claims":app.rebuild_derived(
@@ -407,6 +466,67 @@ fn run() -> Result<()> {
             app.backup_to(path)?;
             output(serde_json::json!({"backed_up":true}));
         }
+        Command::IndexWork { kind, max_rounds } => {
+            let owner = format!("cli-{}", std::process::id());
+            let (mut lexical, mut embedded, mut failed, mut deferred) = (0, 0, 0, 0);
+            for _ in 0..max_rounds {
+                let mut busy = false;
+                if kind == "all" || kind == "lexical" {
+                    let r = app.process_lexical_once(&owner)?;
+                    lexical += r.claims;
+                    busy |= r.jobs + r.cancelled > 0;
+                }
+                if (kind == "all" || kind == "embed")
+                    && let Some(provider) = app.embedder()
+                {
+                    let r = app.process_embeddings_once(provider.as_ref(), &owner)?;
+                    embedded += r.claims;
+                    failed += r.failed;
+                    deferred += r.deferred;
+                    busy |= r.jobs + r.cancelled > 0;
+                    if r.failed + r.deferred > 0 {
+                        break;
+                    }
+                }
+                if !busy {
+                    break;
+                }
+            }
+            output(serde_json::json!({"lexical_indexed":lexical,"embedded":embedded,"failed":failed,"deferred":deferred}));
+        }
+        Command::IndexReconcile => {
+            let (l, v) = app.reconcile_indexing()?;
+            output(serde_json::json!({"lexical_jobs":l,"embedding_jobs":v}));
+        }
+        Command::IndexRebuild { which } => {
+            let user = Principal::for_local_cli(PrincipalKind::User, None, None);
+            let n = match which.as_str() {
+                "lexical" => app.rebuild_lexical(&user)?,
+                "vectors" => app.rebuild_vectors(&user)?,
+                _ => return Err(invalid("which", "expected lexical or vectors")),
+            };
+            output(serde_json::json!({"jobs_enqueued":n}));
+        }
+        Command::ModelCheck => {
+            let id = app.policy_embedding_identity();
+            output(serde_json::json!({"identity":id.as_ref().map(|i| serde_json::json!({"key":i.key,"provider":i.provider,"model":i.model,"revision":i.revision,"dimensions":i.dimensions,"local":i.local})),"ready":app.embedder().is_some()}));
+        }
+        Command::Search { principal, query, intent, depth, limit, as_of, strategy } => {
+            fn parse<T: serde::de::DeserializeOwned>(field: &'static str, v: String) -> Result<T> {
+                serde_json::from_value(serde_json::Value::String(v)).map_err(|_| invalid(field, "unsupported value"))
+            }
+            let mut request = prime_radiant::retrieval::search::SearchRequest::new(query);
+            request.intent = parse("intent", intent)?;
+            request.depth = parse("depth", depth)?;
+            request.strategy = parse("strategy", strategy)?;
+            request.limit = limit;
+            request.as_of = as_of;
+            output(app.search(&Principal::for_local_cli(principal, None, None), request)?);
+        }
+        Command::QueueStatus => output(app.queue_status(&Principal::for_local_cli(PrincipalKind::User, None, None))?),
+        Command::QueueJobs { state, limit } => output(app.queue_jobs(&Principal::for_local_cli(PrincipalKind::User, None, None), state.as_deref(), limit)?),
+        Command::QueueRetry { job } => output(serde_json::json!({"requeued":app.retry_job(&Principal::for_local_cli(PrincipalKind::User, None, None), &job)?})),
+        Command::QueueResume => output(serde_json::json!({"resumed":app.resume_deferred(&Principal::for_local_cli(PrincipalKind::User, None, None), None)?})),
         Command::Restore { .. }
         | Command::Serve { .. }
         | Command::Mcp { .. }

@@ -94,21 +94,3 @@ pub(crate) fn column(p: &Principal) -> &'static str {
         _ => "agent_visible",
     }
 }
-/// Visible Claim ids among `ids`, in the caller's projection.
-pub(crate) fn visible_among(
-    conn: &Connection,
-    p: &Principal,
-    ids: &[String],
-) -> Result<Vec<String>> {
-    if ids.is_empty() {
-        return Ok(Vec::new());
-    }
-    let json = serde_json::to_string(ids).map_err(|_| invalid("ids", "serialization"))?;
-    Ok(conn
-        .prepare_cached(&format!(
-            "SELECT a.claim_id FROM claim_access a WHERE a.{}=1 AND a.claim_id IN (SELECT value FROM json_each(?1))",
-            column(p)
-        ))?
-        .query_map(params![json], |r| r.get(0))?
-        .collect::<std::result::Result<_, _>>()?)
-}

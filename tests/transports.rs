@@ -16,7 +16,7 @@ fn actual_http_and_stdio_mcp_are_equivalent() {
     for role in 0..3 {
         let mut mcp = server.mcp(role);
         let tools = mcp.rpc("tools/list", json!({}));
-        assert_eq!(tools["result"]["tools"].as_array().unwrap().len(), 24);
+        assert_eq!(tools["result"]["tools"].as_array().unwrap().len(), 29);
         let args = json!({"content":"  한글 한글 👩‍💻\r\n\t\u{0000}","idempotency_key":format!("role{role}"),"retention_request":"user_requested"});
         let original = server.call(role, "record", args.clone());
         assert_eq!(original["result"]["created"], true);

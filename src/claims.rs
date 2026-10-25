@@ -251,6 +251,20 @@ impl App {
         include_retracted: bool,
         history: bool,
     ) -> Result<Vec<ClaimView>> {
+        self.read_claims_only(p, include_retracted, history, None)
+    }
+    /// Authoritative projection restricted to `only` (all visible Claims when `None`). Retrieval
+    /// uses this as the final recheck: derived indexes only propose candidate ids.
+    pub(crate) fn read_claims_only(
+        &self,
+        p: &Principal,
+        include_retracted: bool,
+        history: bool,
+        only: Option<&[String]>,
+    ) -> Result<Vec<ClaimView>> {
+        let only = only
+            .map(|ids| serde_json::to_string(ids).map_err(|_| invalid("ids", "serialization")))
+            .transpose()?;
         let conn = self.store.reader()?;
         // Filter before projection: no source/claim totals, hidden IDs, revision links or job metadata.
         // Same predicate as integrity::user_claim_predicate for the user projection.
@@ -259,12 +273,12 @@ impl App {
      COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore') AS claim_state,
      COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('confirm','unconfirm') ORDER BY seq DESC LIMIT 1),'unconfirm')='confirm' AS confirmed,
      v.state AS validity,v.reasons AS validity_reasons,v.deps_unknown AS deps_unknown
-     FROM claim c JOIN source s ON s.id=c.source_id JOIN claim_validity v ON v.claim_id=c.id WHERE ((?3 AND ?1<>'user') OR c.job_id=(SELECT job_id FROM extraction_run WHERE source_id=c.source_id ORDER BY seq DESC LIMIT 1)))
+     FROM claim c JOIN source s ON s.id=c.source_id JOIN claim_validity v ON v.claim_id=c.id WHERE ((?3 AND ?1<>'user') OR c.job_id=(SELECT job_id FROM extraction_run WHERE source_id=c.source_id ORDER BY seq DESC LIMIT 1)) AND (?4 IS NULL OR c.id IN (SELECT value FROM json_each(?4))))
      SELECT id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,confirmed,validity='needs_revalidation',speaker_label,tkind,applies_from,applies_to,standing,index_fields,created_at,claim_state,source_state,recorder,extractor_id,job_id,CASE WHEN COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=visible.revision_of AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')<>'forget' THEN revision_of END,validity,validity_reasons,deps_unknown FROM visible
      WHERE source_state<>'forget' AND claim_state<>'forget' AND ((?2 AND ?1<>'user') OR (source_state='restore' AND claim_state='restore')) AND (?1<>'user' OR (validity<>'invalid' AND ((recorder='user' AND speaker='user' AND basis='verbatim') OR confirmed))) ORDER BY id";
         Ok(conn
             .prepare(sql)?
-            .query_map(params![p.kind().as_str(), include_retracted,history], |r| {
+            .query_map(params![p.kind().as_str(), include_retracted, history, only], |r| {
                 Ok(ClaimView {
                     id: r.get(0)?,
                     source_id: r.get(1)?,
