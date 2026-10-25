@@ -141,6 +141,9 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertTrue(all(list(row['properties'])==['reason','status'] for row in fixed_order.values()))
         self.assertEqual(repair.body(packet,'v48',active)['max_tokens'],8000)
         self.assertEqual(repair.reader_body('One isolated Claim','v48')['max_tokens'],8000)
+        self.assertEqual(repair.body(packet,'v49',active)['max_tokens'],8000)
+        self.assertEqual(faceted_review.definitions('v49')[1],faceted_review.definitions('v48')[1])
+        self.assertIn('COMPLETE scoped proposition',faceted_review.definitions('v49')[0]['question'])
         self.assertEqual({d for row in grouped_definitions for d in row['dimensions']},{d for row in faceted_review.definitions('v46') for d in row['dimensions']})
         joint=copy.deepcopy(violation_facet)
         for row in joint['claims']:row['dimensions']={d:dict(status='pass',reason='Synthetic whole-Claim support') for d in grouped_definitions[1]['dimensions']}
