@@ -311,3 +311,5 @@ pub(super) const STAGES_47: [&str; 3] = [
 pub(super) const DEFINITIONS_48: &str = include_str!("../../prompts/extraction-v48/facets.json");
 
 pub(super) const DEFINITIONS_49: &str = include_str!("../../prompts/extraction-v49/facets.json");
+
+pub(super) const DEFINITIONS_52: &str = include_str!("../../prompts/extraction-v52/facets.json");

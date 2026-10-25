@@ -177,6 +177,15 @@ class RepairProtocolTest(unittest.TestCase):
             verdict='pass',issues=[],checked=[0],coverage_complete=True)
         self.assertEqual(repair.reader_check(analyzed,'v50')['verdict'],'pass')
         self.assertEqual(repair.reader_check(analyzed,'v51')['verdict'],'pass')
+        self.assertEqual(repair.reader_check(analyzed,'v52')['verdict'],'pass')
+        terminal=dict(case=dict(source='If the score stays low, the speaker plans to revise the model.'),candidate=packet['candidate'])
+        stage52=repair.stages('v52')['atomicity']
+        inventory52=repair.body(terminal,'v52',stage52)['output_config']['format']['schema']['properties']['inventory']['items']['properties']['proposition']['enum']
+        inventory51=repair.body(terminal,'v51',stage52)['output_config']['format']['schema']['properties']['inventory']['items']['properties']['proposition']['enum']
+        self.assertIn(terminal['case']['source'],inventory51)
+        self.assertNotIn(terminal['case']['source'],inventory52)
+        self.assertIn(terminal['case']['source'][:-1],inventory52)
+        self.assertEqual(set(inventory51)-set(inventory52),{terminal['case']['source']})
         policy=(focused.ROOT/'prompts/extraction-v51/reference_policy.txt').read_text()
         for name in ['reader.txt','review.txt']:self.assertTrue((focused.ROOT/('prompts/extraction-v51/'+name)).read_text().endswith(policy))
         analyzed['analysis']['reference']['status']='reject'
