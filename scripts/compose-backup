@@ -1,0 +1,12 @@
+#!/bin/sh
+# Run from repository root. COMPOSE_PROJECT_NAME selects an isolated deployment.
+set -eu
+stamp=$(date -u +%Y%m%dT%H%M%SZ)
+docker compose stop radiant
+# Deliberately leave stopped on error. Never raw-copy an active SQLite DB.
+docker compose run --rm --no-deps radiant backup "/backups/$stamp.db"
+docker compose run --rm --no-deps --entrypoint /bin/sh radiant -ec \
+  "umask 077; tar -cf /backups/$stamp.credentials.tar -C /credentials ."
+docker compose run --rm --no-deps radiant check
+echo "Snapshot: /backups/$stamp.db; credentials: /backups/$stamp.credentials.tar (sensitive)"
+docker compose up -d --wait

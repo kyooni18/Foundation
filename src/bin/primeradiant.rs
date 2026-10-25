@@ -319,6 +319,18 @@ fn run() -> Result<()> {
             eprintln!("listening {}", listener.local_addr()?);
             axum::serve(listener, prime_radiant::transport::http::router(service))
                 .with_graceful_shutdown(async {
+                    #[cfg(unix)]
+                    {
+                        let mut terminate = tokio::signal::unix::signal(
+                            tokio::signal::unix::SignalKind::terminate(),
+                        )
+                        .expect("SIGTERM handler");
+                        tokio::select! {
+                            _ = tokio::signal::ctrl_c() => {},
+                            _ = terminate.recv() => {},
+                        }
+                    }
+                    #[cfg(not(unix))]
                     let _ = tokio::signal::ctrl_c().await;
                 })
                 .await?;

@@ -405,7 +405,12 @@ impl EmbeddingProvider for LocalProvider {
         }
         let mut guard = self.encoder.lock().map_err(|_| EmbedError::Runtime)?;
         if guard.is_none() {
+            let started = std::time::Instant::now();
             *guard = Some(Encoder::load(&self.config)?);
+            tracing::info!(
+                seconds = started.elapsed().as_secs_f64(),
+                "local embedding initialized"
+            );
         }
         let enc = guard.as_ref().expect("loaded");
         let encodings = enc

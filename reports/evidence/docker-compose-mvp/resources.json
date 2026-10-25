@@ -1,0 +1,10 @@
+{
+  "process": {
+    "VmHWM": "12188 kB",
+    "VmRSS": "12188 kB",
+    "Threads": "8"
+  },
+  "memory.current": "19152896",
+  "memory.peak": "23494656",
+  "memory.max": "1073741824"
+}

@@ -1,5 +1,9 @@
 # Prime Radiant
 
+**Local Docker Compose service:** [operational quickstart, MCP configuration, storage,
+backup/restore and verification](deployment/README.md). This deployment uses separate
+named volumes and never imports the development database automatically.
+
 Phase 4: knowledge integrity (dependency validity propagation, provenance, identity,
 temporal reads) over Phase 3's durable extraction, source-bound semantic gates and
 exact-hash user review, with immutable persistence, authenticated loopback HTTP, and stdio MCP.

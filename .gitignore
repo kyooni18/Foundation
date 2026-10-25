@@ -5,3 +5,6 @@ __pycache__/
 
 # Private persistent task spending ledger; never commit or reset.
 /.local/
+
+# Container configuration may contain local paths; never commit credentials.
+.env

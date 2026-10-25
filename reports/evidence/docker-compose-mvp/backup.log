@@ -1,0 +1,15 @@
+ Container pr-mvp-verify-radiant-1 Stopping
+ Container pr-mvp-verify-radiant-1 Stopped
+ Container pr-mvp-verify-radiant-run-7a88dfb6d76e Creating
+ Container pr-mvp-verify-radiant-run-7a88dfb6d76e Created
+{"backed_up":true}
+ Container pr-mvp-verify-radiant-run-772b95047370 Creating
+ Container pr-mvp-verify-radiant-run-772b95047370 Created
+ Container pr-mvp-verify-radiant-run-66229168781c Creating
+ Container pr-mvp-verify-radiant-run-66229168781c Created
+{"ok":true,"items":[{"name":"sqlite","ok":true,"violations":0,"first_violation":null},{"name":"foreign_keys","ok":true,"violations":0,"first_violation":null},{"name":"migrations","ok":true,"violations":0,"first_violation":null},{"name":"source_hashes","ok":true,"violations":0,"first_violation":null},{"name":"status_targets","ok":true,"violations":0,"first_violation":null},{"name":"triggers","ok":true,"violations":0,"first_violation":null},{"name":"claim_evidence","ok":true,"violations":0,"first_violation":null},{"name":"extraction_publication","ok":true,"violations":0,"first_violation":null},{"name":"identity_targets","ok":true,"violations":0,"first_violation":null},{"name":"claim_validity","ok":true,"violations":0,"first_violation":null},{"name":"claim_access","ok":true,"violations":0,"first_violation":null},{"name":"identity_resolution","ok":true,"violations":0,"first_violation":null}]}
+Snapshot: /backups/20261025T160015Z.db; credentials: /backups/20261025T160015Z.credentials.tar (sensitive)
+ Container pr-mvp-verify-radiant-1 Starting
+ Container pr-mvp-verify-radiant-1 Started
+ Container pr-mvp-verify-radiant-1 Waiting
+ Container pr-mvp-verify-radiant-1 Healthy

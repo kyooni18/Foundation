@@ -1,0 +1,521 @@
+#0 building with "apple-docker" instance using docker driver
+
+#1 [build 1/6] FROM docker.io/library/rust:1.94.0-bookworm@sha256:365468470075493dc4583f47387001854321c5a8583ea9604b297e67f01c5a4f
+#1 resolve docker.io/library/rust:1.94.0-bookworm@sha256:365468470075493dc4583f47387001854321c5a8583ea9604b297e67f01c5a4f 0.0s done
+#1 DONE 0.0s
+
+#2 [build 2/6] WORKDIR /build
+#2 DONE 0.0s
+
+#3 [internal] load build definition from Dockerfile
+#3 transferring dockerfile: 2.12kB done
+#3 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/rust:1.94.0-bookworm@sha256:365468470075493dc4583f47387001854321c5a8583ea9604b297e67f01c5a4f
+#4 DONE 0.0s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 413B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 2.78MB 0.1s done
+#6 DONE 0.1s
+
+#7 [build 3/6] COPY Cargo.toml Cargo.lock ./
+#7 DONE 0.0s
+
+#8 [build 4/6] COPY src ./src
+#8 DONE 0.0s
+
+#9 [build 5/6] COPY prompts ./prompts
+#9 DONE 0.1s
+
+#10 [build 6/6] RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,target=/build/target     cargo build --locked --release --bin primeradiant && cp target/release/primeradiant /primeradiant
+#10 0.890    Compiling proc-macro2 v1.0.107
+#10 0.890    Compiling quote v1.0.47
+#10 0.890    Compiling unicode-ident v1.0.27
+#10 0.890    Compiling libc v0.2.191
+#10 0.890    Compiling cfg-if v1.0.5
+#10 0.967    Compiling once_cell v1.21.4
+#10 0.995    Compiling version_check v0.9.5
+#10 1.133    Compiling shlex v2.0.1
+#10 1.134    Compiling find-msvc-tools v0.1.15
+#10 1.159    Compiling zerocopy v0.8.63
+#10 1.250    Compiling cc v1.9.0
+#10 1.251    Compiling getrandom v0.3.4
+#10 1.407    Compiling memchr v2.8.3
+#10 1.415    Compiling itoa v1.0.18
+#10 1.698    Compiling bitflags v2.13.2
+#10 1.781    Compiling syn v3.0.9
+#10 1.969    Compiling syn v2.0.119
+#10 2.028    Compiling serde_core v1.0.229
+#10 2.312    Compiling crossbeam-utils v0.8.23
+#10 2.450    Compiling stable_deref_trait v1.2.1
+#10 2.503    Compiling rand_core v0.9.5
+#10 2.632    Compiling crossbeam-epoch v0.9.21
+#10 2.697    Compiling libm v0.2.16
+#10 2.750    Compiling smallvec v1.16.3
+#10 2.833    Compiling autocfg v1.5.1
+#10 3.053    Compiling num-traits v0.2.19
+#10 3.168    Compiling crossbeam-deque v0.8.8
+#10 3.594    Compiling rayon-core v1.13.0
+#10 3.894    Compiling log v0.4.34
+#10 4.015    Compiling synstructure v0.14.0
+#10 4.372    Compiling serde v1.0.229
+#10 4.451    Compiling either v1.19.0
+#10 4.512    Compiling paste v1.0.15
+#10 4.623    Compiling bytes v1.12.1
+#10 4.776    Compiling pin-project-lite v0.2.17
+#10 4.973    Compiling zerocopy-derive v0.8.63
+#10 4.993    Compiling zerofrom-derive v0.1.8
+#10 5.097    Compiling yoke-derive v0.8.4
+#10 5.191    Compiling bytemuck_derive v1.12.1
+#10 5.761    Compiling zerovec-derive v0.11.7
+#10 5.804    Compiling serde_derive v1.0.229
+#10 5.811    Compiling zerofrom v0.1.8
+#10 5.891    Compiling yoke v0.8.4
+#10 5.943    Compiling bytemuck v1.25.2
+#10 5.973    Compiling displaydoc v0.2.7
+#10 6.049    Compiling rayon v1.12.0
+#10 6.444    Compiling pkg-config v0.3.34
+#10 6.497    Compiling zerovec v0.11.9
+#10 6.756    Compiling futures-core v0.3.34
+#10 6.814    Compiling pulp v0.22.3
+#10 6.818    Compiling num-complex v0.4.6
+#10 6.966    Compiling errno v0.3.14
+#10 7.029    Compiling tracing-core v0.1.36
+#10 7.041    Compiling fnv v1.0.7
+#10 7.116    Compiling pulp-wasm-simd-flag v0.1.1
+#10 7.143    Compiling strsim v0.11.1
+#10 7.322    Compiling zmij v1.0.23
+#10 7.424    Compiling dyn-stack-macros v0.1.3
+#10 7.552    Compiling ident_case v1.0.1
+#10 7.561    Compiling reborrow v0.5.5
+#10 7.587    Compiling darling_core v0.20.11
+#10 7.756    Compiling dyn-stack v0.13.2
+#10 7.916    Compiling signal-hook-registry v1.4.8
+#10 7.933    Compiling tinystr v0.8.5
+#10 8.029    Compiling tokio-macros v2.7.2
+#10 8.202    Compiling ppv-lite86 v0.2.21
+#10 8.225    Compiling http v1.5.0
+#10 8.334    Compiling rand_chacha v0.9.0
+#10 8.502    Compiling rand v0.9.5
+#10 8.935    Compiling rand_distr v0.5.1
+#10 8.970    Compiling mio v1.2.4
+#10 9.300    Compiling half v2.7.1
+#10 9.346    Compiling socket2 v0.6.5
+#10 9.544    Compiling raw-cpuid v11.6.0
+#10 9.662    Compiling serde_json v1.0.154
+#10 9.729    Compiling writeable v0.6.4
+#10 9.775    Compiling litemap v0.8.3
+#10 9.897    Compiling seq-macro v0.3.6
+#10 9.905    Compiling icu_locale_core v2.4.0
+#10 10.04    Compiling tokio v1.54.1
+#10 10.14    Compiling darling_macro v0.20.11
+#10 10.26    Compiling http-body v1.1.0
+#10 10.52    Compiling potential_utf v0.1.6
+#10 10.57    Compiling gemm-common v0.19.0
+#10 10.59    Compiling zerotrie v0.2.5
+#10 10.86    Compiling tracing-attributes v0.1.31
+#10 11.66    Compiling ring v0.17.14
+#10 11.86    Compiling utf8_iter v1.0.4
+#10 11.96    Compiling futures-sink v0.3.34
+#10 11.99    Compiling ryu v1.0.23
+#10 11.99    Compiling percent-encoding v2.3.2
+#10 12.06    Compiling icu_properties_data v2.4.0
+#10 12.16    Compiling rustversion v1.0.23
+#10 12.16    Compiling icu_normalizer_data v2.4.0
+#10 12.25    Compiling tracing v0.1.44
+#10 12.34    Compiling icu_collections v2.4.0
+#10 12.45    Compiling icu_provider v2.4.0
+#10 12.55    Compiling darling v0.20.11
+#10 13.00    Compiling onig_sys v69.9.3
+#10 13.09    Compiling generic-array v0.14.7
+#10 13.19    Compiling futures-io v0.3.34
+#10 13.24    Compiling futures-task v0.3.34
+#10 13.30    Compiling slab v0.4.12
+#10 13.35    Compiling tower-service v0.3.3
+#10 13.39    Compiling httparse v1.10.1
+#10 13.39    Compiling subtle v2.6.1
+#10 13.46    Compiling zeroize v1.9.1
+#10 13.58    Compiling rustls-pki-types v1.15.1
+#10 13.58    Compiling futures-util v0.3.34
+#10 15.03    Compiling derive_builder_core v0.20.2
+#10 15.70    Compiling getrandom v0.2.17
+#10 15.76    Compiling aho-corasick v1.1.5
+#10 15.79    Compiling ahash v0.8.12
+#10 15.90    Compiling regex-syntax v0.8.11
+#10 17.00    Compiling try-lock v0.2.5
+#10 17.03    Compiling esaxx-rs v0.1.10
+#10 17.12    Compiling rustix v1.1.5
+#10 17.29    Compiling equivalent v1.0.3
+#10 17.32    Compiling getrandom v0.4.3
+#10 17.40    Compiling untrusted v0.9.0
+#10 17.50    Compiling typenum v1.20.1
+#10 17.85    Compiling minimal-lexical v0.2.1
+#10 18.03    Compiling thiserror v2.0.21
+#10 18.23    Compiling nom v7.1.3
+#10 19.33    Compiling want v0.3.2
+#10 19.40    Compiling regex-automata v0.4.18
+#10 19.55    Compiling icu_properties v2.4.0
+#10 20.86    Compiling castaway v0.2.4
+#10 20.93    Compiling icu_normalizer v2.4.0
+#10 21.82    Compiling derive_builder_macro v0.20.2
+#10 22.15    Compiling form_urlencoded v1.2.2
+#10 22.21    Compiling sync_wrapper v1.0.2
+#10 22.30    Compiling thiserror-impl v2.0.21
+#10 22.31    Compiling monostate-impl v0.1.18
+#10 22.35    Compiling itertools v0.14.0
+#10 22.81    Compiling unicode-segmentation v1.13.3
+#10 23.18    Compiling pastey v0.2.3
+#10 23.34    Compiling linux-raw-sys v0.12.1
+#10 23.58    Compiling base64 v0.13.1
+#10 23.65    Compiling atomic-waker v1.1.2
+#10 23.65    Compiling macro_rules_attribute-proc_macro v0.2.3
+#10 23.73    Compiling tower-layer v0.3.3
+#10 23.80    Compiling rustls v0.23.45
+#10 23.84    Compiling static_assertions v1.1.0
+#10 23.84    Compiling crc32fast v1.5.3
+#10 23.91    Compiling httpdate v1.0.3
+#10 23.92    Compiling compact_str v0.9.1
+#10 23.99    Compiling macro_rules_attribute v0.2.3
+#10 24.01    Compiling hyper v1.12.0
+#10 24.01    Compiling spm_precompiled v0.1.4
+#10 24.22    Compiling rayon-cond v0.4.0
+#10 24.49    Compiling monostate v0.1.18
+#10 24.61    Compiling derive_builder v0.20.2
+#10 24.70    Compiling onig v6.5.3
+#10 24.79    Compiling idna_adapter v1.2.2
+#10 24.90    Compiling regex v1.13.1
+#10 25.47    Compiling rustls-webpki v0.103.15
+#10 26.24    Compiling futures-channel v0.3.34
+#10 26.38    Compiling gemm-f32 v0.19.0
+#10 26.41    Compiling dary_heap v0.3.9
+#10 26.51    Compiling unicode-normalization-alignments v0.1.12
+#10 26.93    Compiling unicode_categories v0.1.1
+#10 27.00    Compiling vcpkg v0.2.15
+#10 27.14    Compiling foldhash v0.2.0
+#10 27.24    Compiling ipnet v2.12.2
+#10 27.38    Compiling hashbrown v0.17.1
+#10 27.41    Compiling utf8parse v0.2.2
+#10 27.45    Compiling base64 v0.23.1
+#10 27.83    Compiling fastrand v2.5.0
+#10 27.98    Compiling allocator-api2 v0.2.21
+#10 28.03    Compiling tempfile v3.27.0
+#10 28.18    Compiling hashbrown v0.16.1
+#10 28.20    Compiling indexmap v2.14.2
+#10 28.26    Compiling hyper-util v0.1.21
+#10 28.64    Compiling anstyle-parse v1.0.0
+#10 28.70    Compiling libsqlite3-sys v0.35.0
+#10 28.71    Compiling gemm-f16 v0.19.0
+#10 28.84    Compiling idna v1.1.0
+#10 29.12    Compiling tower v0.5.3
+#10 29.49    Compiling crypto-common v0.1.7
+#10 29.53    Compiling block-buffer v0.10.4
+#10 29.59    Compiling gemm-c32 v0.19.0
+#10 30.52    Compiling gemm-c64 v0.19.0
+#10 30.72    Compiling gemm-f64 v0.19.0
+#10 31.14    Compiling http-body-util v0.1.5
+#10 31.32    Compiling anstyle-query v1.1.5
+#10 31.35    Compiling foldhash v0.1.5
+#10 31.44    Compiling is_terminal_polyfill v1.70.2
+#10 31.52    Compiling anstyle v1.0.14
+#10 31.66    Compiling typed-path v0.12.4
+#10 32.41    Compiling colorchoice v1.0.5
+#10 32.44    Compiling anstream v1.0.0
+#10 32.56    Compiling zip v8.6.0
+#10 32.76    Compiling hashbrown v0.15.5
+#10 33.20    Compiling gemm v0.19.0
+#10 33.20    Compiling tokio-rustls v0.26.6
+#10 33.24    Compiling digest v0.10.7
+#10 33.38    Compiling url v2.5.8
+#10 33.91    Compiling safetensors v0.8.0
+#10 34.41    Compiling tokenizers v0.22.2
+#10 35.32    Compiling serde_urlencoded v0.7.1
+#10 35.42    Compiling webpki-roots v1.0.9
+#10 35.50    Compiling float8 v0.7.0
+#10 35.63    Compiling memmap2 v0.9.12
+#10 35.78    Compiling num_cpus v1.17.0
+#10 35.82    Compiling lazy_static v1.5.1
+#10 35.85    Compiling byteorder v1.5.0
+#10 35.98    Compiling clap_lex v1.1.1
+#10 36.21    Compiling mime v0.3.17
+#10 36.54    Compiling heck v0.5.0
+#10 36.63    Compiling clap_derive v4.6.7
+#10 37.00    Compiling clap_builder v4.6.7
+#10 37.82    Compiling candle-core v0.11.0
+#10 44.90    Compiling axum-core v0.5.6
+#10 46.65    Compiling sharded-slab v0.1.7
+#10 46.80    Compiling hyper-rustls v0.27.10
+#10 47.03    Compiling tower-http v0.6.11
+#10 47.24    Compiling hashlink v0.10.0
+#10 47.44    Compiling tracing-log v0.2.0
+#10 47.49    Compiling serde_path_to_error v0.1.20
+#10 47.72    Compiling cpufeatures v0.2.17
+#10 47.76    Compiling thread_local v1.1.10
+#10 47.76    Compiling powerfmt v0.2.1
+#10 47.86    Compiling matchit v0.8.4
+#10 47.97    Compiling base64 v0.22.1
+#10 48.37    Compiling time-core v0.1.9
+#10 48.40    Compiling deranged v0.5.9
+#10 48.45    Compiling daachorse v3.0.3
+#10 49.02    Compiling nu-ansi-term v0.50.3
+#10 49.10    Compiling fallible-iterator v0.3.0
+#10 49.32    Compiling num-conv v0.2.2
+#10 49.38    Compiling fallible-streaming-iterator v0.1.9
+#10 49.41    Compiling time v0.3.55
+#10 49.43    Compiling tracing-subscriber v0.3.23
+#10 51.71    Compiling tokenizers v0.23.2
+#10 52.01    Compiling reqwest v0.12.28
+#10 62.75    Compiling axum v0.8.9
+#10 66.00    Compiling sha2 v0.10.9
+#10 66.74    Compiling candle-nn v0.11.0
+#10 67.37    Compiling clap v4.6.7
+#10 67.40    Compiling hmac v0.12.1
+#10 67.49    Compiling ulid v1.2.1
+#10 81.95    Compiling rusqlite v0.37.0
+#10 82.72    Compiling prime_radiant v0.1.0 (/build)
+#10 99.29     Finished `release` profile [optimized] target(s) in 1m 39s
+#10 DONE 99.5s
+
+#11 [build 3/6] COPY Cargo.toml Cargo.lock ./
+#11 CACHED
+
+#12 [build 4/6] COPY src ./src
+#12 CACHED
+
+#13 [build 5/6] COPY prompts ./prompts
+#13 CACHED
+
+#14 [build 6/6] RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,target=/build/target     cargo build --locked --release --bin primeradiant && cp target/release/primeradiant /primeradiant
+#14 CACHED
+
+#15 [verify 1/5] COPY tests ./tests
+#15 DONE 0.0s
+
+#16 [verify 2/5] COPY examples ./examples
+#16 DONE 0.0s
+
+#17 [verify 3/5] COPY evaluation/phase3/english-draft-v1.txt ./evaluation/phase3/english-draft-v1.txt
+#17 DONE 0.0s
+
+#18 [verify 4/5] COPY reports/evidence/phase-3/resumed-haiku/v52-v23-fresh-003-trace.json ./reports/evidence/phase-3/resumed-haiku/v52-v23-fresh-003-trace.json
+#18 DONE 0.0s
+
+#19 [verify 5/5] RUN --mount=type=cache,target=/usr/local/cargo/registry --mount=type=cache,target=/build/target     cargo fetch --locked && cargo test --locked --release --offline && cargo build --locked --release --offline --example compose_fixture --example container_embed_probe     && cp target/release/examples/compose_fixture /compose_fixture     && cp target/release/examples/container_embed_probe /container_embed_probe
+#19 0.257  Downloading crates ...
+#19 0.367   Downloaded wasm-bindgen-shared v0.2.129
+#19 0.381   Downloaded wasm-bindgen-macro v0.2.129
+#19 0.390   Downloaded same-file v1.0.6
+#19 0.394   Downloaded cpufeatures v0.3.1
+#19 0.398   Downloaded crunchy v0.2.4
+#19 0.399   Downloaded valuable v0.1.1
+#19 0.402   Downloaded wit-bindgen v0.57.1
+#19 0.411   Downloaded enum-as-inner v0.6.1
+#19 0.415   Downloaded walkdir v2.5.0
+#19 0.420   Downloaded r-efi v5.3.0
+#19 0.429   Downloaded wasm-bindgen v0.2.129
+#19 0.435   Downloaded r-efi v6.0.0
+#19 0.445   Downloaded js-sys v0.3.106
+#19 0.453   Downloaded bumpalo v3.20.3
+#19 0.460   Downloaded wasip2 v1.0.4+wasi-0.2.12
+#19 0.469   Downloaded wasm-bindgen-macro-support v0.2.129
+#19 0.473   Downloaded wasi v0.11.1+wasi-snapshot-preview1
+#19 0.478   Downloaded web-time v1.1.0
+#19 0.481   Downloaded sysctl v0.6.0
+#19 0.486   Downloaded hermit-abi v0.5.3
+#19 0.492   Downloaded once_cell_polyfill v1.70.2
+#19 0.495   Downloaded anstyle-wincon v3.0.11
+#19 0.501   Downloaded windows-link v0.2.1
+#19 0.503   Downloaded windows-targets v0.52.6
+#19 0.506   Downloaded winapi-util v0.1.11
+#19 0.510   Downloaded wasm-bindgen-futures v0.4.79
+#19 0.514   Downloaded windows_aarch64_gnullvm v0.52.6
+#19 0.530   Downloaded windows_x86_64_gnullvm v0.52.6
+#19 0.544   Downloaded windows_i686_gnullvm v0.52.6
+#19 0.558   Downloaded web-sys v0.3.106
+#19 0.671   Downloaded windows_aarch64_msvc v0.52.6
+#19 0.687   Downloaded windows_i686_msvc v0.52.6
+#19 0.704   Downloaded windows_x86_64_msvc v0.52.6
+#19 0.720   Downloaded windows_x86_64_gnu v0.52.6
+#19 0.742   Downloaded windows_i686_gnu v0.52.6
+#19 0.771   Downloaded windows-sys v0.61.2
+#19 1.029   Downloaded windows-sys v0.52.0
+#19 1.492    Compiling prime_radiant v0.1.0 (/build)
+#19 23.02     Finished `release` profile [optimized] target(s) in 21.70s
+#19 23.05      Running unittests src/lib.rs (target/release/deps/prime_radiant-cdb2c0d99047b516)
+#19 23.05
+#19 23.05 running 9 tests
+#19 23.05 test extraction::review_v24::tests::overlapping_exact_quotations_are_ambiguous ... ok
+#19 23.05 test retrieval::planner::tests::deterministic_intents_and_complementary_paths ... ok
+#19 23.05 test retrieval::tokenizer::tests::bigrams_words_identifiers_and_edge_cases ... ok
+#19 23.06 test providers::tests::escaped_korean_and_oversized_context_fail_before_network_or_budget ... ok
+#19 23.07 test providers::tests::response_decoding_bounds_and_sanitized_errors ... ok
+#19 23.07 test providers::tests::guarded_adapter_prices_reserves_and_records_real_usage_before_validation ... ok
+#19 23.08 test budget::tests::reservation_restart_concurrency_and_uncertain_charges ... ok
+#19 23.13 test store::migrate::rollback::failed_or_dangling_migration_rolls_back_and_restores_enforcement ... ok
+#19 23.15 test store::migrate::tests::t7_migration_history_and_pre_next_restore ... ok
+#19 23.15
+#19 23.15 test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+#19 23.15
+#19 23.15      Running unittests src/bin/primeradiant.rs (target/release/deps/primeradiant-85a19d5c7b5f8a98)
+#19 23.15
+#19 23.15 running 0 tests
+#19 23.15
+#19 23.15 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+#19 23.15
+#19 23.15      Running tests/authorization.rs (target/release/deps/authorization-7f9e8b65a5042beb)
+#19 23.15
+#19 23.15 running 5 tests
+#19 23.28 test credentials_fail_closed_and_revoke_independently ... ok
+#19 23.30 test metadata_cannot_become_authority_with_forward_migration ... ok
+#19 23.33 test lifecycle_filtering_and_live_cursor_recheck ... ok
+#19 23.33 test pagination_is_projection_scoped_and_credential_bound ... ok
+#19 23.51 test complete_core_authorization_matrix ... ok
+#19 23.51
+#19 23.51 test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+#19 23.51
+#19 23.51      Running tests/crash.rs (target/release/deps/crash-fadc86473b639290)
+#19 23.51
+#19 23.51 running 2 tests
+#19 23.51 test crash_worker ... ignored, subprocess worker invoked by t6
+#19 24.57 test t6_sigkill_twenty_restarts ... ok
+#19 24.57
+#19 24.57 test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.06s
+#19 24.57
+#19 24.57      Running tests/extraction.rs (target/release/deps/extraction-4b44f6a209604257)
+#19 24.57
+#19 24.57 running 22 tests
+#19 24.71 test concurrent_workers_claim_each_job_once ... ok
+#19 24.73 test cross_source_ids_never_supply_user_authority_even_for_matching_live_user_text ... ok
+#19 24.78 test approval_is_the_only_path_to_searchable_claims ... ok
+#19 24.81 test agent_metadata_never_promotes_and_confirmations_are_user_only ... ok
+#19 24.81 test batch_projection_lifecycle_and_revision_are_atomic ... ok
+#19 24.83 test expired_leases_are_fenced_and_attempts_bounded ... ok
+#19 24.83 test leased_crash_worker ... ignored, subprocess worker for extraction recovery
+#19 24.96 test invalid_revision_rolls_back_whole_publication ... ok
+#19 24.96 test failures_and_empty_success_are_distinct ... ok
+#19 24.96 test provider_file_permissions_and_deepseek_guard ... ok
+#19 25.06 test pagination_dependencies_and_stale_publication ... ok
+#19 25.12 test phase_two_database_migrates_losslessly_with_pre_migration_backup ... ok
+#19 25.15 test fidelity_packet_preserves_unicode_evidence_and_has_no_publication_authority ... ok
+#19 25.29 test reextraction_cannot_resurrect_forgotten_claims ... ok
+#19 25.42 test schema_language_anchors_and_dependencies_fail_closed ... ok
+#19 25.53 test review_rejection_rolls_back_and_prompt_injection_remains_data ... ok
+#19 25.56 test publication_kill_is_all_or_nothing_and_replayable ... ok
+#19 25.58 test sigkill_expired_worker_restart_has_no_duplicate_claims ... ok
+#19 25.70 test explicit_korean_route_preserves_source_and_fails_closed_without_fallback ... ok
+#19 25.70 test v24_review_requires_exact_identity_evidence_and_coherent_dimensions ... ok
+#19 25.88 test review_schema_semantic_and_provider_failures_are_distinct ... ok
+#19 29.63 test timeout_releases_job_for_bounded_retry ... ok
+#19 29.63
+#19 29.63 test result: ok. 21 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.07s
+#19 29.63
+#19 29.64      Running tests/integrity.rs (target/release/deps/integrity-8736ba9a27da9341)
+#19 29.64
+#19 29.64 running 10 tests
+#19 30.24 test identity_resolution_is_precedence_ordered_reversible_and_durable ... ok
+#19 30.28 test dependency_semantics_lifecycles_and_revalidation_jobs ... ok
+#19 30.53 test as_of_reproduces_r2_history_examples_and_preserves_history ... ok
+#19 30.54 test phase3_database_migrates_losslessly_with_validity_and_backup ... ok
+#19 30.78 test reextraction_keeps_retractions_validity_and_manual_identity ... ok
+#19 30.89 test session_reads_and_source_based_support ... ok
+#19 31.04 test dependency_insertion_order_does_not_change_validity ... ok
+#19 31.20 test temporal_unknowns_judgments_and_relation_authority ... ok
+#19 34.73 test concurrent_readers_never_observe_lifecycle_without_its_validity ... ok
+#19 37.96 test randomized_graph_operations_match_full_recomputation_oracle ... ok
+#19 37.96
+#19 37.96 test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.32s
+#19 37.96
+#19 37.96      Running tests/integrity_benchmark.rs (target/release/deps/integrity_benchmark-007c2807575298f2)
+#19 37.96
+#19 37.96 running 1 test
+#19 37.96 test validity_benchmark_100k_claims ... ignored, benchmark; run explicitly with --release
+#19 37.96
+#19 37.96 test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+#19 37.96
+#19 37.96      Running tests/integrity_crash.rs (target/release/deps/integrity_crash-bfdb23cc3db8de69)
+#19 37.96
+#19 37.96 running 4 tests
+#19 37.96 test migration_worker ... ignored, subprocess worker invoked by sigkill_during_migration_is_atomic
+#19 37.96 test propagation_worker ... ignored, subprocess worker invoked by sigkill_during_propagation_keeps_validity_consistent
+#19 66.44 test sigkill_during_migration_is_atomic ... ok
+#19 69.31 test sigkill_during_propagation_keeps_validity_consistent ... ok
+#19 69.31
+#19 69.31 test result: ok. 2 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 31.35s
+#19 69.31
+#19 69.31      Running tests/persistence.rs (target/release/deps/persistence-df070e642f960b72)
+#19 69.31
+#19 69.31 running 10 tests
+#19 69.46 test t12_cloud_paths_and_single_owner ... ok
+#19 69.47 test t10_no_authorship_promotion ... ok
+#19 69.48 test t2_authoritative_tables_are_immutable ... ok
+#19 69.51 test t1_exact_bytes_and_input_validation ... ok
+#19 69.51 test t11_lifecycle_permissions_and_noops ... ok
+#19 69.57 test t3_idempotency_scope_and_digest ... ok
+#19 69.57 test t4_concurrent_duplicate ... ok
+#19 69.69 test t8_corruption_latches_writes_off ... ok
+#19 69.94 test t9_backup_restore_while_writing ... ok
+#19 73.54 test t5_concurrent_mixed ... ok
+#19 73.54
+#19 73.54 test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.23s
+#19 73.54
+#19 73.54      Running tests/retrieval_queue.rs (target/release/deps/retrieval_queue-9657ea4dc370dfe4)
+#19 73.55
+#19 73.55 running 19 tests
+#19 73.74 test cloud_provider_is_opt_in_budget_gated_and_never_a_fallback ... ok
+#19 73.81 test batched_embeddings_map_to_the_right_claims ... ok
+#19 74.07 test concurrent_workers_process_each_job_once ... ok
+#19 74.07 test index_worker ... ignored, subprocess worker for sigkill_during_indexing_is_recoverable
+#19 74.34 test model_change_invalidates_only_that_models_vectors ... ok
+#19 74.46 test expired_lease_is_fenced_and_late_worker_cannot_complete_or_duplicate ... ok
+#19 74.57 test hidden_records_never_influence_scores_counts_or_cursors ... ok
+#19 74.61 test obsolete_generation_never_overwrites_newer_state ... ok
+#19 74.74 test partial_indexing_is_reported_never_claimed_complete ... ok
+#19 74.89 test rebuild_preserves_authoritative_data_and_results ... ok
+#19 74.90 test phase4_validity_changes_update_retrieval_in_the_same_transaction ... ok
+#19 74.97 test record_is_atomic_returns_before_processing_and_applies_backpressure ... ok
+#19 75.29 test retry_is_bounded_idempotent_observable_and_owner_only ... ok
+#19 75.29 test retracted_and_forgotten_claims_never_leak_through_stale_indexes ... ok
+#19 75.37 test restart_resumes_and_duplicate_delivery_is_idempotent ... ok
+#19 75.51 test unavailable_provider_defers_without_consuming_attempts_or_sending_anywhere ... ok
+#19 75.72 test background_work_does_not_starve_ingestion_or_search ... ok
+#19 76.09 test adversarial_races_never_return_forgotten_claims_and_converge ... ok
+#19 76.18 test sigkill_during_indexing_is_recoverable ... ok
+#19 76.18
+#19 76.18 test result: ok. 18 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.64s
+#19 76.18
+#19 76.19      Running tests/transports.rs (target/release/deps/transports-ae550a44bb9efcd3)
+#19 76.19
+#19 76.19 running 7 tests
+#19 76.26 test impersonation_and_authentication_fail_closed_over_real_transports ... ok
+#19 76.28 test network_lifecycle_matrix_and_filtered_history ... ok
+#19 76.31 test protocol_boundaries_and_loopback_only ... ok
+#19 76.35 test claim_transport_equivalence_and_projection_isolation ... ok
+#19 76.35 test actual_http_and_stdio_mcp_are_equivalent ... ok
+#19 76.35 test six_source_projection_leakage_surfaces_and_error_cursor_isolation ... ok
+#19 76.60 test integrity_operations_are_equivalent_and_never_leak_across_projections ... ok
+#19 76.60
+#19 76.60 test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.41s
+#19 76.60
+#19 76.60    Doc-tests prime_radiant
+#19 76.90
+#19 76.90 running 0 tests
+#19 76.90
+#19 76.90 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+#19 76.90
+#19 77.12     Finished `release` profile [optimized] target(s) in 0.20s
+#19 DONE 77.2s
+
+#20 exporting to image
+#20 exporting layers
+#20 exporting layers 0.6s done
+#20 exporting manifest sha256:46f89a0f47accfb2efe05bf99ded74b38899cf50bb7e5ddddec439c90e25edff done
+#20 exporting config sha256:d969d4a6580a4d29d41202608927bd016ded2723c300f6b768b4a829c275a58e done
+#20 exporting attestation manifest sha256:baee2c18e613f4aa014c41bdc942099e0ac90962e0619583320521dc2ab390f3 done
+#20 exporting manifest list sha256:fc8669e723c613292cb4093169b339fe4ed0c081117fa20861cb683772e49eee done
+#20 naming to docker.io/library/primeradiant-verify:latest done
+#20 unpacking to docker.io/library/primeradiant-verify:latest
+#20 unpacking to docker.io/library/primeradiant-verify:latest 0.2s done
+#20 DONE 0.9s

@@ -1,0 +1,15 @@
+ Container primeradiant-radiant-1 Stopping
+ Container primeradiant-radiant-1 Stopped
+ Container primeradiant-radiant-run-b5c980d7a7cd Creating
+ Container primeradiant-radiant-run-b5c980d7a7cd Created
+{"backed_up":true}
+ Container primeradiant-radiant-run-4637f61d6422 Creating
+ Container primeradiant-radiant-run-4637f61d6422 Created
+ Container primeradiant-radiant-run-4d1e81927005 Creating
+ Container primeradiant-radiant-run-4d1e81927005 Created
+{"ok":true,"items":[{"name":"sqlite","ok":true,"violations":0,"first_violation":null},{"name":"foreign_keys","ok":true,"violations":0,"first_violation":null},{"name":"migrations","ok":true,"violations":0,"first_violation":null},{"name":"source_hashes","ok":true,"violations":0,"first_violation":null},{"name":"status_targets","ok":true,"violations":0,"first_violation":null},{"name":"triggers","ok":true,"violations":0,"first_violation":null},{"name":"claim_evidence","ok":true,"violations":0,"first_violation":null},{"name":"extraction_publication","ok":true,"violations":0,"first_violation":null},{"name":"identity_targets","ok":true,"violations":0,"first_violation":null},{"name":"claim_validity","ok":true,"violations":0,"first_violation":null},{"name":"claim_access","ok":true,"violations":0,"first_violation":null},{"name":"identity_resolution","ok":true,"violations":0,"first_violation":null}]}
+Snapshot: /backups/20261025T161301Z.db; credentials: /backups/20261025T161301Z.credentials.tar (sensitive)
+ Container primeradiant-radiant-1 Starting
+ Container primeradiant-radiant-1 Started
+ Container primeradiant-radiant-1 Waiting
+ Container primeradiant-radiant-1 Healthy

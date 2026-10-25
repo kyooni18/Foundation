@@ -1,0 +1,41 @@
+services:
+  radiant:
+    build: .
+    restart: "no"
+    init: true
+    stop_grace_period: 45s
+    # Protect the Docker VM; CPU model experiments require an explicit larger limit.
+    mem_limit: ${MEMORY_LIMIT:-1g}
+    environment:
+      EMBEDDING_MODE: ${EMBEDDING_MODE:-off}
+      EXTRACTION_MODEL: ${EXTRACTION_MODEL:-}
+      EXTRACTION_REVIEWER: ${EXTRACTION_REVIEWER:-}
+      EXTRACTION_PROMPT_VERSION: ${EXTRACTION_PROMPT_VERSION:-}
+      OPENROUTER_API_KEY_FILE: /credentials/openrouter-key
+      PRIMERADIANT_OPENROUTER_LEDGER: /credentials/budget.db
+    volumes:
+      - data:/data
+      - credentials:/credentials
+      - backups:/backups
+      - type: bind
+        source: ${MODEL_DIR:-${HOME}/Library/Application Support/PrimeRadiant/models/nemotron-3-embed-1b}
+        target: /model
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=128m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    healthcheck:
+      test: [CMD, python3, /opt/radiant/health.py]
+      interval: 15s
+      timeout: 10s
+      start_period: 180s
+      retries: 4
+volumes:
+  data:
+  credentials:
+  backups:
