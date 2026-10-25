@@ -78,10 +78,26 @@ pub(crate) fn enqueue_indexing(
     run_seq: i64,
     embedding: &EmbeddingConfig,
 ) -> Result<()> {
-    insert_job(conn, "index_lexical", source, &format!("index_lexical/{source}/{run_seq}"), PRIORITY_LEXICAL, Some(run_seq), None)?;
+    insert_job(
+        conn,
+        "index_lexical",
+        source,
+        &format!("index_lexical/{source}/{run_seq}"),
+        PRIORITY_LEXICAL,
+        Some(run_seq),
+        None,
+    )?;
     if let Some(id) = embedding.identity() {
         ensure_model(conn, &id)?;
-        insert_job(conn, "index_embed", source, &format!("index_embed/{}/{source}/{run_seq}", id.key), PRIORITY_EMBED, Some(run_seq), Some(&id.key))?;
+        insert_job(
+            conn,
+            "index_embed",
+            source,
+            &format!("index_embed/{}/{source}/{run_seq}", id.key),
+            PRIORITY_EMBED,
+            Some(run_seq),
+            Some(&id.key),
+        )?;
     }
     Ok(())
 }
@@ -105,8 +121,20 @@ pub(crate) fn reconcile(conn: &Connection, embedding: &EmbeddingConfig) -> Resul
         .collect::<std::result::Result<_, _>>()?;
     let mut n_lex = 0;
     for source in &lexical {
-        let seq: i64 = conn.query_row("SELECT COALESCE(MAX(seq),0) FROM extraction_run WHERE source_id=?1", [source], |r| r.get(0))?;
-        n_lex += usize::from(insert_job(conn, "index_lexical", source, &format!("index_lexical/{source}/{seq}/r{}", ulid::Ulid::new()), PRIORITY_LEXICAL, Some(seq), None)?);
+        let seq: i64 = conn.query_row(
+            "SELECT COALESCE(MAX(seq),0) FROM extraction_run WHERE source_id=?1",
+            [source],
+            |r| r.get(0),
+        )?;
+        n_lex += usize::from(insert_job(
+            conn,
+            "index_lexical",
+            source,
+            &format!("index_lexical/{source}/{seq}/r{}", ulid::Ulid::new()),
+            PRIORITY_LEXICAL,
+            Some(seq),
+            None,
+        )?);
     }
     let mut n_vec = 0;
     if let Some(id) = embedding.identity() {
@@ -116,8 +144,24 @@ pub(crate) fn reconcile(conn: &Connection, embedding: &EmbeddingConfig) -> Resul
             .query_map([&id.key], |r| r.get(0))?
             .collect::<std::result::Result<_, _>>()?;
         for source in &sources {
-            let seq: i64 = conn.query_row("SELECT COALESCE(MAX(seq),0) FROM extraction_run WHERE source_id=?1", [source], |r| r.get(0))?;
-            n_vec += usize::from(insert_job(conn, "index_embed", source, &format!("index_embed/{}/{source}/{seq}/r{}", id.key, ulid::Ulid::new()), PRIORITY_EMBED, Some(seq), Some(&id.key))?);
+            let seq: i64 = conn.query_row(
+                "SELECT COALESCE(MAX(seq),0) FROM extraction_run WHERE source_id=?1",
+                [source],
+                |r| r.get(0),
+            )?;
+            n_vec += usize::from(insert_job(
+                conn,
+                "index_embed",
+                source,
+                &format!(
+                    "index_embed/{}/{source}/{seq}/r{}",
+                    id.key,
+                    ulid::Ulid::new()
+                ),
+                PRIORITY_EMBED,
+                Some(seq),
+                Some(&id.key),
+            )?);
         }
         // Jobs for other models are obsolete once the configured model changed.
         conn.execute("UPDATE job SET state='cancelled',last_error='obsolete',lease_owner=NULL,lease_until=NULL,finished_at=?2,updated_at=?2 WHERE kind='index_embed' AND state IN ('pending','deferred') AND detail<>?1", params![id.key, Timestamp::now().as_str()])?;
@@ -162,7 +206,12 @@ impl App {
         for (id, source_id, attempt) in rows {
             tx.prepare_cached("UPDATE job SET state='leased',attempts=?2,lease_owner=?3,lease_until=?4,updated_at=?5,started_at=?5,first_leased_at=COALESCE(first_leased_at,?5) WHERE id=?1")?
                 .execute(params![id, attempt, owner, until.as_str(), now.as_str()])?;
-            leases.push(Lease { id, source_id, owner: owner.into(), attempt });
+            leases.push(Lease {
+                id,
+                source_id,
+                owner: owner.into(),
+                attempt,
+            });
         }
         tx.commit()?;
         Ok(leases)
@@ -173,16 +222,60 @@ impl App {
             .execute(params![lease.id, state, code, now.as_str()])?;
         Ok(())
     }
+    /// An obsolete job is replaced by one for the current expression of the Source (coalesced by
+    /// idempotency key), so a late cancellation never leaves the new expression unindexed.
+    fn replace_obsolete(
+        tx: &Connection,
+        lease: &Lease,
+        current: i64,
+        model: Option<&str>,
+    ) -> Result<()> {
+        let source = &lease.source_id;
+        match model {
+            None => insert_job(
+                tx,
+                "index_lexical",
+                source,
+                &format!("index_lexical/{source}/{current}"),
+                PRIORITY_LEXICAL,
+                Some(current),
+                None,
+            )?,
+            Some(key) => insert_job(
+                tx,
+                "index_embed",
+                source,
+                &format!("index_embed/{key}/{source}/{current}"),
+                PRIORITY_EMBED,
+                Some(current),
+                Some(key),
+            )?,
+        };
+        Ok(())
+    }
     fn job_generation(tx: &Connection, lease: &Lease) -> Result<(Option<i64>, i64)> {
-        let generation: Option<i64> = tx.query_row("SELECT generation FROM job WHERE id=?1", [&lease.id], |r| r.get(0))?;
-        let current: i64 = tx.query_row("SELECT COALESCE(MAX(seq),0) FROM extraction_run WHERE source_id=?1", [&lease.source_id], |r| r.get(0))?;
+        let generation: Option<i64> =
+            tx.query_row("SELECT generation FROM job WHERE id=?1", [&lease.id], |r| {
+                r.get(0)
+            })?;
+        let current: i64 = tx.query_row(
+            "SELECT COALESCE(MAX(seq),0) FROM extraction_run WHERE source_id=?1",
+            [&lease.source_id],
+            |r| r.get(0),
+        )?;
         Ok((generation, current))
     }
     /// Index leased Sources' visible Claims lexically. All jobs of a batch commit together.
     pub fn process_lexical_once(&self, owner: &str) -> Result<ProcessReport> {
         let started = Instant::now();
         let limits = &self.policy.queue;
-        let leases = self.lease_batch("index_lexical", owner, limits.lexical_jobs_per_batch, limits.lexical_lease_seconds, None)?;
+        let leases = self.lease_batch(
+            "index_lexical",
+            owner,
+            limits.lexical_jobs_per_batch,
+            limits.lexical_lease_seconds,
+            None,
+        )?;
         let mut report = ProcessReport::default();
         if leases.is_empty() {
             return Ok(report);
@@ -196,6 +289,7 @@ impl App {
             let (generation, current) = Self::job_generation(&tx, lease)?;
             if generation.is_some_and(|g| g != current) {
                 Self::finish(&tx, lease, "cancelled", Some("obsolete"))?;
+                Self::replace_obsolete(&tx, lease, current, None)?;
                 report.cancelled += 1;
                 continue;
             }
@@ -229,7 +323,13 @@ impl App {
             ensure_model(&tx, &id)?;
             tx.commit()?;
         }
-        let leases = self.lease_batch("index_embed", owner, limits.embed_jobs_per_batch, limits.embed_lease_seconds, Some(&id.key))?;
+        let leases = self.lease_batch(
+            "index_embed",
+            owner,
+            limits.embed_jobs_per_batch,
+            limits.embed_lease_seconds,
+            Some(&id.key),
+        )?;
         let mut report = ProcessReport::default();
         if leases.is_empty() {
             return Ok(report);
@@ -248,7 +348,11 @@ impl App {
                     .prepare_cached("SELECT c.id,c.text FROM claim c JOIN claim_access a ON a.claim_id=c.id WHERE c.source_id=?1 AND (a.user_visible=1 OR a.agent_visible=1) AND NOT EXISTS(SELECT 1 FROM claim_vec v WHERE v.claim_id=c.id AND v.model_key=?2) ORDER BY c.id")?
                     .query_map(params![lease.source_id, id.key], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))?
                     .collect::<std::result::Result<Vec<_>, _>>()?;
-                items.extend(rows.into_iter().map(|(claim, text)| Item { lease: i, claim, text }));
+                items.extend(rows.into_iter().map(|(claim, text)| Item {
+                    lease: i,
+                    claim,
+                    text,
+                }));
             }
         }
         let mut failure: Option<EmbedError> = None;
@@ -312,6 +416,7 @@ impl App {
                     let (generation, current) = Self::job_generation(&tx, lease)?;
                     if generation.is_some_and(|g| g != current) {
                         Self::finish(&tx, lease, "cancelled", Some("obsolete"))?;
+                        Self::replace_obsolete(&tx, lease, current, Some(&id.key))?;
                         report.cancelled += 1;
                     } else {
                         Self::finish(&tx, lease, "done", None)?;
@@ -369,7 +474,11 @@ impl App {
             params![job_id, now.as_str()],
         )?;
         if changed == 0 {
-            let exists: bool = self.store.reader()?.query_row("SELECT EXISTS(SELECT 1 FROM job WHERE id=?1)", [job_id], |r| r.get(0))?;
+            let exists: bool = self.store.reader()?.query_row(
+                "SELECT EXISTS(SELECT 1 FROM job WHERE id=?1)",
+                [job_id],
+                |r| r.get(0),
+            )?;
             if !exists {
                 return Err(Error::NotFound);
             }
@@ -414,7 +523,10 @@ impl App {
     }
 }
 pub(crate) fn encode(vector: &[f32]) -> Vec<u8> {
-    vector.iter().flat_map(|x| half::f16::from_f32(*x).to_le_bytes()).collect()
+    vector
+        .iter()
+        .flat_map(|x| half::f16::from_f32(*x).to_le_bytes())
+        .collect()
 }
 pub(crate) fn decode(bytes: &[u8]) -> Vec<f32> {
     bytes

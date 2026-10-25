@@ -15,12 +15,24 @@ pub struct MockEmbedder {
 impl MockEmbedder {
     pub fn new(revision: &str) -> Self {
         Self {
-            id: EmbeddingIdentity::new("mock", "hashed-bigram", revision, 64, "query: ", "passage: ", 512, true),
+            id: EmbeddingIdentity::new(
+                "mock",
+                "hashed-bigram",
+                revision,
+                64,
+                "query: ",
+                "passage: ",
+                512,
+                true,
+            ),
             calls: AtomicU64::new(0),
             texts: AtomicU64::new(0),
             fail: Default::default(),
             delay: Default::default(),
         }
+    }
+    pub fn calls_made(&self) -> u64 {
+        self.calls.load(Ordering::SeqCst)
     }
     pub fn texts_embedded(&self) -> u64 {
         self.texts.load(Ordering::SeqCst)
@@ -43,11 +55,21 @@ impl EmbeddingProvider for MockEmbedder {
         Ok(texts
             .iter()
             .map(|t| {
-                let body = t.strip_prefix("passage: ").or_else(|| t.strip_prefix("query: ")).unwrap_or(t);
-                let chars: Vec<char> = body.to_lowercase().chars().filter(|c| !c.is_whitespace()).collect();
+                let body = t
+                    .strip_prefix("passage: ")
+                    .or_else(|| t.strip_prefix("query: "))
+                    .unwrap_or(t);
+                let chars: Vec<char> = body
+                    .to_lowercase()
+                    .chars()
+                    .filter(|c| !c.is_whitespace())
+                    .collect();
                 let mut v = vec![0f32; 64];
                 for w in chars.windows(2) {
-                    let h = (w[0] as u64).wrapping_mul(1_000_003).wrapping_add(w[1] as u64).wrapping_mul(0x9E37_79B9_7F4A_7C15);
+                    let h = (w[0] as u64)
+                        .wrapping_mul(1_000_003)
+                        .wrapping_add(w[1] as u64)
+                        .wrapping_mul(0x9E37_79B9_7F4A_7C15);
                     v[(h >> 58) as usize] += 1.0;
                 }
                 if chars.len() == 1 {

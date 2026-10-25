@@ -212,8 +212,17 @@ pub struct BulkClaim {
 }
 /// Insert a user-verbatim (or agent) Source with one accepted run and its Claims quickly, using
 /// cached statements. Derived tables (validity, access, index jobs) are produced by `App::open`.
-pub fn bulk_source(conn: &Connection, recorder: &str, captured_at: &str, claims: &[BulkClaim]) -> (String, Vec<String>) {
-    let content = claims.iter().map(|c| c.text.as_str()).collect::<Vec<_>>().join(" ");
+pub fn bulk_source(
+    conn: &Connection,
+    recorder: &str,
+    captured_at: &str,
+    claims: &[BulkClaim],
+) -> (String, Vec<String>) {
+    let content = claims
+        .iter()
+        .map(|c| c.text.as_str())
+        .collect::<Vec<_>>()
+        .join(" ");
     let id = ulid();
     conn.prepare_cached("INSERT INTO source(id,recorder,content,content_sha256,media_type,captured_at,retention_request,request_digest) VALUES(?1,?2,?3,?4,'text/plain',?5,'none',?4)")
         .unwrap()

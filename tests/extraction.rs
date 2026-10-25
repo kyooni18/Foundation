@@ -2053,3 +2053,68 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
         validate_proposal_reviews_bound(&meta_plan, &reports(&review), &batch, &source).is_err()
     );
 }
+
+#[tokio::test]
+async fn approval_is_the_only_path_to_searchable_claims() {
+    use prime_radiant::retrieval::search::SearchRequest;
+    let dir = tempfile::tempdir().unwrap();
+    let off = prime_radiant::Policy {
+        embedding: prime_radiant::embedding::EmbeddingConfig::Off,
+        ..Default::default()
+    };
+    let app = App::open_with_policy(dir.path().join("db"), off).unwrap();
+    let source = app
+        .record_source(&user(), RecordSource::plain("서버는 Rust로 작성되었다."))
+        .unwrap()
+        .source_id;
+    let raw = output(vec![candidate("서버는 Rust로 작성되었다.")]);
+    let job = app
+        .work_once(&fake(&raw, 1), &plan())
+        .await
+        .unwrap()
+        .unwrap();
+    let conn = rusqlite::Connection::open(dir.path().join("db")).unwrap();
+    let n = |sql: &str| conn.query_row(sql, [], |r| r.get::<_, i64>(0)).unwrap();
+    // Extracted but unapproved: no index work exists, index workers publish nothing, and the
+    // stage says the output awaits the user's exact-hash approval.
+    assert_eq!(n("SELECT count(*) FROM job WHERE kind LIKE 'index_%'"), 0);
+    while app.process_lexical_once("w").unwrap().jobs > 0 {}
+    assert!(
+        app.search(&user(), SearchRequest::new("Rust"))
+            .unwrap()
+            .results
+            .is_empty()
+    );
+    assert_eq!(
+        app.source_processing(&user(), &source).unwrap().stage,
+        "awaiting_approval"
+    );
+    assert!(app.approve_extraction(&user(), &job, "wrong").is_err());
+    assert_eq!(n("SELECT count(*) FROM job WHERE kind LIKE 'index_%'"), 0);
+    // Approval publishes and enqueues derived work in the same transaction, once.
+    app.approve_extraction(&user(), &job, &hash(&raw)).unwrap();
+    app.approve_extraction(&user(), &job, &hash(&raw)).unwrap();
+    assert_eq!(
+        n("SELECT count(*) FROM job WHERE kind='index_lexical' AND generation=1"),
+        1
+    );
+    assert_eq!(
+        app.source_processing(&user(), &source).unwrap().stage,
+        "published_awaiting_lexical"
+    );
+    assert!(
+        app.search(&user(), SearchRequest::new("Rust"))
+            .unwrap()
+            .results
+            .is_empty()
+    );
+    while app.process_lexical_once("w").unwrap().jobs > 0 {}
+    let found = app
+        .search(&user(), SearchRequest::new("Rust 작성"))
+        .unwrap();
+    assert_eq!(found.results.len(), 1);
+    assert_eq!(
+        app.source_processing(&user(), &source).unwrap().stage,
+        "fully_indexed"
+    );
+}

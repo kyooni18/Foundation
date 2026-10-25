@@ -59,11 +59,12 @@ impl Service {
                 loop {
                     let worker = app.clone();
                     let owner = owner.clone();
-                    let busy = tokio::task::spawn_blocking(move || worker.process_lexical_once(&owner))
-                        .await
-                        .ok()
-                        .and_then(|r| r.ok())
-                        .is_some_and(|r| r.jobs + r.cancelled > 0);
+                    let busy =
+                        tokio::task::spawn_blocking(move || worker.process_lexical_once(&owner))
+                            .await
+                            .ok()
+                            .and_then(|r| r.ok())
+                            .is_some_and(|r| r.jobs + r.cancelled > 0);
                     if !busy {
                         tokio::time::sleep(std::time::Duration::from_millis(250)).await;
                     }
@@ -73,7 +74,9 @@ impl Service {
         let embed = {
             let app = self.app.clone();
             tokio::spawn(async move {
-                let Some(provider) = app.embedder() else { return };
+                let Some(provider) = app.embedder() else {
+                    return;
+                };
                 loop {
                     let worker = app.clone();
                     let provider = provider.clone();

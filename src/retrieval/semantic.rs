@@ -35,7 +35,11 @@ impl VectorCache {
             [key],
             |r| Ok((r.get(0)?, r.get(1)?)),
         )?;
-        if self.key == key && self.dim == dim && self.ids.len() as i64 == count && self.max_vec_id == max {
+        if self.key == key
+            && self.dim == dim
+            && self.ids.len() as i64 == count
+            && self.max_vec_id == max
+        {
             return Ok(());
         }
         let newer: i64 = if self.key == key && self.dim == dim {
@@ -50,7 +54,11 @@ impl VectorCache {
         let after = if newer >= 0 && self.ids.len() as i64 + newer == count {
             self.max_vec_id
         } else {
-            *self = Self { key: key.into(), dim, ..Default::default() };
+            *self = Self {
+                key: key.into(),
+                dim,
+                ..Default::default()
+            };
             0
         };
         let mut stmt = conn.prepare_cached("SELECT vec_id,claim_id,vec FROM claim_vec WHERE model_key=?1 AND vec_id>?2 ORDER BY vec_id")?;
@@ -70,7 +78,9 @@ impl VectorCache {
     fn scores(&self, query: &[f32]) -> Vec<f32> {
         let n = self.ids.len();
         let mut out = vec![0f32; n];
-        let threads = std::thread::available_parallelism().map_or(1, |n| n.get()).min(8);
+        let threads = std::thread::available_parallelism()
+            .map_or(1, |n| n.get())
+            .min(8);
         let chunk = n.div_ceil(threads).max(1);
         std::thread::scope(|s| {
             for (t, slice) in out.chunks_mut(chunk).enumerate() {
@@ -105,13 +115,22 @@ pub(crate) fn search(
     want: usize,
     min_score: f32,
 ) -> Result<Outcome> {
-    let mut out = Outcome { scanned: cache.len(), ..Default::default() };
+    let mut out = Outcome {
+        scanned: cache.len(),
+        ..Default::default()
+    };
     if cache.is_empty() || query.len() != cache.dim {
         return Ok(out);
     }
     let scores = cache.scores(query);
-    let mut order: Vec<usize> = (0..scores.len()).filter(|&i| scores[i] >= min_score).collect();
-    let by_score = |a: &usize, b: &usize| scores[*b].total_cmp(&scores[*a]).then_with(|| cache.ids[*a].cmp(&cache.ids[*b]));
+    let mut order: Vec<usize> = (0..scores.len())
+        .filter(|&i| scores[i] >= min_score)
+        .collect();
+    let by_score = |a: &usize, b: &usize| {
+        scores[*b]
+            .total_cmp(&scores[*a])
+            .then_with(|| cache.ids[*a].cmp(&cache.ids[*b]))
+    };
     let col = access::column(p);
     let mut window = (want * 4).max(64);
     loop {
@@ -155,7 +174,13 @@ pub struct QueryCache {
 }
 impl Default for QueryCache {
     fn default() -> Self {
-        Self { map: HashMap::new(), order: VecDeque::new(), capacity: 1024, hits: 0, misses: 0 }
+        Self {
+            map: HashMap::new(),
+            order: VecDeque::new(),
+            capacity: 1024,
+            hits: 0,
+            misses: 0,
+        }
     }
 }
 impl QueryCache {

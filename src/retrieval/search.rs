@@ -8,13 +8,18 @@
 //! and every returned Claim is re-read through the authoritative visibility query
 //! (`read_claims_only`). Indexes only propose candidate ids; they never grant visibility.
 use super::{
-    access, fusion,
-    lexical,
+    access, fusion, lexical,
     planner::{self, Depth, Intent, Plan},
     semantic,
     tokenizer::{self, Kind, Scripts},
 };
-use crate::{App, claims::ClaimView, domain::*, embedding::{self, EmbedError, Role}, store::integrity::sha256};
+use crate::{
+    App,
+    claims::ClaimView,
+    domain::*,
+    embedding::{self, EmbedError, Role},
+    store::integrity::sha256,
+};
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -201,9 +206,16 @@ fn ms(t: Instant) -> f64 {
     t.elapsed().as_secs_f64() * 1000.0
 }
 fn safe_token(s: &str) -> bool {
-    !s.is_empty() && s.len() <= 64 && s.chars().all(|c| c.is_ascii_alphanumeric() || "_-.".contains(c))
+    !s.is_empty()
+        && s.len() <= 64
+        && s.chars()
+            .all(|c| c.is_ascii_alphanumeric() || "_-.".contains(c))
 }
-fn list(field: &'static str, values: &[String], allowed: Option<&[&str]>) -> Result<Option<String>> {
+fn list(
+    field: &'static str,
+    values: &[String],
+    allowed: Option<&[&str]>,
+) -> Result<Option<String>> {
     if values.is_empty() {
         return Ok(None);
     }
@@ -219,27 +231,58 @@ fn list(field: &'static str, values: &[String], allowed: Option<&[&str]>) -> Res
             return Err(invalid(field, "unsupported value"));
         }
     }
-    Ok(Some(values.iter().map(|v| format!("'{v}'")).collect::<Vec<_>>().join(",")))
+    Ok(Some(
+        values
+            .iter()
+            .map(|v| format!("'{v}'"))
+            .collect::<Vec<_>>()
+            .join(","),
+    ))
 }
 
 impl App {
     /// Trusted SQL fragment over aliases `c` (claim) and `v` (claim_validity). All values are
     /// validated against closed vocabularies or strict charsets before being inlined.
-    fn filter_sql(&self, conn: &rusqlite::Connection, p: &Principal, f: &Filters, include_invalid: bool) -> Result<String> {
+    fn filter_sql(
+        &self,
+        conn: &rusqlite::Connection,
+        p: &Principal,
+        f: &Filters,
+        include_invalid: bool,
+    ) -> Result<String> {
         let mut parts: Vec<String> = Vec::new();
         if !(include_invalid && p.kind() != PrincipalKind::User) {
             parts.push("v.state<>'invalid'".into());
         }
-        if let Some(l) = list("category", &f.category, Some(&["Fact", "View", "Intent", "Rule"]))? {
+        if let Some(l) = list(
+            "category",
+            &f.category,
+            Some(&["Fact", "View", "Intent", "Rule"]),
+        )? {
             parts.push(format!("c.category IN ({l})"));
         }
-        if let Some(l) = list("speaker", &f.speaker, Some(&["user", "agent", "external", "unknown"]))? {
+        if let Some(l) = list(
+            "speaker",
+            &f.speaker,
+            Some(&["user", "agent", "external", "unknown"]),
+        )? {
             parts.push(format!("c.speaker IN ({l})"));
         }
         if let Some(l) = list("lang", &f.lang, Some(&["ko", "en"]))? {
             parts.push(format!("c.lang IN ({l})"));
         }
-        if let Some(l) = list("tkind", &f.tkind, Some(&["habit", "state", "event", "observation", "decision", "report_past"]))? {
+        if let Some(l) = list(
+            "tkind",
+            &f.tkind,
+            Some(&[
+                "habit",
+                "state",
+                "event",
+                "observation",
+                "decision",
+                "report_past",
+            ]),
+        )? {
             parts.push(format!("c.tkind IN ({l})"));
         }
         for s in &f.source_id {
@@ -256,18 +299,28 @@ impl App {
             parts.push(format!("c.standing={}", i32::from(s)));
         }
         if let Some(t) = &f.created_after {
-            parts.push(format!("c.created_at>='{}'", t.parse::<Timestamp>()?.as_str()));
+            parts.push(format!(
+                "c.created_at>='{}'",
+                t.parse::<Timestamp>()?.as_str()
+            ));
         }
         if let Some(t) = &f.created_before {
-            parts.push(format!("c.created_at<'{}'", t.parse::<Timestamp>()?.as_str()));
+            parts.push(format!(
+                "c.created_at<'{}'",
+                t.parse::<Timestamp>()?.as_str()
+            ));
         }
         if let Some(e) = &f.entity {
             if e.is_empty() || e.len() > 256 {
                 return Err(invalid("entity", "1..=256 bytes"));
             }
             let ids = crate::integrity::identity::claims_of_entity(conn, p, e)?;
-            let json = serde_json::to_string(&ids.iter().take(50_000).collect::<Vec<_>>()).map_err(|_| invalid("entity", "serialization"))?;
-            if !ids.iter().all(|i| i.chars().all(|c| c.is_ascii_alphanumeric())) {
+            let json = serde_json::to_string(&ids.iter().take(50_000).collect::<Vec<_>>())
+                .map_err(|_| invalid("entity", "serialization"))?;
+            if !ids
+                .iter()
+                .all(|i| i.chars().all(|c| c.is_ascii_alphanumeric()))
+            {
                 return Err(Error::IntegrityFailure("claim id".into()));
             }
             parts.push(format!("c.id IN (SELECT value FROM json_each('{json}'))"));
@@ -292,8 +345,11 @@ impl App {
         let (body, sig) = cursor.split_once('.').ok_or(Error::InvalidCursor)?;
         let body = unhex(body).ok_or(Error::InvalidCursor)?;
         let sig = unhex(sig).ok_or(Error::InvalidCursor)?;
-        self.cursor_mac(p, &body).verify_slice(&sig).map_err(|_| Error::InvalidCursor)?;
-        let (domain, hash, offset): (String, String, usize) = serde_json::from_slice(&body).map_err(|_| Error::InvalidCursor)?;
+        self.cursor_mac(p, &body)
+            .verify_slice(&sig)
+            .map_err(|_| Error::InvalidCursor)?;
+        let (domain, hash, offset): (String, String, usize) =
+            serde_json::from_slice(&body).map_err(|_| Error::InvalidCursor)?;
         if domain != "search-v1" || hash != qhash {
             return Err(Error::InvalidCursor);
         }
@@ -310,18 +366,38 @@ impl App {
             params![tokenizer::VERSION, key],
             |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
         )?;
-        let mut out = Indexing { visible_claims: visible, lexical_pending: lex, embedding_pending: vec, embedding_model: key.clone(), ..Default::default() };
+        let mut out = Indexing {
+            visible_claims: visible,
+            lexical_pending: lex,
+            embedding_pending: vec,
+            embedding_model: key.clone(),
+            ..Default::default()
+        };
         if p.kind() == PrincipalKind::User {
-            out.open_jobs = Some(conn.query_row("SELECT count(*) FROM job WHERE state IN ('pending','leased','deferred')", [], |r| r.get(0))?);
+            out.open_jobs = Some(conn.query_row(
+                "SELECT count(*) FROM job WHERE state IN ('pending','leased','deferred')",
+                [],
+                |r| r.get(0),
+            )?);
             out.sources_not_yet_published = Some(conn.query_row("SELECT count(*) FROM source s WHERE NOT EXISTS(SELECT 1 FROM extraction_run r WHERE r.source_id=s.id) AND s.recorder='user'", [], |r| r.get(0))?);
         }
         Ok(out)
     }
 
-    fn query_vector(&self, text: &str, report: &mut Timing, calls: &mut u64) -> std::result::Result<Vec<f32>, EmbedError> {
+    fn query_vector(
+        &self,
+        text: &str,
+        report: &mut Timing,
+        calls: &mut u64,
+    ) -> std::result::Result<Vec<f32>, EmbedError> {
         let provider = self.embedder().ok_or(EmbedError::Unavailable)?;
         let key = provider.identity().key.clone();
-        if let Some(v) = self.query_cache.lock().expect("query cache").get(&key, text) {
+        if let Some(v) = self
+            .query_cache
+            .lock()
+            .expect("query cache")
+            .get(&key, text)
+        {
             return Ok(v);
         }
         let t = Instant::now();
@@ -329,7 +405,10 @@ impl App {
         let v = embedding::embed(provider.as_ref(), Role::Query, &[text.to_owned()])?.remove(0);
         *calls += provider.calls().saturating_sub(before).max(1);
         report.embed_ms += ms(t);
-        self.query_cache.lock().expect("query cache").put(&key, text, v.clone());
+        self.query_cache
+            .lock()
+            .expect("query cache")
+            .put(&key, text, v.clone());
         Ok(v)
     }
 
@@ -342,16 +421,50 @@ impl App {
         if !(1..=100).contains(&req.limit) {
             return Err(invalid("limit", "must be 1..=100"));
         }
-        let as_of = req.as_of.as_deref().map(str::parse::<Timestamp>).transpose()?;
-        let qhash = sha256(serde_json::to_string(&(&query, req.intent, req.depth, &req.filters, &req.as_of, req.include_invalid, req.strategy)).map_err(|_| invalid("query", "serialization"))?.as_bytes());
+        let as_of = req
+            .as_of
+            .as_deref()
+            .map(str::parse::<Timestamp>)
+            .transpose()?;
+        let qhash = sha256(
+            serde_json::to_string(&(
+                &query,
+                req.intent,
+                req.depth,
+                &req.filters,
+                &req.as_of,
+                req.include_invalid,
+                req.strategy,
+            ))
+            .map_err(|_| invalid("query", "serialization"))?
+            .as_bytes(),
+        );
         let offset = self.search_offset(p, &qhash, req.cursor.as_deref())?;
         let t_plan = Instant::now();
-        let filtered = req.filters.category.len() + req.filters.speaker.len() + req.filters.lang.len() + req.filters.source_id.len() > 0;
-        let plan = planner::plan(&query, req.intent, req.depth, as_of.is_some(), filtered, req.limit);
-        let mut timing = Timing { plan_ms: ms(t_plan), ..Default::default() };
+        let filtered = req.filters.category.len()
+            + req.filters.speaker.len()
+            + req.filters.lang.len()
+            + req.filters.source_id.len()
+            > 0;
+        let plan = planner::plan(
+            &query,
+            req.intent,
+            req.depth,
+            as_of.is_some(),
+            filtered,
+            req.limit,
+        );
+        let mut timing = Timing {
+            plan_ms: ms(t_plan),
+            ..Default::default()
+        };
         let params = self.policy.retrieval;
         let wants = |path: &str| plan.paths.iter().any(|p| p.path == path);
-        let optional = |path: &str| plan.paths.iter().any(|p| p.path == path && p.when == "if_insufficient");
+        let optional = |path: &str| {
+            plan.paths
+                .iter()
+                .any(|p| p.path == path && p.when == "if_insufficient")
+        };
         let deadline = std::time::Duration::from_millis(plan.budgets.deadline_ms);
         let mut reasons: Vec<&'static str> = Vec::new();
         let mut executed = Executed::default();
@@ -373,33 +486,60 @@ impl App {
         let mut population = 0;
         let run_lexical = req.strategy != Strategy::SemanticOnly;
         let t_lex = Instant::now();
-        if run_lexical && (wants("lexical") || wants("exact") || req.strategy == Strategy::LexicalOnly || req.strategy == Strategy::FusedAll) {
+        if run_lexical
+            && (wants("lexical")
+                || wants("exact")
+                || req.strategy == Strategy::LexicalOnly
+                || req.strategy == Strategy::FusedAll)
+        {
             executed.lexical = true;
             let mut terms = tokenizer::query_terms(&query);
-            let informative = terms.iter().any(|t| !(t.kind == Kind::Word && tokenizer::is_function_word(&t.text)));
+            let informative = terms
+                .iter()
+                .any(|t| !(t.kind == Kind::Word && tokenizer::is_function_word(&t.text)));
             if informative {
                 terms.retain(|t| !(t.kind == Kind::Word && tokenizer::is_function_word(&t.text)));
             }
-            let out = lexical::search(&tx, p, &terms, &filter_sql, plan.budgets.lexical_candidates)?;
+            let out =
+                lexical::search(&tx, p, &terms, &filter_sql, plan.budgets.lexical_candidates)?;
             population = out.population;
             lex_truncated |= out.truncated;
             // Exact tier: quoted phrases and identifiers must appear verbatim (after folding).
-            let phrases: Vec<String> = plan.signals.quoted.iter().map(|q| fusion::normal_form(q)).collect();
+            let phrases: Vec<String> = plan
+                .signals
+                .quoted
+                .iter()
+                .map(|q| fusion::normal_form(q))
+                .collect();
             let idents: Vec<&String> = plan.signals.identifiers.iter().collect();
             let mut exact_ids: HashSet<String> = HashSet::new();
-            if (wants("exact") || !phrases.is_empty() || !idents.is_empty()) && !(phrases.is_empty() && idents.is_empty()) {
+            if !(phrases.is_empty() && idents.is_empty()) {
                 executed.exact = true;
                 let mut exact_terms = Vec::new();
-                for ph in plan.signals.quoted.iter().chain(plan.signals.identifiers.iter()) {
+                for ph in plan
+                    .signals
+                    .quoted
+                    .iter()
+                    .chain(plan.signals.identifiers.iter())
+                {
                     exact_terms.extend(tokenizer::query_terms(ph));
                 }
                 let mut seen = HashSet::new();
                 exact_terms.retain(|t| seen.insert(t.text.clone()));
-                let ex = lexical::search(&tx, p, &exact_terms, &filter_sql, plan.budgets.lexical_candidates)?;
+                let ex = lexical::search(
+                    &tx,
+                    p,
+                    &exact_terms,
+                    &filter_sql,
+                    plan.budgets.lexical_candidates,
+                )?;
                 lex_truncated |= ex.truncated;
                 for h in &ex.hits {
                     let norm = fusion::normal_form(&h.text);
-                    let doc_terms: HashSet<String> = tokenizer::terms(&h.text).into_iter().map(|t| t.text).collect();
+                    let doc_terms: HashSet<String> = tokenizer::terms(&h.text)
+                        .into_iter()
+                        .map(|t| t.text)
+                        .collect();
                     let phrase_ok = phrases.iter().all(|ph| norm.contains(ph.as_str()));
                     let ident_ok = idents.iter().all(|i| doc_terms.contains(i.as_str()));
                     if (!phrases.is_empty() || !idents.is_empty()) && phrase_ok && ident_ok {
@@ -415,7 +555,8 @@ impl App {
             let mut rank = 0;
             for h in &out.hits {
                 // Gate: shared script and enough of the query's informative terms.
-                let gated = qscripts.overlaps(Scripts::of(&h.text)) && h.coverage >= params.lexical_min_coverage;
+                let gated = qscripts.overlaps(Scripts::of(&h.text))
+                    && h.coverage >= params.lexical_min_coverage;
                 if !gated && !exact_ids.contains(&h.claim_id) {
                     continue;
                 }
@@ -432,14 +573,28 @@ impl App {
             }
         }
         timing.lexical_ms = ms(t_lex);
-        let strong = |evidence: &HashMap<String, fusion::Evidence>| evidence.values().filter(|e| fusion::strength(e, &params) != "weak" && (e.exact || e.coverage.is_some_and(|c| c >= params.lexical_strong_coverage) || (e.coverage.is_some() && e.cosine.is_some()))).count();
+        let strong = |evidence: &HashMap<String, fusion::Evidence>| {
+            evidence
+                .values()
+                .filter(|e| {
+                    fusion::strength(e, &params) != "weak"
+                        && (e.exact
+                            || e.coverage
+                                .is_some_and(|c| c >= params.lexical_strong_coverage)
+                            || (e.coverage.is_some() && e.cosine.is_some()))
+                })
+                .count()
+        };
         // ---- Sufficiency decides whether optional semantic work is needed.
         let semantic_available = self.embedder().is_some();
         let mut run_semantic = match req.strategy {
             Strategy::LexicalOnly => false,
             Strategy::SemanticOnly | Strategy::FusedAll => true,
             Strategy::Adaptive => {
-                wants("semantic") && (!optional("semantic") || strong(&evidence) < plan.sufficient_results.max(req.limit.min(3)) || plan.depth == Depth::Exhaustive)
+                wants("semantic")
+                    && (!optional("semantic")
+                        || strong(&evidence) < plan.sufficient_results.max(req.limit.min(3))
+                        || plan.depth == Depth::Exhaustive)
             }
         };
         if run_semantic && !semantic_available {
@@ -454,7 +609,11 @@ impl App {
             match self.query_vector(&query, &mut timing, &mut calls) {
                 Ok(v) => qvec = Some(v),
                 Err(e) => {
-                    reasons.push(if e == EmbedError::Unavailable { "semantic_unavailable" } else { "semantic_failed" });
+                    reasons.push(if e == EmbedError::Unavailable {
+                        "semantic_unavailable"
+                    } else {
+                        "semantic_failed"
+                    });
                 }
             }
         } else if run_semantic {
@@ -466,7 +625,15 @@ impl App {
             let t = Instant::now();
             let mut cache = self.vectors.lock().expect("vector cache");
             cache.refresh(&tx, &id.key, id.dimensions)?;
-            let out = semantic::search(&tx, &cache, p, v, &filter_sql, fetch.min(plan.budgets.semantic_candidates.max(req.limit * 4)), params.semantic_min_cosine)?;
+            let out = semantic::search(
+                &tx,
+                &cache,
+                p,
+                v,
+                &filter_sql,
+                fetch.min(plan.budgets.semantic_candidates.max(req.limit * 4)),
+                params.semantic_min_cosine,
+            )?;
             sem_scanned = out.scanned;
             executed.semantic = true;
             for (rank, (cid, cos)) in out.hits.iter().enumerate() {
@@ -486,7 +653,8 @@ impl App {
         // Exact tier first, then fused score, then lexical strength, then id (deterministic).
         order.sort_by(|a, b| {
             let (ea, eb) = (&evidence[a], &evidence[b]);
-            eb.exact.cmp(&ea.exact)
+            eb.exact
+                .cmp(&ea.exact)
                 .then_with(|| eb.fused.total_cmp(&ea.fused))
                 .then_with(|| eb.bm25.unwrap_or(0.0).total_cmp(&ea.bm25.unwrap_or(0.0)))
                 .then_with(|| a.cmp(b))
@@ -496,7 +664,8 @@ impl App {
         let missing: Vec<&String> = order.iter().filter(|i| !texts.contains_key(*i)).collect();
         let mut source_of: HashMap<String, String> = HashMap::new();
         {
-            let json = serde_json::to_string(&order).map_err(|_| invalid("ids", "serialization"))?;
+            let json =
+                serde_json::to_string(&order).map_err(|_| invalid("ids", "serialization"))?;
             let rows: Vec<(String, String, String)> = tx
                 .prepare_cached("SELECT id,source_id,text FROM claim WHERE id IN (SELECT value FROM json_each(?1))")?
                 .query_map([json], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
@@ -510,16 +679,29 @@ impl App {
             }
         }
         let (order, duplicates) = fusion::suppress_duplicates(&order, &texts);
-        let (primary, suppressed) = fusion::cap_per_source(order, &source_of, plan.budgets.per_source);
+        let (primary, suppressed) =
+            fusion::cap_per_source(order, &source_of, plan.budgets.per_source);
         let _ = suppressed;
         // ---- Graph expansion from the best seeds (bounded hops and nodes).
         let mut related: Vec<(String, Related)> = Vec::new();
-        let run_graph = wants("graph") && req.strategy != Strategy::LexicalOnly && req.strategy != Strategy::SemanticOnly && !primary.is_empty()
-            && (!optional("graph") || strong(&evidence) < plan.sufficient_results || plan.depth == Depth::Exhaustive);
+        let run_graph = wants("graph")
+            && req.strategy != Strategy::LexicalOnly
+            && req.strategy != Strategy::SemanticOnly
+            && !primary.is_empty()
+            && (!optional("graph")
+                || strong(&evidence) < plan.sufficient_results
+                || plan.depth == Depth::Exhaustive);
         if run_graph {
             let t = Instant::now();
             executed.graph = true;
-            related = self.expand_graph(&tx, p, &filter_sql, &primary[..primary.len().min(5)], &plan, &primary)?;
+            related = self.expand_graph(
+                &tx,
+                p,
+                &filter_sql,
+                &primary[..primary.len().min(5)],
+                &plan,
+                &primary,
+            )?;
             timing.graph_ms = ms(t);
         }
         drop(tx);
@@ -528,7 +710,8 @@ impl App {
         let temporal = wants("temporal") || as_of.is_some();
         let mut final_hits: Vec<SearchHit> = Vec::new();
         let t_recheck = Instant::now();
-        let mut queue: Vec<(String, Option<Related>)> = primary.iter().map(|i| (i.clone(), None)).collect();
+        let mut queue: Vec<(String, Option<Related>)> =
+            primary.iter().map(|i| (i.clone(), None)).collect();
         queue.extend(related.into_iter().map(|(i, r)| (i, Some(r))));
         let chunk = (req.limit * 2).max(32);
         let mut cursor = 0;
@@ -540,7 +723,10 @@ impl App {
             let mut views: HashMap<String, ClaimView> = self
                 .read_claims_only(p, false, false, Some(&ids))?
                 .into_iter()
-                .filter(|c| req.include_invalid && p.kind() != PrincipalKind::User || c.validity != crate::integrity::Validity::Invalid)
+                .filter(|c| {
+                    req.include_invalid && p.kind() != PrincipalKind::User
+                        || c.validity != crate::integrity::Validity::Invalid
+                })
                 .map(|c| (c.id.clone(), c))
                 .collect();
             let mut statuses: HashMap<String, crate::integrity::temporal::Status> = HashMap::new();
@@ -550,15 +736,26 @@ impl App {
                 statuses = self.temporal_statuses(p, &views, &a, as_of.is_none())?;
             }
             for (id, rel) in slice {
-                let Some(mut claim) = views.remove(id) else { continue };
-                let temporal_note = statuses.remove(id).map(|(status, superseded_by, possibly, provisional, _)| TemporalNote {
-                    history: status != "applies",
-                    status,
-                    superseded_by,
-                    possibly_superseded_by: possibly,
-                    provisional,
-                });
-                if as_of.is_some() && temporal_note.as_ref().is_some_and(|t| t.status == "not_yet_stated") {
+                let Some(mut claim) = views.remove(id) else {
+                    continue;
+                };
+                let temporal_note =
+                    statuses
+                        .remove(id)
+                        .map(
+                            |(status, superseded_by, possibly, provisional, _)| TemporalNote {
+                                history: status != "applies",
+                                status,
+                                superseded_by,
+                                possibly_superseded_by: possibly,
+                                provisional,
+                            },
+                        );
+                if as_of.is_some()
+                    && temporal_note
+                        .as_ref()
+                        .is_some_and(|t| t.status == "not_yet_stated")
+                {
                     dropped_not_yet += 1;
                     continue;
                 }
@@ -579,10 +776,15 @@ impl App {
                     why.push("contains the quoted phrase or identifier verbatim".to_string());
                 }
                 if let Some(c) = ev.coverage {
-                    why.push(format!("lexical: matches {:.0}% of the informative query terms", c * 100.0));
+                    why.push(format!(
+                        "lexical: matches {:.0}% of the informative query terms",
+                        c * 100.0
+                    ));
                 }
                 if let Some(c) = ev.cosine {
-                    why.push(format!("semantic: cosine {c:.2} with the query (similarity, not probability)"));
+                    why.push(format!(
+                        "semantic: cosine {c:.2} with the query (similarity, not probability)"
+                    ));
                 }
                 if let Some(r) = rel {
                     why.push(format!("related by {} to a top result", r.via));
@@ -590,19 +792,39 @@ impl App {
                 claim.mentions = None;
                 final_hits.push(SearchHit {
                     match_type,
-                    evidence: if rel.is_some() { "weak" } else { fusion::strength(&ev, &params) },
-                    score: Score { fused: ev.fused, bm25: ev.bm25, lexical_coverage: ev.coverage, lexical_rank: ev.lexical_rank, cosine: ev.cosine, semantic_rank: ev.semantic_rank },
+                    evidence: if rel.is_some() {
+                        "weak"
+                    } else {
+                        fusion::strength(&ev, &params)
+                    },
+                    score: Score {
+                        fused: ev.fused,
+                        bm25: ev.bm25,
+                        lexical_coverage: ev.coverage,
+                        lexical_rank: ev.lexical_rank,
+                        cosine: ev.cosine,
+                        semantic_rank: ev.semantic_rank,
+                    },
                     duplicates: duplicates.get(id).cloned().unwrap_or_default(),
                     why,
-                    related: rel.as_ref().map(|r| Related { via: r.via.clone(), from: r.from.clone(), hops: r.hops }),
+                    related: rel.as_ref().map(|r| Related {
+                        via: r.via.clone(),
+                        from: r.from.clone(),
+                        hops: r.hops,
+                    }),
                     temporal: temporal_note,
                     claim,
                 });
             }
         }
         timing.recheck_ms = ms(t_recheck);
-        let more = final_hits.len() > offset + req.limit || (cursor < queue.len() && final_hits.len() >= need);
-        let page: Vec<SearchHit> = final_hits.into_iter().skip(offset).take(req.limit).collect();
+        let more = final_hits.len() > offset + req.limit
+            || (cursor < queue.len() && final_hits.len() >= need);
+        let page: Vec<SearchHit> = final_hits
+            .into_iter()
+            .skip(offset)
+            .take(req.limit)
+            .collect();
         let ids: Vec<String> = page.iter().map(|h| h.claim.id.clone()).collect();
         self.note_reads(p, &ids)?;
         let next_cursor = more.then(|| self.search_cursor(p, &qhash, offset + page.len()));
@@ -627,18 +849,37 @@ impl App {
         reasons.dedup();
         let status = if reasons.is_empty() {
             "complete"
-        } else if reasons.iter().any(|r| matches!(*r, "semantic_unavailable" | "semantic_failed" | "lexical_index_incomplete" | "embedding_index_incomplete" | "deadline_exceeded" | "candidate_budget_exhausted")) {
+        } else if reasons.iter().any(|r| {
+            matches!(
+                *r,
+                "semantic_unavailable"
+                    | "semantic_failed"
+                    | "lexical_index_incomplete"
+                    | "embedding_index_incomplete"
+                    | "deadline_exceeded"
+                    | "candidate_budget_exhausted"
+            )
+        }) {
             "degraded"
         } else {
             "incomplete"
         };
         timing.total_ms = ms(started);
         Ok(SearchResponse {
-            continuation: Continuation { next_cursor, returned: page.len(), candidates, candidates_exact: !lex_truncated && !executed.semantic },
+            continuation: Continuation {
+                next_cursor,
+                returned: page.len(),
+                candidates,
+                candidates_exact: !lex_truncated && !executed.semantic,
+            },
             results: page,
             semantic_used: executed.semantic,
             graph_used: executed.graph,
-            coverage: Coverage { exhaustive: status == "complete", status, reasons },
+            coverage: Coverage {
+                exhaustive: status == "complete",
+                status,
+                reasons,
+            },
             indexing,
             strategy: req.strategy,
             executed,
@@ -670,10 +911,15 @@ impl App {
         ids.sort();
         ids.dedup();
         let universe = self.read_claims_only(p, false, false, Some(&ids))?;
-        let a = time::OffsetDateTime::parse(as_of.as_str(), &time::format_description::well_known::Rfc3339).map_err(|_| invalid("as_of", "timestamp"))?;
+        let a = time::OffsetDateTime::parse(
+            as_of.as_str(),
+            &time::format_description::well_known::Rfc3339,
+        )
+        .map_err(|_| invalid("as_of", "timestamp"))?;
         let mut conn = self.store.reader()?;
         let tx = conn.transaction()?;
-        let mut all = crate::integrity::temporal::evaluate(&tx, p, &universe, a, present, &self.policy)?;
+        let mut all =
+            crate::integrity::temporal::evaluate(&tx, p, &universe, a, present, &self.policy)?;
         all.retain(|k, _| views.contains_key(k));
         Ok(all)
     }
@@ -690,18 +936,36 @@ impl App {
         exclude: &[String],
     ) -> Result<Vec<(String, Related)>> {
         let col = access::column(p);
-        let actors = if p.kind() == PrincipalKind::User { "'user'" } else { "'user','agent'" };
-        let declared = if p.kind() == PrincipalKind::User { "'system','user'" } else { "'system','user','agent','import'" };
+        let actors = if p.kind() == PrincipalKind::User {
+            "'user'"
+        } else {
+            "'user','agent'"
+        };
+        let declared = if p.kind() == PrincipalKind::User {
+            "'system','user'"
+        } else {
+            "'system','user','agent','import'"
+        };
         let mut out: Vec<(String, Related)> = Vec::new();
         let mut seen: HashSet<String> = exclude.iter().cloned().collect();
-        let mut frontier: Vec<(String, String)> = seeds.iter().map(|s| (s.clone(), s.clone())).collect();
-        let filter = if filter_sql.is_empty() { String::new() } else { format!("AND {filter_sql}") };
+        let mut frontier: Vec<(String, String)> =
+            seeds.iter().map(|s| (s.clone(), s.clone())).collect();
+        let filter = if filter_sql.is_empty() {
+            String::new()
+        } else {
+            format!("AND {filter_sql}")
+        };
         for hop in 1..=plan.budgets.graph_hops {
             if frontier.is_empty() || out.len() >= plan.budgets.graph_nodes {
                 break;
             }
-            let json = serde_json::to_string(&frontier.iter().map(|(id, _)| id).collect::<Vec<_>>()).map_err(|_| invalid("ids", "serialization"))?;
-            let origin: HashMap<&str, &str> = frontier.iter().map(|(id, root)| (id.as_str(), root.as_str())).collect();
+            let json =
+                serde_json::to_string(&frontier.iter().map(|(id, _)| id).collect::<Vec<_>>())
+                    .map_err(|_| invalid("ids", "serialization"))?;
+            let origin: HashMap<&str, &str> = frontier
+                .iter()
+                .map(|(id, root)| (id.as_str(), root.as_str()))
+                .collect();
             let sql = format!(
                 "SELECT e.other,e.kind,e.seed FROM (
                    SELECT d.parent AS other,'depends_on:'||d.kind AS kind,d.child AS seed FROM claim_dependency d WHERE d.child IN (SELECT value FROM json_each(?1)) AND d.declared_by IN ({declared}) AND {dl}='restore'
@@ -721,7 +985,9 @@ impl App {
             );
             let rows: Vec<(String, String, String)> = conn
                 .prepare(&sql)?
-                .query_map(params![json, (plan.budgets.graph_nodes * 4) as i64], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
+                .query_map(params![json, (plan.budgets.graph_nodes * 4) as i64], |r| {
+                    Ok((r.get(0)?, r.get(1)?, r.get(2)?))
+                })?
                 .collect::<std::result::Result<_, _>>()?;
             let mut next = Vec::new();
             for (other, kind, seed) in rows {
@@ -731,8 +997,19 @@ impl App {
                 if !seen.insert(other.clone()) {
                     continue;
                 }
-                let root = origin.get(seed.as_str()).copied().unwrap_or(seed.as_str()).to_owned();
-                out.push((other.clone(), Related { via: kind, from: root.clone(), hops: hop }));
+                let root = origin
+                    .get(seed.as_str())
+                    .copied()
+                    .unwrap_or(seed.as_str())
+                    .to_owned();
+                out.push((
+                    other.clone(),
+                    Related {
+                        via: kind,
+                        from: root.clone(),
+                        hops: hop,
+                    },
+                ));
                 next.push((other, root));
             }
             frontier = next;

@@ -6,16 +6,18 @@ use serde_json::Value;
 use std::time::Instant;
 fn main() {
     let args: Vec<String> = std::env::args().collect();
-    let mut config = LocalConfig::default();
-    config.device = match args.get(1).map(String::as_str) {
-        Some("cpu") => DeviceChoice::Cpu,
-        Some("metal") => DeviceChoice::Metal,
-        _ => DeviceChoice::Auto,
-    };
-    config.precision = match args.get(2).map(String::as_str) {
-        Some("f32") => Precision::F32,
-        Some("bf16") => Precision::Bf16,
-        _ => Precision::F16,
+    let mut config = LocalConfig {
+        device: match args.get(1).map(String::as_str) {
+            Some("cpu") => DeviceChoice::Cpu,
+            Some("metal") => DeviceChoice::Metal,
+            _ => DeviceChoice::Auto,
+        },
+        precision: match args.get(2).map(String::as_str) {
+            Some("f32") => Precision::F32,
+            Some("bf16") => Precision::Bf16,
+            _ => Precision::F16,
+        },
+        ..Default::default()
     };
     if let Some(n) = args.get(3).and_then(|s| s.parse().ok()) {
         config.batch_tokens = n;

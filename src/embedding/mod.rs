@@ -27,6 +27,7 @@ pub struct EmbeddingIdentity {
     pub local: bool,
 }
 impl EmbeddingIdentity {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         provider: &str,
         model: &str,

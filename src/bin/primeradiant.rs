@@ -262,8 +262,12 @@ fn run() -> Result<()> {
         })
         .ok_or_else(|| invalid("db", "HOME unavailable; supply --db"))?;
     let policy = prime_radiant::Policy {
-        embedding: prime_radiant::embedding::EmbeddingConfig::parse(&cli.embedding, cli.embedding_model.clone(), cli.embedding_model_dir.clone())
-            .ok_or_else(|| invalid("embedding", "expected local, openrouter or off"))?,
+        embedding: prime_radiant::embedding::EmbeddingConfig::parse(
+            &cli.embedding,
+            cli.embedding_model.clone(),
+            cli.embedding_model_dir.clone(),
+        )
+        .ok_or_else(|| invalid("embedding", "expected local, openrouter or off"))?,
         ..Default::default()
     };
     if let Command::Restore { backup } = cli.command {
@@ -282,7 +286,8 @@ fn run() -> Result<()> {
     } = cli.command
     {
         let credentials = prime_radiant::authentication::Credentials::open(credentials)?;
-        let service = prime_radiant::api::Service::new(App::open_with_policy(path, policy)?, credentials);
+        let service =
+            prime_radiant::api::Service::new(App::open_with_policy(path, policy)?, credentials);
         return tokio::runtime::Runtime::new()?.block_on(async move {
             let worker =
                 if let (Some(model), Some(reviewer)) = (extraction_model, extraction_reviewer) {
@@ -492,7 +497,9 @@ fn run() -> Result<()> {
                     break;
                 }
             }
-            output(serde_json::json!({"lexical_indexed":lexical,"embedded":embedded,"failed":failed,"deferred":deferred}));
+            output(
+                serde_json::json!({"lexical_indexed":lexical,"embedded":embedded,"failed":failed,"deferred":deferred}),
+            );
         }
         Command::IndexReconcile => {
             let (l, v) = app.reconcile_indexing()?;
@@ -509,11 +516,22 @@ fn run() -> Result<()> {
         }
         Command::ModelCheck => {
             let id = app.policy_embedding_identity();
-            output(serde_json::json!({"identity":id.as_ref().map(|i| serde_json::json!({"key":i.key,"provider":i.provider,"model":i.model,"revision":i.revision,"dimensions":i.dimensions,"local":i.local})),"ready":app.embedder().is_some()}));
+            output(
+                serde_json::json!({"identity":id.as_ref().map(|i| serde_json::json!({"key":i.key,"provider":i.provider,"model":i.model,"revision":i.revision,"dimensions":i.dimensions,"local":i.local})),"ready":app.embedder().is_some()}),
+            );
         }
-        Command::Search { principal, query, intent, depth, limit, as_of, strategy } => {
+        Command::Search {
+            principal,
+            query,
+            intent,
+            depth,
+            limit,
+            as_of,
+            strategy,
+        } => {
             fn parse<T: serde::de::DeserializeOwned>(field: &'static str, v: String) -> Result<T> {
-                serde_json::from_value(serde_json::Value::String(v)).map_err(|_| invalid(field, "unsupported value"))
+                serde_json::from_value(serde_json::Value::String(v))
+                    .map_err(|_| invalid(field, "unsupported value"))
             }
             let mut request = prime_radiant::retrieval::search::SearchRequest::new(query);
             request.intent = parse("intent", intent)?;
@@ -523,10 +541,20 @@ fn run() -> Result<()> {
             request.as_of = as_of;
             output(app.search(&Principal::for_local_cli(principal, None, None), request)?);
         }
-        Command::QueueStatus => output(app.queue_status(&Principal::for_local_cli(PrincipalKind::User, None, None))?),
-        Command::QueueJobs { state, limit } => output(app.queue_jobs(&Principal::for_local_cli(PrincipalKind::User, None, None), state.as_deref(), limit)?),
-        Command::QueueRetry { job } => output(serde_json::json!({"requeued":app.retry_job(&Principal::for_local_cli(PrincipalKind::User, None, None), &job)?})),
-        Command::QueueResume => output(serde_json::json!({"resumed":app.resume_deferred(&Principal::for_local_cli(PrincipalKind::User, None, None), None)?})),
+        Command::QueueStatus => {
+            output(app.queue_status(&Principal::for_local_cli(PrincipalKind::User, None, None))?)
+        }
+        Command::QueueJobs { state, limit } => output(app.queue_jobs(
+            &Principal::for_local_cli(PrincipalKind::User, None, None),
+            state.as_deref(),
+            limit,
+        )?),
+        Command::QueueRetry { job } => output(
+            serde_json::json!({"requeued":app.retry_job(&Principal::for_local_cli(PrincipalKind::User, None, None), &job)?}),
+        ),
+        Command::QueueResume => output(
+            serde_json::json!({"resumed":app.resume_deferred(&Principal::for_local_cli(PrincipalKind::User, None, None), None)?}),
+        ),
         Command::Restore { .. }
         | Command::Serve { .. }
         | Command::Mcp { .. }

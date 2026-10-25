@@ -78,32 +78,136 @@ pub struct Plan {
 }
 
 const TIME_EN: &[&str] = &[
-    "yesterday", "today", "tomorrow", "last", "ago", "before", "after", "since", "until", "during", "when", "previously", "earlier",
-    "later", "history", "changed", "formerly", "originally", "currently", "now", "then", "january", "february", "march", "april",
-    "june", "july", "august", "september", "october", "november", "december", "as", "of",
+    "yesterday",
+    "today",
+    "tomorrow",
+    "last",
+    "ago",
+    "before",
+    "after",
+    "since",
+    "until",
+    "during",
+    "when",
+    "previously",
+    "earlier",
+    "later",
+    "history",
+    "changed",
+    "formerly",
+    "originally",
+    "currently",
+    "now",
+    "then",
+    "january",
+    "february",
+    "march",
+    "april",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+    "as",
+    "of",
 ];
 const TIME_KO: &[&str] = &[
-    "어제", "오늘", "내일", "지난", "작년", "올해", "이전", "이후", "당시", "그때", "예전", "과거", "현재", "변경", "바뀌", "언제", "월", "년", "주전",
-    "개월", "이력", "히스토리",
+    "어제",
+    "오늘",
+    "내일",
+    "지난",
+    "작년",
+    "올해",
+    "이전",
+    "이후",
+    "당시",
+    "그때",
+    "예전",
+    "과거",
+    "현재",
+    "변경",
+    "바뀌",
+    "언제",
+    "월",
+    "년",
+    "주전",
+    "개월",
+    "이력",
+    "히스토리",
 ];
 const REL_EN: &[&str] = &[
-    "because", "depends", "dependency", "dependencies", "related", "relationship", "cited", "citation", "source", "evidence", "supports",
-    "supersedes", "contradicts", "derived", "caused", "reason", "why", "premise", "justification", "origin",
+    "because",
+    "depends",
+    "dependency",
+    "dependencies",
+    "related",
+    "relationship",
+    "cited",
+    "citation",
+    "source",
+    "evidence",
+    "supports",
+    "supersedes",
+    "contradicts",
+    "derived",
+    "caused",
+    "reason",
+    "why",
+    "premise",
+    "justification",
+    "origin",
 ];
-const REL_KO: &[&str] = &["때문", "의존", "관련", "근거", "출처", "인용", "대체", "모순", "이유", "전제", "원인", "배경", "파생"];
-const ALL_EN: &[&str] = &["all", "every", "everything", "list", "complete", "entire", "exhaustive", "each", "count"];
-const ALL_KO: &[&str] = &["모든", "전부", "전체", "목록", "빠짐없이", "모두", "몇", "개수", "나열"];
-const QUESTION_EN: &[&str] = &["what", "which", "who", "whom", "where", "when", "how", "why", "is", "are", "do", "does", "did", "can", "could", "should"];
+const REL_KO: &[&str] = &[
+    "때문", "의존", "관련", "근거", "출처", "인용", "대체", "모순", "이유", "전제", "원인", "배경",
+    "파생",
+];
+const ALL_EN: &[&str] = &[
+    "all",
+    "every",
+    "everything",
+    "list",
+    "complete",
+    "entire",
+    "exhaustive",
+    "each",
+    "count",
+];
+const ALL_KO: &[&str] = &[
+    "모든",
+    "전부",
+    "전체",
+    "목록",
+    "빠짐없이",
+    "모두",
+    "몇",
+    "개수",
+    "나열",
+];
+const QUESTION_EN: &[&str] = &[
+    "what", "which", "who", "whom", "where", "when", "how", "why", "is", "are", "do", "does",
+    "did", "can", "could", "should",
+];
 
 fn quoted_phrases(q: &str) -> Vec<String> {
     let mut out = Vec::new();
-    let pairs = [('"', '"'), ('“', '”'), ('「', '」'), ('『', '』'), ('\'', '\'')];
+    let pairs = [
+        ('"', '"'),
+        ('“', '”'),
+        ('「', '」'),
+        ('『', '』'),
+        ('\'', '\''),
+    ];
     let chars: Vec<char> = q.chars().collect();
     let mut i = 0;
     while i < chars.len() {
         if let Some(&(_, close)) = pairs.iter().find(|(o, _)| *o == chars[i]) {
             // A straight apostrophe inside a word is not a quotation mark.
-            let word_internal = chars[i] == '\'' && i > 0 && chars[i - 1].is_alphanumeric() && chars.get(i + 1).is_some_and(|c| c.is_alphanumeric());
+            let word_internal = chars[i] == '\''
+                && i > 0
+                && chars[i - 1].is_alphanumeric()
+                && chars.get(i + 1).is_some_and(|c| c.is_alphanumeric());
             if !word_internal && let Some(len) = chars[i + 1..].iter().position(|&c| c == close) {
                 let phrase: String = chars[i + 1..i + 1 + len].iter().collect();
                 if !phrase.trim().is_empty() {
@@ -118,12 +222,16 @@ fn quoted_phrases(q: &str) -> Vec<String> {
     out
 }
 fn is_ulid_like(w: &str) -> bool {
-    w.len() == 26 && w.chars().all(|c| c.is_ascii_alphanumeric()) && w.chars().any(|c| c.is_ascii_digit())
+    w.len() == 26
+        && w.chars().all(|c| c.is_ascii_alphanumeric())
+        && w.chars().any(|c| c.is_ascii_digit())
 }
 
 pub fn analyze(query: &str, as_of: bool) -> Signals {
-    let mut s = Signals::default();
-    s.quoted = quoted_phrases(query);
+    let mut s = Signals {
+        quoted: quoted_phrases(query),
+        ..Default::default()
+    };
     let scripts = Scripts::of(query);
     s.cjk = scripts.hangul || scripts.han || scripts.kana;
     s.latin = scripts.latin;
@@ -145,14 +253,22 @@ pub fn analyze(query: &str, as_of: bool) -> Signals {
         match t.kind {
             Kind::Identifier if !s.identifiers.contains(&t.text) => {
                 // Dates and ordinary numbers are signals of their own; code symbols, paths and ids are exact.
-                if t.text.chars().filter(|c| c.is_ascii_digit() || *c == '-').count() == t.text.len() && t.text.len() >= 8 {
+                if t.text
+                    .chars()
+                    .filter(|c| c.is_ascii_digit() || *c == '-')
+                    .count()
+                    == t.text.len()
+                    && t.text.len() >= 8
+                {
                     s.time_cues.push(t.text.clone());
                 } else {
                     s.identifiers.push(t.text);
                 }
             }
             Kind::Word if t.text.chars().all(|c| c.is_ascii_digit()) => {
-                if (t.text.len() == 4 && (t.text.starts_with("19") || t.text.starts_with("20"))) || t.text.len() == 8 {
+                if (t.text.len() == 4 && (t.text.starts_with("19") || t.text.starts_with("20")))
+                    || t.text.len() == 8
+                {
                     s.time_cues.push(t.text);
                 } else if t.text.len() >= 3 {
                     s.numbers.push(t.text);
@@ -169,10 +285,10 @@ pub fn analyze(query: &str, as_of: bool) -> Signals {
     let has = |list: &[&str], w: &str| list.contains(&w);
     let cue = |dst: &mut Vec<String>, en: &[&str], ko: &[&str], strict_en: bool| {
         for w in &words {
-            if (has(en, w) && (!strict_en || w.len() > 2)) || ko.iter().any(|k| w.contains(k) && w.chars().any(|c| !c.is_ascii())) {
-                if !dst.contains(&w.to_string()) {
-                    dst.push(w.to_string());
-                }
+            let hit = (has(en, w) && (!strict_en || w.len() > 2))
+                || ko.iter().any(|k| w.contains(k) && !w.is_ascii());
+            if hit && !dst.contains(&w.to_string()) {
+                dst.push(w.to_string());
             }
         }
     };
@@ -181,7 +297,8 @@ pub fn analyze(query: &str, as_of: bool) -> Signals {
     let mut time = Vec::new();
     cue(&mut time, TIME_EN, TIME_KO, true);
     let weak: &[&str] = &["when", "as", "of", "then", "now", "last", "after", "before"];
-    let strong_time = time.iter().any(|w| !weak.contains(&w.as_str())) || !s.time_cues.is_empty() || as_of;
+    let strong_time =
+        time.iter().any(|w| !weak.contains(&w.as_str())) || !s.time_cues.is_empty() || as_of;
     if strong_time {
         for w in time {
             if !s.time_cues.contains(&w) {
@@ -191,8 +308,17 @@ pub fn analyze(query: &str, as_of: bool) -> Signals {
     }
     cue(&mut s.relation_cues, REL_EN, REL_KO, true);
     cue(&mut s.exhaustive_cues, ALL_EN, ALL_KO, false);
-    s.question = query.trim_end().ends_with(['?', '？']) || words.first().is_some_and(|w| has(QUESTION_EN, w)) || query.contains("무엇") || query.contains("어떻게") || query.contains("왜");
-    let cjk_run = s.cjk && unquoted.chars().filter(|c| tokenizer::Scripts::of(&c.to_string()).any() && !c.is_ascii()).count() >= 6;
+    s.question = query.trim_end().ends_with(['?', '？'])
+        || words.first().is_some_and(|w| has(QUESTION_EN, w))
+        || query.contains("무엇")
+        || query.contains("어떻게")
+        || query.contains("왜");
+    let cjk_run = s.cjk
+        && unquoted
+            .chars()
+            .filter(|c| tokenizer::Scripts::of(&c.to_string()).any() && !c.is_ascii())
+            .count()
+            >= 6;
     s.natural_language = s.question || s.tokens >= 4 || cjk_run;
     s
 }
@@ -217,7 +343,14 @@ fn budgets(depth: Depth, limit: usize) -> Budgets {
     }
 }
 
-pub fn plan(query: &str, intent: Intent, depth: Depth, as_of: bool, filtered: bool, limit: usize) -> Plan {
+pub fn plan(
+    query: &str,
+    intent: Intent,
+    depth: Depth,
+    as_of: bool,
+    filtered: bool,
+    limit: usize,
+) -> Plan {
     let signals = analyze(query, as_of);
     let exact_signal = !signals.quoted.is_empty() || !signals.identifiers.is_empty();
     let short = signals.tokens <= 3;
@@ -226,9 +359,13 @@ pub fn plan(query: &str, intent: Intent, depth: Depth, as_of: bool, filtered: bo
     let temporal = as_of || !signals.time_cues.is_empty();
     let relational = !signals.relation_cues.is_empty();
     let comprehensive = !signals.exhaustive_cues.is_empty();
-    let exact = exact_signal && (short || !signals.quoted.is_empty() || signals.identifiers.len() >= 2);
+    let exact =
+        exact_signal && (short || !signals.quoted.is_empty() || signals.identifiers.len() >= 2);
     let natural = signals.natural_language && !exact;
-    let fired = [temporal, relational, exact, natural].iter().filter(|b| **b).count();
+    let fired = [temporal, relational, exact, natural]
+        .iter()
+        .filter(|b| **b)
+        .count();
     let inferred = if comprehensive {
         Intent::Comprehensive
     } else if exact {
@@ -287,48 +424,130 @@ pub fn plan(query: &str, intent: Intent, depth: Depth, as_of: bool, filtered: bo
     };
     match resolved {
         Intent::Exact => {
-            push(&mut paths, "exact", "always", "quoted phrase or identifier in the query");
-            push(&mut paths, "lexical", "always", "complements exact matching with word and character-bigram evidence");
-            push(&mut paths, "semantic", "if_insufficient", "paraphrase fallback when exact evidence is thin");
+            push(
+                &mut paths,
+                "exact",
+                "always",
+                "quoted phrase or identifier in the query",
+            );
+            push(
+                &mut paths,
+                "lexical",
+                "always",
+                "complements exact matching with word and character-bigram evidence",
+            );
+            push(
+                &mut paths,
+                "semantic",
+                "if_insufficient",
+                "paraphrase fallback when exact evidence is thin",
+            );
         }
         Intent::Lexical => {
             push(&mut paths, "lexical", "always", "keyword query");
-            push(&mut paths, "semantic", "if_insufficient", "paraphrase or cross-language fallback");
+            push(
+                &mut paths,
+                "semantic",
+                "if_insufficient",
+                "paraphrase or cross-language fallback",
+            );
         }
         Intent::Semantic => {
             push(&mut paths, "semantic", "always", "natural-language query");
-            push(&mut paths, "lexical", "always", "gated lexical evidence for exact words");
+            push(
+                &mut paths,
+                "lexical",
+                "always",
+                "gated lexical evidence for exact words",
+            );
         }
         Intent::Relational => {
             push(&mut paths, "lexical", "always", "locate seed Claims");
-            push(&mut paths, "semantic", "if_insufficient", "seed Claims by meaning");
-            push(&mut paths, "graph", "always", "relationship cues: follow dependencies, citations and revisions");
+            push(
+                &mut paths,
+                "semantic",
+                "if_insufficient",
+                "seed Claims by meaning",
+            );
+            push(
+                &mut paths,
+                "graph",
+                "always",
+                "relationship cues: follow dependencies, citations and revisions",
+            );
         }
         Intent::Temporal => {
             push(&mut paths, "lexical", "always", "locate candidate Claims");
-            push(&mut paths, "semantic", "if_insufficient", "candidates by meaning");
-            push(&mut paths, "temporal", "always", "time cues or as_of: evaluate applicability and keep history");
+            push(
+                &mut paths,
+                "semantic",
+                "if_insufficient",
+                "candidates by meaning",
+            );
+            push(
+                &mut paths,
+                "temporal",
+                "always",
+                "time cues or as_of: evaluate applicability and keep history",
+            );
         }
         Intent::Comprehensive => {
-            push(&mut paths, "lexical", "always", "exhaustiveness cue: widest lexical coverage");
-            push(&mut paths, "semantic", "always", "exhaustiveness cue: widest semantic coverage");
-            push(&mut paths, "graph", "if_insufficient", "expand from covered Claims");
+            push(
+                &mut paths,
+                "lexical",
+                "always",
+                "exhaustiveness cue: widest lexical coverage",
+            );
+            push(
+                &mut paths,
+                "semantic",
+                "always",
+                "exhaustiveness cue: widest semantic coverage",
+            );
+            push(
+                &mut paths,
+                "graph",
+                "if_insufficient",
+                "expand from covered Claims",
+            );
         }
         Intent::Auto => unreachable!("resolved above"),
     }
     // Ambiguity favors complementary paths over a single guess.
-    if uncertainty.contains(&"multiple_intent_signals") || uncertainty.contains(&"mixed_script_query") {
-        push(&mut paths, "lexical", "always", "ambiguous intent: keep lexical evidence");
-        push(&mut paths, "semantic", "always", "ambiguous intent: keep semantic evidence");
+    if uncertainty.contains(&"multiple_intent_signals")
+        || uncertainty.contains(&"mixed_script_query")
+    {
+        push(
+            &mut paths,
+            "lexical",
+            "always",
+            "ambiguous intent: keep lexical evidence",
+        );
+        push(
+            &mut paths,
+            "semantic",
+            "always",
+            "ambiguous intent: keep semantic evidence",
+        );
     }
     if exact_signal && resolved != Intent::Exact {
-        push(&mut paths, "exact", "always", "identifier or quoted phrase present");
+        push(
+            &mut paths,
+            "exact",
+            "always",
+            "identifier or quoted phrase present",
+        );
     }
     if temporal && resolved != Intent::Temporal {
         push(&mut paths, "temporal", "always", "time cue present");
     }
     if relational && resolved != Intent::Relational && resolved_depth != Depth::Focused {
-        push(&mut paths, "graph", "if_insufficient", "relationship cue present");
+        push(
+            &mut paths,
+            "graph",
+            "if_insufficient",
+            "relationship cue present",
+        );
     }
     let _ = filtered;
     Plan {

@@ -10,7 +10,7 @@ use crate::{
     domain::*,
     integrity::{lifecycle_sql, user_claim_predicate},
 };
-use rusqlite::{Connection, params};
+use rusqlite::Connection;
 
 /// Current expression of the Claim, both lifecycles live (agent view without retracted).
 fn agent_predicate() -> String {

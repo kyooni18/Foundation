@@ -25,11 +25,19 @@ pub struct Processing {
     pub attempts: i64,
 }
 fn processing(stage: &'static str, last_error: Option<String>, attempts: i64) -> Processing {
-    Processing { stage, last_error, attempts }
+    Processing {
+        stage,
+        last_error,
+        attempts,
+    }
 }
 
 /// Where a Source is in its pipeline, computed from authoritative rows and job states.
-pub fn source_stage(conn: &Connection, model_key: Option<&str>, source: &str) -> Result<Processing> {
+pub fn source_stage(
+    conn: &Connection,
+    model_key: Option<&str>,
+    source: &str,
+) -> Result<Processing> {
     let extract: Option<(String, Option<String>, i64)> = conn
         .prepare_cached("SELECT state,last_error,attempts FROM job WHERE kind='extract' AND target_id=?1 ORDER BY created_at DESC,id DESC LIMIT 1")?
         .query_row([source], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
@@ -96,8 +104,16 @@ pub struct Percentiles {
 }
 fn percentiles(mut v: Vec<i64>) -> Percentiles {
     v.sort_unstable();
-    let at = |q: f64| v.get(((v.len() as f64 * q).ceil() as usize).saturating_sub(1)).copied();
-    Percentiles { count: v.len(), p50_ms: at(0.50), p95_ms: at(0.95), p99_ms: at(0.99) }
+    let at = |q: f64| {
+        v.get(((v.len() as f64 * q).ceil() as usize).saturating_sub(1))
+            .copied()
+    };
+    Percentiles {
+        count: v.len(),
+        p50_ms: at(0.50),
+        p95_ms: at(0.95),
+        p99_ms: at(0.99),
+    }
 }
 #[derive(Debug, Serialize)]
 pub struct KindStatus {
@@ -152,7 +168,9 @@ impl App {
             let mut counts: BTreeMap<String, i64> = BTreeMap::new();
             for row in conn
                 .prepare("SELECT state,count(*) FROM job WHERE kind=?1 GROUP BY state")?
-                .query_map([kind], |r| Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?)))?
+                .query_map([kind], |r| {
+                    Ok((r.get::<_, String>(0)?, r.get::<_, i64>(1)?))
+                })?
             {
                 let (s, n) = row?;
                 counts.insert(s, n);
@@ -208,10 +226,15 @@ impl App {
             .collect::<std::result::Result<_, _>>()?;
         if sources.len() <= 50_000 {
             for s in &sources {
-                *stages.entry(source_stage(&conn, key.as_deref(), s)?.stage).or_default() += 1;
+                *stages
+                    .entry(source_stage(&conn, key.as_deref(), s)?.stage)
+                    .or_default() += 1;
             }
         }
-        let open: i64 = kinds.values().map(|k| k.pending + k.leased + k.deferred).sum();
+        let open: i64 = kinds
+            .values()
+            .map(|k| k.pending + k.leased + k.deferred)
+            .sum();
         let failed: i64 = kinds.values().map(|k| k.failed).sum();
         let deferred: i64 = kinds.values().map(|k| k.deferred).sum();
         let health = if open as usize >= self.policy.queue.max_open_jobs {
@@ -226,14 +249,24 @@ impl App {
         Ok(QueueStatus {
             health,
             kinds,
-            index: IndexProgress { visible_claims: visible, lexical_indexed: lexed, embedded, embedding_model: key },
+            index: IndexProgress {
+                visible_claims: visible,
+                lexical_indexed: lexed,
+                embedded,
+                embedding_model: key,
+            },
             sources_by_stage: stages,
             open_jobs: open,
             capacity: self.policy.queue.max_open_jobs,
         })
     }
     /// Jobs in a state, newest first; ids and safe codes only (no Source content).
-    pub fn queue_jobs(&self, p: &Principal, state: Option<&str>, limit: usize) -> Result<Vec<JobView>> {
+    pub fn queue_jobs(
+        &self,
+        p: &Principal,
+        state: Option<&str>,
+        limit: usize,
+    ) -> Result<Vec<JobView>> {
         if p.kind() != PrincipalKind::User {
             return Err(Error::Forbidden);
         }

@@ -206,8 +206,17 @@ impl App {
         integrity::validity::propagate(&tx, ids.clone())?;
         // A new run supersedes the previous expression: older Claims leave the projection.
         crate::retrieval::access::refresh_source(&tx, &source_id)?;
-        let run_seq: i64 = tx.query_row("SELECT seq FROM extraction_run WHERE job_id=?1", [&job], |r| r.get(0))?;
-        crate::retrieval::queue::enqueue_indexing(&tx, &source_id, run_seq, &self.policy.embedding)?;
+        let run_seq: i64 = tx.query_row(
+            "SELECT seq FROM extraction_run WHERE job_id=?1",
+            [&job],
+            |r| r.get(0),
+        )?;
+        crate::retrieval::queue::enqueue_indexing(
+            &tx,
+            &source_id,
+            run_seq,
+            &self.policy.embedding,
+        )?;
         integrity::identity::retract_revised_suggestions(
             &tx,
             &source_id,

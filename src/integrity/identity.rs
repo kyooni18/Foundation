@@ -738,14 +738,26 @@ pub(crate) fn claims_of_entity(conn: &Connection, p: &Principal, key: &str) -> R
         .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
         .collect::<std::result::Result<_, _>>()?;
     let user = if p.kind() == PrincipalKind::User {
-        let usable: Vec<Assertion> = live_assertions(conn)?.into_iter().filter(|a| a.actor == "user").collect();
-        Some(resolve(&entities(conn)?, &usable, &["user"], IdentityPolicy::default()))
+        let usable: Vec<Assertion> = live_assertions(conn)?
+            .into_iter()
+            .filter(|a| a.actor == "user")
+            .collect();
+        Some(resolve(
+            &entities(conn)?,
+            &usable,
+            &["user"],
+            IdentityPolicy::default(),
+        ))
     } else {
         None
     };
     let rep_of_entity = |entity: &str| -> Result<String> {
         Ok(match &user {
-            Some(res) => res.representative.get(entity).cloned().unwrap_or_else(|| entity.to_owned()),
+            Some(res) => res
+                .representative
+                .get(entity)
+                .cloned()
+                .unwrap_or_else(|| entity.to_owned()),
             None => conn
                 .prepare_cached("SELECT representative FROM entity_resolution WHERE entity_id=?1")?
                 .query_row([entity], |r| r.get(0))
@@ -763,7 +775,11 @@ pub(crate) fn claims_of_entity(conn: &Connection, p: &Principal, key: &str) -> R
         })
     };
     let lowered = key.to_lowercase();
-    let is_entity: bool = conn.query_row("SELECT EXISTS(SELECT 1 FROM entity WHERE id=?1)", [key], |r| r.get(0))?;
+    let is_entity: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM entity WHERE id=?1)",
+        [key],
+        |r| r.get(0),
+    )?;
     let mut reps = std::collections::BTreeSet::new();
     if is_entity {
         reps.insert(rep_of_entity(key)?);

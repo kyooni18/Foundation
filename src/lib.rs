@@ -8,9 +8,9 @@ pub mod embedding;
 pub mod extraction;
 pub mod integrity;
 pub mod jobs;
-pub mod retrieval;
 mod list;
 pub mod providers;
+pub mod retrieval;
 pub mod transport;
 pub use list::{ListSources, SourcePage};
 pub mod domain;
@@ -62,7 +62,9 @@ impl App {
     }
     /// The configured embedding provider (constructed on first use; model weights load lazily).
     pub fn embedder(&self) -> Option<std::sync::Arc<dyn embedding::EmbeddingProvider>> {
-        self.embedder.get_or_init(|| self.policy.embedding.provider()).clone()
+        self.embedder
+            .get_or_init(|| self.policy.embedding.provider())
+            .clone()
     }
     /// Derived tables are rebuilt from authoritative rows when missing or inconsistent
     /// (first open after migration, restored backups, a changed identity policy).
@@ -83,7 +85,10 @@ impl App {
         }
         let hidden = retrieval::access::mismatches(&tx)?;
         if !hidden.is_empty() {
-            tracing::warn!(claims = hidden.len(), "rebuilding retrieval access projection");
+            tracing::warn!(
+                claims = hidden.len(),
+                "rebuilding retrieval access projection"
+            );
             retrieval::access::rebuild(&tx)?;
         }
         retrieval::queue::reconcile(&tx, &self.policy.embedding)?;

@@ -23,7 +23,12 @@ pub struct Params {
 }
 impl Default for Params {
     fn default() -> Self {
-        Self { rrf_k: 60.0, lexical_min_coverage: 0.30, semantic_min_cosine: 0.30, lexical_strong_coverage: 0.80 }
+        Self {
+            rrf_k: 60.0,
+            lexical_min_coverage: 0.30,
+            semantic_min_cosine: 0.30,
+            lexical_strong_coverage: 0.80,
+        }
     }
 }
 
@@ -76,14 +81,19 @@ pub fn normal_form(text: &str) -> String {
 
 /// Collapse identical normalised texts, keeping the best-ranked; returns kept ids in order and
 /// the ids each kept Claim stands for.
-pub fn suppress_duplicates(ordered: &[String], text_of: &HashMap<String, String>) -> (Vec<String>, HashMap<String, Vec<String>>) {
+pub fn suppress_duplicates(
+    ordered: &[String],
+    text_of: &HashMap<String, String>,
+) -> (Vec<String>, HashMap<String, Vec<String>>) {
     let mut seen: HashMap<String, String> = HashMap::new();
     let mut kept = Vec::new();
     let mut dups: HashMap<String, Vec<String>> = HashMap::new();
     for id in ordered {
         let nf = text_of.get(id).map(|t| normal_form(t)).unwrap_or_default();
         match seen.get(&nf) {
-            Some(first) if !nf.is_empty() => dups.entry(first.clone()).or_default().push(id.clone()),
+            Some(first) if !nf.is_empty() => {
+                dups.entry(first.clone()).or_default().push(id.clone())
+            }
             _ => {
                 seen.insert(nf, id.clone());
                 kept.push(id.clone());
@@ -92,24 +102,34 @@ pub fn suppress_duplicates(ordered: &[String], text_of: &HashMap<String, String>
     }
     (kept, dups)
 }
-/// At most `cap` Claims per Source (0 = unlimited): one Source cannot crowd out the page.
-pub fn cap_per_source(ordered: Vec<String>, source_of: &HashMap<String, String>, cap: usize) -> (Vec<String>, usize) {
+/// Per-Source diversity: beyond `cap` Claims from one Source, further Claims are moved behind
+/// every other result (never dropped, so a cursor can still enumerate them). 0 = unlimited.
+pub fn cap_per_source(
+    ordered: Vec<String>,
+    source_of: &HashMap<String, String>,
+    cap: usize,
+) -> (Vec<String>, usize) {
     if cap == 0 {
         return (ordered, 0);
     }
     let mut count: HashMap<&str, usize> = HashMap::new();
     let mut kept = Vec::new();
-    let mut suppressed = 0;
+    let mut overflow = Vec::new();
     let mut seen: HashSet<String> = HashSet::new();
     for id in ordered {
+        if !seen.insert(id.clone()) {
+            continue;
+        }
         let source = source_of.get(&id).map(String::as_str).unwrap_or("");
         let n = count.entry(source).or_default();
-        if *n < cap && seen.insert(id.clone()) {
+        if *n < cap {
             *n += 1;
             kept.push(id);
         } else {
-            suppressed += 1;
+            overflow.push(id);
         }
     }
-    (kept, suppressed)
+    let demoted = overflow.len();
+    kept.extend(overflow);
+    (kept, demoted)
 }

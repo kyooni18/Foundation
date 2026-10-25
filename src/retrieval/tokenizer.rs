@@ -47,14 +47,12 @@ impl Scripts {
                 Class::Cjk(Cjk::Han) => s.han = true,
                 Class::Cjk(Cjk::Kana) => s.kana = true,
                 Class::Word if c.is_ascii() => s.latin |= c.is_ascii_alphabetic(),
-                Class::Word => {
-                    if c.is_alphabetic() {
-                        // Latin-extended letters count as Latin; others as "other".
-                        if matches!(c as u32, 0xC0..=0x24F) {
-                            s.latin = true
-                        } else {
-                            s.other_letters = true
-                        }
+                // Latin-extended letters count as Latin; other alphabetic scripts as "other".
+                Class::Word if c.is_alphabetic() => {
+                    if matches!(c as u32, 0xC0..=0x24F) {
+                        s.latin = true
+                    } else {
+                        s.other_letters = true
                     }
                 }
                 _ => (),
@@ -73,10 +71,14 @@ impl Scripts {
         self.hangul || self.han || self.kana || self.latin || self.other_letters
     }
     pub fn mixed(self) -> bool {
-        [self.hangul || self.han || self.kana, self.latin, self.other_letters]
-            .iter()
-            .filter(|b| **b)
-            .count()
+        [
+            self.hangul || self.han || self.kana,
+            self.latin,
+            self.other_letters,
+        ]
+        .iter()
+        .filter(|b| **b)
+        .count()
             > 1
     }
 }
@@ -113,7 +115,10 @@ pub fn fold(text: &str) -> String {
     while i < chars.len() {
         let c = chars[i];
         let u = c as u32;
-        if (0x1100..=0x1112).contains(&u) && i + 1 < chars.len() && (0x1161..=0x1175).contains(&(chars[i + 1] as u32)) {
+        if (0x1100..=0x1112).contains(&u)
+            && i + 1 < chars.len()
+            && (0x1161..=0x1175).contains(&(chars[i + 1] as u32))
+        {
             let (l, v) = (u - 0x1100, chars[i + 1] as u32 - 0x1161);
             let mut t = 0;
             let mut used = 2;
@@ -151,7 +156,9 @@ fn split_parts(word: &str) -> Vec<String> {
         if let Some(prev) = cur.chars().last() {
             let next_lower = chars.get(i + 1).is_some_and(|n| n.is_lowercase());
             let boundary = (prev.is_lowercase() && c.is_uppercase())
-                || (prev.is_ascii_digit() != c.is_ascii_digit() && c.is_alphanumeric() && prev.is_alphanumeric())
+                || (prev.is_ascii_digit() != c.is_ascii_digit()
+                    && c.is_alphanumeric()
+                    && prev.is_alphanumeric())
                 || (prev.is_uppercase() && c.is_uppercase() && next_lower);
             if boundary {
                 parts.push(std::mem::take(&mut cur));
@@ -237,7 +244,13 @@ pub fn terms(text: &str) -> Vec<Term> {
 /// Terms stored in the index (space separated; every term is made of FTS token characters).
 pub fn index_text(text: &str) -> (String, usize) {
     let t = terms(text);
-    (t.iter().map(|t| t.text.as_str()).collect::<Vec<_>>().join(" "), t.len())
+    (
+        t.iter()
+            .map(|t| t.text.as_str())
+            .collect::<Vec<_>>()
+            .join(" "),
+        t.len(),
+    )
 }
 
 /// Distinct query terms. A one-character CJK query term is a prefix term (matches every bigram
@@ -255,17 +268,22 @@ pub fn is_prefix(t: &Term) -> bool {
 /// FTS5 MATCH expression for one term (always quoted; prefix for one-character CJK terms).
 pub fn fts_term(t: &Term) -> String {
     let quoted = format!("\"{}\"", t.text.replace('"', "\"\""));
-    if is_prefix(t) { format!("{quoted}*") } else { quoted }
+    if is_prefix(t) {
+        format!("{quoted}*")
+    } else {
+        quoted
+    }
 }
 
 /// Words that carry no retrieval signal for query-coverage decisions (not used for ranking:
 /// ranking relies on corpus statistics inside the caller's projection).
 pub fn is_function_word(w: &str) -> bool {
     const EN: &[&str] = &[
-        "a", "an", "the", "of", "to", "in", "on", "at", "for", "and", "or", "is", "are", "was", "were", "be", "been",
-        "do", "does", "did", "i", "my", "me", "we", "our", "you", "your", "it", "its", "that", "this", "with", "as",
-        "by", "from", "what", "which", "who", "when", "where", "how", "why", "can", "could", "should", "would", "have",
-        "has", "had", "not", "no", "any", "all", "about",
+        "a", "an", "the", "of", "to", "in", "on", "at", "for", "and", "or", "is", "are", "was",
+        "were", "be", "been", "do", "does", "did", "i", "my", "me", "we", "our", "you", "your",
+        "it", "its", "that", "this", "with", "as", "by", "from", "what", "which", "who", "when",
+        "where", "how", "why", "can", "could", "should", "would", "have", "has", "had", "not",
+        "no", "any", "all", "about",
     ];
     EN.contains(&w)
 }
@@ -280,7 +298,12 @@ mod tests {
     fn bigrams_words_identifiers_and_edge_cases() {
         assert_eq!(texts("서버는 Rust"), ["서버", "버는", "rust"]);
         assert_eq!(texts("물"), ["물"]);
-        assert!(texts("src/main.rs").starts_with(&["src/main.rs".to_string(), "src".into(), "main".into(), "rs".into()]));
+        assert!(texts("src/main.rs").starts_with(&[
+            "src/main.rs".to_string(),
+            "src".into(),
+            "main".into(),
+            "rs".into()
+        ]));
         assert_eq!(texts("getUserName"), ["getusername", "get", "user", "name"]);
         assert!(texts("v2.1-beta").contains(&"v2.1-beta".to_string()));
         assert_eq!(texts("2026-10-25"), ["2026-10-25", "2026", "10", "25"]);
@@ -288,6 +311,12 @@ mod tests {
         assert_eq!(texts("\u{1112}\u{1161}\u{11AB}"), texts("한"));
         assert_eq!(texts("ＡＢＣ１２３"), ["abc123", "abc", "123"]);
         assert!(texts("🙂 ... !!").is_empty());
-        assert_eq!(fts_term(&Term { text: "a\"b".into(), kind: Kind::Word }), "\"a\"\"b\"");
+        assert_eq!(
+            fts_term(&Term {
+                text: "a\"b".into(),
+                kind: Kind::Word
+            }),
+            "\"a\"\"b\""
+        );
     }
 }

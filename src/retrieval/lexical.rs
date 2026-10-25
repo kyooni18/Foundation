@@ -30,8 +30,10 @@ pub(crate) fn index_claims(conn: &Connection, claims: &[(String, String)]) -> Re
             continue;
         }
         if let Some((lex_id, _, _)) = existing {
-            conn.prepare_cached("DELETE FROM claim_fts WHERE rowid=?1")?.execute([lex_id])?;
-            conn.prepare_cached("DELETE FROM claim_lex WHERE lex_id=?1")?.execute([lex_id])?;
+            conn.prepare_cached("DELETE FROM claim_fts WHERE rowid=?1")?
+                .execute([lex_id])?;
+            conn.prepare_cached("DELETE FROM claim_lex WHERE lex_id=?1")?
+                .execute([lex_id])?;
         }
         let (terms, count) = tokenizer::index_text(text);
         conn.prepare_cached("INSERT INTO claim_lex(claim_id,tokenizer,ntok,text_sha,indexed_at) VALUES(?1,?2,?3,?4,?5)")?
@@ -144,7 +146,11 @@ pub(crate) fn search(
         Ok(false)
     };
     if present.len() >= 2 {
-        let top: Vec<String> = present.iter().take(3).map(|(i, _)| tokenizer::fts_term(&terms[*i])).collect();
+        let top: Vec<String> = present
+            .iter()
+            .take(3)
+            .map(|(i, _)| tokenizer::fts_term(&terms[*i]))
+            .collect();
         out.truncated |= fetch(&top.join(" AND "), budget, &mut candidates)?;
     }
     for (i, _) in &present {
@@ -153,7 +159,11 @@ pub(crate) fn search(
             break;
         }
         let room = budget - candidates.len();
-        out.truncated |= fetch(&tokenizer::fts_term(&terms[*i]), room.max(1), &mut candidates)?;
+        out.truncated |= fetch(
+            &tokenizer::fts_term(&terms[*i]),
+            room.max(1),
+            &mut candidates,
+        )?;
     }
     if candidates.is_empty() {
         return Ok(out);
@@ -166,7 +176,11 @@ pub(crate) fn search(
         .collect::<std::result::Result<_, _>>()?;
     let weights: Vec<f64> = stats.iter().map(|&(_, df)| idf(df)).collect();
     let total_weight: f64 = weights.iter().sum::<f64>().max(f64::MIN_POSITIVE);
-    let index: HashMap<&str, usize> = terms.iter().enumerate().map(|(i, t)| (t.text.as_str(), i)).collect();
+    let index: HashMap<&str, usize> = terms
+        .iter()
+        .enumerate()
+        .map(|(i, t)| (t.text.as_str(), i))
+        .collect();
     for (id, text, ntok) in rows {
         let mut tf = vec![0u32; terms.len()];
         for dt in tokenizer::terms(&text) {
@@ -179,7 +193,10 @@ pub(crate) fn search(
             if tokenizer::is_prefix(t) && tf[i] == 0 {
                 tf[i] = tokenizer::terms(&text)
                     .iter()
-                    .filter(|d| matches!(d.kind, Kind::Bigram | Kind::Unigram) && d.text.starts_with(&t.text))
+                    .filter(|d| {
+                        matches!(d.kind, Kind::Bigram | Kind::Unigram)
+                            && d.text.starts_with(&t.text)
+                    })
                     .count() as u32;
             }
         }
@@ -204,7 +221,10 @@ pub(crate) fn search(
             });
         }
     }
-    out.hits
-        .sort_by(|a, b| b.bm25.total_cmp(&a.bm25).then_with(|| a.claim_id.cmp(&b.claim_id)));
+    out.hits.sort_by(|a, b| {
+        b.bm25
+            .total_cmp(&a.bm25)
+            .then_with(|| a.claim_id.cmp(&b.claim_id))
+    });
     Ok(out)
 }

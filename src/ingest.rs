@@ -36,7 +36,16 @@ impl App {
                     return Ok(Some(Recorded {
                         source_id,
                         created: false,
-                        processing: crate::retrieval::status::source_stage(&tx, self.policy.embedding.identity().as_ref().map(|i| i.key.as_str()), id.as_str())?.stage,
+                        processing: crate::retrieval::status::source_stage(
+                            &tx,
+                            self.policy
+                                .embedding
+                                .identity()
+                                .as_ref()
+                                .map(|i| i.key.as_str()),
+                            id.as_str(),
+                        )?
+                        .stage,
                     }));
                 }
             }
