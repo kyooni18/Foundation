@@ -912,3 +912,25 @@ these as unresolved semantic defects despite green protocol tests; do not normal
 period-different inventories just to turn this known questionable conditional into
 a pass. No production default promotion, completion tag or user approval is made.
 Current accounting and raw evidence are in reports/phase-3-resumed-haiku.md.
+
+## Phase 3 delivery — scoped semantic acceptance (2026-10-25)
+
+Accept the implemented workflow and v54 / Haiku 5.5 priority-boundary scope after
+six complete Source gates, all ten selected Claims, negative controls and exact-request
+repeat agreement. Report 3/6 saved same-recipe eligible primaries and6/6 final batches
+across ten bounded extraction attempts; do not substitute this for held-out accuracy.
+
+Use one shared reference contract for reader and Source entailment: required unknown
+affected context is not a fictional entity or a document-absence claim. Distinguish
+explicit identifiers from bare categories/deictics. Keep full original-utterance time
+and quoted perspective. Choose canonical exact inventory spellings before generation;
+v53+ derives framing identity only from unique Source coordinates and an actual
+balanced counterpart outside an unmatched curly-double label. Raw output, paired
+word quotation, evidence, meaning-bearing scope and mappings are unchanged. Frozen
+v52 outcomes remain reproducible; shortened scope or invented closing quotes reject.
+
+Do not promote a default for unassessed models/providers or count the original five
+missing cases as passes. v54 stays explicit opt-in; legacy hashes/DeepSeek English-only
+boundary remain. No real Claim approval/publication or Phase 4 feature is included.
+The final report and current audit state the accepted scope, exposed-sample limitation,
+all failed experiments, current budget, unknown holds and exact test exits.

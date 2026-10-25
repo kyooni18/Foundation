@@ -1,3 +1,28 @@
+# Final delivery — Phase 3 focused semantic repair accepted (2026-10-25)
+
+The implemented workflow and v54 / Claude Haiku 5.5 priority-boundary scope are
+accepted: all six Sources and ten selected Claims have complete gates; three selected
+positive repeats agree. The same-recipe saved primaries are 3/6 eligible, reaching
+6/6 after bounded repairs across ten extraction attempts. Four original negative
+candidates reject in eight current-recipe Source judgments; the additional bare-reference
+conditional rejects twice. All failed prefixes and earlier disagreements remain.
+
+48 Rust tests, 40 Python methods, fmt and Clippy pass. Cumulative conservative accounting
+is $5.98822805 under the unchanged $5.99999999 ceiling; this resumed sequence added
+$0.68277820. All297 older ledger rows and the same four unknown holds remain intact.
+
+Start `9511d09`, ending implementation `89c1d12`, final evidence `5f4cdf7`;
+`phase-3` pins the delivery. No real Claim was approved/published and no production
+prompt default was promoted. The five original missing cases remain unassessed.
+This is exposed development evidence, not independent human gold or universal model
+accuracy. See [the final report](phase-3-semantic-acceptance.md) and
+`reports/evidence/phase-3/resumed-haiku/current-audit-v54-final.json`.
+
+All sections below are historical checkpoints, including superseded incomplete
+status, totals and blockers.
+
+---
+
 # Current Haiku 5.5 checkpoint — Phase 3 remains incomplete (2026-10-25)
 
 Four of all six priority Source batches have complete v50 diagnostic gates; delay

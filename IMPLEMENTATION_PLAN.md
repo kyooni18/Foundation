@@ -39,6 +39,9 @@ P4와 P5는 P3 이후 병렬 가능(파일 겹침: `store` 마이그레이션 �
 9. 체크포인트: `phase-2`.
 
 ## Phase 3 — Extraction Pipeline
+
+완료: `phase-3` 체크포인트. v54 / Haiku 5.5의 우선 경계 6개·10개 Claim을 제한된 수정 흐름으로 검증했다(최초 3/6, 수정 후 6/6). 독립적인 전체 코퍼스 정답이나 보편적 모델 정확도를 뜻하지 않으며, 기본 프롬프트 자동 승격과 실제 Claim 승인은 하지 않았다. 상세: `reports/phase-3-semantic-acceptance.md`.
+
 1. 범위: `job` 테이블과 워커(임대, backoff, 재시작 복구); 원문 기록 tx에 추출 job 포함 + 기존 source 백필 job; `LlmProvider` trait + fake provider + 실제 provider 1종; 추출 프롬프트(R2 frame 프롬프트 기반, 버전 해시); 검증 경계(DATA_CONTRACTS §5.1); `claim`, `mention`, 선언된 `claim_dependency` 저장(의미 적용은 P4); 재추출(`revision_of`); Claim 수준 user projection.
 2. 선행: P2(Claim은 recorder·권한을 상속).
 3. 산출물: 원문 → Claim 자동 생성, 실패 가시화.

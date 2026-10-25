@@ -1,17 +1,22 @@
 {
-  "status": "not accepted; no completion tag",
-  "current_opt_in_prompt": "extraction-v50; unpromoted",
+  "status": "Phase 3 complete; focused Haiku v54 semantic repair accepted",
+  "acceptance_scope": "six priority exposed Sources; bounded repairs; five negative candidates, no independent human gold or universal model-quality claim",
+  "current_opt_in_prompt": "extraction-v54",
   "current_validation_version": "source-checks-v6",
-  "implementation_commit": "852d4d2",
+  "standalone_protocol": "v50+ coherent interpretation and three-feature analysis; v54 identifier calibration",
+  "inventory_identity": "v53+ exact Source-backed unmatched framing-delimiter identity",
   "starting_commit": "9511d09",
+  "implementation_commit": "89c1d12",
+  "evidence_commit": "5f4cdf7",
+  "delivery_checkpoint": "phase-3",
   "current_ledger": {
     "ceiling_nanos": 5999999990,
-    "cumulative_upper_nanos": 5849116750,
+    "cumulative_upper_nanos": 5988228050,
     "prior_nanos": 4782653350,
     "provider_billed_usd": null,
-    "recorded_upper_nanos": 1066463400,
-    "remaining_nanos": 150883240,
-    "requests": 573,
+    "recorded_upper_nanos": 1205574700,
+    "remaining_nanos": 11771940,
+    "requests": 634,
     "unknown_reservations": [
       {
         "id": "focused-haiku-repair-v39-v23-fresh-003-extraction-v38-primary",
@@ -32,10 +37,19 @@
     ]
   },
   "cohort": {
-    "sources": 6,
-    "claims": 10,
-    "complete_gate_eligible": 4,
-    "withheld": 2,
+    "exposed_sources": 6,
+    "selected_claims": 10,
+    "first_pass_eligible": 3,
+    "final_complete_eligible": 6,
+    "same_recipe_generation_attempts": 10,
+    "attempts_by_case": {
+      "r1-ambiguous_ref": 1,
+      "r1-habitual_temporal": 1,
+      "r1-hypothetical": 2,
+      "r1-nested_quote": 3,
+      "v23-fresh-003": 2,
+      "v23-fresh-004": 1
+    },
     "held_out": false,
     "independent_human_gold": false,
     "rows": [
@@ -46,7 +60,7 @@
         "editorial_withhold": false,
         "independent_gold": false,
         "production_approval": false,
-        "prompt": "extraction-v50",
+        "prompt": "extraction-v54",
         "revalidation": {
           "error": null,
           "experimental_gate_eligible": true,
@@ -55,46 +69,46 @@
           "valid": true,
           "version": "source-checks-v6"
         },
-        "trace": "v50-r1-ambiguous_ref-trace.json",
-        "trace_sha256": "8ee009945ffca556c22edc1b28b5c5a2ea9db6cdb7382e8062696374e63d6fc2"
+        "trace": "v54-r1-ambiguous_ref-trace.json",
+        "trace_sha256": "79e2e549bdc413e7be17fe61b51f3f9fe3da4ffc335e76ad50966961035d6721"
       },
       {
         "case": "v23-fresh-003",
         "claims": 2,
-        "complete_reviews": false,
+        "complete_reviews": true,
         "editorial_withhold": false,
         "independent_gold": false,
         "production_approval": false,
-        "prompt": "extraction-v50",
+        "prompt": "extraction-v54",
         "revalidation": {
           "error": null,
-          "experimental_gate_eligible": false,
+          "experimental_gate_eligible": true,
           "plan_hash_valid": true,
-          "review_error": "unresolved",
+          "review_error": null,
           "valid": true,
           "version": "source-checks-v6"
         },
-        "trace": "v50-final-v23-fresh-003-trace.json",
-        "trace_sha256": "eb3cc7943d45451c0f779a18a6a693c58a53589d0ddfbd64b06be43a7d65b399"
+        "trace": "v54-v23-fresh-003-trace.json",
+        "trace_sha256": "845c7964a6108106cdc1b67abbded8b7fa1fa3088ffb3f828386339d64e8e29f"
       },
       {
         "case": "r1-hypothetical",
         "claims": 1,
         "complete_reviews": true,
-        "editorial_withhold": true,
+        "editorial_withhold": false,
         "independent_gold": false,
         "production_approval": false,
-        "prompt": "extraction-v50",
+        "prompt": "extraction-v54",
         "revalidation": {
           "error": null,
-          "experimental_gate_eligible": false,
+          "experimental_gate_eligible": true,
           "plan_hash_valid": true,
-          "review_error": "unresolved",
+          "review_error": null,
           "valid": true,
           "version": "source-checks-v6"
         },
-        "trace": "v50-r1-hypothetical-trace.json",
-        "trace_sha256": "f4c4f2d08b6ebecdb82b86901bba03aadca260e1f7ed6262c85edda861eca387"
+        "trace": "v54-r1-hypothetical-trace.json",
+        "trace_sha256": "b80c597c12dd0606ce0fadf4262351502604264d30ec763e149cc2cc1402a550"
       },
       {
         "case": "r1-nested_quote",
@@ -103,7 +117,7 @@
         "editorial_withhold": false,
         "independent_gold": false,
         "production_approval": false,
-        "prompt": "extraction-v50",
+        "prompt": "extraction-v54",
         "revalidation": {
           "error": null,
           "experimental_gate_eligible": true,
@@ -112,8 +126,8 @@
           "valid": true,
           "version": "source-checks-v6"
         },
-        "trace": "v50-nested-repair-r1-nested_quote-trace.json",
-        "trace_sha256": "88bc6164f65a8f29776d750d5e7fbf13c1928a897009aece6ec5a4efa2bc9b18"
+        "trace": "v54-r1-nested_quote-trace.json",
+        "trace_sha256": "4aee01bdef21afd6115fd94365f2d28244eca5f957ba839999665cc32a3b8ed0"
       },
       {
         "case": "v23-fresh-004",
@@ -122,7 +136,7 @@
         "editorial_withhold": false,
         "independent_gold": false,
         "production_approval": false,
-        "prompt": "extraction-v50",
+        "prompt": "extraction-v54",
         "revalidation": {
           "error": null,
           "experimental_gate_eligible": true,
@@ -131,8 +145,8 @@
           "valid": true,
           "version": "source-checks-v6"
         },
-        "trace": "v50-final-v23-fresh-004-trace.json",
-        "trace_sha256": "fa485aa522061b12a785808a8a102dc184f85ccf087a5fef293c4c229793fc7d"
+        "trace": "v54-v23-fresh-004-trace.json",
+        "trace_sha256": "f4aff3558cd5f2bde34ad6fc8b776598fba31fc6904ee466f09e5672f1bda9fd"
       },
       {
         "case": "r1-habitual_temporal",
@@ -141,7 +155,7 @@
         "editorial_withhold": false,
         "independent_gold": false,
         "production_approval": false,
-        "prompt": "extraction-v50",
+        "prompt": "extraction-v54",
         "revalidation": {
           "error": null,
           "experimental_gate_eligible": true,
@@ -150,42 +164,202 @@
           "valid": true,
           "version": "source-checks-v6"
         },
-        "trace": "v50-final-r1-habitual_temporal-trace.json",
-        "trace_sha256": "ec409ec12f616fedf242d1a9b2ffb6fcbe236c8d350170fa70229073deda17aa"
+        "trace": "v54-r1-habitual_temporal-trace.json",
+        "trace_sha256": "bb8d2151f2dee2e3935cb787a65c892a1d0405afafaef36231ed0aa5065da39d"
       }
     ]
   },
-  "negative_controls": {
-    "v48": {
-      "calls": 8,
-      "coherent_rejects": 8,
-      "known_candidates": 4
-    },
-    "v49": {
-      "calls": 8,
-      "coherent_rejects": 8,
-      "known_candidates": 4
-    }
+  "current_negative_controls": {
+    "deictic_negative_primary_and_repeat": [
+      {
+        "command": [
+          "/opt/homebrew/opt/python@3.15/bin/python3.15",
+          "evaluation/phase3/guarded_anthropic_repair.py",
+          "--case",
+          "r1-hypothetical",
+          "--version",
+          "v54",
+          "--candidate-version",
+          "extraction-v49-schema-v3-output-6000",
+          "--reader-index",
+          "0",
+          "--evidence",
+          "reports/evidence/phase-3/semantic-repair",
+          "--authorization",
+          "reports/evidence/phase-3/resumed-haiku/authorization.json",
+          "--execute"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "{\"id\": \"focused-haiku-repair-v54-r1-hypothetical-extraction-v49-schema-v3-output-6000-reader-0-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n"
+      },
+      {
+        "command": [
+          "/opt/homebrew/opt/python@3.15/bin/python3.15",
+          "evaluation/phase3/guarded_anthropic_repair.py",
+          "--case",
+          "r1-hypothetical",
+          "--version",
+          "v54",
+          "--candidate-version",
+          "extraction-v49-schema-v3-output-6000",
+          "--reader-index",
+          "0",
+          "--evidence",
+          "reports/evidence/phase-3/semantic-repair",
+          "--authorization",
+          "reports/evidence/phase-3/resumed-haiku/authorization.json",
+          "--replicate",
+          "repeat",
+          "--execute"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "{\"id\": \"focused-haiku-repair-v54-r1-hypothetical-extraction-v49-schema-v3-output-6000-repeat-reader-0-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n"
+      }
+    ],
+    "failed_same_recipe_prefixes": [
+      {
+        "command": [
+          "/opt/homebrew/opt/python@3.15/bin/python3.15",
+          "evaluation/phase3/guarded_anthropic_repair.py",
+          "--case",
+          "v23-fresh-003",
+          "--version",
+          "v54",
+          "--candidate-version",
+          "extraction-v49-schema-v3-output-6000",
+          "--evidence",
+          "reports/evidence/phase-3/semantic-repair",
+          "--authorization",
+          "reports/evidence/phase-3/resumed-haiku/authorization.json",
+          "--reader-index",
+          "0",
+          "--execute"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "{\"id\": \"focused-haiku-repair-v54-v23-fresh-003-extraction-v49-schema-v3-output-6000-reader-0-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n"
+      },
+      {
+        "command": [
+          "/opt/homebrew/opt/python@3.15/bin/python3.15",
+          "evaluation/phase3/guarded_anthropic_repair.py",
+          "--case",
+          "r1-nested_quote",
+          "--version",
+          "v54",
+          "--candidate-version",
+          "extraction-v50-schema-v3-output-6000",
+          "--evidence",
+          "reports/evidence/phase-3/semantic-repair",
+          "--authorization",
+          "reports/evidence/phase-3/resumed-haiku/authorization.json",
+          "--reader-index",
+          "0",
+          "--execute"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "{\"id\": \"focused-haiku-repair-v54-r1-nested_quote-extraction-v50-schema-v3-output-6000-reader-0-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n"
+      },
+      {
+        "command": [
+          "/opt/homebrew/opt/python@3.15/bin/python3.15",
+          "evaluation/phase3/guarded_anthropic_repair.py",
+          "--case",
+          "r1-nested_quote",
+          "--version",
+          "v54",
+          "--candidate-version",
+          "extraction-v50-schema-v3-output-6000-repair",
+          "--evidence",
+          "reports/evidence/phase-3/semantic-repair",
+          "--authorization",
+          "reports/evidence/phase-3/resumed-haiku/authorization.json",
+          "--reader-index",
+          "1",
+          "--execute"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "{\"id\": \"focused-haiku-repair-v54-r1-nested_quote-extraction-v50-schema-v3-output-6000-repair-reader-1-primary\", \"protocol_valid\": true, \"verdict\": \"reject\", \"claim_count\": 1, \"inventory_count\": 0, \"semantic_acceptance\": null, \"production_approval\": false}\n"
+      }
+    ],
+    "known_source_candidates": 4,
+    "source_receipts": [
+      {
+        "current_recipe_exact": true,
+        "id": "focused-haiku-repair-v51-v23-fresh-003-extraction-v38-schema-v3-primary",
+        "verdict": "reject",
+        "wire_sha256": "4bd3d208e94c5e732611f559d4ead0f57a94bff53341fdd579a7721d14712008"
+      },
+      {
+        "current_recipe_exact": true,
+        "id": "focused-haiku-repair-v51-r1-nested_quote-repeat-schema-v3-primary",
+        "verdict": "reject",
+        "wire_sha256": "9574b74c1b1ae59e6a11f04675151328f2a873971fa4d11fd020d882afe3901e"
+      },
+      {
+        "current_recipe_exact": true,
+        "id": "focused-haiku-repair-v51-v23-fresh-003-extraction-v38-repeat-schema-v3-primary",
+        "verdict": "reject",
+        "wire_sha256": "4bd3d208e94c5e732611f559d4ead0f57a94bff53341fdd579a7721d14712008"
+      },
+      {
+        "current_recipe_exact": true,
+        "id": "focused-haiku-repair-v51-r1-nested_quote-schema-v3-primary",
+        "verdict": "reject",
+        "wire_sha256": "9574b74c1b1ae59e6a11f04675151328f2a873971fa4d11fd020d882afe3901e"
+      },
+      {
+        "current_recipe_exact": true,
+        "id": "focused-haiku-repair-v51-r1-ambiguous_ref-schema-v3-primary",
+        "verdict": "reject",
+        "wire_sha256": "293af6e02b2e225d7d52bcc18cfab8fd74a355371d8cd813fec30bf2689a32cc"
+      },
+      {
+        "current_recipe_exact": true,
+        "id": "focused-haiku-repair-v51-r1-ambiguous_ref-repeat-schema-v3-primary",
+        "verdict": "reject",
+        "wire_sha256": "293af6e02b2e225d7d52bcc18cfab8fd74a355371d8cd813fec30bf2689a32cc"
+      },
+      {
+        "current_recipe_exact": true,
+        "id": "focused-haiku-repair-v52-v23-fresh-003-atomicity-schema-v3-primary",
+        "verdict": "reject",
+        "wire_sha256": "039603c69298d2006a1cfd9b16eec4f443435a6ca2959179e083216707d736e3"
+      },
+      {
+        "current_recipe_exact": true,
+        "id": "focused-haiku-repair-v52-v23-fresh-003-repeat-atomicity-schema-v3-primary",
+        "verdict": "reject",
+        "wire_sha256": "039603c69298d2006a1cfd9b16eec4f443435a6ca2959179e083216707d736e3"
+      }
+    ]
   },
   "positive_repeats": [
     {
       "identical_wire": true,
-      "primary": "focused-haiku-repair-v49-r1-ambiguous_ref-extraction-v49-schema-v3-output-6000-schema-v3-primary",
+      "primary": "focused-haiku-repair-v54-r1-nested_quote-extraction-v53-schema-v3-output-6000-repair-reader-1-primary",
       "protocol_valid": true,
-      "repeat": "focused-haiku-repair-v50-r1-ambiguous_ref-extraction-v49-schema-v3-output-6000-repeat-schema-v3-primary",
+      "repeat": "focused-haiku-repair-v54-r1-nested_quote-extraction-v53-schema-v3-output-6000-repair-repeat-reader-1-primary",
       "verdict": "pass"
     },
     {
       "identical_wire": true,
-      "primary": "focused-haiku-repair-v50-v23-fresh-004-extraction-v50-schema-v3-output-6000-schema-v3-primary",
+      "primary": "focused-haiku-repair-v52-v23-fresh-003-extraction-v50-schema-v3-output-6000-repair-schema-v3-primary",
       "protocol_valid": true,
-      "repeat": "focused-haiku-repair-v50-v23-fresh-004-extraction-v50-schema-v3-output-6000-repeat-schema-v3-primary",
+      "repeat": "focused-haiku-repair-v54-v23-fresh-003-extraction-v50-schema-v3-output-6000-repair-repeat-schema-v3-primary",
+      "verdict": "pass"
+    },
+    {
+      "identical_wire": true,
+      "primary": "focused-haiku-repair-v53-r1-hypothetical-extraction-v53-schema-v3-output-6000-repair-schema-v3-primary",
+      "protocol_valid": true,
+      "repeat": "focused-haiku-repair-v54-r1-hypothetical-extraction-v53-schema-v3-output-6000-repair-repeat-schema-v3-primary",
       "verdict": "pass"
     }
-  ],
-  "remaining_failures": [
-    "conditional reader invents entity ownership and utterance binding despite structured reasons",
-    "delay reader and Source entailment disagree about the same unspecified affected-target argument"
   ],
   "required_checks": [
     {
@@ -239,14 +413,13 @@
     "new-042"
   ],
   "historical_request_rows_unchanged": 297,
-  "resumed_attempts": 276,
-  "resumed_conservative_upper_nanos": 543666900,
+  "resumed_attempts": 337,
+  "resumed_conservative_upper_nanos": 682778200,
   "production_approvals": 0,
   "claims_published": 0,
   "production_default_promoted": false,
-  "phase3_tag": false,
-  "full_report": "reports/phase-3-resumed-haiku.md",
-  "current_audit": "reports/evidence/phase-3/resumed-haiku/current-audit.json",
-  "historical_status": "prior versions retained in Git and dated evidence; no historical model result replaced",
-  "standalone_protocol": "v50 interpretation and coherent three-feature analysis"
+  "universal_semantic_accuracy_established": false,
+  "full_report": "reports/phase-3-semantic-acceptance.md",
+  "current_audit": "reports/evidence/phase-3/resumed-haiku/current-audit-v54-final.json",
+  "previous_checkpoint": "reports/phase-3-resumed-haiku.md retains the v50 incomplete checkpoint and its actual failures"
 }

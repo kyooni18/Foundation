@@ -1,3 +1,15 @@
+# Superseding Phase 3 delivery (2026-10-25)
+
+The focused v54 / Haiku 5.5 semantic repair scope is accepted: six complete priority
+Source gates, ten Claims, known negative controls and selected exact-request repeats.
+See [the final report](phase-3-semantic-acceptance.md) for the 3/6 primary and 6/6
+bounded-repair denominators, exact accounting, test results and limitations. The
+annotated `phase-3` tag identifies delivery. No universal accuracy or production-default
+promotion is claimed. The incomplete status and blocker descriptions below are
+retained only as historical checkpoints.
+
+---
+
 # Superseding resumed checkpoint (2026-10-25)
 
 The old pending-count block below is historical. Resumed calls serialize under an

@@ -1,6 +1,7 @@
 # Prime Radiant
 
-Phase 2: immutable persistence, authenticated loopback HTTP, and stdio MCP.
+Phase 3: durable extraction, source-bound semantic gates, and exact-hash user review,
+with immutable persistence, authenticated loopback HTTP, and stdio MCP.
 The application core remains synchronous; transports run it on Tokio blocking workers.
 Design contracts: [architecture](ARCHITECTURE.md), [data](DATA_CONTRACTS.md),
 [decisions](DECISIONS.md), [implementation plan](IMPLEMENTATION_PLAN.md),
@@ -143,15 +144,24 @@ revoke a credential, remove its entry from the private registry while preserving
 Files accessible to the same OS user are within the trusted local boundary;
 tokens do not sandbox malicious processes running as that same OS user.
 
-## Phase 3 implementation checkpoint (acceptance pending)
+## Phase 3 — implemented and focused semantic repair accepted
 
-Sources now enqueue durable extraction work. The optional OpenRouter worker proposes
-atomic, source-grounded Claims through separate atomicity, fidelity, and coverage reviews.
-All proposals remain quarantined for local user review. Real-model experiments have
-found both false acceptance and false rejection by model reviewers; semantic acceptance
-has not been established. There is **no phase-3 completion tag**. See [the Phase 3 report](reports/phase-3.md)
-for evidence, decisions, limitations, and the reproducible evaluation procedure.
-Latest continuation: [verified recovery, evaluation safeguards and remaining acceptance blockers](reports/phase-3-final-continuation.md).
+Sources enqueue durable extraction work. Proposals pass isolated readers plus
+atomicity, complete-Claim entailment and coverage gates, then remain quarantined
+until exact-hash local user fidelity approval. The validated opt-in profile is
+`extraction-v54`. Claude Haiku 5.5 evidence covers all six priority Sources and ten
+Claims after bounded repair, five negative candidates and selected repeat comparisons.
+Saved same-recipe primaries are 3/6 eligible; final batches are 6/6. These exposed
+cases do not establish universal model accuracy or independent human ground truth.
+See [the final report](reports/phase-3-semantic-acceptance.md) and the annotated
+`phase-3` checkpoint. Phase 4 features remain deferred.
+
+Select `--prompt-version extraction-v54` explicitly for new assessed work, with
+compatible model/reviewer and explicit output bounds (the direct Haiku diagnostic
+used6000 extraction /8000 review tokens). Legacy/default v1 is frozen for existing
+hashes and is not certified by this acceptance scope. No production model/prompt
+fallback or default promotion was made. Real-model evidence used the direct Anthropic
+evaluation adapter; it does not claim a live OpenRouter production job or publication.
 
 Provider credentials use `OPENROUTER_API_KEY` or `OPENROUTER_API_KEY_FILE` (canonical path,
 0600, same owner, no symlinks). `extraction-work` defaults to
@@ -166,12 +176,12 @@ same persistent SQLite ledger across workers, evaluations and restarts. Provisio
 it once with the already incurred conservative spending, never once per run:
 
 ```sh
-primeradiant budget-init /private/path/spending.sqlite --limit-usd 4.50 \
+primeradiant budget-init /private/path/spending.sqlite --limit-usd "$AUTHORIZED_CUMULATIVE_LIMIT_USD" \
   --prior-spend-usd "$PRIOR_CONSERVATIVE_SPEND_USD"
 export PRIMERADIANT_OPENROUTER_LEDGER=/private/path/spending.sqlite
 ```
 
-Provisioning refuses existing files and ceilings above the authorized $4.88265335 cumulative limit. A dedicated provider
+Provisioning refuses existing files and ceilings above the authorized $5.99999999 cumulative limit. A dedicated provider
 key must already have a non-resetting total cap no greater than the ledger ceiling;
 the adapter checks this without changing the key. Fresh endpoint prices are fetched
 before every paid request; unknown/tiered pricing fails closed. A pinned provider,
@@ -188,15 +198,22 @@ The Rust evaluation harness uses this same adapter. Build the guarded diagnostic
 helper before running Python reviewer controls with
 `cargo build --offline --example guarded_completion`. Historical JSON ledgers are
 not automatically imported or discarded: carry their conservative totals into the
-new ledger explicitly. The private ledger carries forward $4.78265335 conservative historical usage. The user
-authorized up to $0.10 additional on the same ledger; the active ceiling is
-$4.88265335. The available credential is uncapped, so the independent provider-cap
-guard still blocks paid dispatch. See [the authorized continuation](reports/phase-3-authorized-continuation.md).
+new ledger explicitly. The private shared ledger carries forward $4.78265335 of
+conservative historical amount; the current strict cumulative ceiling is $5.99999999.
+Its latest total is $5.98822805, with four old unknown reservations retained. These
+bounds are not confirmed provider invoices. Do not provision a replacement ledger
+or reprice history to recover capacity.
+
+OpenRouter still requires its own non-resetting provider cap and retains its pending
+request guard. The direct Anthropic evaluation path separately uses an authorized
+exclusive live-dispatch lock while retaining every old unknown monetary hold. Neither
+path changes provider keys or silently selects another model. Current evidence and
+accounting are in the final report.
 
 ```sh
 primeradiant --db /path/to/db extraction-backfill
 primeradiant --db /path/to/db extraction-work --model "$EXTRACTION_MODEL" --reviewer "$REVIEW_MODEL" \
-  --prompt-version "$PROMPT_VERSION" --max-output-tokens 16384 --review-max-output-tokens 4096
+  --prompt-version extraction-v54 --max-output-tokens 6000 --review-max-output-tokens 8000
 primeradiant --db /path/to/db extraction-inspect
 primeradiant --db /path/to/db extraction-review CANDIDATE_ID
 # Review the original Source and the entire exact candidate before approving fidelity:
