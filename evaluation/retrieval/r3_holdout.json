@@ -1,0 +1,2284 @@
+{
+ "version": 1,
+ "source": "Foundation-Research/experiments/phase3/fixtures/holdout.py (frozen)",
+ "records": [
+  {
+   "key": "r3:s01",
+   "text": "고양이 털 알레르기가 있어서 고양이 있는 집에는 오래 못 있는다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-01-08"
+  },
+  {
+   "key": "r3:s02",
+   "text": "I've been on warfarin since March, so no ibuprofen or aspirin for me.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-03-04"
+  },
+  {
+   "key": "r3:s03",
+   "text": "Orion 저장소는 main 브랜치에 직접 push 금지. 반드시 PR 리뷰를 거친다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-02-02"
+  },
+  {
+   "key": "r3:s04",
+   "text": "I promised my wife I'd quit smoking. My quit date is April 1.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-03-25"
+  },
+  {
+   "key": "r3:s05",
+   "text": "아내 수아는 비건이다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-01-20"
+  },
+  {
+   "key": "r3:s06",
+   "text": "Sua from the design team is allergic to tree nuts.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-02-11"
+  },
+  {
+   "key": "r3:s07",
+   "text": "9월부터 12월까지는 재택 근무라 사무실에 안 간다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-08-28"
+  },
+  {
+   "key": "r3:s08",
+   "text": "I don't fly anymore. I've had panic attacks on planes since 2024.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-02-14"
+  },
+  {
+   "key": "r3:s09",
+   "text": "나는 매일 밤 11시 전에 잔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-04-10"
+  },
+  {
+   "key": "r3:s10",
+   "text": "My Galaxy phone was stolen in May, so I switched to an iPhone.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-20"
+  },
+  {
+   "key": "r3:s11",
+   "text": "Orion 프로젝트 마감은 11월 30일이다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-07-01"
+  },
+  {
+   "key": "r3:s12",
+   "text": "The Orion deadline has been moved to January 15.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-09-10"
+  },
+  {
+   "key": "r3:s13",
+   "text": "나는 수영을 못 한다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-03-15"
+  },
+  {
+   "key": "r3:s14",
+   "text": "회사 법인카드는 출장 경비 외에는 쓸 수 없다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-02-20"
+  },
+  {
+   "key": "r3:s15",
+   "text": "Dr. Kang said if my blood pressure stays under 130 for three months, I can stop the blood pressure medication.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-06-05"
+  },
+  {
+   "key": "r3:s16",
+   "text": "매주 수요일 저녁에는 딸 하린이를 피아노 학원에 데려다준다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-03-01"
+  },
+  {
+   "key": "r3:s17",
+   "text": "Harin quit her piano lessons in September.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-09-20"
+  },
+  {
+   "key": "r3:s18",
+   "text": "우리 아파트는 반려동물 금지다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-01-05"
+  },
+  {
+   "key": "r3:s19",
+   "text": "I sold my car last month.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-06-15"
+  },
+  {
+   "key": "r3:s20",
+   "text": "위염 때문에 앞으로 3개월은 매운 음식을 먹으면 안 된다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-08-01"
+  },
+  {
+   "key": "r3:s21",
+   "text": "The landlord said our rent goes up 5% from October.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-08-20"
+  },
+  {
+   "key": "r3:s22",
+   "text": "Orion 서버는 data residency 정책 때문에 AWS 서울 리전(ap-northeast-2)에만 배포한다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-04-01"
+  },
+  {
+   "key": "r3:s23",
+   "text": "I think Mr. Park next door might be moving out soon, but I'm not sure.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-09-01"
+  },
+  {
+   "key": "r3:s24",
+   "text": "박 과장님이 내년에 퇴사할 거라고 하셨다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-09-05"
+  },
+  {
+   "key": "r3:s25",
+   "text": "I study Spanish on Duolingo every morning.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:s26",
+   "text": "커피는 하루 한 잔으로 제한하고 있다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-06-10"
+  },
+  {
+   "key": "r3:s27",
+   "text": "Orion team rule: no meetings on Friday afternoons.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-03-10"
+  },
+  {
+   "key": "r3:s28",
+   "text": "운전은 하지만 시력 때문에 야간 운전은 안 한다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-02-25"
+  },
+  {
+   "key": "r3:s29",
+   "text": "My mother in Daejeon has dementia and can't be left alone.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-04-20"
+  },
+  {
+   "key": "r3:s30",
+   "text": "하린이는 올해 초등학교 3학년이다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-03-02"
+  },
+  {
+   "key": "r3:s31",
+   "text": "혈압약은 아침 식사 후에 먹는다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-06-20"
+  },
+  {
+   "key": "r3:d000",
+   "text": "유튜브로 고양이 영상 보면서 쉬었다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d001",
+   "text": "친구 지은이가 고양이를 새로 입양했다고 사진을 보내줬다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d002",
+   "text": "하린이가 길고양이 그림을 그렸다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d003",
+   "text": "고양이 캐릭터 머그컵을 샀다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d004",
+   "text": "하린이가 커서 수의사가 되고 싶대.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d005",
+   "text": "Watched a documentary about snow leopards.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d006",
+   "text": "My friend Jieun's cat had kittens.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d007",
+   "text": "Bought a cat-shaped bookmark for Harin.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d008",
+   "text": "아파트 관리사무소에서 분리수거 요일이 바뀌었다고 공지했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d009",
+   "text": "The building's elevator was under maintenance all day.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d010",
+   "text": "Harin keeps asking for a hamster; we're still talking about it.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d011",
+   "text": "약국에서 비타민 D를 샀다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d012",
+   "text": "두통이 있어서 타이레놀을 먹었다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d013",
+   "text": "강 원장님 진료 예약을 다음 달로 미뤘다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d014",
+   "text": "아침 혈압이 128로 나왔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d015",
+   "text": "아내가 감기약을 사다 줬다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d016",
+   "text": "The pharmacist reminded me to take my pills with a full glass of water.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d017",
+   "text": "Dr. Kang's clinic moved to a new building.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d018",
+   "text": "My blood pressure was 127 this morning.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d019",
+   "text": "My coworker Jun takes ibuprofen for his back pain.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d020",
+   "text": "Picked up a refill of my blood pressure prescription.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d021",
+   "text": "Read an article about aspirin and heart health.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d022",
+   "text": "건강검진 결과가 우편으로 왔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d023",
+   "text": "Orion 저장소에 새 CI 파이프라인을 붙였다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d024",
+   "text": "오늘 PR 리뷰를 세 건 했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d025",
+   "text": "Orion 팀 스탠드업은 매일 오전 10시다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d026",
+   "text": "Orion 백엔드에 캐시 레이어를 추가하는 PR을 올렸다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d027",
+   "text": "금요일 오전에 Orion 디자인 리뷰를 했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d028",
+   "text": "Orion 서버 로그 보존 기간을 30일로 정했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d029",
+   "text": "팀장님이 Orion 로드맵 문서를 공유했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d030",
+   "text": "Orion 스테이징 환경이 오늘 하루 종일 느렸다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d031",
+   "text": "AWS 비용 리포트를 정리했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d032",
+   "text": "Orion 데이터베이스 백업은 매일 새벽에 돌아간다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d033",
+   "text": "Orion 마감까지 할 일이 아직 많다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d034",
+   "text": "Reviewed Jun's pull request on Orion before lunch.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d035",
+   "text": "Orion's test coverage hit 80% today.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d036",
+   "text": "We use GitHub Actions for Orion's CI.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d037",
+   "text": "The Orion team had a long planning meeting on Tuesday afternoon.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d038",
+   "text": "Wrote the Orion API docs.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d039",
+   "text": "Our product manager is pushing for a dark-mode feature in Orion.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d040",
+   "text": "Merged three PRs into Orion's develop branch after review.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d041",
+   "text": "Set up alerts for Orion's database CPU.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d042",
+   "text": "Friday morning: paired with Jun on the Orion billing module.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d043",
+   "text": "Orion uses S3 for file storage.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d044",
+   "text": "개인 사이드 프로젝트 서버는 도쿄 리전에 띄웠다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d045",
+   "text": "Orion 로그인 페이지 버그를 고쳤다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d046",
+   "text": "Orion release notes v0.9 작성 완료.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d047",
+   "text": "회사 앞 흡연 구역이 옮겨졌다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d048",
+   "text": "동료 준이 담배를 끊겠다고 선언했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d049",
+   "text": "편의점에서 껌을 샀다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d050",
+   "text": "Walked past a crowd of smokers outside the station.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d051",
+   "text": "My dad smoked for 40 years before he quit.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d052",
+   "text": "Chewing gum helps when I'm stressed.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d053",
+   "text": "아내 수아랑 비건 레스토랑에 갔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d054",
+   "text": "수아가 두부 요리를 만들었다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d055",
+   "text": "디자이너 수아 씨가 새 로고 시안을 보냈다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d056",
+   "text": "수아 씨랑 점심에 회의했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d057",
+   "text": "아내가 요가 수업을 등록했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d058",
+   "text": "수아랑 주말에 장을 봤다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d059",
+   "text": "Sua (my wife) started a pottery class.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d060",
+   "text": "Designer Sua shared the new Orion icons.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d061",
+   "text": "Sua and I watched a cooking show.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d062",
+   "text": "Lunch with the design team; Sua ordered a salad.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d063",
+   "text": "My wife's sister is visiting next week.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d064",
+   "text": "동료 준이 출장으로 싱가포르에 다녀왔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d065",
+   "text": "KTX 타고 부산 출장을 다녀왔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d066",
+   "text": "지하철 광고판에서 제주 여행 광고를 봤다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d067",
+   "text": "비행기 소음에 관한 다큐멘터리를 봤다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d068",
+   "text": "Took the ferry to Jeju years ago and still remember the seasickness.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d069",
+   "text": "My wife flew to Tokyo for a work conference.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d070",
+   "text": "Looked up train times to Gangneung.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d071",
+   "text": "여권 만료일이 내년 3월이다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d072",
+   "text": "재택 근무용 모니터 암을 샀다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d073",
+   "text": "집에서 화상 회의를 다섯 번 했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d074",
+   "text": "동료들은 사무실에서 회식을 했다고 한다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d075",
+   "text": "홈오피스 의자가 불편하다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d076",
+   "text": "Set up a standing desk at home.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d077",
+   "text": "The office cafeteria menu changed, according to Jun.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d078",
+   "text": "Video calls all day from the living room.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d079",
+   "text": "어젯밤엔 10시 반에 잠들었다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d080",
+   "text": "수면 앱으로 수면 패턴을 기록한다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d081",
+   "text": "하린이는 9시에 재운다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d082",
+   "text": "Read a novel in bed before sleeping.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d083",
+   "text": "Bought blackout curtains for the bedroom.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d084",
+   "text": "휴대폰 케이스를 새로 샀다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d085",
+   "text": "아내 휴대폰 요금제를 바꿨다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d086",
+   "text": "하린이에게 키즈폰을 사줄까 고민 중이다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d087",
+   "text": "Updated my phone's OS overnight.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d088",
+   "text": "Lost signal in the subway again.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d089",
+   "text": "Backed up my photos to the cloud.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d090",
+   "text": "하린이가 수영 대회에서 메달을 땄다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d091",
+   "text": "올림픽 수영 경기를 봤다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d092",
+   "text": "해변에서 발만 담그고 놀았다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d093",
+   "text": "Harin's swim lessons are on Saturdays.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d094",
+   "text": "Watched people surf at Yangyang beach.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d095",
+   "text": "출장 KTX 표를 법인카드로 결제했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d096",
+   "text": "경비 정산 시스템이 바뀌었다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d097",
+   "text": "개인 카드 포인트로 커피를 샀다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d098",
+   "text": "Finance sent a reminder about expense report deadlines.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d099",
+   "text": "Paid for the client lunch during the Daegu business trip with the corporate card.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d100",
+   "text": "하린이 피아노 학원 발표회가 6월에 있었다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d101",
+   "text": "하린이가 요즘 태권도에 관심을 보인다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d102",
+   "text": "하린이 학교 상담을 다녀왔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d103",
+   "text": "Harin played Für Elise at the June recital.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d104",
+   "text": "Harin's school has a field trip next week.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d105",
+   "text": "하린이가 그림 대회에서 상을 받았다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d106",
+   "text": "하린이 친구들이 집에 놀러 왔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d107",
+   "text": "Harin's class went on a museum trip.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d108",
+   "text": "버스 정기권을 충전했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d109",
+   "text": "동네에 새 자전거 도로가 생겼다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d110",
+   "text": "쏘카 앱을 깔았다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d111",
+   "text": "Took a taxi home after the late meeting.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d112",
+   "text": "Compared car-sharing prices.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d113",
+   "text": "Got new glasses with a stronger prescription.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d114",
+   "text": "순한 맛 떡볶이를 시켰다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d115",
+   "text": "위내시경 예약을 했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d116",
+   "text": "회사 근처 국밥집이 맛있다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d117",
+   "text": "Ordered a mild curry for lunch.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d118",
+   "text": "Bought antacids at the pharmacy.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d119",
+   "text": "Tried a new tea shop near the office.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d120",
+   "text": "Jun drinks about five coffees a day.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d121",
+   "text": "디카페인 커피로 바꿔 볼까 생각 중이다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d122",
+   "text": "회사 커피머신이 고장났다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d123",
+   "text": "관리비 고지서가 나왔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d124",
+   "text": "집주인이 보일러를 교체해 줬다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d125",
+   "text": "Paid the rent on the 25th as usual.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d126",
+   "text": "Our lease runs until next August.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d127",
+   "text": "옆집 박 씨 아저씨가 화분을 나눠 주셨다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d128",
+   "text": "박 과장님이 오늘 회의에서 발표했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d129",
+   "text": "박 과장님 결혼기념일 선물을 같이 골랐다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d130",
+   "text": "Mr. Park next door asked about recycling days.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d131",
+   "text": "Manager Park led the Orion budget review.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d132",
+   "text": "스페인어 발음이 아직 어렵다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d133",
+   "text": "Watched a Spanish movie with subtitles.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d134",
+   "text": "The Orion team moved standups to 10:30.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d135",
+   "text": "월요일 오후에 Orion 분기 계획 회의를 했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d136",
+   "text": "엄마 요양보호사 선생님이 바뀌었다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d137",
+   "text": "대전에 계신 엄마랑 영상 통화를 했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d138",
+   "text": "Mom's caregiver comes every weekday.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d139",
+   "text": "Brought Mom her favorite rice cakes.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d140",
+   "text": "오늘은 비가 많이 왔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d141",
+   "text": "주말에 대청소를 했다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d142",
+   "text": "새 노트북 키보드가 마음에 든다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d143",
+   "text": "도서관에서 책 두 권을 빌렸다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d144",
+   "text": "넷플릭스에서 다큐멘터리를 봤다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d145",
+   "text": "점심에 김밥을 먹었다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d146",
+   "text": "화분에 물을 줬다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d147",
+   "text": "세탁기가 이상한 소리를 낸다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d148",
+   "text": "It was unusually warm for October.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d149",
+   "text": "Finished a 1000-piece puzzle with Harin.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d150",
+   "text": "Started reading a book about Roman history.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d151",
+   "text": "Cleaned out the fridge.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d152",
+   "text": "Fixed the squeaky door hinge.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d153",
+   "text": "Listened to a podcast about urban planning.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d154",
+   "text": "Our internet was down for an hour.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d155",
+   "text": "Bought winter jackets for the family.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d156",
+   "text": "Tried a new bakery in the neighborhood.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d157",
+   "text": "Went to a friend's wedding in Seoul.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d158",
+   "text": "Learned a new keyboard shortcut in my editor.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d159",
+   "text": "Donated old clothes.",
+   "lang": "en",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d160",
+   "text": "회사 엘리베이터가 또 고장났다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d161",
+   "text": "Orion 팀 단톡방에 회식 투표가 올라왔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  },
+  {
+   "key": "r3:d162",
+   "text": "토요일에 하린이랑 과학관에 갔다.",
+   "lang": "ko",
+   "recorder": "user",
+   "lifecycle": "live",
+   "date": "2026-05-01"
+  }
+ ],
+ "relations": [],
+ "deps": [],
+ "citations": [],
+ "queries": [
+  {
+   "id": "r3:b01",
+   "text": "고양이 알레르기 있었나?",
+   "gold": [
+    "r3:s01"
+   ],
+   "cat": "ko>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b02",
+   "text": "수영할 줄 아나?",
+   "gold": [
+    "r3:s13"
+   ],
+   "cat": "ko>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "negation"
+  },
+  {
+   "id": "r3:b03",
+   "text": "법인카드 사용 규칙",
+   "gold": [
+    "r3:s14"
+   ],
+   "cat": "ko>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b04",
+   "text": "아파트에서 강아지 키워도 되나?",
+   "gold": [
+    "r3:s18"
+   ],
+   "cat": "ko>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b05",
+   "text": "매운 거 먹어도 되나?",
+   "gold": [
+    "r3:s20"
+   ],
+   "cat": "ko>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "bounded"
+  },
+  {
+   "id": "r3:b06",
+   "text": "박 과장 퇴사 계획",
+   "gold": [
+    "r3:s24"
+   ],
+   "cat": "ko>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "attribution"
+  },
+  {
+   "id": "r3:b07",
+   "text": "하린이 몇 학년이지?",
+   "gold": [
+    "r3:s30"
+   ],
+   "cat": "ko>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b08",
+   "text": "커피 몇 잔까지 마시기로 했지?",
+   "gold": [
+    "r3:s26"
+   ],
+   "cat": "ko>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b09",
+   "text": "Can I take ibuprofen?",
+   "gold": [
+    "r3:s02"
+   ],
+   "cat": "en>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "negation"
+  },
+  {
+   "id": "r3:b10",
+   "text": "Does my rent change this year?",
+   "gold": [
+    "r3:s21"
+   ],
+   "cat": "en>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b11",
+   "text": "Is my neighbor moving?",
+   "gold": [
+    "r3:s23"
+   ],
+   "cat": "en>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "uncertainty"
+  },
+  {
+   "id": "r3:b12",
+   "text": "Do I still have a car?",
+   "gold": [
+    "r3:s19"
+   ],
+   "cat": "en>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b13",
+   "text": "What phone do I use?",
+   "gold": [
+    "r3:s10"
+   ],
+   "cat": "en>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "temporal"
+  },
+  {
+   "id": "r3:b14",
+   "text": "Can I travel by plane?",
+   "gold": [
+    "r3:s08"
+   ],
+   "cat": "en>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "negation"
+  },
+  {
+   "id": "r3:b15",
+   "text": "When can I stop my blood pressure medication?",
+   "gold": [
+    "r3:s15"
+   ],
+   "cat": "en>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "conditional"
+  },
+  {
+   "id": "r3:b16",
+   "text": "Friday meeting policy for the Orion team",
+   "gold": [
+    "r3:s27"
+   ],
+   "cat": "en>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b17",
+   "text": "이부프로펜 먹어도 돼?",
+   "gold": [
+    "r3:s02"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "negation"
+  },
+  {
+   "id": "r3:b18",
+   "text": "비행기 타도 괜찮을까?",
+   "gold": [
+    "r3:s08"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "negation"
+  },
+  {
+   "id": "r3:b19",
+   "text": "내 차 아직 있나?",
+   "gold": [
+    "r3:s19"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b20",
+   "text": "월세 오르나?",
+   "gold": [
+    "r3:s21"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b21",
+   "text": "옆집 사람 이사 가?",
+   "gold": [
+    "r3:s23"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "uncertainty"
+  },
+  {
+   "id": "r3:b22",
+   "text": "디자인팀 수아 알레르기",
+   "gold": [
+    "r3:s06"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "entity"
+  },
+  {
+   "id": "r3:b23",
+   "text": "엄마 혼자 계셔도 되나?",
+   "gold": [
+    "r3:s29"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b24",
+   "text": "금요일 오후 회의 잡아도 돼?",
+   "gold": [
+    "r3:s27"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b25",
+   "text": "담배 끊기로 한 날짜",
+   "gold": [
+    "r3:s04"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b26",
+   "text": "Orion 마감 언제로 바뀌었지?",
+   "gold": [
+    "r3:s12"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "temporal"
+  },
+  {
+   "id": "r3:b27",
+   "text": "하린이 아직 피아노 다녀?",
+   "gold": [
+    "r3:s17"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "temporal"
+  },
+  {
+   "id": "r3:b28",
+   "text": "혈압약 끊는 조건",
+   "gold": [
+    "r3:s15"
+   ],
+   "cat": "ko>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "conditional"
+  },
+  {
+   "id": "r3:b29",
+   "text": "Am I allergic to cats?",
+   "gold": [
+    "r3:s01"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b30",
+   "text": "Can I swim?",
+   "gold": [
+    "r3:s13"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "negation"
+  },
+  {
+   "id": "r3:b31",
+   "text": "Is my wife vegetarian or vegan?",
+   "gold": [
+    "r3:s05"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "entity"
+  },
+  {
+   "id": "r3:b32",
+   "text": "Am I working from home?",
+   "gold": [
+    "r3:s07"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "bounded"
+  },
+  {
+   "id": "r3:b33",
+   "text": "What time do I usually go to bed?",
+   "gold": [
+    "r3:s09"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b34",
+   "text": "Can I use the corporate card for personal meals?",
+   "gold": [
+    "r3:s14"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b35",
+   "text": "Are pets allowed in our apartment?",
+   "gold": [
+    "r3:s18"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "negation"
+  },
+  {
+   "id": "r3:b36",
+   "text": "Is spicy food okay for me?",
+   "gold": [
+    "r3:s20"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "bounded"
+  },
+  {
+   "id": "r3:b37",
+   "text": "Is Manager Park leaving the company?",
+   "gold": [
+    "r3:s24"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "attribution"
+  },
+  {
+   "id": "r3:b38",
+   "text": "Which grade is Harin in?",
+   "gold": [
+    "r3:s30"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b39",
+   "text": "Do I drive at night?",
+   "gold": [
+    "r3:s28"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "negation"
+  },
+  {
+   "id": "r3:b40",
+   "text": "How much coffee do I allow myself?",
+   "gold": [
+    "r3:s26"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b41",
+   "text": "Orion deploy region 정책",
+   "gold": [
+    "r3:s22"
+   ],
+   "cat": "mix>mix",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b42",
+   "text": "Orion main 브랜치 push 규칙",
+   "gold": [
+    "r3:s03"
+   ],
+   "cat": "mix>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b43",
+   "text": "Which AWS region is Orion allowed to use?",
+   "gold": [
+    "r3:s22"
+   ],
+   "cat": "en>mix",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b44",
+   "text": "Orion 서버 어느 리전에 배포해?",
+   "gold": [
+    "r3:s22"
+   ],
+   "cat": "ko>mix",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b45",
+   "text": "Can I push directly to main on Orion?",
+   "gold": [
+    "r3:s03"
+   ],
+   "cat": "en>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "negation"
+  },
+  {
+   "id": "r3:b46",
+   "text": "Spanish 공부 루틴",
+   "gold": [
+    "r3:s25"
+   ],
+   "cat": "mix>en",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": ""
+  },
+  {
+   "id": "r3:b47",
+   "text": "Wednesday piano pickup 아직 해?",
+   "gold": [
+    "r3:s16",
+    "r3:s17"
+   ],
+   "cat": "mix>mix",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "temporal"
+  },
+  {
+   "id": "r3:b48",
+   "text": "Orion 프로젝트 원래 마감일",
+   "gold": [
+    "r3:s11"
+   ],
+   "cat": "ko>ko",
+   "split": "r3_holdout",
+   "principal": "user",
+   "must_not": [],
+   "depth": "auto",
+   "intent": "auto",
+   "as_of": null,
+   "note": "temporal"
+  }
+ ]
+}
