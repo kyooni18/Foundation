@@ -172,6 +172,17 @@ class RepairProtocolTest(unittest.TestCase):
         blind=repair.reader_body('ONE isolated Claim','v29')
         self.assertNotIn('original_source',blind['messages'][0]['content'])
         self.assertEqual(repair.reader_check(dict(verdict='pass',issues=[],checked=[0],coverage_complete=True))['verdict'],'pass')
+        analyzed=dict(candidate_meaning='An isolated timeless assertion',
+            analysis={k:dict(reason='Synthetic explicit interpretation',status='pass') for k in ['atomicity','reference','temporal']},
+            verdict='pass',issues=[],checked=[0],coverage_complete=True)
+        self.assertEqual(repair.reader_check(analyzed,'v50')['verdict'],'pass')
+        analyzed['analysis']['reference']['status']='reject'
+        with self.assertRaisesRegex(ValueError,'contradictory standalone analysis'):repair.reader_check(analyzed,'v50')
+        analyzed.update(verdict='reject',issues=['reference'])
+        self.assertEqual(repair.reader_check(analyzed,'v50')['verdict'],'reject')
+        analyzed['analysis']['temporal']['reason']=' '
+        with self.assertRaisesRegex(ValueError,'blank standalone reason'):repair.reader_check(analyzed,'v50')
+        with self.assertRaises(ValueError):repair.reader_check(dict(verdict='pass',issues=[],checked=[0],coverage_complete=True),'v50')
         with self.assertRaises(ValueError):
             repair.reader_check(dict(verdict='pass',issues=['reference'],checked=[0],coverage_complete=True))
         request_text=repair.body(packet,'v28')['messages'][0]['content']

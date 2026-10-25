@@ -273,6 +273,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v49/frames.txt"),
                 include_str!("../../prompts/extraction-v49/review.txt"),
             )),
+            "extraction-v50" => Ok((
+                include_str!("../../prompts/extraction-v50/contract.txt"),
+                include_str!("../../prompts/extraction-v50/frames.txt"),
+                include_str!("../../prompts/extraction-v50/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -292,7 +297,7 @@ impl Plan {
     pub fn review_stages(&self) -> &'static [&'static str] {
         if matches!(
             self.version(),
-            "extraction-v47" | "extraction-v48" | "extraction-v49"
+            "extraction-v47" | "extraction-v48" | "extraction-v49" | "extraction-v50"
         ) {
             return &review_v39::STAGES_47;
         }
@@ -309,6 +314,7 @@ impl Plan {
                 | "extraction-v47"
                 | "extraction-v48"
                 | "extraction-v49"
+                | "extraction-v50"
         ) {
             &review_v39::STAGES
         } else {
@@ -329,10 +335,11 @@ impl Plan {
                 | "extraction-v47"
                 | "extraction-v48"
                 | "extraction-v49"
+                | "extraction-v50"
         ) {
             let spec = review_v39::spec_for(
                 stage,
-                if self.version() == "extraction-v49" {
+                if matches!(self.version(), "extraction-v49" | "extraction-v50") {
                     review_v39::DEFINITIONS_49
                 } else if self.version() == "extraction-v48" {
                     review_v39::DEFINITIONS_48
@@ -389,6 +396,7 @@ impl Plan {
                 | "extraction-v47"
                 | "extraction-v48"
                 | "extraction-v49"
+                | "extraction-v50"
         ) {
             return Ok(format!(
                 "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
@@ -439,6 +447,7 @@ impl Plan {
             "extraction-v47" => Some(include_str!("../../prompts/extraction-v47/reader.txt")),
             "extraction-v48" => Some(include_str!("../../prompts/extraction-v48/reader.txt")),
             "extraction-v49" => Some(include_str!("../../prompts/extraction-v49/reader.txt")),
+            "extraction-v50" => Some(include_str!("../../prompts/extraction-v50/reader.txt")),
             _ => None,
         }
     }
@@ -477,6 +486,7 @@ impl Plan {
                 | "extraction-v47"
                 | "extraction-v48"
                 | "extraction-v49"
+                | "extraction-v50"
         )
     }
     fn source_meta_review(&self) -> bool {
@@ -505,6 +515,7 @@ impl Plan {
                 | "extraction-v47"
                 | "extraction-v48"
                 | "extraction-v49"
+                | "extraction-v50"
         )
     }
     pub fn hash(&self) -> Result<String> {
@@ -542,29 +553,32 @@ impl Plan {
                 | "extraction-v47"
                 | "extraction-v48"
                 | "extraction-v49"
+                | "extraction-v50"
         ) {
             material.push('\n');
-            material.push_str(if self.version() == "extraction-v49" {
-                review_v39::DEFINITIONS_49
-            } else if matches!(self.version(), "extraction-v47" | "extraction-v48") {
-                review_v39::DEFINITIONS_47
-            } else if self.version() == "extraction-v46" {
-                review_v39::DEFINITIONS_46
-            } else if self.version() == "extraction-v45" {
-                review_v39::DEFINITIONS_45
-            } else if self.version() == "extraction-v44" {
-                review_v39::DEFINITIONS_44
-            } else if self.version() == "extraction-v43" {
-                review_v39::DEFINITIONS_43
-            } else if self.version() == "extraction-v42" {
-                review_v39::DEFINITIONS_42
-            } else if self.version() == "extraction-v41" {
-                review_v39::DEFINITIONS_41
-            } else if self.version() == "extraction-v40" {
-                review_v39::DEFINITIONS_40
-            } else {
-                review_v39::DEFINITIONS
-            });
+            material.push_str(
+                if matches!(self.version(), "extraction-v49" | "extraction-v50") {
+                    review_v39::DEFINITIONS_49
+                } else if matches!(self.version(), "extraction-v47" | "extraction-v48") {
+                    review_v39::DEFINITIONS_47
+                } else if self.version() == "extraction-v46" {
+                    review_v39::DEFINITIONS_46
+                } else if self.version() == "extraction-v45" {
+                    review_v39::DEFINITIONS_45
+                } else if self.version() == "extraction-v44" {
+                    review_v39::DEFINITIONS_44
+                } else if self.version() == "extraction-v43" {
+                    review_v39::DEFINITIONS_43
+                } else if self.version() == "extraction-v42" {
+                    review_v39::DEFINITIONS_42
+                } else if self.version() == "extraction-v41" {
+                    review_v39::DEFINITIONS_41
+                } else if self.version() == "extraction-v40" {
+                    review_v39::DEFINITIONS_40
+                } else {
+                    review_v39::DEFINITIONS
+                },
+            );
         }
         Ok(hash(&material))
     }
@@ -914,6 +928,7 @@ pub fn validate_source_review(
             | "extraction-v47"
             | "extraction-v48"
             | "extraction-v49"
+            | "extraction-v50"
     ) {
         return Err(invalid("schema", "review responsibility binding required"));
     }
@@ -946,6 +961,7 @@ pub fn validate_source_review(
                     | "extraction-v47"
                     | "extraction-v48"
                     | "extraction-v49"
+                    | "extraction-v50"
             ),
             matches!(
                 plan.version(),
@@ -969,6 +985,7 @@ pub fn validate_source_review(
                     | "extraction-v47"
                     | "extraction-v48"
                     | "extraction-v49"
+                    | "extraction-v50"
             ),
             matches!(
                 plan.version(),
@@ -988,6 +1005,7 @@ pub fn validate_source_review(
                     | "extraction-v47"
                     | "extraction-v48"
                     | "extraction-v49"
+                    | "extraction-v50"
             ),
         )
     } else {
@@ -1016,6 +1034,7 @@ pub fn validate_source_review_at(
             | "extraction-v47"
             | "extraction-v48"
             | "extraction-v49"
+            | "extraction-v50"
     ) {
         review_v39::validate(
             raw,
@@ -1033,6 +1052,7 @@ pub fn validate_source_review_at(
                     | "extraction-v47"
                     | "extraction-v48"
                     | "extraction-v49"
+                    | "extraction-v50"
             ) {
                 "violations"
             } else {
@@ -1045,10 +1065,11 @@ pub fn validate_source_review_at(
                     | "extraction-v47"
                     | "extraction-v48"
                     | "extraction-v49"
+                    | "extraction-v50"
             ),
             if matches!(
                 plan.version(),
-                "extraction-v47" | "extraction-v48" | "extraction-v49"
+                "extraction-v47" | "extraction-v48" | "extraction-v49" | "extraction-v50"
             ) {
                 review_v39::DEFINITIONS_47
             } else {
@@ -1078,7 +1099,7 @@ pub fn validate_proposal_reviews_bound(
         return Err(invalid("schema", "review batch too large"));
     }
     for raw in &reviews[..n] {
-        validate_review(raw, 1)?;
+        validate_reader_review(plan, raw)?;
     }
     for (stage, raw) in plan.review_stages().iter().zip(&reviews[n..]) {
         validate_source_review_at(plan, stage, raw, batch, source)?;
@@ -1096,18 +1117,19 @@ pub fn validate_proposal_reviews_bound(
             | "extraction-v47"
             | "extraction-v48"
             | "extraction-v49"
+            | "extraction-v50"
     ) {
         if review_v39::inventory_signature(
             &reviews[n],
             matches!(
                 plan.version(),
-                "extraction-v47" | "extraction-v48" | "extraction-v49"
+                "extraction-v47" | "extraction-v48" | "extraction-v49" | "extraction-v50"
             ),
         )? != review_v39::inventory_signature(
             reviews.last().expect("complete reviews"),
             matches!(
                 plan.version(),
-                "extraction-v47" | "extraction-v48" | "extraction-v49"
+                "extraction-v47" | "extraction-v48" | "extraction-v49" | "extraction-v50"
             ),
         )? {
             return Err(invalid("unresolved", "independent inventory disagreement"));
@@ -1133,6 +1155,77 @@ pub fn validate_proposal_reviews_bound(
         return Err(invalid("unresolved", "independent review disagreement"));
     }
     Ok(())
+}
+
+/// Versioned standalone analysis. Legacy judgments remain frozen under their Plan.
+pub fn validate_reader_review(plan: &Plan, raw: &str) -> Result<()> {
+    if plan.version() != "extraction-v50" {
+        return validate_review(raw, 1);
+    }
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Finding {
+        reason: String,
+        status: String,
+    }
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Analysis {
+        atomicity: Finding,
+        reference: Finding,
+        temporal: Finding,
+    }
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Reader {
+        candidate_meaning: String,
+        analysis: Analysis,
+        checked: Vec<usize>,
+        coverage_complete: bool,
+        issues: Vec<String>,
+        verdict: String,
+    }
+    if raw.len() > 4 * 1024 * 1024 {
+        return Err(invalid("schema", "reader too large"));
+    }
+    let report: Reader =
+        serde_json::from_str(raw).map_err(|_| invalid("schema", "invalid standalone analysis"))?;
+    if report.candidate_meaning.trim().is_empty()
+        || report.checked != [0]
+        || !report.coverage_complete
+    {
+        return Err(invalid("schema", "incomplete standalone analysis"));
+    }
+    let findings = [
+        ("atomicity", &report.analysis.atomicity),
+        ("reference", &report.analysis.reference),
+        ("temporal", &report.analysis.temporal),
+    ];
+    let mut expected_issues = Vec::new();
+    let mut expected_verdict = "pass";
+    for (name, finding) in findings {
+        choice(&finding.status, &["pass", "reject", "unresolved"])?;
+        if finding.reason.trim().is_empty() {
+            return Err(invalid("schema", "blank standalone reason"));
+        }
+        if finding.status != "pass" {
+            expected_issues.push(name.to_owned());
+            if finding.status == "reject" || expected_verdict == "pass" {
+                expected_verdict = &finding.status;
+            }
+        }
+    }
+    let mut issues = report.issues;
+    issues.sort_unstable();
+    expected_issues.sort_unstable();
+    if issues != expected_issues || report.verdict != expected_verdict {
+        return Err(invalid("schema", "contradictory standalone analysis"));
+    }
+    match expected_verdict {
+        "pass" => Ok(()),
+        "unresolved" => Err(invalid("unresolved", "standalone ambiguity")),
+        _ => Err(invalid("semantic", "standalone rejected")),
+    }
 }
 
 pub fn validate_review(raw: &str, n: usize) -> Result<()> {
@@ -1313,7 +1406,7 @@ async fn propose_with_feedback(
             for result in [a, b, c, d].into_iter().flatten() {
                 let raw = result.map_err(call)?;
                 append_review_trace(plan, trace, &raw)?;
-                validate_review(&raw, 1).map_err(|error| {
+                validate_reader_review(plan, &raw).map_err(|error| {
                     if matches!(
                         error,
                         Error::InvalidInput {

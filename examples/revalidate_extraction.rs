@@ -4,8 +4,8 @@ use prime_radiant::{
     App,
     domain::*,
     extraction::{
-        Plan, VALIDATION_VERSION, hash, validate, validate_proposal_reviews_bound, validate_review,
-        validate_source_review_at,
+        Plan, VALIDATION_VERSION, hash, validate, validate_proposal_reviews_bound,
+        validate_reader_review, validate_review, validate_source_review_at,
     },
 };
 use serde_json::{Value, json};
@@ -85,7 +85,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             let raw = raw.unwrap_or_default();
             let prefix = raw.iter().enumerate().try_for_each(|(index, text)| {
                 if index < batch.claims.len() {
-                    validate_review(text, 1)
+                    validate_reader_review(plan, text)
                 } else {
                     validate_source_review_at(
                         plan,

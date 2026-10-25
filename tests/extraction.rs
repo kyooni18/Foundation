@@ -233,14 +233,36 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
     math_claim["speaker"] = json!("unknown");
     let math_raw = output(vec![math_claim]);
     let mut current = plan();
-    current.prompt_version = Some("extraction-v49".into());
-    let mut replies = vec![
-        Ok(math_raw.clone()),
-        Ok(
-            json!({"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true})
-                .to_string(),
-        ),
-    ];
+    current.prompt_version = Some("extraction-v50".into());
+    let reader = json!({"candidate_meaning":math,"analysis":{
+        "atomicity":{"reason":"One mathematical assertion","status":"pass"},
+        "reference":{"reason":"All operands explicit","status":"pass"},
+        "temporal":{"reason":"Timeless mathematics","status":"pass"}},
+        "verdict":"pass","issues":[],"checked":[0],"coverage_complete":true});
+    assert!(validate_reader_review(&current, &reader.to_string()).is_ok());
+    let mut contradictory = reader.clone();
+    contradictory["analysis"]["reference"]["status"] = json!("reject");
+    assert!(validate_reader_review(&current, &contradictory.to_string()).is_err());
+    contradictory["verdict"] = json!("reject");
+    contradictory["issues"] = json!(["reference"]);
+    assert!(matches!(
+        validate_reader_review(&current, &contradictory.to_string()),
+        Err(Error::InvalidInput {
+            field: "semantic",
+            ..
+        })
+    ));
+    let mut blank = reader.clone();
+    blank["analysis"]["temporal"]["reason"] = json!(" ");
+    assert!(validate_reader_review(&current, &blank.to_string()).is_err());
+    assert!(
+        validate_reader_review(
+            &current,
+            r#"{"verdict":"pass","issues":[],"checked":[0],"coverage_complete":true}"#
+        )
+        .is_err()
+    );
+    let mut replies = vec![Ok(math_raw.clone()), Ok(reader.to_string())];
     let definitions: Vec<Value> =
         serde_json::from_str(include_str!("../prompts/extraction-v49/facets.json")).unwrap();
     for definition in definitions {

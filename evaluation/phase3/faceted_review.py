@@ -5,7 +5,7 @@ import focused_review as f
 import guarded_haiku as g
 
 def root(version):
-    g.require(version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49'},'unknown faceted profile')
+    g.require(version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50'},'unknown faceted profile')
     return f.ROOT/('prompts/extraction-'+version)
 
 def definitions(version='v39'):return json.loads((root(version)/'facets.json').read_text())
@@ -46,21 +46,21 @@ def schema(packet,stage,wire_revision='supported-v2',version='v39'):
         s=status
         if key=='korean_meaning' and not (f.has_korean(source) or any(c['lang']=='ko' for c in claims)):
             s={'type':'string','enum':[*status['enum'],'not_applicable']}
-        dimensions[key]={'type':'object','additionalProperties':False,'properties':({'reason':string,'status':s} if version in {'v48','v49'} else {'status':s,'reason':string}),'required':(['reason','status'] if version in {'v44','v45','v46','v47','v48','v49'} else ['status','reason'])}
+        dimensions[key]={'type':'object','additionalProperties':False,'properties':({'reason':string,'status':s} if version in {'v48','v49','v50'} else {'status':s,'reason':string}),'required':(['reason','status'] if version in {'v44','v45','v46','v47','v48','v49','v50'} else ['status','reason'])}
     fields=dict(index={'type':'integer'},text=string,evidence=evidence,source_meaning=string,candidate_meaning=string,
         dimensions={'type':'object','additionalProperties':False,'properties':dimensions,'required':d['dimensions']},differences=strings,uncertainty_flags=strings)
-    if version in {'v41','v42','v43','v44','v45','v46','v47','v48','v49'}:fields['violations']=fields.pop('differences')
+    if version in {'v41','v42','v43','v44','v45','v46','v47','v48','v49','v50'}:fields['violations']=fields.pop('differences')
     if n:
         fields['index']={'type':'integer','enum':list(range(n))}
         fields['text']={'type':'string','enum':[c['text'] for c in claims]}
     proposition=string
     if wire_revision=='supported-v3' and d['inventory']:
-        g.require(version in {'v43','v44','v45','v46','v47','v48','v49'},'grounded inventory requires its explicit profile')
+        g.require(version in {'v43','v44','v45','v46','v47','v48','v49','v50'},'grounded inventory requires its explicit profile')
         vocabulary=exact_inventory_vocabulary(source)
         if len(vocabulary)<=512:proposition=dict(type='string',enum=vocabulary)
     inventory_fields=dict(proposition=proposition,evidence=evidence,claim_indices={'type':'array','items':{'type':'integer'}},status=status,reason=string)
-    if version in {'v44','v45','v46','v47','v48','v49'}:inventory_fields={k:inventory_fields[k] for k in ['proposition','evidence','claim_indices','reason','status']}
-    if version in {'v45','v46','v47','v48','v49'}:
+    if version in {'v44','v45','v46','v47','v48','v49','v50'}:inventory_fields={k:inventory_fields[k] for k in ['proposition','evidence','claim_indices','reason','status']}
+    if version in {'v45','v46','v47','v48','v49','v50'}:
         inventory_fields['claim_index']={'anyOf':[dict(type='integer',enum=list(range(n))),{'type':'null'}]} if n else {'type':'null'}
         inventory_fields.pop('claim_indices')
         inventory_fields={k:inventory_fields[k] for k in ['proposition','evidence','claim_index','reason','status']}
@@ -68,7 +68,7 @@ def schema(packet,stage,wire_revision='supported-v2',version='v39'):
     if not d['inventory']:inventory['maxItems']=0
     props=dict(stage={'type':'string','enum':[stage]},verdict=status,uncertainty_flags=strings,
         claims={'type':'array','minItems':n,'maxItems':n,'items':{'type':'object','additionalProperties':False,'properties':fields,'required':list(fields)}},inventory=inventory)
-    if version in {'v44','v45','v46','v47','v48','v49'}:props={k:props[k] for k in ['stage','claims','inventory','uncertainty_flags','verdict']}
+    if version in {'v44','v45','v46','v47','v48','v49','v50'}:props={k:props[k] for k in ['stage','claims','inventory','uncertainty_flags','verdict']}
     result={'type':'object','additionalProperties':False,'properties':props,'required':list(props)}
     if wire_revision in {'supported-v2','supported-v3'}:
         def portable(value):
@@ -83,11 +83,11 @@ def schema(packet,stage,wire_revision='supported-v2',version='v39'):
 
 def body(packet,stage,model,wire_revision='supported-v2',version='v39'):
     payload=dict(original_source=packet['case']['source'],candidate_batch=packet['candidate'],authored_at=packet['case'].get('authored_at'),candidate_count=len(packet['candidate']['claims']),required_checked_indices=list(range(len(packet['candidate']['claims']))))
-    return dict(model=model,max_tokens=8000 if version in {'v48','v49'} else 6000,system=prompt(stage,version),messages=[dict(role='user',content=f.canonical(payload).decode())],output_config=dict(effort='low',format=dict(type='json_schema',schema=schema(packet,stage,wire_revision,version))),service_tier='standard_only')
+    return dict(model=model,max_tokens=8000 if version in {'v48','v49','v50'} else 6000,system=prompt(stage,version),messages=[dict(role='user',content=f.canonical(payload).decode())],output_config=dict(effort='low',format=dict(type='json_schema',schema=schema(packet,stage,wire_revision,version))),service_tier='standard_only')
 
 def check(j,packet,stage,shape,version='v39'):
-    g.require(stage is not None,'review responsibility binding required');d=spec(stage,version);shape(j,schema(packet,stage,'supported-v3' if version in {'v43','v44','v45','v46','v47','v48','v49'} else 'supported-v2',version))
-    violation_key='violations' if version in {'v41','v42','v43','v44','v45','v46','v47','v48','v49'} else 'differences'
+    g.require(stage is not None,'review responsibility binding required');d=spec(stage,version);shape(j,schema(packet,stage,'supported-v3' if version in {'v43','v44','v45','v46','v47','v48','v49','v50'} else 'supported-v2',version))
+    violation_key='violations' if version in {'v41','v42','v43','v44','v45','v46','v47','v48','v49','v50'} else 'differences'
     source=packet['case']['source'];claims=packet['candidate']['claims'];g.require(j['stage']==stage,'review responsibility changed')
     g.require(all(s.strip() for s in j['uncertainty_flags']),'empty uncertainty flag')
     unresolved=bool(j['uncertainty_flags']);rejected=False
@@ -102,7 +102,7 @@ def check(j,packet,stage,shape,version='v39'):
             g.require(s!='not_applicable' or not (claim['lang']=='ko' or f.has_korean(source)),'unassessed Korean dependency')
             rejected |= s=='reject';unresolved |= s=='unresolved';failure |= s in {'reject','unresolved'}
         g.require(all(s.strip() for s in row[violation_key]+row['uncertainty_flags']),'blank difference/uncertainty')
-        if version in {'v47','v48','v49'} and row['dimensions'].get('entailment',{}).get('status')=='pass':
+        if version in {'v47','v48','v49','v50'} and row['dimensions'].get('entailment',{}).get('status')=='pass':
             g.require(all(row['dimensions'].get(k,{}).get('status') not in {'reject','unresolved'} for k in ['unsupported_inference','source_meta_expansion']),'contradictory complete-Claim entailment')
         g.require(failure or not (row[violation_key] or row['uncertainty_flags']),'passing responsibility contradicts reported differences')
         unresolved |= bool(row['uncertainty_flags'])
@@ -114,7 +114,7 @@ def check(j,packet,stage,shape,version='v39'):
         g.require(p.strip() and start>=0 and source.find(p,start+1)<0 and row['reason'].strip(),'canonical original inventory required')
         g.require(p not in seen,'duplicate source inventory entry');seen.add(p)
         g.require(row['evidence']==[dict(quote=source)],'complete original context required')
-        indices=([row['claim_index']] if row['claim_index'] is not None else []) if version in {'v45','v46','v47','v48','v49'} else row['claim_indices'];g.require(all(type(i) is int and 0<=i<len(claims) for i in indices) and len(indices)==len(set(indices)),'invalid inventory Claim index')
+        indices=([row['claim_index']] if row['claim_index'] is not None else []) if version in {'v45','v46','v47','v48','v49','v50'} else row['claim_indices'];g.require(all(type(i) is int and 0<=i<len(claims) for i in indices) and len(indices)==len(set(indices)),'invalid inventory Claim index')
         bijective &= len(indices)==1 and not mapped.intersection(indices);mapped.update(indices)
         g.require(row['status']!='pass' or indices,'passing inventory has no Claim')
         rejected |= row['status']=='reject';unresolved |= row['status']=='unresolved'

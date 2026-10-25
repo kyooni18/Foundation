@@ -6,7 +6,7 @@ use prime_radiant::{
     extraction::{
         Plan, VALIDATION_VERSION, extraction_message, hash, locate, reader_message,
         repair_context_bound, review_message, validate, validate_proposal_reviews_bound,
-        validate_review, validate_source_review_at,
+        validate_reader_review, validate_source_review_at,
     },
     providers::{LlmProvider, ModelConfig, OpenRouter},
 };
@@ -303,7 +303,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                         &source,
                                     )
                                 } else {
-                                    validate_review(raw, count)
+                                    validate_reader_review(&plan, raw)
                                 };
                                 match checked {
                                     Ok(()) => None,
