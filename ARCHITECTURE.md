@@ -112,3 +112,26 @@ sequenceDiagram
 ## 5. 의도적으로 하지 않는 것
 
 별도 서비스(벡터 DB, 그래프 DB, 큐 서버), PostgreSQL, 사용자 ID/멀티테넌시, 자동 모순 단정, 함의 확장 검색, 기본 번역, 신뢰도 숫자, 오래된 정보 자동 만료, 엔티티 자동 파괴적 병합, 22종 고정 노드 타입. 근거는 `DECISIONS.md`.
+
+## 6. Phase 4 구현: `integrity` 모듈
+
+| 파일 | 책임 |
+|---|---|
+| `integrity/mod.rs` | 대상 enum, 생애주기 SQL, user/agent Claim 술어, 의존 선언·조회, 통합 생애주기 명령, 파생 재구축·불일치 진단 |
+| `integrity/validity.rs` | 3값 평가(2단계: 무효 → 불확실), 하향 폐포 증분 전파, 이벤트 로그 재생 오라클, 재구축 |
+| `integrity/revalidation.rs` | `job(kind=revalidate)` 병합 예약, 임대·펜싱·멱등 완료, 워커 1단계(모델 호출 없음) |
+| `integrity/provenance.rs` | `source_citation`, 에이전트 `session_read`, 투영 내 지지 계산 |
+| `integrity/identity.rs` | `entity`/`identity_assertion`, 계층(user > agent > model) union-find, 파생 해소 테이블 |
+| `integrity/temporal.rs` | `relation`, `model_judgment(task=temporal)`, R2 규칙 as_of, 신선도 정책 |
+
+쓰기 경로: 권위 변경(생애주기 이벤트, 의존 삽입, 추출 게시, 세션 읽기)과 그 하향 폐포의 `claim_validity` 갱신, 필요한 재검증 job 예약이 **한 writer 트랜잭션**에서 커밋된다. 그래서 어떤 읽기 스냅숏도 커밋된 생애주기와 오래된 유효성을 함께 보지 않는다(동시 읽기 테스트). `App::open`은 파생 테이블을 권위 기록에서 복구한다. 읽기 경로: HTTP와 MCP는 같은 `Service::dispatch`를 거치며 세션은 `x-primeradiant-session` 헤더로만 전달된다(D-97). 투영 필터는 개수·커서·지지·관계·정체성 계산 **전에** 적용된다.
+
+```mermaid
+flowchart LR
+  EV[status_event / dependency / publish / session_read] -->|same tx| P[validity::propagate]
+  P --> CV[(claim_validity)]
+  P --> J[(job: revalidate)]
+  J --> W[revalidate_once: recheck, no model]
+  W -->|repair if stale| P
+  O[validity::oracle: replay events] -. compare .- CV
+```

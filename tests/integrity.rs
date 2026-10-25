@@ -1014,6 +1014,15 @@ fn temporal_unknowns_judgments_and_relation_authority() {
         Some("2026-03-01T00:00:00.000Z"),
         state("new setting."),
     );
+    let decision = one(
+        &conn,
+        "2026-10-01T00:00:00.000Z",
+        Some("2026-10-01T00:00:00.000Z"),
+        ClaimSpec {
+            tkind: Some("decision"),
+            ..ClaimSpec::plain("we will migrate.")
+        },
+    );
     let (_, agent_claim) = synthetic::source(&conn, &spec("agent", &["agent statement."]));
     drop(conn);
     let app = App::open(&path).unwrap();
@@ -1044,6 +1053,10 @@ fn temporal_unknowns_judgments_and_relation_authority() {
     assert_eq!(at[&future].0, "scheduled");
     assert_eq!(at[&open], ("applies", vec!["stale"], false));
     assert_eq!(at[&ended].0, "ended");
+    assert_eq!(
+        at[&decision],
+        ("applies", vec!["unexecuted_decision"], false)
+    );
     let later = status(&app, &user(), "2026-11-01T00:00:00Z", true);
     assert_eq!(later[&late], ("applies", vec!["age_unknown"], false));
     // Aging is a hint, never invalidity.
@@ -1171,6 +1184,23 @@ fn temporal_unknowns_judgments_and_relation_authority() {
         status(&app, &agent(), "2026-10-21T00:00:00Z", false)[&older].0,
         "applies"
     );
+    // Freshness thresholds are configuration: a longer window clears the same flag.
+    drop(app);
+    let app = App::open_with_policy(
+        &path,
+        Policy {
+            freshness: prime_radiant::integrity::temporal::FreshnessPolicy {
+                habit_state_days: 400,
+                observation_days: 400,
+            },
+            ..Policy::default()
+        },
+    )
+    .unwrap();
+    let relaxed = status(&app, &user(), "2026-10-21T00:00:00Z", true);
+    // Without authored_at, capture only bounds the age: inside the window it is unknown.
+    assert_eq!(relaxed[&early], ("applies", vec!["age_unknown"], false));
+    assert_eq!(relaxed[&open], ("applies", vec![], false));
 }
 
 #[derive(Clone, Debug)]

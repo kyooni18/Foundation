@@ -144,6 +144,7 @@
 - **유효성(3값, 물질화 `claim_validity`)**:
   - `invalid`: 자신 또는 자기 source가 retract/forget, 또는 premise/restates 부모 중 invalid가 있음, 또는 alternative가 있고 전부 invalid.
   - `needs_revalidation`: invalid는 아니지만 (a) `informed_by`/미선언 의존(§6.1) 대상 중 invalid가 생김, 또는 (b) 생성 시 전제들의 상태가 이후 바뀜.
+    - **명확화(Phase 4, D-92)**: (b)는 이력이 아니라 현재 상태로 해석한다 — premise/restates 부모가 현재 `needs_revalidation`이거나, alternative가 있으나 valid인 것이 하나도 없음. 이력 해석은 의존·가져오기·이벤트 도착 순서에 따라 결과가 달라져 순서 독립성(늦게 발견된 의존, 과거 가져오기)과 모순된다. 유효성은 현재 권위 상태의 순수 함수다.
   - `valid`: 나머지.
   - 어떤 경우에도 "거짓"으로 표시하지 않는다. invalid = 근거가 사라짐.
 - 원문 철회와 의존 철회는 같은 메커니즘이다: source retract → 그 source의 claim invalid → 하향 전파. 철회 이벤트와 `claim_validity` 증분 갱신은 **같은 트랜잭션**. 뷰 기반 전체 재계산을 오라클로 테스트한다.

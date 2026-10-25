@@ -53,6 +53,9 @@ P4와 P5는 P3 이후 병렬 가능(파일 겹침: `store` 마이그레이션 �
 9. 체크포인트: `phase-3`.
 
 ## Phase 4 — Knowledge Integrity
+
+완료: `phase-4` 체크포인트. 마이그레이션 0003, 3값 유효성 물질화 + 같은 트랜잭션 증분 전파 + 독립 오라클, 인용·세션 읽기·지지, 계층 정체성 해소, as_of(R2 규칙), 결정적 재검증 job, HTTP/MCP 통합. 무작위 속성 테스트(시드 기록·최소화), SIGKILL 복구, 동시 읽기 일관성, 10만 Claim 기준선을 포함한다. 결정 D-92~D-104, 상세: `reports/phase-4.md`. 충돌 판정(P7)과 검색(P5/P6)은 포함하지 않는다.
+
 1. 범위: 의존 의미(premise/restates/alternative/informed_by), 순환 검사, `claim_validity` 물질화 + 증분 갱신 + 오라클; `source_citation`; `session_read` + `deps_unknown`; 지지(원천 합집합); `entity`, `identity_assertion`, 해소(union-find), 병합/해제; 시간 필드 질의(as_of), temporal 판정 기록(`model_judgment task=temporal`)과 사용자/에이전트 `relation`(supersedes/exception/backfill); 재검증 job.
 2. 선행: P3.
 3. 산출물: 철회 → 전파 → 재검증이 작동하는 지식 그래프.

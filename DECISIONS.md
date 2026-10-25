@@ -934,3 +934,138 @@ missing cases as passes. v54 stays explicit opt-in; legacy hashes/DeepSeek Engli
 boundary remain. No real Claim approval/publication or Phase 4 feature is included.
 The final report and current audit state the accepted scope, exposed-sample limitation,
 all failed experiments, current budget, unknown holds and exact test exits.
+
+## Phase 4 implementation resolutions — knowledge integrity
+
+### D-92 — Validity is a pure function of the current authoritative state
+`claim_validity` stores one of `valid`, `needs_revalidation` or `invalid` with sorted
+reason codes and the derived `deps_unknown` flag. DATA_CONTRACTS §6 clause (b) ("the
+state of the premises at creation later changed") can be read as history-dependent.
+That reading makes the result depend on the order in which dependencies, imports and
+lifecycle events arrive, which contradicts the required order independence (late
+dependencies and historical imports must give the oracle's answer). Clause (b) is
+therefore implemented as current state: a premise/restates parent that is itself
+`needs_revalidation` makes the child `needs_revalidation` (`premise_uncertain`).
+Evaluation has two phases. Phase A decides invalidity from own/Source lifecycle and
+mandatory parents only (`retracted`, `forgotten`, `source_retracted`,
+`source_forgotten`, `premise_invalid`, `restates_invalid`, `alternatives_invalid`).
+Phase B adds uncertainty (`premise_uncertain`, `alternatives_uncertain` when no
+alternative is valid, `advisory_invalid` for an invalid `informed_by` parent,
+`session_read_invalid`). Advisory and session-read edges consult only Phase A
+invalidity, so undeclared read edges never need topological ordering and can never
+form an evaluation cycle. Nothing is ever marked false; invalid means the support is gone.
+
+### D-93 — Incremental closure in the event transaction, independent oracle
+Every authoritative change that can alter validity (Source/Claim/dependency lifecycle,
+dependency insertion, extraction publication, session reads) recomputes the downward
+closure of the affected Claims inside the same writer transaction: BFS over live
+declared edges plus session-read children, Kahn order over the closure, inputs outside
+the closure read once. The oracle independently replays `status_event` and evaluates
+every Claim with memoized DFS; `validity_mismatches` compares it with the materialized
+table. `App::open` repairs derived tables (validity, identity) from authoritative
+records, and `validity_mismatches_on(conn)` exists so crash tests can inspect a killed
+database *before* that repair could hide a bug. Revalidation is scheduled for a Claim
+whenever it enters `needs_revalidation` (or its reasons change) in that transaction.
+
+### D-94 — Dependency declaration scope and acyclicity
+Users may declare dependencies between any existing Claims (D-30 reach). Agent and
+import principals may declare only for children recorded by their own role
+(`dependency_declarer_scope` trigger plus service check) and only reference records in
+their view. Extraction declarations are `system`. Self-dependencies are rejected, and
+the cycle check covers retracted edges too, so restoring an edge can never close a cycle.
+Duplicate (child, parent, kind) declarations return the existing id.
+
+### D-95 — Migration 0003 follows SQLite's table-rebuild procedure
+Extending CHECK/trigger-backed tables (`status_event`, `claim_dependency`, `job`)
+requires rebuilding them. The migration transaction runs with `foreign_keys=OFF` and
+`legacy_alter_table=ON`, copies every row (every `status_event.seq` is preserved),
+recreates indexes, triggers and the `status_owner` view under their original names,
+then runs `pragma_foreign_key_check` before commit and restores enforcement. A
+pre-v3 backup is written first. SIGKILL at any point leaves either the complete v2 or
+the complete v3 schema (tests/integrity_crash.rs); a v3 database is refused by the
+phase-3 binary (schema too new).
+
+### D-96 — Undeclared session dependencies
+`session_read` records Claims actually returned to an authenticated agent session
+(`UNIQUE(session_id, claim_id)`, first read time kept). Users and imports have no
+undeclared-dependency semantics. An agent-recorded Claim with no declared parents is
+`deps_unknown` when a Claim was read in the same session at or before its Source's
+capture time; such a read becoming invalid makes it `needs_revalidation`
+(`session_read_invalid`). Declaring any dependency removes the undeclared edge set.
+
+### D-97 — Session identity travels in a transport header, not the request body
+D-34 rejects unknown request-body fields as authority. Session metadata is therefore
+the `x-primeradiant-session` HTTP header (duplicates rejected, length/charset
+validated); the stdio MCP bridge sets one random value per process. The session never
+authorizes anything (P-4); it only scopes §6.1 tracking.
+
+### D-98 — Support counts distinct origins inside the caller's projection
+`claim_support` returns `{sources, independence_unknown, claims}`: distinct uncited
+origin Sources reached from the valid members of the restatement component through
+live citations; restating Claims share their parent's origin and add no source.
+Citations are followed only to Sources visible to the caller; for non-user views an
+unfollowable citation, an `informed_by` edge or `deps_unknown` marks the reached origins
+as independence-unknown. Support is never a probability and citations never feed
+validity. User support is computed from user-visible records only, so hidden citation
+edges cannot change user counts.
+
+### D-99 — Tiered identity resolution with explicit, reversible assertions
+Identity is derived from live `identity_assertion` rows by union-find in precedence
+tiers user > agent > model; within each tier `distinct_from` constraints are installed
+before `same_as` unions, and a lower tier can never join what a higher tier separated
+(blocked assertions are preserved and listed to agents). Merges are reversed by
+retracting the assertion; history is never edited. Names and aliases never merge
+entities. Model suggestions are bound to a published extraction job, are not applied
+by default (`IdentityPolicy`), and re-extraction retracts the previous run's model
+suggestions as `system` with reason `revision`; user and agent assertions survive
+revisions, rebuilds, restarts and backup/restore. The user projection resolves with
+user assertions over user-visible mentions only, and hides entities neither created
+by nor asserted by the user. Derived tables (`entity_resolution`,
+`mention_resolution`, `entity_alias`, `identity_blocked`) are rebuildable.
+
+### D-100 — as_of follows the R2 history rule; staleness is a flag, never invalidity
+`claims_as_of` ports the validated R2 temporal rule (Foundation-Research phase2/c):
+a Claim is reported with `status` (applies, not_yet_stated, scheduled, ended,
+superseded, shadowed, unsupported, unknown), `history`, `superseded_by`,
+`possibly_superseded_by` (unblocked model temporal judgments, provisional) and
+freshness flags (`stale`, `uncertain`, `unexecuted_decision`, `age_unknown`). When a
+Source has no `authored_at`, `captured_at` is used only as an upper bound on when the
+Claim was said, never as its time. Freshness thresholds are configurable
+(`FreshnessPolicy`, defaults 60 days for habit/state, 14 days for observation).
+`supersedes` never invalidates and never hides the earlier Claim; it is returned as
+history. The inherited R2 limitation (q_meeting_now freshness) is asserted, not hidden.
+
+### D-101 — Relations are assertions; model judgments are immutable records
+`supersedes/exception/backfill` relations may be asserted by user (confirmed) or agent
+(provisional) over referable Claims, optionally citing a matching `model_judgment`.
+`contradiction` and `not_conflicting` remain user-only in the database and are not
+offered by the Phase 4 API: conflict detection is Phase 7. `model_judgment` rows are
+immutable, never create relations, and are visible only to non-user views; temporal
+models can be excluded by policy (`blocked_temporal_models`).
+
+### D-102 — Durable deterministic revalidation jobs
+Revalidation uses the existing `job` table (`kind='revalidate'`), with at most one
+pending job per Claim (coalesced). A lease recomputes the Claim from authoritative
+inputs; completion is fenced by lease and idempotent per job (`revalidation_result`).
+Outcomes are `resolved` (no longer uncertain), `repaired` (materialized state was
+wrong and the closure was repaired) or `semantic_pending` (still uncertain; a semantic
+answer would need a model and is left pending). No model is ever called. Storage
+failures back off exponentially; `serve` runs a worker and `revalidate-work` drains
+jobs offline.
+
+### D-103 — Claim projections use real validity; D-38 is superseded
+The D-38 conservative exclusion of batches with declarations is removed. The user
+projection exposes current, live, non-invalid Claims (user-verbatim or confirmed);
+`needs_revalidation` Claims are shown with that state and reasons, invalid Claims are
+hidden. Agent/import views show validity for every non-forgotten Claim. D-30's
+administrative reach is unchanged and also covers authoring dependencies and relations
+onto existing records; user *reads* never reveal records outside the user projection
+(transport tests compare hidden and absent ids byte-for-byte). Non-user roles get
+`not_found` for forgotten records on every operation.
+
+### D-104 — Performance baseline and the session-read join order
+The Phase 4 acceptance is a documented baseline, not a latency target. On 100k Claims
+the first measurement exposed SQLite scanning every agent Source for each closure node
+in the session-read half of `children()` (5,001-Claim hub: 7.1 s). The query now starts
+from `session_read` (`CROSS JOIN` pins the order); the same hub takes ~60 ms. Numbers,
+shape and environment are in reports/evidence/phase-4/benchmark.json.

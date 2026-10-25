@@ -1,7 +1,8 @@
 # Prime Radiant
 
-Phase 3: durable extraction, source-bound semantic gates, and exact-hash user review,
-with immutable persistence, authenticated loopback HTTP, and stdio MCP.
+Phase 4: knowledge integrity (dependency validity propagation, provenance, identity,
+temporal reads) over Phase 3's durable extraction, source-bound semantic gates and
+exact-hash user review, with immutable persistence, authenticated loopback HTTP, and stdio MCP.
 The application core remains synchronous; transports run it on Tokio blocking workers.
 Design contracts: [architecture](ARCHITECTURE.md), [data](DATA_CONTRACTS.md),
 [decisions](DECISIONS.md), [implementation plan](IMPLEMENTATION_PLAN.md),
@@ -63,7 +64,7 @@ there is no force-write or unsafe-location bypass.
 
 See [Phase 1 validation](reports/phase-1.md) for persistence evidence and
 [Phase 2 validation](reports/phase-2.md) for authentication and transport tests.
-Claims, models, extraction, search, embeddings, and queues remain outside scope.
+Claims, models, extraction, search, embeddings, and queues were outside Phase 1 scope.
 
 
 ## Authenticated service and MCP
@@ -154,7 +155,7 @@ Claims after bounded repair, five negative candidates and selected repeat compar
 Saved same-recipe primaries are 3/6 eligible; final batches are 6/6. These exposed
 cases do not establish universal model accuracy or independent human ground truth.
 See [the final report](reports/phase-3-semantic-acceptance.md) and the annotated
-`phase-3` checkpoint. Phase 4 features remain deferred.
+`phase-3` checkpoint. Phase 4 is described below.
 
 Select `--prompt-version extraction-v54` explicitly for new assessed work, with
 compatible model/reviewer and explicit output bounds (the direct Haiku diagnostic
@@ -235,3 +236,52 @@ confirm Claims. Null checklist entries need assessment. Review the exact origina
 and each standalone Claim before using `extraction-approve`; repeated quotes and
 emoji must be interpreted using the documented offset units. See the
 [offline Phase 3 report](reports/phase-3-offline-review.md) for validation and measurement limits.
+
+## Phase 4 — knowledge integrity
+
+Schema version 3 (migration `0003_knowledge_integrity`, pre-v3 backup, lossless table
+rebuild). Every Claim has materialized validity — `valid`, `needs_revalidation` or
+`invalid`, with reason codes — recomputed for the downward closure in the same
+transaction as the change that caused it, and checked against an independent
+full-recomputation oracle.
+
+| Dependency kind | Effect on the child |
+|---|---|
+| `premise`, `restates` | invalid parent → invalid; uncertain parent → `needs_revalidation` |
+| `alternative` | invalid only when every alternative is invalid; uncertain when none is valid |
+| `informed_by` | invalid parent → `needs_revalidation` only |
+
+Retracting or forgetting a Source has the same effect as retracting its Claims.
+Agent-recorded Claims with no declared dependencies but earlier reads in the same agent
+session are `deps_unknown`; such a read becoming invalid marks them for revalidation.
+Nothing is ever labelled false. Revalidation jobs are deterministic and never call a model;
+`serve` runs them, and they can be drained offline:
+
+```sh
+primeradiant --db /tmp/notes.db revalidate-work --max-jobs 100
+primeradiant --db /tmp/notes.db integrity-rebuild   # rebuild derived validity/identity
+primeradiant --db /tmp/notes.db check               # includes claim_validity and identity checks
+```
+
+New operations, identical over HTTP and MCP (24 MCP tools): `claim_dependencies`,
+`dependency_add`, `integrity_lifecycle` (retract/forget/restore a dependency, citation,
+identity assertion or relation), `citation_add`, `claim_support` (distinct origin
+Sources, never a probability), `entity_create`, `entity_get`, `identity_assert`
+(`refers_to`, `same_as`, `distinct_from`, `alias`), `relation_add`
+(`supersedes`, `exception`, `backfill`), `claim_relations`, `claims_as_of`, and
+`claim_restore`/`restore`. Send `x-primeradiant-session` to scope agent session reads
+(the MCP bridge does this automatically); it never grants authority.
+
+Identity merges come only from explicit assertions, resolved in tiers user > agent > model
+and reversible by retracting the assertion; model suggestions are not applied by default.
+`claims_as_of` reports each Claim's status at a time, with superseded Claims kept as history
+and freshness flags (`stale`, `uncertain`, `unexecuted_decision`, `age_unknown`; defaults 60
+days for habits/states, 14 for observations). Staleness never invalidates. The user projection
+shows only non-invalid user Claims and never counts or references hidden records. Conflict
+detection (Phase 7) and retrieval (Phases 5–6) are not included.
+
+Evidence: [Phase 4 report](reports/phase-4.md), decisions D-92–D-104. Benchmark:
+
+```sh
+cargo test --release --offline --test integrity_benchmark -- --ignored --nocapture
+```
