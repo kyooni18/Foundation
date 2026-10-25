@@ -81,7 +81,6 @@ fn validity_benchmark_100k_claims() {
             add(c, parent, kinds_all[r.below(4)]);
         }
     }
-    drop(add);
     tx.commit().unwrap();
     drop(conn);
     let generated = started.elapsed();

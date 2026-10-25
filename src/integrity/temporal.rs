@@ -142,17 +142,19 @@ impl Facts {
         self.tkind.as_deref() == Some(k)
     }
 }
+/// (tkind, applies_from, applies_to, index_fields, recorder, authored_at, captured_at, validity)
+type FactRow = (
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    String,
+    Option<String>,
+    String,
+    String,
+);
 fn facts(conn: &Connection, p: &Principal, id: &str) -> Result<Facts> {
-    let (tkind, from, to, index, recorder, authored, captured, v): (
-        Option<String>,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-        String,
-        Option<String>,
-        String,
-        String,
-    ) = conn.query_row(
+    let (tkind, from, to, index, recorder, authored, captured, v): FactRow = conn.query_row(
         "SELECT c.tkind,c.applies_from,c.applies_to,c.index_fields,s.recorder,s.authored_at,s.captured_at,v.state FROM claim c JOIN source s ON s.id=c.source_id JOIN claim_validity v ON v.claim_id=c.id WHERE c.id=?1",
         [id],
         |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?, r.get(5)?, r.get(6)?, r.get(7)?)),
@@ -583,7 +585,7 @@ fn evaluate(
             .iter()
             .any(|o| o != id && !report_past(o) && root(&component, o.to_string()) == mine);
         // Past reports fill in only when nothing else in their timeline describes as_of.
-        if report_past(id) && others && !f.to.is_some_and(|t| a <= t) {
+        if report_past(id) && others && f.to.is_none_or(|t| a > t) {
             out.insert(id.to_string(), ("shadowed", vec![], vec![], false, vec![]));
             continue;
         }
