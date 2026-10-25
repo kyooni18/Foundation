@@ -279,6 +279,15 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
             .collect();
         replies.push(Ok(json!({"stage":definition["stage"],"verdict":"pass","uncertainty_flags":[],"claims":[{"index":0,"text":math,"evidence":[{"quote":math}],"source_meaning":math,"candidate_meaning":math,"dimensions":dimensions,"violations":[],"uncertainty_flags":[]}],"inventory":if definition["inventory"]==true {json!([{"proposition":math.trim_end_matches('.'),"evidence":[{"quote":math}],"claim_index":0,"status":"pass","reason":"One original assertion"}])} else {json!([])}}).to_string()));
     }
+    let bound_source = faceted_app.get_source(&user(), math_id.clone()).unwrap();
+    let context = repair_context_bound(
+        &current,
+        &bound_source,
+        &math_raw,
+        &[json!(reader.to_string()), json!("{}")],
+    )
+    .unwrap();
+    assert_eq!(context["review_reports"].as_array().unwrap().len(), 2);
     let provider = FakeProvider(std::sync::Mutex::new(replies.into()));
     let held = faceted_app
         .work_once(&provider, &current)

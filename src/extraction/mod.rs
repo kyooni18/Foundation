@@ -1735,7 +1735,11 @@ fn repair_context_inner(
         };
         normalized.push(serde_json::json!({"stage":stage,"report":report}));
         let checked = if i < n {
-            validate_review(raw, 1)
+            if let Some((plan, _)) = bound {
+                validate_reader_review(plan, raw)
+            } else {
+                validate_review(raw, 1)
+            }
         } else if let Some((plan, source)) = bound {
             let batch = validate(&candidate.to_string(), source).ok()?;
             validate_source_review_at(plan, &stage, raw, &batch, source)
