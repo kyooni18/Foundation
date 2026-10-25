@@ -44,6 +44,12 @@ Then `docker compose up -d --force-recreate`. Weights load lazily;
 
 ## Exact MCP configuration
 
+**Default MCP exposes four tools only:** `record` (save a raw Source),
+`search` (find approved Claims), `get` (inspect a Source) and `forget`
+(forget a Source). Search planning is automatic; agents are not shown
+queue controls, Claim administration, identity editing or other maintenance
+operations. Recording does not publish Claims until extraction and explicit approval.
+
 For an agent MCP client (standard newline JSON-RPC stdio, no shell wrapper or TTY):
 
 ```json
@@ -70,25 +76,29 @@ an existing MCP connection after a container replacement; the same configuration
 persistent token work again. Docker access itself is administrator access: this is
 not isolation against a hostile host process with arbitrary `docker exec` privileges.
 
-Useful MCP calls (`tools/call` arguments):
+Useful default MCP calls (each is a separate `tools/call` request):
 
 ```json
 {"name":"record","arguments":{"content":"서버는 SQLite를 사용한다. The server uses SQLite.","idempotency_key":"my-note-1"}}
-{"name":"source_processing","arguments":{"id":"SOURCE_ID"}}
-{"name":"search","arguments":{"query":"SQLite","strategy":"lexical_only"}}
-{"name":"search","arguments":{"query":"서버","strategy":"lexical_only"}}
+{"name":"search","arguments":{"query":"SQLite"}}
+{"name":"get","arguments":{"id":"SOURCE_ID"}}
+{"name":"forget","arguments":{"id":"SOURCE_ID"}}
 ```
 
-Owner-only queue tools: `queue_status {}`, `queue_jobs {"state":"failed"}`, and
-`queue_retry {"id":"JOB_ID"}`. Retry never bypasses a required review. User and agent
-projections differ intentionally; for example, a user cannot read agent-recorded
-Sources and an agent cannot administer a user's lifecycle or approve extraction.
+For *explicitly trusted administrative clients only*, append `--full-tools`
+to the `primeradiant mcp` arguments to expose the original 29 operations,
+including `source_processing`, `queue_status`, `queue_jobs`, and `queue_retry`.
+The HTTP API and its authorization rules remain unchanged. Retained advanced
+tools are not required for ordinary memory use. Never give the user token
+or full administrative configuration to an ordinary agent.
+User and agent projections remain intentionally distinct.
 
 Authenticated readiness (does not open a second DB owner):
 
 ```sh
 docker compose exec -T radiant python3 /opt/radiant/health.py
-# Owner MCP queue_status/queue_jobs show the actual backlog and processing progress.
+# Owner-only full MCP (with --full-tools) can inspect queue_status/queue_jobs.
+# The default four-tool MCP surface intentionally does not advertise queue internals.
 ```
 
 ## Optional extraction (explicit authorization required)

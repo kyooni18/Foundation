@@ -107,7 +107,14 @@ impl Server {
             .into()
     }
     pub fn mcp(&self, role: usize) -> Mcp {
-        Mcp::start(&self.endpoint, self.root.join(format!("token{role}")))
+        Mcp::start(&self.endpoint, self.root.join(format!("token{role}")), true)
+    }
+    pub fn mcp_compact(&self, role: usize) -> Mcp {
+        Mcp::start(
+            &self.endpoint,
+            self.root.join(format!("token{role}")),
+            false,
+        )
     }
 }
 impl Drop for Server {
@@ -123,17 +130,25 @@ pub struct Mcp {
     id: u64,
 }
 impl Mcp {
-    fn start(endpoint: &str, token: PathBuf) -> Self {
-        let mut client = Self::uninitialized(endpoint, token);
+    fn start(endpoint: &str, token: PathBuf, full_tools: bool) -> Self {
+        let mut client = Self::uninitialized_with_tools(endpoint, token, full_tools);
         let init=client.rpc("initialize",json!({"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1"}}));
         assert_eq!(init["result"]["protocolVersion"], "2025-06-18");
         client.notify("notifications/initialized", json!({}));
         client
     }
     pub fn uninitialized(endpoint: &str, token: PathBuf) -> Self {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_primeradiant"))
+        Self::uninitialized_with_tools(endpoint, token, true)
+    }
+    fn uninitialized_with_tools(endpoint: &str, token: PathBuf, full_tools: bool) -> Self {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_primeradiant"));
+        command
             .args(["mcp", "--server", endpoint, "--token-file"])
-            .arg(token)
+            .arg(token);
+        if full_tools {
+            command.arg("--full-tools");
+        }
+        let mut child = command
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

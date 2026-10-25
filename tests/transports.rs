@@ -11,6 +11,53 @@ fn code(reply: &Value) -> &str {
     reply["error"]["code"].as_str().unwrap()
 }
 #[test]
+fn compact_mcp_exposes_only_four_safe_everyday_operations() {
+    let server = Server::start();
+    let mut mcp = server.mcp_compact(1);
+    let tools = mcp.rpc("tools/list", json!({}));
+    let listed = tools["result"]["tools"].as_array().unwrap();
+    let names: Vec<_> = listed
+        .iter()
+        .map(|tool| tool["name"].as_str().unwrap())
+        .collect();
+    assert_eq!(names, ["record", "search", "get", "forget"]);
+    // Compact schemas avoid expert-mode tuning knobs.
+    assert_eq!(
+        listed[1]["inputSchema"]["properties"]
+            .as_object()
+            .unwrap()
+            .len(),
+        2
+    );
+    for hidden in [
+        "queue_status",
+        "claim_forget",
+        "relation_add",
+        "source_processing",
+    ] {
+        assert_eq!(
+            mcp.rpc("tools/call", json!({"name": hidden, "arguments": {}}))["error"]["code"],
+            -32602,
+            "{hidden} must not be callable through the default surface"
+        );
+    }
+    let record = mcp.call("record", json!({"content":"한국어 원문 Source 검증"}));
+    assert_eq!(record["ok"], true);
+    let id = record["result"]["source_id"].as_str().unwrap();
+    assert_eq!(
+        mcp.call("get", json!({"id":id}))["result"]["content"],
+        "한국어 원문 Source 검증"
+    );
+    assert!(
+        mcp.call("search", json!({"query":"원문"}))["result"]["results"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(mcp.call("forget", json!({"id":id}))["ok"], true);
+    assert_eq!(mcp.call("get", json!({"id":id}))["ok"], false);
+}
+#[test]
 fn actual_http_and_stdio_mcp_are_equivalent() {
     let server = Server::start();
     for role in 0..3 {

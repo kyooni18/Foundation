@@ -9,6 +9,7 @@ pub struct Client {
     http: reqwest::Client,
     /// One stdio connection is one session for undeclared-dependency tracking.
     session: String,
+    full_tools: bool,
 }
 impl Client {
     pub fn new(endpoint: &str, token_file: PathBuf) -> Result<Self> {
@@ -36,11 +37,17 @@ impl Client {
             endpoint: endpoint.trim_end_matches('/').into(),
             token_file,
             http,
+            full_tools: false,
             session: format!(
                 "mcp-{}",
                 crate::authentication::hex(&crate::authentication::random_bytes()?[..16])
             ),
         })
+    }
+    /// Administrative MCP surface; regular agents use the four-tool default.
+    pub fn with_full_tools(mut self) -> Self {
+        self.full_tools = true;
+        self
     }
     pub async fn call(&self, operation: &str, args: Value) -> Reply {
         let path = self.token_file.clone();
@@ -85,8 +92,20 @@ fn rpc_result(id: Value, result: Value) -> Value {
 fn schema(properties: Value, required: &[&str]) -> Value {
     json!({"type":"object","properties":properties,"required":required,"additionalProperties":false})
 }
-pub fn tools() -> Value {
+pub fn tools(full_tools: bool) -> Value {
     let string = json!({"type":"string"});
+    if !full_tools {
+        return json!({"tools":[
+            {"name":"record","description":"Save the exact Source text. Extraction and indexing are asynchronous; saving does not make an unapproved Claim searchable.",
+                "inputSchema":schema(json!({"content":string,"idempotency_key":{"type":"string"}}), &["content"])},
+            {"name":"search","description":"Search visible, approved Claims. Results may be partial when extraction or semantic indexing is unavailable.",
+                "inputSchema":schema(json!({"query":string,"limit":{"type":"integer","minimum":1,"maximum":100}}), &["query"])},
+            {"name":"get","description":"Read an authorized original Source by its ID, for verification and citations.",
+                "inputSchema":schema(json!({"id":string}), &["id"])},
+            {"name":"forget","description":"Forget an authorized Source by ID; all derived Claims become invisible. Audit history is retained.",
+                "inputSchema":schema(json!({"id":string}), &["id"])},
+        ]});
+    }
     let get = schema(
         json!({"id":string,"include_retracted":{"type":"boolean","default":false}}),
         &["id"],
@@ -128,6 +147,7 @@ pub fn tools() -> Value {
 struct Session {
     initialized: bool,
     ready: bool,
+    full_tools: bool,
 }
 impl Session {
     async fn receive(&mut self, client: &Client, value: Value) -> Option<Value> {
@@ -172,13 +192,13 @@ impl Session {
             return Some(rpc_error(id, -32600, "initialization required"));
         }
         match method {
-            "tools/list" => Some(rpc_result(id, tools())),
+            "tools/list" => Some(rpc_result(id, tools(self.full_tools))),
             "tools/call" => {
                 let params = &value["params"];
                 let Some(name) = params["name"].as_str() else {
                     return Some(rpc_error(id, -32602, "invalid tool request"));
                 };
-                let known = tools();
+                let known = tools(self.full_tools);
                 if !known["tools"]
                     .as_array()
                     .expect("static tools")
@@ -211,6 +231,7 @@ pub async fn run<R: AsyncBufRead + Unpin, W: AsyncWrite + Unpin>(
     let mut session = Session {
         initialized: false,
         ready: false,
+        full_tools: client.full_tools,
     };
     let mut line = Vec::new();
     loop {

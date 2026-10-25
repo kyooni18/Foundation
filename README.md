@@ -99,7 +99,10 @@ primeradiant mcp --server http://127.0.0.1:7823 --token-file "$HOME/.config/prim
 Configure these arguments in the MCP client's stdio server configuration. The
 bridge speaks MCP `2025-06-18`: initialize, initialized notification, tools/list,
 tools/call, and ping, one JSON-RPC message per line. Stdout contains protocol
-messages only. Never put raw tokens in tool arguments or CLI command arguments.
+messages only. By default, only `record`, `search`, `get` and `forget` are
+advertised to clients. Use the explicit `mcp --full-tools` switch for the
+existing 29-tool administrative surface; HTTP authorization is unchanged.
+Never put raw tokens in tool arguments or CLI command arguments.
 
 HTTP uses `POST /v1/{record|get|list|retract|forget}` with a JSON body and
 `Authorization: Bearer <token>` supplied by the client. Requests have no role or
@@ -230,7 +233,7 @@ For continuous processing, `serve` accepts `--extraction-model` and
 `--extraction-reviewer`, `--extraction-prompt-version`, and corresponding
 `--extraction-max-output-tokens` / `--extraction-review-max-output-tokens` limits; the worker
 shares the sole database owner. Offline CLI maintenance
-requires stopping that server. HTTP/MCP also expose `claim_get`, `claim_list`,
+requires stopping that server. HTTP and opt-in full MCP also expose `claim_get`, `claim_list`,
 `claim_retract`, `claim_forget`, `claim_confirm`, and `claim_unconfirm`, all through the
 same core authorization. Extraction approval does not confer user endorsement.
 
@@ -304,6 +307,6 @@ primeradiant --db prime.db search --principal user "배포 스크립트 어디 �
 primeradiant --db prime.db queue-status
 ```
 `--embedding local|openrouter|off` selects the provider (default local; no automatic fallback;
-cloud use is opt-in). `serve` starts the indexing workers; MCP/HTTP expose `search`,
+cloud use is opt-in). `serve` starts the indexing workers; HTTP and full MCP expose `search`,
 `source_processing`, `queue_status`, `queue_jobs`, `queue_retry`. Measurements and limitations:
 reports/retrieval.md.

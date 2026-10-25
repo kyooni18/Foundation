@@ -104,6 +104,9 @@ enum Command {
         token_file: PathBuf,
         #[arg(long, default_value = "http://127.0.0.1:7823")]
         server: String,
+        /// Expose all administrative/diagnostic tools (29) instead of the default four.
+        #[arg(long)]
+        full_tools: bool,
     },
     Record {
         #[arg(long)]
@@ -243,8 +246,17 @@ fn run() -> Result<()> {
             output(serde_json::json!({"issued":true}));
             return Ok(());
         }
-        Command::Mcp { token_file, server } => {
+        Command::Mcp {
+            token_file,
+            server,
+            full_tools,
+        } => {
             let client = prime_radiant::transport::mcp::Client::new(server, token_file.clone())?;
+            let client = if *full_tools {
+                client.with_full_tools()
+            } else {
+                client
+            };
             return tokio::runtime::Runtime::new()?.block_on(prime_radiant::transport::mcp::run(
                 client,
                 tokio::io::BufReader::new(tokio::io::stdin()),

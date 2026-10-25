@@ -14,7 +14,7 @@ base = ['docker', 'compose', '-p', project]
 class MCP:
     def __init__(self, role):
         self.p = subprocess.Popen(base + ['exec', '-T', 'radiant', 'primeradiant', 'mcp',
-            '--token-file', '/credentials/' + role + '.token'], stdin=subprocess.PIPE,
+            '--full-tools', '--token-file', '/credentials/' + role + '.token'], stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, text=True)
         self.seq = 0
         init = self.rpc('initialize', {'protocolVersion':'2025-06-18','capabilities':{},
