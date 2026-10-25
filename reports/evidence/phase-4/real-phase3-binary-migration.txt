@@ -1,0 +1,41 @@
+# Real phase-3 binary -> phase-4 migration (2026-10-25T09:07:03Z)
+# phase-3 binary built from tag phase-3 (8ffa753); phase-4 binary from c5e37a9 (release).
+# Claims cannot be published by the phase-3 binary without a paid model call; Claim/dependency migration is covered by tests/integrity.rs::phase3_database_migrates_losslessly_with_validity_and_backup.
+# snapshot = sha1 of every row of source, status_event and job (SELECT * ORDER BY key).
+phase-3 binary: 30 sources, 5 events, 30 jobs, recorders agent=10,import=10,user=10; user_version 2; snapshot c7768eda1b1c55fa
+phase-3 check ok: True
+{"schema_version":3}
+after phase-4 migrate: 30 sources, 5 events, 30 jobs, recorders agent=10,import=10,user=10; user_version 3; snapshot c7768eda1b1c55fa
+phase-4 check ok: True ['sqlite', 'foreign_keys', 'migrations', 'source_hashes', 'status_targets', 'triggers', 'claim_evidence', 'extraction_publication', 'identity_targets', 'claim_validity', 'identity_resolution']
+backup: db.pre-v3.01M5S50715DXZY2N0X3P7CVJ1V.bak; backup user_version 2
+phase-4 lifecycle on migrated db: {"ok":true}
+phase-3 binary on v3 db: schema too new: database 3, binary 2
+
+# script
+set -eu
+SP=$1; P3=$SP/p3target/release/primeradiant; P4=$2; D=$SP/realp3
+rm -rf $D; mkdir -p $D; cd $D
+$P3 --db $D/db init >/dev/null
+ids=()
+for i in $(seq 1 30); do
+  case $((i%3)) in 0) pr=agent;; 1) pr=user;; *) pr=import;; esac
+  args=(--db $D/db record --principal $pr --content "real phase3 source $i 한글" --authored-at "2026-0$((i%9+1))-01T00:00:00Z")
+  [ $pr = agent ] && args+=(--session-id "s$((i%2))")
+  ids+=($($P3 "${args[@]}" | python3 -c 'import json,sys;print(json.load(sys.stdin)["source_id"])'))
+done
+$P3 --db $D/db lifecycle --principal user ${ids[2]} retract --reason test >/dev/null
+$P3 --db $D/db lifecycle --principal user ${ids[5]} forget >/dev/null
+$P3 --db $D/db lifecycle --principal user ${ids[8]} retract >/dev/null
+$P3 --db $D/db lifecycle --principal user ${ids[8]} restore >/dev/null
+$P3 --db $D/db lifecycle --principal agent ${ids[11]} retract >/dev/null
+$P3 --db $D/db extraction-backfill >/dev/null
+snap() { sqlite3 $D/db "SELECT * FROM source ORDER BY id; SELECT * FROM status_event ORDER BY seq; SELECT * FROM job ORDER BY id;" | shasum | cut -c1-16; }
+counts() { sqlite3 $D/db "SELECT (SELECT count(*) FROM source)||' sources, '||(SELECT count(*) FROM status_event)||' events, '||(SELECT count(*) FROM job)||' jobs, recorders '||(SELECT group_concat(recorder||'='||n) FROM (SELECT recorder,count(*) n FROM source GROUP BY recorder))"; }
+echo "phase-3 binary: $(counts); user_version $(sqlite3 $D/db 'PRAGMA user_version'); snapshot $(snap)"
+echo "phase-3 check ok: $($P3 --db $D/db check | python3 -c 'import json,sys;print(json.load(sys.stdin)["ok"])')"
+$P4 --db $D/db migrate 2>/dev/null
+echo "after phase-4 migrate: $(counts); user_version $(sqlite3 $D/db 'PRAGMA user_version'); snapshot $(snap)"
+echo "phase-4 check ok: $($P4 --db $D/db check | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d["ok"], [i["name"] for i in d["items"]])')"
+echo "backup: $(ls $D | grep pre-v3 | grep -v lock); backup user_version $(sqlite3 $D/$(ls $D | grep pre-v3 | grep -v lock) 'PRAGMA user_version')"
+echo "phase-4 lifecycle on migrated db: $($P4 --db $D/db lifecycle --principal user ${ids[2]} restore)"
+echo "phase-3 binary on v3 db: $($P3 --db $D/db check 2>&1 | tail -1)"
