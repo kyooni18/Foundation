@@ -365,3 +365,17 @@ pub(crate) fn derived_report(
     }
     Ok(vec![validity_item, identity_item])
 }
+impl crate::App {
+    /// Read-only diagnostic: Claims whose materialized validity differs from the oracle.
+    pub fn validity_mismatches(&self) -> Result<Vec<String>> {
+        let mut conn = self.store.reader()?;
+        let tx = conn.transaction()?;
+        validity::mismatches(&tx)
+    }
+    /// Read-only diagnostic: time the independent full recomputation (no writes).
+    pub fn validity_oracle_size(&self) -> Result<usize> {
+        let mut conn = self.store.reader()?;
+        let tx = conn.transaction()?;
+        Ok(validity::oracle(&tx)?.len())
+    }
+}

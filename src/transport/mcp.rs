@@ -7,6 +7,8 @@ pub struct Client {
     endpoint: String,
     token_file: PathBuf,
     http: reqwest::Client,
+    /// One stdio connection is one session for undeclared-dependency tracking.
+    session: String,
 }
 impl Client {
     pub fn new(endpoint: &str, token_file: PathBuf) -> Result<Self> {
@@ -34,6 +36,10 @@ impl Client {
             endpoint: endpoint.trim_end_matches('/').into(),
             token_file,
             http,
+            session: format!(
+                "mcp-{}",
+                crate::authentication::hex(&crate::authentication::random_bytes()?[..16])
+            ),
         })
     }
     pub async fn call(&self, operation: &str, args: Value) -> Reply {
@@ -46,6 +52,7 @@ impl Client {
             .http
             .post(format!("{}/v1/{operation}", self.endpoint))
             .bearer_auth(token.expose())
+            .header(crate::api::Service::SESSION_HEADER, &self.session)
             .json(&args)
             .send()
             .await;
@@ -85,6 +92,7 @@ pub fn tools() -> Value {
         &["id"],
     );
     let transition = schema(json!({"id":string,"reason":string}), &["id"]);
+    let id = schema(json!({ "id": string }), &["id"]);
     json!({"tools":[
         {"name":"record","description":"Record exact source text using the authenticated recorder role.","inputSchema":schema(json!({"content":string,"media_type":{"enum":["text/plain","text/markdown"]},"authored_at":string,"observed_at":string,"artifact_ref":string,"retention_request":{"enum":["none","user_requested"]},"idempotency_key":string}),&["content"])},
         {"name":"get","description":"Get one source inside the authenticated projection.","inputSchema":get},
@@ -96,7 +104,20 @@ pub fn tools() -> Value {
         {"name":"claim_retract","description":"Retract an authorized Claim.","inputSchema":transition},
         {"name":"claim_forget","description":"Forget an authorized Claim.","inputSchema":transition},
         {"name":"claim_confirm","description":"User endorsement of a Claim.","inputSchema":transition},
-        {"name":"claim_unconfirm","description":"Remove user endorsement of a Claim.","inputSchema":transition}
+        {"name":"claim_unconfirm","description":"Remove user endorsement of a Claim.","inputSchema":transition},
+        {"name":"restore","description":"Restore a retracted or forgotten source when authorized.","inputSchema":transition},
+        {"name":"claim_restore","description":"Restore an authorized Claim.","inputSchema":transition},
+        {"name":"claims_as_of","description":"Temporal reading of visible current Claims at an instant; superseded Claims are returned as history.","inputSchema":schema(json!({"as_of":string,"present":{"type":"boolean"},"limit":{"type":"integer","minimum":1,"maximum":100},"cursor":string}),&[])},
+        {"name":"claim_dependencies","description":"Dependencies of a visible Claim inside the projection.","inputSchema":get},
+        {"name":"claim_support","description":"Distinct origin Sources for a visible Claim (not a probability).","inputSchema":id},
+        {"name":"claim_relations","description":"Temporal relations of a visible Claim.","inputSchema":id},
+        {"name":"dependency_add","description":"Declare a dependency between existing Claims.","inputSchema":schema(json!({"child":string,"parent":string,"kind":{"enum":["premise","restates","alternative","informed_by"]}}),&["child","parent","kind"])},
+        {"name":"citation_add","description":"Record that one Source cites another (provenance only).","inputSchema":schema(json!({"child_source":string,"parent_source":string}),&["child_source","parent_source"])},
+        {"name":"entity_create","description":"Create a thin entity ID.","inputSchema":schema(json!({"kind":string}),&["kind"])},
+        {"name":"entity_get","description":"Resolve an entity inside the projection.","inputSchema":id},
+        {"name":"identity_assert","description":"Assert refers_to, same_as, distinct_from or alias.","inputSchema":schema(json!({"kind":{"enum":["refers_to","same_as","distinct_from","alias"]},"subject":string,"object":string,"reason":string}),&["kind","subject","object"])},
+        {"name":"relation_add","description":"Assert a supersedes, exception or backfill relation.","inputSchema":schema(json!({"kind":{"enum":["supersedes","exception","backfill"]},"subject":string,"object":string,"reason":string,"judgment_id":string}),&["kind","subject","object"])},
+        {"name":"integrity_lifecycle","description":"Retract, forget or restore a dependency, citation, identity assertion or relation.","inputSchema":schema(json!({"target":{"enum":["dependency","citation","identity_assertion","relation"]},"id":string,"event":{"enum":["retract","forget","restore"]},"reason":string}),&["target","id","event"])}
     ]})
 }
 struct Session {
@@ -152,20 +173,12 @@ impl Session {
                 let Some(name) = params["name"].as_str() else {
                     return Some(rpc_error(id, -32602, "invalid tool request"));
                 };
-                if ![
-                    "record",
-                    "get",
-                    "list",
-                    "retract",
-                    "forget",
-                    "claim_get",
-                    "claim_list",
-                    "claim_retract",
-                    "claim_forget",
-                    "claim_confirm",
-                    "claim_unconfirm",
-                ]
-                .contains(&name)
+                let known = tools();
+                if !known["tools"]
+                    .as_array()
+                    .expect("static tools")
+                    .iter()
+                    .any(|t| t["name"] == name)
                 {
                     return Some(rpc_error(id, -32602, "unknown tool"));
                 }

@@ -29,6 +29,24 @@ impl Service {
             }
         })
     }
+    /// Deterministic revalidation shares the DB owner; it never calls a model provider.
+    pub fn start_revalidation_worker(&self) -> tokio::task::JoinHandle<()> {
+        let app = self.app.clone();
+        tokio::spawn(async move {
+            loop {
+                let worker = app.clone();
+                let ran = tokio::task::spawn_blocking(move || worker.revalidate_once("serve"))
+                    .await
+                    .ok()
+                    .and_then(|r| r.ok())
+                    .flatten()
+                    .is_some();
+                if !ran {
+                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                }
+            }
+        })
+    }
     pub fn authenticate(&self, bearer: &str) -> Result<Principal> {
         self.credentials.authenticate(bearer)
     }
@@ -38,6 +56,9 @@ impl Service {
             Err(e) => Reply::error(e),
         }
     }
+    /// Header name for client session metadata. It is not authentication or authority: it
+    /// only scopes undeclared-dependency tracking (DATA_CONTRACTS §6.1, P-4, D-97).
+    pub const SESSION_HEADER: &'static str = "x-primeradiant-session";
     pub(crate) fn dispatch(&self, p: &Principal, operation: &str, arguments: Value) -> Reply {
         let result = (|| -> Result<Value> {
             match operation {
@@ -74,9 +95,89 @@ impl Service {
                     )
                 }
                 "claim_list" => {
-                    to_value(self.app.page_claims(p, parse::<ListSources>(arguments)?)?)
+                    let r: ClaimList = parse(arguments)?;
+                    let page = ListSources {
+                        limit: r.limit,
+                        include_retracted: r.include_retracted,
+                        cursor: r.cursor,
+                    };
+                    to_value(self.app.page_claims(p, page)?)
                 }
-                "claim_retract" | "claim_forget" | "claim_confirm" | "claim_unconfirm" => {
+                "claims_as_of" => {
+                    let r: AsOf = parse(arguments)?;
+                    let as_of = r.as_of.map(|s| s.parse()).transpose()?;
+                    let page = ListSources {
+                        limit: r.limit,
+                        include_retracted: false,
+                        cursor: r.cursor,
+                    };
+                    to_value(self.app.claims_as_of(p, as_of, r.present, page)?)
+                }
+                "claim_dependencies" => {
+                    let r: Get = parse(arguments)?;
+                    to_value(self.app.claim_dependencies(p, &r.id, r.include_retracted)?)
+                }
+                "claim_support" => {
+                    let r: Id = parse(arguments)?;
+                    to_value(self.app.claim_support(p, &r.id)?)
+                }
+                "claim_relations" => {
+                    let r: Id = parse(arguments)?;
+                    to_value(self.app.claim_relations(p, &r.id)?)
+                }
+                "dependency_add" => {
+                    let r: DependencyAdd = parse(arguments)?;
+                    Ok(json!({"id": self.app.add_dependency(p, &r.child, &r.parent, &r.kind)?}))
+                }
+                "citation_add" => {
+                    let r: CitationAdd = parse(arguments)?;
+                    let id = self.app.add_citation(
+                        p,
+                        &r.child_source.parse()?,
+                        &r.parent_source.parse()?,
+                    )?;
+                    Ok(json!({ "id": id }))
+                }
+                "entity_create" => {
+                    let r: EntityCreate = parse(arguments)?;
+                    Ok(json!({"id": self.app.create_entity(p, &r.kind)?}))
+                }
+                "entity_get" => {
+                    let r: Id = parse(arguments)?;
+                    to_value(self.app.get_entity(p, &r.id)?)
+                }
+                "identity_assert" => {
+                    let r: Assert = parse(arguments)?;
+                    let id = self
+                        .app
+                        .assert_identity(p, &r.kind, &r.subject, &r.object, r.reason)?;
+                    Ok(json!({ "id": id }))
+                }
+                "relation_add" => {
+                    let r: RelationAdd = parse(arguments)?;
+                    let id = self.app.assert_relation(
+                        p,
+                        &r.kind,
+                        &r.subject,
+                        &r.object,
+                        r.reason,
+                        r.judgment_id.as_deref(),
+                    )?;
+                    Ok(json!({ "id": id }))
+                }
+                "integrity_lifecycle" => {
+                    let r: IntegrityLifecycle = parse(arguments)?;
+                    self.app.set_integrity_lifecycle(
+                        p,
+                        r.target.parse()?,
+                        &r.id,
+                        r.event.parse()?,
+                        r.reason,
+                    )?;
+                    Ok(json!({}))
+                }
+                "claim_retract" | "claim_forget" | "claim_restore" | "claim_confirm"
+                | "claim_unconfirm" => {
                     let r: Transition = parse(arguments)?;
                     self.app.set_claim_status(
                         p,
@@ -86,7 +187,7 @@ impl Service {
                     Ok(json!({}))
                 }
                 "list" => to_value(self.app.list_sources(p, parse::<ListSources>(arguments)?)?),
-                "retract" | "forget" => {
+                "retract" | "forget" | "restore" => {
                     let r: Transition = parse(arguments)?;
                     if r.reason.as_ref().is_some_and(|s| s.len() > 4096) {
                         return Err(invalid("reason", "too long"));
@@ -94,11 +195,7 @@ impl Service {
                     self.app.set_source_lifecycle(
                         p,
                         r.id.parse()?,
-                        if operation == "retract" {
-                            LifecycleEvent::Retract
-                        } else {
-                            LifecycleEvent::Forget
-                        },
+                        operation.parse::<LifecycleEvent>()?,
                         r.reason,
                     )?;
                     Ok(json!({}))
@@ -138,6 +235,75 @@ struct Get {
     id: String,
     #[serde(default)]
     include_retracted: bool,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Id {
+    id: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ClaimList {
+    #[serde(default = "default_limit")]
+    limit: u32,
+    #[serde(default)]
+    include_retracted: bool,
+    cursor: Option<String>,
+}
+fn default_limit() -> u32 {
+    50
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AsOf {
+    as_of: Option<String>,
+    present: Option<bool>,
+    #[serde(default = "default_limit")]
+    limit: u32,
+    cursor: Option<String>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DependencyAdd {
+    child: String,
+    parent: String,
+    kind: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CitationAdd {
+    child_source: String,
+    parent_source: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct EntityCreate {
+    kind: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Assert {
+    kind: String,
+    subject: String,
+    object: String,
+    reason: Option<String>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RelationAdd {
+    kind: String,
+    subject: String,
+    object: String,
+    reason: Option<String>,
+    judgment_id: Option<String>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct IntegrityLifecycle {
+    target: String,
+    id: String,
+    event: String,
+    reason: Option<String>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]

@@ -62,6 +62,20 @@ async fn handle(
     if headers.contains_key(header::ORIGIN) {
         return response(Reply::error(Error::Forbidden));
     }
+    // Optional session metadata; never authentication, role or projection input.
+    let sessions: Vec<_> = headers.get_all(Service::SESSION_HEADER).iter().collect();
+    let session = match sessions.as_slice() {
+        [] => None,
+        [one] => match one.to_str() {
+            Ok(s) => Some(s.to_owned()),
+            Err(_) => return response(Reply::error(invalid("session", "invalid"))),
+        },
+        _ => return response(Reply::error(invalid("session", "duplicate"))),
+    };
+    let principal = match principal.with_session(session) {
+        Ok(p) => p,
+        Err(e) => return response(Reply::error(e)),
+    };
     let bytes = match to_bytes(request.into_body(), MAX_REQUEST_BYTES).await {
         Ok(b) => b,
         Err(_) => return response(Reply::error(invalid("request", "too large"))),

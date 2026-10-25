@@ -94,6 +94,22 @@ impl Principal {
     pub fn kind(&self) -> PrincipalKind {
         self.kind
     }
+    /// Attach client-declared session metadata. It never grants authority (P-4); it only
+    /// scopes undeclared-dependency tracking for agent reads (DATA_CONTRACTS §6.1).
+    pub fn with_session(&self, session_id: Option<String>) -> Result<Self> {
+        let Some(session_id) = session_id else {
+            return Ok(self.clone());
+        };
+        if session_id.is_empty()
+            || session_id.len() > 200
+            || !session_id.bytes().all(|b| (0x21..=0x7e).contains(&b))
+        {
+            return Err(invalid("session_id", "must be 1..=200 visible ASCII bytes"));
+        }
+        let mut p = self.clone();
+        p.session_id = Some(session_id);
+        Ok(p)
+    }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 #[serde(transparent)]

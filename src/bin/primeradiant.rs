@@ -134,6 +134,13 @@ enum Command {
         reason: Option<String>,
     },
     Check,
+    /// Recompute derived validity and identity tables from authoritative rows.
+    IntegrityRebuild,
+    /// Run pending deterministic revalidation jobs; never calls a model.
+    RevalidateWork {
+        #[arg(long, default_value_t = 1000)]
+        max_jobs: usize,
+    },
     Backup {
         path: PathBuf,
     },
@@ -244,6 +251,7 @@ fn run() -> Result<()> {
                 } else {
                     None
                 };
+            let revalidation = service.start_revalidation_worker();
             let listener = prime_radiant::transport::http::bind(bind).await?;
             eprintln!("listening {}", listener.local_addr()?);
             axum::serve(listener, prime_radiant::transport::http::router(service))
@@ -254,12 +262,26 @@ fn run() -> Result<()> {
             if let Some(worker) = worker {
                 worker.abort();
             }
+            revalidation.abort();
             Ok(())
         });
     }
     let app = App::open(path)?;
     match cli.command {
-        Command::Init | Command::Migrate => output(serde_json::json!({"schema_version":2})),
+        Command::Init | Command::Migrate => output(serde_json::json!({"schema_version":3})),
+        Command::IntegrityRebuild => output(serde_json::json!({"claims":app.rebuild_derived(
+            &Principal::for_local_cli(PrincipalKind::User, None, None),
+        )?})),
+        Command::RevalidateWork { max_jobs } => {
+            let mut done = Vec::new();
+            while done.len() < max_jobs {
+                match app.revalidate_once("cli")? {
+                    Some(result) => done.push(result),
+                    None => break,
+                }
+            }
+            output(done);
+        }
         Command::ExtractionBackfill => output(
             app.backfill_extraction(&Principal::for_local_cli(PrincipalKind::User, None, None))?,
         ),
