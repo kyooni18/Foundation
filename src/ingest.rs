@@ -36,6 +36,7 @@ impl App {
                     return Ok(Some(Recorded {
                         source_id,
                         created: false,
+                        processing: crate::retrieval::status::source_stage(&tx, self.policy.embedding.identity().as_ref().map(|i| i.key.as_str()), id.as_str())?.stage,
                     }));
                 }
             }
@@ -45,6 +46,7 @@ impl App {
             tx.commit()?;
             return Ok(recorded);
         }
+        crate::retrieval::queue::admit(&tx, &self.policy.queue)?;
         let id = SourceId::new();
         let inserted = tx.execute("INSERT INTO source(id,recorder,recorder_label,session_id,content,content_sha256,media_type,authored_at,observed_at,captured_at,artifact_ref,retention_request,idempotency_key,request_digest) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)",params![id.as_str(),p.kind.as_str(),p.label,p.session_id,req.content,sha256(req.content.as_bytes()),req.media_type.as_str(),req.authored_at.as_ref().map(Timestamp::as_str),req.observed_at.as_ref().map(Timestamp::as_str),Timestamp::now().as_str(),req.artifact_ref,req.retention_request.as_str(),req.idempotency_key,digest]);
         if let Err(err) = inserted {
@@ -61,6 +63,7 @@ impl App {
         Ok(Recorded {
             source_id: id,
             created: true,
+            processing: "stored_not_extracted",
         })
     }
 }

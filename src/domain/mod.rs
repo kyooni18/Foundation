@@ -20,6 +20,8 @@ pub enum Error {
     NotFound,
     #[error("forbidden")]
     Forbidden,
+    #[error("processing queue is full")]
+    QueueFull,
     #[error("integrity failure: {0}")]
     IntegrityFailure(String),
     #[error("schema too new: database {db}, binary {binary}")]
@@ -158,6 +160,12 @@ impl Timestamp {
     pub fn as_str(&self) -> &str {
         &self.0
     }
+    pub(crate) fn instant(&self) -> OffsetDateTime {
+        OffsetDateTime::parse(&self.0, &Rfc3339).expect("stored timestamps are valid")
+    }
+    pub(crate) fn plus_seconds(seconds: i64) -> Self {
+        Self::from_datetime(OffsetDateTime::now_utc() + time::Duration::seconds(seconds))
+    }
 }
 impl FromStr for Timestamp {
     type Err = Error;
@@ -215,6 +223,9 @@ impl RecordSource {
 pub struct Recorded {
     pub source_id: SourceId,
     pub created: bool,
+    /// Scoped processing status at the time of the receipt. Recording only stores the Source and
+    /// enqueues extraction; it does not imply extraction or indexing finished.
+    pub processing: &'static str,
 }
 #[derive(Debug, Serialize)]
 pub struct SourceView {

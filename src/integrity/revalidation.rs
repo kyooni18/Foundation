@@ -84,7 +84,7 @@ impl App {
             params![lease.id, claim, outcome, state.validity.as_str(), state.reasons, now.as_str()],
         )?;
         tx.execute(
-            "UPDATE job SET state='done',last_error=NULL,lease_owner=NULL,lease_until=NULL,updated_at=?2 WHERE id=?1",
+            "UPDATE job SET state='done',last_error=NULL,lease_owner=NULL,lease_until=NULL,updated_at=?2,finished_at=?2 WHERE id=?1",
             params![lease.id, now.as_str()],
         )?;
         tx.commit()?;

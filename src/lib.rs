@@ -7,6 +7,7 @@ pub mod embedding;
 pub mod extraction;
 pub mod integrity;
 pub mod jobs;
+pub mod retrieval;
 mod list;
 pub mod providers;
 pub mod transport;
@@ -29,6 +30,10 @@ pub struct Policy {
     pub freshness: integrity::FreshnessPolicy,
     /// Model IDs whose temporal judgments are excluded from provisional supersession.
     pub blocked_temporal_models: Vec<String>,
+    /// Which embedding model derived vectors belong to (local by default, cloud opt-in, or off).
+    pub embedding: embedding::EmbeddingConfig,
+    /// Queue and indexing resource limits.
+    pub queue: retrieval::queue::QueueLimits,
 }
 impl App {
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
@@ -60,6 +65,12 @@ impl App {
             tracing::warn!("rebuilding derived identity resolution");
             integrity::identity::rebuild(&tx, self.policy.identity)?;
         }
+        let hidden = retrieval::access::mismatches(&tx)?;
+        if !hidden.is_empty() {
+            tracing::warn!(claims = hidden.len(), "rebuilding retrieval access projection");
+            retrieval::access::rebuild(&tx)?;
+        }
+        retrieval::queue::reconcile(&tx, &self.policy.embedding)?;
         tx.commit()?;
         Ok(())
     }

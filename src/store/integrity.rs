@@ -170,7 +170,9 @@ pub(crate) fn inspect_with(
         }
     }
     let mut targets = IntegrityItem::new("status_targets");
-    let target_sql = if version >= 3 {
+    let target_sql = if version >= 4 {
+        "SELECT seq FROM status_event e WHERE NOT EXISTS(SELECT 1 FROM status_owner o WHERE o.target_kind=e.target_kind AND o.target_id=e.target_id) UNION ALL SELECT rowid FROM job j WHERE (kind IN ('extract','index_lexical','index_embed') AND NOT EXISTS(SELECT 1 FROM source s WHERE s.id=j.target_id)) OR (kind='revalidate' AND NOT EXISTS(SELECT 1 FROM claim c WHERE c.id=j.target_id))"
+    } else if version >= 3 {
         "SELECT seq FROM status_event e WHERE NOT EXISTS(SELECT 1 FROM status_owner o WHERE o.target_kind=e.target_kind AND o.target_id=e.target_id) UNION ALL SELECT rowid FROM job j WHERE (kind='extract' AND NOT EXISTS(SELECT 1 FROM source s WHERE s.id=j.target_id)) OR (kind='revalidate' AND NOT EXISTS(SELECT 1 FROM claim c WHERE c.id=j.target_id))"
     } else if version >= 2 {
         "SELECT seq FROM status_event e WHERE (target_kind='source' AND NOT EXISTS(SELECT 1 FROM source s WHERE s.id=e.target_id)) OR (target_kind='claim' AND NOT EXISTS(SELECT 1 FROM claim c WHERE c.id=e.target_id))"

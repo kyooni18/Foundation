@@ -343,6 +343,7 @@ impl Reply {
             Error::IdempotencyConflict { .. } => ("idempotency_conflict", "idempotency conflict"),
             Error::InvalidInput { .. } => ("invalid_input", "invalid request"),
             Error::InvalidCursor => ("invalid_cursor", "invalid cursor"),
+            Error::QueueFull => ("queue_full", "processing queue is full"),
             _ => ("internal", "operation failed"),
         };
         Self {
@@ -362,6 +363,7 @@ impl Reply {
             Some("forbidden") => 403,
             Some("idempotency_conflict") => 409,
             Some("invalid_input" | "invalid_cursor") => 400,
+            Some("queue_full") => 503,
             _ => 500,
         }
     }

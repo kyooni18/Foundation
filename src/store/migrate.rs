@@ -20,6 +20,10 @@ pub(crate) const MIGRATIONS: &[Migration] = &[
         name: "0003_knowledge_integrity",
         sql: include_str!("migrations/0003_knowledge_integrity.sql"),
     },
+    Migration {
+        name: "0004_retrieval",
+        sql: include_str!("migrations/0004_retrieval.sql"),
+    },
 ];
 pub(crate) fn apply(conn: &mut Connection, path: &Path, migrations: &[Migration]) -> Result<()> {
     integrity::require_ok(&integrity::inspect_with(conn, migrations, true)?)?;
@@ -144,7 +148,7 @@ mod tests {
         drop(conn);
         assert!(matches!(
             App::open(&path),
-            Err(Error::SchemaTooNew { db: 4, binary: 3 })
+            Err(Error::SchemaTooNew { db: 5, binary: 4 })
         ));
         let backup = std::fs::read_dir(dir.path())
             .unwrap()
@@ -153,7 +157,7 @@ mod tests {
                 p.file_name()
                     .unwrap()
                     .to_string_lossy()
-                    .contains(".pre-v4.")
+                    .contains(".pre-v5.")
                     && p.extension().is_some_and(|s| s == "bak")
             })
             .unwrap();

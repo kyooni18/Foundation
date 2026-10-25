@@ -204,6 +204,10 @@ impl App {
         tx.execute("INSERT INTO extraction_run(job_id,source_id,prior_job,extractor_id,output_hash,approval_actor,created_at) VALUES(?1,?2,?3,?4,?5,'user',?6)",params![job,source_id,base,extractor,digest,Timestamp::now().as_str()])?;
         // Phase 4: validity is materialized with publication; revision_of is not a premise.
         integrity::validity::propagate(&tx, ids.clone())?;
+        // A new run supersedes the previous expression: older Claims leave the projection.
+        crate::retrieval::access::refresh_source(&tx, &source_id)?;
+        let run_seq: i64 = tx.query_row("SELECT seq FROM extraction_run WHERE job_id=?1", [&job], |r| r.get(0))?;
+        crate::retrieval::queue::enqueue_indexing(&tx, &source_id, run_seq, &self.policy.embedding)?;
         integrity::identity::retract_revised_suggestions(
             &tx,
             &source_id,
@@ -211,7 +215,7 @@ impl App {
             self.policy.identity,
         )?;
         tx.execute(
-            "UPDATE job SET state='done',last_error=NULL,updated_at=?2 WHERE id=?1",
+            "UPDATE job SET state='done',last_error=NULL,updated_at=?2,finished_at=?2 WHERE id=?1",
             params![job, Timestamp::now().as_str()],
         )?;
         tx.commit()?;
@@ -384,6 +388,9 @@ impl App {
         tx.execute("INSERT INTO status_event(target_kind,target_id,event,actor,created_at) VALUES('claim',?1,?2,?3,?4)",params![id,event,p.kind().as_str(),Timestamp::now().as_str()])?;
         if !["confirm", "unconfirm"].contains(&event) {
             integrity::validity::propagate(&tx, [id.to_owned()])?;
+        } else {
+            // Endorsement changes user visibility without changing validity.
+            crate::retrieval::access::refresh(&tx, [&id.to_owned()])?;
         }
         tx.commit()?;
         Ok(())

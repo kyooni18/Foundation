@@ -309,6 +309,7 @@ impl crate::App {
         let tx = w.transaction()?;
         let n = validity::rebuild(&tx)?;
         identity::rebuild(&tx, self.policy.identity)?;
+        crate::retrieval::access::rebuild(&tx)?;
         tx.commit()?;
         Ok(n)
     }
@@ -359,11 +360,15 @@ pub(crate) fn derived_report(
     for id in validity::mismatches(conn)? {
         validity_item.fail(id);
     }
+    let mut access_item = crate::store::IntegrityItem::new("claim_access");
+    for id in crate::retrieval::access::mismatches(conn)? {
+        access_item.fail(id);
+    }
     let mut identity_item = crate::store::IntegrityItem::new("identity_resolution");
     if !identity::consistent(conn, policy)? {
         identity_item.fail("derived identity differs from authoritative assertions");
     }
-    Ok(vec![validity_item, identity_item])
+    Ok(vec![validity_item, access_item, identity_item])
 }
 impl crate::App {
     /// Read-only diagnostic: Claims whose materialized validity differs from the oracle.

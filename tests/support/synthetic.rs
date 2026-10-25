@@ -194,7 +194,7 @@ pub fn counts(conn: &Connection) -> Vec<i64> {
         "claim",
         "claim_dependency",
         "status_event",
-        "job",
+        "job WHERE kind IN ('extract','revalidate')",
         "extraction_run",
     ]
     .iter()

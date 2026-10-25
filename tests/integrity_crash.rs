@@ -65,7 +65,7 @@ fn sigkill_during_migration_is_atomic() {
         let tables: i64 = conn
             .query_row("SELECT count(*) FROM sqlite_schema WHERE name IN ('claim_validity','status_event_v2','claim_dependency_v2','job_v3')", [], |r| r.get(0))
             .unwrap();
-        assert_eq!(tables, if version == 3 { 1 } else { 0 }, "round {round}");
+        assert_eq!(tables, if version >= 3 { 1 } else { 0 }, "round {round}");
         assert_eq!(synthetic::counts(&conn), expected, "round {round}");
         *observed.entry(version).or_insert(0) += 1;
         drop(conn);

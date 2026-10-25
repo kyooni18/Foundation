@@ -8,6 +8,7 @@ name = "primeradiant"
 path = "src/bin/primeradiant.rs"
 
 [dependencies]
+half = "2.7"
 rusqlite = { version = "0.37", features = ["bundled", "backup"] }
 sha2 = "0.10"
 ulid = "1"

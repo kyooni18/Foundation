@@ -1626,7 +1626,13 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
     ];
     let dump = |conn: &rusqlite::Connection, table: &str| -> Vec<String> {
         let mut stmt = conn
-            .prepare(&format!("SELECT * FROM {table} ORDER BY rowid"))
+            .prepare(&if table == "job" {
+                // Schema v4 adds columns and derived index jobs; the legacy columns of
+                // extract/revalidate jobs must be preserved exactly.
+                "SELECT id,kind,target_id,idem_key,state,attempts,max_attempts,lease_owner,lease_until,run_after,last_error,created_at,updated_at FROM job WHERE kind IN ('extract','revalidate') ORDER BY rowid".to_string()
+            } else {
+                format!("SELECT * FROM {table} ORDER BY rowid")
+            })
             .unwrap();
         let n = stmt.column_count();
         stmt.query_map([], |r| {
@@ -1648,13 +1654,13 @@ fn phase3_database_migrates_losslessly_with_validity_and_backup() {
     assert_eq!(
         conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
             .unwrap(),
-        3
+        4
     );
     for (table, old) in tables.iter().zip(&before) {
         let new = dump(&conn, table);
         if *table == "schema_migration" {
             assert_eq!(&new[..2], &old[..]);
-            assert_eq!(new.len(), 3);
+            assert_eq!(new.len(), 4);
             let name: String = conn
                 .query_row(
                     "SELECT name FROM schema_migration WHERE version=3",

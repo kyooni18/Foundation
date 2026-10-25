@@ -431,13 +431,13 @@ fn metadata_cannot_become_authority_with_forward_migration() {
     assert_eq!(
         conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
             .unwrap(),
-        3
+        4
     );
     assert_eq!(
         conn.query_row("SELECT count(*) FROM schema_migration", [], |r| r
             .get::<_, u32>(0))
             .unwrap(),
-        3
+        4
     );
     let tables: Vec<String> = conn
         .prepare("SELECT name FROM sqlite_schema WHERE type='table' ORDER BY name")
@@ -450,8 +450,17 @@ fn metadata_cannot_become_authority_with_forward_migration() {
         json!(tables),
         json!([
             "claim",
+            "claim_access",
             "claim_dependency",
+            "claim_fts",
+            "claim_fts_config",
+            "claim_fts_data",
+            "claim_fts_docsize",
+            "claim_fts_idx",
+            "claim_lex",
             "claim_validity",
+            "claim_vec",
+            "embedding_model",
             "entity",
             "entity_alias",
             "entity_resolution",
@@ -460,6 +469,7 @@ fn metadata_cannot_become_authority_with_forward_migration() {
             "extraction_run",
             "identity_assertion",
             "identity_blocked",
+            "index_epoch",
             "job",
             "mention",
             "mention_resolution",

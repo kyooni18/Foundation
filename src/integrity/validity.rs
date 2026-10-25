@@ -369,6 +369,8 @@ pub(crate) fn propagate(
         }
         computed.insert(id, new);
     }
+    // Retrieval visibility follows lifecycle and validity in the same transaction.
+    crate::retrieval::access::refresh(conn, &order)?;
     Ok(result)
 }
 /// Deterministic local recheck used by revalidation jobs: recompute one Claim from its

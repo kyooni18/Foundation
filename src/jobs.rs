@@ -3,7 +3,7 @@ use crate::{App, domain::*};
 use rusqlite::{OptionalExtension, params};
 use serde::Serialize;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Lease {
     pub id: String,
     pub source_id: String,
@@ -72,9 +72,9 @@ impl App {
         let mut w = self.store.writer()?;
         let tx = w.transaction()?;
         tx.execute("UPDATE job SET state='failed',last_error='exhausted',lease_owner=NULL,lease_until=NULL,updated_at=?1 WHERE kind=?2 AND state='leased' AND lease_until<=?1 AND attempts>=max_attempts",params![now.as_str(),kind])?;
-        let id:Option<(String,String,u32)>=tx.query_row("SELECT id,target_id,attempts+1 FROM job WHERE kind=?2 AND attempts<max_attempts AND ((state='pending' AND run_after<=?1) OR (state='leased' AND lease_until<=?1)) ORDER BY created_at,id LIMIT 1",params![now.as_str(),kind],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional()?;
+        let id:Option<(String,String,u32)>=tx.query_row("SELECT id,target_id,attempts+1 FROM job WHERE kind=?2 AND attempts<max_attempts AND ((state='pending' AND run_after<=?1) OR (state='leased' AND lease_until<=?1)) ORDER BY priority DESC,created_at,id LIMIT 1",params![now.as_str(),kind],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional()?;
         let lease = if let Some((id, source_id, attempt)) = id {
-            tx.execute("UPDATE job SET state='leased',attempts=?2,lease_owner=?3,lease_until=?4,updated_at=?5 WHERE id=?1",params![id,attempt,owner,until.as_str(),now.as_str()])?;
+            tx.execute("UPDATE job SET state='leased',attempts=?2,lease_owner=?3,lease_until=?4,updated_at=?5,started_at=?5,first_leased_at=COALESCE(first_leased_at,?5) WHERE id=?1",params![id,attempt,owner,until.as_str(),now.as_str()])?;
             Some(Lease {
                 id,
                 source_id,
@@ -126,7 +126,7 @@ impl App {
         if retry_at.as_str() < now.as_str() {
             return Err(invalid("failure", "invalid diagnostic or backoff"));
         }
-        Ok(self.store.writer()?.execute("UPDATE job SET state=CASE WHEN attempts>=max_attempts THEN 'failed' ELSE 'pending' END,last_error=?4,run_after=?5,lease_owner=NULL,lease_until=NULL,updated_at=?6 WHERE id=?1 AND state='leased' AND lease_owner=?2 AND attempts=?3 AND lease_until>?6",params![lease.id,lease.owner,lease.attempt,code,retry_at.as_str(),now.as_str()])?==1)
+        Ok(self.store.writer()?.execute("UPDATE job SET state=CASE WHEN attempts>=max_attempts THEN 'failed' ELSE 'pending' END,last_error=?4,run_after=?5,lease_owner=NULL,lease_until=NULL,updated_at=?6,finished_at=CASE WHEN attempts>=max_attempts THEN ?6 ELSE finished_at END WHERE id=?1 AND state='leased' AND lease_owner=?2 AND attempts=?3 AND lease_until>?6",params![lease.id,lease.owner,lease.attempt,code,retry_at.as_str(),now.as_str()])?==1)
     }
 }
 pub(crate) fn fenced(tx: &rusqlite::Transaction<'_>, lease: &Lease) -> Result<()> {

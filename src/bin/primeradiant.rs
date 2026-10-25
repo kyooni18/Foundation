@@ -268,7 +268,7 @@ fn run() -> Result<()> {
     }
     let app = App::open(path)?;
     match cli.command {
-        Command::Init | Command::Migrate => output(serde_json::json!({"schema_version":3})),
+        Command::Init | Command::Migrate => output(serde_json::json!({"schema_version":4})),
         Command::IntegrityRebuild => output(serde_json::json!({"claims":app.rebuild_derived(
             &Principal::for_local_cli(PrincipalKind::User, None, None),
         )?})),
