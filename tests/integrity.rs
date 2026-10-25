@@ -1170,3 +1170,324 @@ fn temporal_unknowns_judgments_and_relation_authority() {
         "applies"
     );
 }
+
+#[derive(Clone, Debug)]
+enum Op {
+    Claim(usize, &'static str),
+    Source(usize, LifecycleEvent),
+    AddDep(usize, usize, &'static str),
+    Dep(usize, LifecycleEvent),
+    Read(usize, usize),
+    Import(usize, usize, usize),
+}
+const KINDS: [&str; 4] = ["premise", "restates", "alternative", "informed_by"];
+const EVENTS: [LifecycleEvent; 3] = [
+    LifecycleEvent::Retract,
+    LifecycleEvent::Forget,
+    LifecycleEvent::Restore,
+];
+fn generate(seed: u64, n: usize) -> Vec<Op> {
+    let mut r = Rng::new(seed ^ 0x5eed);
+    (0..n)
+        .map(|_| match r.below(100) {
+            0..=24 => Op::Claim(
+                r.below(1000),
+                ["retract", "forget", "restore", "restore"][r.below(4)],
+            ),
+            25..=34 => Op::Source(r.below(1000), EVENTS[r.below(3)]),
+            35..=64 => Op::AddDep(r.below(1000), r.below(1000), KINDS[r.below(4)]),
+            65..=79 => Op::Dep(r.below(1000), EVENTS[r.below(3)]),
+            80..=89 => Op::Read(r.below(3), r.below(1000)),
+            _ => Op::Import(r.below(3), 1 + r.below(3), r.below(3)),
+        })
+        .collect()
+}
+/// Ancestors over every declared edge, including retracted ones (the cycle rule).
+fn reaches(edges: &[(usize, usize)], from: usize, to: usize) -> bool {
+    let mut stack = vec![from];
+    let mut seen = std::collections::HashSet::new();
+    while let Some(x) = stack.pop() {
+        if x == to {
+            return true;
+        }
+        if seen.insert(x) {
+            stack.extend(edges.iter().filter(|(c, _)| *c == x).map(|(_, p)| *p));
+        }
+    }
+    false
+}
+/// Replay `ops` on a fresh database built from `seed`; the first failing step, if any.
+#[derive(Default)]
+struct Coverage {
+    reasons: std::collections::BTreeSet<String>,
+    deps_unknown: usize,
+    cycles_rejected: usize,
+    imports: usize,
+}
+async fn replay(seed: u64, ops: &[Op], seen: &mut Coverage) -> Option<(usize, String)> {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("db");
+    drop(App::open(&path).unwrap());
+    let mut r = Rng::new(seed);
+    let conn = synthetic::connect(&path);
+    let mut claims = Vec::new();
+    let mut sources = Vec::new();
+    let mut edges: Vec<(usize, usize)> = Vec::new();
+    let mut deps: Vec<String> = Vec::new();
+    let sessions = ["s0", "s1", "s2"];
+    for s in 0..8 {
+        let recorder = ["user", "agent", "import"][r.below(3)];
+        let n = 2 + r.below(4);
+        let texts: Vec<String> = (0..n).map(|i| format!("seed claim {s}.{i}.")).collect();
+        let refs: Vec<&str> = texts.iter().map(String::as_str).collect();
+        let mut sp = spec(recorder, &refs);
+        sp.session = (recorder == "agent").then(|| sessions[r.below(3)]);
+        let (source, ids) = synthetic::source(&conn, &sp);
+        sources.push(source);
+        for id in ids {
+            let child = claims.len();
+            claims.push(id);
+            // Mixed DAG: each new Claim may depend on earlier ones (acyclic by construction).
+            for _ in 0..r.below(3) {
+                if child > 0 {
+                    let parent = r.below(child);
+                    if !edges.contains(&(child, parent)) {
+                        deps.push(synthetic::dependency(
+                            &conn,
+                            &claims[child],
+                            &claims[parent],
+                            KINDS[r.below(4)],
+                        ));
+                        edges.push((child, parent));
+                    }
+                }
+            }
+        }
+    }
+    drop(conn);
+    let app = App::open(&path).unwrap();
+    if let Some(bad) = app.validity_mismatches().unwrap().first() {
+        return Some((0, format!("initial rebuild mismatch {bad}")));
+    }
+    let u = user();
+    for (step, op) in ops.iter().enumerate() {
+        match op.clone() {
+            Op::Claim(i, event) => {
+                let _ = app.set_claim_status(&u, &claims[i % claims.len()], event);
+            }
+            Op::Source(i, event) => {
+                let id = sources[i % sources.len()].parse().unwrap();
+                let _ = app.set_source_lifecycle(&u, id, event, None);
+            }
+            Op::AddDep(c, pa, kind) => {
+                let (c, pa) = (c % claims.len(), pa % claims.len());
+                let expect_cycle = c == pa || reaches(&edges, pa, c);
+                let known = edges.contains(&(c, pa));
+                match app.add_dependency(&u, &claims[c], &claims[pa], kind) {
+                    Ok(id) => {
+                        if expect_cycle {
+                            return Some((step, format!("cycle accepted {op:?}")));
+                        }
+                        if !deps.contains(&id) {
+                            deps.push(id);
+                        }
+                        if !known {
+                            edges.push((c, pa));
+                        }
+                    }
+                    Err(_) if expect_cycle => seen.cycles_rejected += 1,
+                    Err(e) => return Some((step, format!("{op:?} rejected: {e}"))),
+                }
+            }
+            Op::Dep(i, event) if !deps.is_empty() => {
+                let _ = app.set_integrity_lifecycle(
+                    &u,
+                    Target::Dependency,
+                    &deps[i % deps.len()],
+                    event,
+                    None,
+                );
+            }
+            Op::Dep(..) => (),
+            Op::Read(s, i) => {
+                let reader = agent().with_session(Some(sessions[s].into())).unwrap();
+                let _ = app.get_claim(&reader, &claims[i % claims.len()]);
+            }
+            Op::Import(kind, n, s) => {
+                // Historical import through the approval boundary; later edges may point
+                // either way relative to existing Claims (late-discovered dependencies).
+                let who = match kind {
+                    0 => user(),
+                    1 => agent().with_session(Some(sessions[s].into())).unwrap(),
+                    _ => p(PrincipalKind::Import),
+                };
+                let texts: Vec<String> = (0..n).map(|i| format!("import {step}.{i}.")).collect();
+                let refs: Vec<&str> = texts.iter().map(String::as_str).collect();
+                let speaker = if kind == 0 { "user" } else { "agent" };
+                let source = app
+                    .record_source(&who, RecordSource::plain(refs.join(" ")))
+                    .unwrap()
+                    .source_id;
+                sources.push(source.to_string());
+                claims.extend(
+                    approve(&app, refs.iter().map(|t| candidate(t, speaker)).collect()).await,
+                );
+                seen.imports += 1;
+            }
+        }
+        let raw = rusqlite::Connection::open_with_flags(
+            &path,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+        )
+        .unwrap();
+        for row in raw
+            .prepare("SELECT reasons,deps_unknown FROM claim_validity")
+            .unwrap()
+            .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, bool>(1)?)))
+            .unwrap()
+        {
+            let (reasons, unknown) = row.unwrap();
+            seen.reasons.extend(
+                reasons
+                    .split(',')
+                    .filter(|x| !x.is_empty())
+                    .map(str::to_owned),
+            );
+            seen.deps_unknown += usize::from(unknown);
+        }
+        let bad = app.validity_mismatches().unwrap();
+        if !bad.is_empty() {
+            let at: Vec<usize> = bad
+                .iter()
+                .filter_map(|id| claims.iter().position(|c| c == id))
+                .collect();
+            return Some((
+                step,
+                format!("{op:?} left materialized validity stale for claims {at:?}"),
+            ));
+        }
+    }
+    if !app.verify_integrity().unwrap().ok {
+        return Some((ops.len(), "integrity report failed".into()));
+    }
+    None
+}
+#[tokio::test]
+async fn randomized_graph_operations_match_full_recomputation_oracle() {
+    // Fixed, recorded seeds; PRIMERADIANT_PROPERTY_SEEDS=a,b,c adds more.
+    let mut seeds: Vec<u64> = (1..=12).map(|i| 0x9a4e_0000 + i).collect();
+    if let Ok(extra) = std::env::var("PRIMERADIANT_PROPERTY_SEEDS") {
+        seeds.extend(
+            extra
+                .split(',')
+                .filter_map(|s| s.trim().parse::<u64>().ok()),
+        );
+    }
+    let mut executed = 0;
+    let mut seen = Coverage::default();
+    for seed in seeds {
+        let ops = generate(seed, 120);
+        if let Some((step, why)) = replay(seed, &ops, &mut seen).await {
+            // Greedy minimization: drop operations while the replay still fails.
+            let mut minimal = ops[..=step.min(ops.len() - 1)].to_vec();
+            let mut i = minimal.len();
+            while i > 0 {
+                i -= 1;
+                let mut candidate = minimal.clone();
+                candidate.remove(i);
+                if replay(seed, &candidate, &mut Coverage::default())
+                    .await
+                    .is_some()
+                {
+                    minimal = candidate;
+                }
+            }
+            panic!("seed {seed} failed at step {step}: {why}\nminimized ops: {minimal:?}");
+        }
+        executed += ops.len();
+    }
+    assert!(executed >= 12 * 120);
+    // Every validity reason, undeclared session dependencies, cycles and imports occurred.
+    let all = [
+        "advisory_invalid",
+        "alternatives_invalid",
+        "alternatives_uncertain",
+        "forgotten",
+        "premise_invalid",
+        "premise_uncertain",
+        "restates_invalid",
+        "retracted",
+        "session_read_invalid",
+        "source_forgotten",
+        "source_retracted",
+    ];
+    assert_eq!(
+        seen.reasons.iter().map(String::as_str).collect::<Vec<_>>(),
+        all
+    );
+    assert!(seen.deps_unknown > 0 && seen.cycles_rejected > 0 && seen.imports > 0);
+    eprintln!(
+        "property coverage: ops={executed} deps_unknown_rows={} cycles_rejected={} imports={}",
+        seen.deps_unknown, seen.cycles_rejected, seen.imports
+    );
+}
+#[test]
+fn dependency_insertion_order_does_not_change_validity() {
+    let mut r = Rng::new(0x0de7);
+    let n = 40;
+    let mut edges = Vec::new();
+    for child in 1..n {
+        for _ in 0..r.below(3) {
+            let parent = r.below(child);
+            if !edges.iter().any(|(c, p, _)| (*c, *p) == (child, parent)) {
+                edges.push((child, parent, KINDS[r.below(4)]));
+            }
+        }
+    }
+    let retracted: Vec<usize> = (0..n).filter(|_| r.chance(0.2)).collect();
+    let mut outcomes = Vec::new();
+    for order in 0..3 {
+        let (_dir, path) = fresh();
+        let conn = synthetic::connect(&path);
+        let texts: Vec<String> = (0..n).map(|i| format!("historical {i}.")).collect();
+        let refs: Vec<&str> = texts.iter().map(String::as_str).collect();
+        let (_, ids) = synthetic::source(&conn, &spec("user", &refs));
+        drop(conn);
+        let app = App::open(&path).unwrap();
+        let mut plan = edges.clone();
+        match order {
+            0 => (),
+            1 => plan.reverse(),
+            _ => {
+                for i in (1..plan.len()).rev() {
+                    plan.swap(i, r.below(i + 1));
+                }
+            }
+        }
+        let retract = |app: &App| {
+            for &i in &retracted {
+                app.set_claim_status(&user(), &ids[i], "retract").unwrap();
+            }
+        };
+        // Order 1 applies lifecycle history before any edge exists; others after or mixed.
+        if order == 1 {
+            retract(&app);
+        }
+        for (k, (child, parent, kind)) in plan.iter().enumerate() {
+            app.add_dependency(&user(), &ids[*child], &ids[*parent], kind)
+                .unwrap();
+            if order == 2 && k == plan.len() / 2 {
+                retract(&app);
+            }
+        }
+        if order == 0 {
+            retract(&app);
+        }
+        assert!(app.validity_mismatches().unwrap().is_empty());
+        outcomes.push(ids.iter().map(|id| short(&path, id)).collect::<Vec<_>>());
+    }
+    assert_eq!(outcomes[0], outcomes[1]);
+    assert_eq!(outcomes[0], outcomes[2]);
+    assert!(outcomes[0].iter().any(|s| s.starts_with("invalid")));
+    assert!(outcomes[0].iter().any(|s| s == "valid"));
+}
