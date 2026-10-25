@@ -278,6 +278,11 @@ impl Plan {
                 include_str!("../../prompts/extraction-v50/frames.txt"),
                 include_str!("../../prompts/extraction-v50/review.txt"),
             )),
+            "extraction-v51" => Ok((
+                include_str!("../../prompts/extraction-v51/contract.txt"),
+                include_str!("../../prompts/extraction-v51/frames.txt"),
+                include_str!("../../prompts/extraction-v51/review.txt"),
+            )),
             _ => Err(invalid("version", "unknown prompt version")),
         }
     }
@@ -297,7 +302,11 @@ impl Plan {
     pub fn review_stages(&self) -> &'static [&'static str] {
         if matches!(
             self.version(),
-            "extraction-v47" | "extraction-v48" | "extraction-v49" | "extraction-v50"
+            "extraction-v47"
+                | "extraction-v48"
+                | "extraction-v49"
+                | "extraction-v50"
+                | "extraction-v51"
         ) {
             return &review_v39::STAGES_47;
         }
@@ -315,6 +324,7 @@ impl Plan {
                 | "extraction-v48"
                 | "extraction-v49"
                 | "extraction-v50"
+                | "extraction-v51"
         ) {
             &review_v39::STAGES
         } else {
@@ -336,10 +346,14 @@ impl Plan {
                 | "extraction-v48"
                 | "extraction-v49"
                 | "extraction-v50"
+                | "extraction-v51"
         ) {
             let spec = review_v39::spec_for(
                 stage,
-                if matches!(self.version(), "extraction-v49" | "extraction-v50") {
+                if matches!(
+                    self.version(),
+                    "extraction-v49" | "extraction-v50" | "extraction-v51"
+                ) {
                     review_v39::DEFINITIONS_49
                 } else if self.version() == "extraction-v48" {
                     review_v39::DEFINITIONS_48
@@ -397,6 +411,7 @@ impl Plan {
                 | "extraction-v48"
                 | "extraction-v49"
                 | "extraction-v50"
+                | "extraction-v51"
         ) {
             return Ok(format!(
                 "{review}\nIndependent review responsibility: {stage}. Compare against original, never a translation."
@@ -448,6 +463,7 @@ impl Plan {
             "extraction-v48" => Some(include_str!("../../prompts/extraction-v48/reader.txt")),
             "extraction-v49" => Some(include_str!("../../prompts/extraction-v49/reader.txt")),
             "extraction-v50" => Some(include_str!("../../prompts/extraction-v50/reader.txt")),
+            "extraction-v51" => Some(include_str!("../../prompts/extraction-v51/reader.txt")),
             _ => None,
         }
     }
@@ -487,6 +503,7 @@ impl Plan {
                 | "extraction-v48"
                 | "extraction-v49"
                 | "extraction-v50"
+                | "extraction-v51"
         )
     }
     fn source_meta_review(&self) -> bool {
@@ -516,6 +533,7 @@ impl Plan {
                 | "extraction-v48"
                 | "extraction-v49"
                 | "extraction-v50"
+                | "extraction-v51"
         )
     }
     pub fn hash(&self) -> Result<String> {
@@ -554,10 +572,14 @@ impl Plan {
                 | "extraction-v48"
                 | "extraction-v49"
                 | "extraction-v50"
+                | "extraction-v51"
         ) {
             material.push('\n');
             material.push_str(
-                if matches!(self.version(), "extraction-v49" | "extraction-v50") {
+                if matches!(
+                    self.version(),
+                    "extraction-v49" | "extraction-v50" | "extraction-v51"
+                ) {
                     review_v39::DEFINITIONS_49
                 } else if matches!(self.version(), "extraction-v47" | "extraction-v48") {
                     review_v39::DEFINITIONS_47
@@ -929,6 +951,7 @@ pub fn validate_source_review(
             | "extraction-v48"
             | "extraction-v49"
             | "extraction-v50"
+            | "extraction-v51"
     ) {
         return Err(invalid("schema", "review responsibility binding required"));
     }
@@ -962,6 +985,7 @@ pub fn validate_source_review(
                     | "extraction-v48"
                     | "extraction-v49"
                     | "extraction-v50"
+                    | "extraction-v51"
             ),
             matches!(
                 plan.version(),
@@ -986,6 +1010,7 @@ pub fn validate_source_review(
                     | "extraction-v48"
                     | "extraction-v49"
                     | "extraction-v50"
+                    | "extraction-v51"
             ),
             matches!(
                 plan.version(),
@@ -1006,6 +1031,7 @@ pub fn validate_source_review(
                     | "extraction-v48"
                     | "extraction-v49"
                     | "extraction-v50"
+                    | "extraction-v51"
             ),
         )
     } else {
@@ -1035,6 +1061,7 @@ pub fn validate_source_review_at(
             | "extraction-v48"
             | "extraction-v49"
             | "extraction-v50"
+            | "extraction-v51"
     ) {
         review_v39::validate(
             raw,
@@ -1053,6 +1080,7 @@ pub fn validate_source_review_at(
                     | "extraction-v48"
                     | "extraction-v49"
                     | "extraction-v50"
+                    | "extraction-v51"
             ) {
                 "violations"
             } else {
@@ -1066,10 +1094,15 @@ pub fn validate_source_review_at(
                     | "extraction-v48"
                     | "extraction-v49"
                     | "extraction-v50"
+                    | "extraction-v51"
             ),
             if matches!(
                 plan.version(),
-                "extraction-v47" | "extraction-v48" | "extraction-v49" | "extraction-v50"
+                "extraction-v47"
+                    | "extraction-v48"
+                    | "extraction-v49"
+                    | "extraction-v50"
+                    | "extraction-v51"
             ) {
                 review_v39::DEFINITIONS_47
             } else {
@@ -1118,18 +1151,27 @@ pub fn validate_proposal_reviews_bound(
             | "extraction-v48"
             | "extraction-v49"
             | "extraction-v50"
+            | "extraction-v51"
     ) {
         if review_v39::inventory_signature(
             &reviews[n],
             matches!(
                 plan.version(),
-                "extraction-v47" | "extraction-v48" | "extraction-v49" | "extraction-v50"
+                "extraction-v47"
+                    | "extraction-v48"
+                    | "extraction-v49"
+                    | "extraction-v50"
+                    | "extraction-v51"
             ),
         )? != review_v39::inventory_signature(
             reviews.last().expect("complete reviews"),
             matches!(
                 plan.version(),
-                "extraction-v47" | "extraction-v48" | "extraction-v49" | "extraction-v50"
+                "extraction-v47"
+                    | "extraction-v48"
+                    | "extraction-v49"
+                    | "extraction-v50"
+                    | "extraction-v51"
             ),
         )? {
             return Err(invalid("unresolved", "independent inventory disagreement"));
@@ -1159,7 +1201,7 @@ pub fn validate_proposal_reviews_bound(
 
 /// Versioned standalone analysis. Legacy judgments remain frozen under their Plan.
 pub fn validate_reader_review(plan: &Plan, raw: &str) -> Result<()> {
-    if plan.version() != "extraction-v50" {
+    if !matches!(plan.version(), "extraction-v50" | "extraction-v51") {
         return validate_review(raw, 1);
     }
     #[derive(Deserialize)]

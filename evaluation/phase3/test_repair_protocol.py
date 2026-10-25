@@ -176,6 +176,9 @@ class RepairProtocolTest(unittest.TestCase):
             analysis={k:dict(reason='Synthetic explicit interpretation',status='pass') for k in ['atomicity','reference','temporal']},
             verdict='pass',issues=[],checked=[0],coverage_complete=True)
         self.assertEqual(repair.reader_check(analyzed,'v50')['verdict'],'pass')
+        self.assertEqual(repair.reader_check(analyzed,'v51')['verdict'],'pass')
+        policy=(focused.ROOT/'prompts/extraction-v51/reference_policy.txt').read_text()
+        for name in ['reader.txt','review.txt']:self.assertTrue((focused.ROOT/('prompts/extraction-v51/'+name)).read_text().endswith(policy))
         analyzed['analysis']['reference']['status']='reject'
         with self.assertRaisesRegex(ValueError,'contradictory standalone analysis'):repair.reader_check(analyzed,'v50')
         analyzed.update(verdict='reject',issues=['reference'])

@@ -65,7 +65,7 @@ def replay(evidence):
                 expected=(repair.reader_body(payload['claim_text'],version) if reader else
                     repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
                         request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),
-                        request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50'} else None))
+                        request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50','v51'} else None))
             budget.require(body==expected and api.quote(body)==request['quote'],'pending request recipe drift')
             api.verify_request_serialization(request,expected,api.request_mode(version))
             error_path=evidence/(ident+'.transport-error.json')
@@ -109,7 +109,7 @@ def replay(evidence):
             else:
                 expected=(repair.reader_body(payload['claim_text'],version) if reader else
                     repair.body(dict(case=case,candidate=payload['candidate_batch']),version,
-                        request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50'} else None))
+                        request.get('review_stage',repair.STAGES['fidelity']),request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50','v51'} else None))
             budget.require(body==expected,'incomplete request recipe drift')
             api.verify_request_serialization(request,expected,api.request_mode(version))
             reason='stop_reason:'+str(response['stop_reason'])
@@ -160,7 +160,7 @@ def replay(evidence):
             version=ident.split('-')[3]
             packet=dict(case=case,candidate=payload['candidate_batch'])
             expected=repair.body(packet,version,request.get('review_stage',repair.STAGES['fidelity']),
-                                 request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50'} else None)
+                                 request.get('review_effort','low'),request.get('review_output_tokens'),request.get('schema_revision','unsupported-v1') if version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50','v51'} else None)
             budget.require(body==expected,'review request recipe drift')
             api.verify_request_serialization(request,expected,api.request_mode(version))
             judgment=focused.parse_judgment(raw_text(response))

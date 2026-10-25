@@ -29,7 +29,7 @@ def response_text(path):
 
 def replay(evidence,case_id,version='extraction-v29',candidate_version=None,reader_version=None,review_output_tokens=None,source_versions=None,source_replicates=None):
     packet=next(p for p in budget.packets()[1] if p['case']['id']==case_id)
-    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50'},'unsupported trace version')
+    budget.require(version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51'},'unsupported trace version')
     review_version=version.removeprefix('extraction-')
     candidate_version=candidate_version or version
     reader_version=reader_version or version.removeprefix('extraction-')
@@ -72,7 +72,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
         source_prefix=f'focused-haiku-repair-{source_version}-{case_id}-{candidate_version}'
         if replicate=='repeat':
             source_prefix+='-repeat'
-        source_id=source_prefix+('' if key=='fidelity' else '-'+key)+(('-output-'+str(review_output_tokens)) if review_output_tokens else '')+(('-schema-v3' if review_version in {'v43','v44','v45','v46','v47','v48','v49','v50'} else '-schema-v2') if review_version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50'} else '')+'-primary'
+        source_id=source_prefix+('' if key=='fidelity' else '-'+key)+(('-output-'+str(review_output_tokens)) if review_output_tokens else '')+(('-schema-v3' if review_version in {'v43','v44','v45','v46','v47','v48','v49','v50','v51'} else '-schema-v2') if review_version in {'v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50','v51'} else '')+'-primary'
         saved=read(evidence/(source_id+'.request.json'))
         expected_review=review.body(packet,review_version,stage,output_tokens=review_output_tokens)
         budget.require(saved['payload']==expected_review,'source review request drift')
@@ -90,12 +90,12 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
     # Match Rust Plan/ModelConfig serialization field order exactly.
     plan=dict(provider='anthropic-direct-diagnostic',prompt_version=version,variant='audited',
         extractor=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=request['payload']['max_tokens']),
-        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or (8000 if review_version in {'v48','v49','v50'} else 6000 if review_version in {'v35','v36','v37','v38','v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50'} else 3000)))
+        reviewer=dict(model=api.MODEL,timeout_seconds=120,max_output_tokens=review_output_tokens or (8000 if review_version in {'v48','v49','v50','v51'} else 6000 if review_version in {'v35','v36','v37','v38','v39','v40','v41','v42','v43','v44','v45','v46','v47','v48','v49','v50','v51'} else 3000)))
     root=f.ROOT/'prompts'/version
     serialized=json.dumps(plan,ensure_ascii=False,separators=(',',':'))
     material=(f'{version}\n{extraction.prompt(version)}\n'+(root/'review.txt').read_text()+
         '\n'+(root/'frames.txt').read_text()+'\n'+serialized+'\n'+(root/'reader.txt').read_text())
-    if version in {'extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50'}:
+    if version in {'extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51'}:
         material+='\n'+(root/'facets.json').read_text()
     row=dict(case_id=case_id,corpus_case=packet['case'],source_hash=f.sha(packet['case']['source'].encode()),
         raw=raw,variant='audited',plan=plan,prompt_hash=f.sha(material.encode()),reviews=reviews)
@@ -127,7 +127,7 @@ def replay(evidence,case_id,version='extraction-v29',candidate_version=None,read
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--case',required=True)
-    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50'],default='extraction-v29')
+    parser.add_argument('--version',choices=['extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51'],default='extraction-v29')
     parser.add_argument('--review-output-tokens',type=int,choices=[6000])
     parser.add_argument('--source-versions',type=Path)
     parser.add_argument('--candidate-version')
