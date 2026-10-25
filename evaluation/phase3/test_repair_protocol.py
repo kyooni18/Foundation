@@ -178,6 +178,9 @@ class RepairProtocolTest(unittest.TestCase):
         self.assertEqual(repair.reader_check(analyzed,'v50')['verdict'],'pass')
         self.assertEqual(repair.reader_check(analyzed,'v51')['verdict'],'pass')
         self.assertEqual(repair.reader_check(analyzed,'v52')['verdict'],'pass')
+        self.assertEqual(repair.reader_check(analyzed,'v54')['verdict'],'pass')
+        self.assertEqual(repair.body(packet,'v54',active),repair.body(packet,'v53',active))
+        self.assertNotEqual(repair.reader_body('An isolated text','v54'),repair.reader_body('An isolated text','v53'))
         terminal=dict(case=dict(source='If the score stays low, the speaker plans to revise the model.'),candidate=packet['candidate'])
         stage52=repair.stages('v52')['atomicity']
         inventory52=repair.body(terminal,'v52',stage52)['output_config']['format']['schema']['properties']['inventory']['items']['properties']['proposition']['enum']

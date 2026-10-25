@@ -233,7 +233,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
     math_claim["speaker"] = json!("unknown");
     let math_raw = output(vec![math_claim]);
     let mut current = plan();
-    current.prompt_version = Some("extraction-v53".into());
+    current.prompt_version = Some("extraction-v54".into());
     let reader = json!({"candidate_meaning":math,"analysis":{
         "atomicity":{"reason":"One mathematical assertion","status":"pass"},
         "reference":{"reason":"All operands explicit","status":"pass"},
