@@ -56,13 +56,23 @@ impl App {
         now: &Timestamp,
         until: &Timestamp,
     ) -> Result<Option<Lease>> {
+        self.lease_kind("extract", owner, now, until)
+    }
+    /// Shared lease for every job kind; the attempt number fences expired workers.
+    pub(crate) fn lease_kind(
+        &self,
+        kind: &str,
+        owner: &str,
+        now: &Timestamp,
+        until: &Timestamp,
+    ) -> Result<Option<Lease>> {
         if owner.is_empty() || until.as_str() <= now.as_str() {
             return Err(invalid("lease", "invalid interval or owner"));
         }
         let mut w = self.store.writer()?;
         let tx = w.transaction()?;
-        tx.execute("UPDATE job SET state='failed',last_error='exhausted',lease_owner=NULL,lease_until=NULL,updated_at=?1 WHERE state='leased' AND lease_until<=?1 AND attempts>=max_attempts",[now.as_str()])?;
-        let id:Option<(String,String,u32)>=tx.query_row("SELECT id,target_id,attempts+1 FROM job WHERE attempts<max_attempts AND ((state='pending' AND run_after<=?1) OR (state='leased' AND lease_until<=?1)) ORDER BY created_at,id LIMIT 1",[now.as_str()],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional()?;
+        tx.execute("UPDATE job SET state='failed',last_error='exhausted',lease_owner=NULL,lease_until=NULL,updated_at=?1 WHERE kind=?2 AND state='leased' AND lease_until<=?1 AND attempts>=max_attempts",params![now.as_str(),kind])?;
+        let id:Option<(String,String,u32)>=tx.query_row("SELECT id,target_id,attempts+1 FROM job WHERE kind=?2 AND attempts<max_attempts AND ((state='pending' AND run_after<=?1) OR (state='leased' AND lease_until<=?1)) ORDER BY created_at,id LIMIT 1",params![now.as_str(),kind],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional()?;
         let lease = if let Some((id, source_id, attempt)) = id {
             tx.execute("UPDATE job SET state='leased',attempts=?2,lease_owner=?3,lease_until=?4,updated_at=?5 WHERE id=?1",params![id,attempt,owner,until.as_str(),now.as_str()])?;
             Some(Lease {
@@ -101,7 +111,19 @@ impl App {
             "stale",
             "lifecycle",
         ];
-        if !allowed.contains(&code) || retry_at.as_str() < now.as_str() {
+        if !allowed.contains(&code) {
+            return Err(invalid("failure", "invalid diagnostic or backoff"));
+        }
+        self.fail_job(lease, code, now, retry_at)
+    }
+    pub(crate) fn fail_job(
+        &self,
+        lease: &Lease,
+        code: &str,
+        now: &Timestamp,
+        retry_at: &Timestamp,
+    ) -> Result<bool> {
+        if retry_at.as_str() < now.as_str() {
             return Err(invalid("failure", "invalid diagnostic or backoff"));
         }
         Ok(self.store.writer()?.execute("UPDATE job SET state=CASE WHEN attempts>=max_attempts THEN 'failed' ELSE 'pending' END,last_error=?4,run_after=?5,lease_owner=NULL,lease_until=NULL,updated_at=?6 WHERE id=?1 AND state='leased' AND lease_owner=?2 AND attempts=?3 AND lease_until>?6",params![lease.id,lease.owner,lease.attempt,code,retry_at.as_str(),now.as_str()])?==1)

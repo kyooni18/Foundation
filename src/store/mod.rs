@@ -50,10 +50,19 @@ impl Store {
     pub fn reader(&self) -> Result<Connection> {
         conn::connect(&self.path, true)
     }
-    pub fn verify(&self) -> Result<IntegrityReport> {
+    pub fn verify_with(
+        &self,
+        derived: impl FnOnce(&Connection) -> Result<Vec<IntegrityItem>>,
+    ) -> Result<IntegrityReport> {
         let mut guard = self.lock()?;
         let tx = guard.transaction()?;
-        let result = integrity::inspect(&tx);
+        let result = integrity::inspect(&tx).and_then(|mut report| {
+            if report.ok {
+                report.items.extend(derived(&tx)?);
+                report.ok = report.items.iter().all(|x| x.ok);
+            }
+            Ok(report)
+        });
         if !result.as_ref().is_ok_and(|report| report.ok) {
             self.readonly.store(true, Ordering::SeqCst);
         }

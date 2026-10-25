@@ -16,6 +16,10 @@ pub(crate) const MIGRATIONS: &[Migration] = &[
         name: "0002_extraction",
         sql: include_str!("migrations/0002_extraction.sql"),
     },
+    Migration {
+        name: "0003_knowledge_integrity",
+        sql: include_str!("migrations/0003_knowledge_integrity.sql"),
+    },
 ];
 pub(crate) fn apply(conn: &mut Connection, path: &Path, migrations: &[Migration]) -> Result<()> {
     integrity::require_ok(&integrity::inspect_with(conn, migrations, true)?)?;
@@ -24,21 +28,41 @@ pub(crate) fn apply(conn: &mut Connection, path: &Path, migrations: &[Migration]
         let next = i + 1;
         let dest = conn::suffix(path, &format!(".pre-v{next}.{}.bak", ulid::Ulid::new()));
         backup::snapshot(conn, &dest, migrations, true)?;
-        let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
-        tx.execute_batch(migration.sql)?;
-        tx.execute(
-            "INSERT INTO schema_migration(version,name,checksum,applied_at) VALUES(?1,?2,?3,?4)",
-            params![
-                next,
-                migration.name,
-                integrity::sha256(migration.sql.as_bytes()),
-                Timestamp::now().as_str()
-            ],
-        )?;
-        tx.pragma_update(None, "user_version", next)?;
-        tx.commit()?;
+        // SQLite's documented table-rebuild procedure: enforcement is suspended only for
+        // this transaction, every reference is rechecked before commit, then restored.
+        conn.execute_batch("PRAGMA foreign_keys=OFF; PRAGMA legacy_alter_table=ON;")?;
+        let committed = commit_one(conn, migration, next);
+        conn.execute_batch("PRAGMA legacy_alter_table=OFF; PRAGMA foreign_keys=ON;")?;
+        committed?;
         tracing::info!(version = next, "migration committed");
     }
+    Ok(())
+}
+fn commit_one(conn: &mut Connection, migration: &Migration, next: usize) -> Result<()> {
+    let tx = conn.transaction_with_behavior(TransactionBehavior::Immediate)?;
+    tx.execute_batch(migration.sql)?;
+    let dangling: bool = tx.query_row(
+        "SELECT EXISTS(SELECT 1 FROM pragma_foreign_key_check)",
+        [],
+        |r| r.get(0),
+    )?;
+    if dangling {
+        return Err(Error::IntegrityFailure(format!(
+            "migration {} leaves dangling references",
+            migration.name
+        )));
+    }
+    tx.execute(
+        "INSERT INTO schema_migration(version,name,checksum,applied_at) VALUES(?1,?2,?3,?4)",
+        params![
+            next,
+            migration.name,
+            integrity::sha256(migration.sql.as_bytes()),
+            Timestamp::now().as_str()
+        ],
+    )?;
+    tx.pragma_update(None, "user_version", next)?;
+    tx.commit()?;
     Ok(())
 }
 
@@ -83,7 +107,7 @@ mod tests {
         drop(conn);
         assert!(matches!(
             App::open(&path),
-            Err(Error::SchemaTooNew { db: 3, binary: 2 })
+            Err(Error::SchemaTooNew { db: 4, binary: 3 })
         ));
         let backup = std::fs::read_dir(dir.path())
             .unwrap()
@@ -92,7 +116,7 @@ mod tests {
                 p.file_name()
                     .unwrap()
                     .to_string_lossy()
-                    .contains(".pre-v3.")
+                    .contains(".pre-v4.")
                     && p.extension().is_some_and(|s| s == "bak")
             })
             .unwrap();

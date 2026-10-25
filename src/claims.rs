@@ -3,6 +3,7 @@ use crate::{
     App,
     domain::*,
     extraction::{self, Plan},
+    integrity::{self, Support, Validity},
 };
 use rusqlite::{OptionalExtension, params};
 use serde::Serialize;
@@ -45,6 +46,28 @@ pub struct ClaimView {
     pub provenance: Option<serde_json::Value>,
     pub confirmed: bool,
     pub needs_revalidation: bool,
+    /// Materialized validity. User projections never contain `invalid` Claims.
+    pub validity: Validity,
+    /// Agent/audit view only.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub validity_reasons: Option<String>,
+    /// Agent/audit view only: undeclared dependencies on earlier session reads (§6.1).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deps_unknown: Option<bool>,
+    /// Single-Claim reads and pages only; computed inside the caller's projection.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub support: Option<Support>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mentions: Option<Vec<ClaimMention>>,
+}
+#[derive(Debug, Serialize)]
+pub struct ClaimMention {
+    pub id: String,
+    pub surface: String,
+    pub start: usize,
+    pub end: usize,
+    /// Resolved entity representative inside the caller's projection, if any.
+    pub entity: Option<String>,
 }
 impl App {
     /// Local user review is bound to an exact candidate hash, not merely a job identifier.
@@ -179,6 +202,14 @@ impl App {
             }
         }
         tx.execute("INSERT INTO extraction_run(job_id,source_id,prior_job,extractor_id,output_hash,approval_actor,created_at) VALUES(?1,?2,?3,?4,?5,'user',?6)",params![job,source_id,base,extractor,digest,Timestamp::now().as_str()])?;
+        // Phase 4: validity is materialized with publication; revision_of is not a premise.
+        integrity::validity::propagate(&tx, ids.clone())?;
+        integrity::identity::retract_revised_suggestions(
+            &tx,
+            &source_id,
+            &job,
+            self.policy.identity,
+        )?;
         tx.execute(
             "UPDATE job SET state='done',last_error=NULL,updated_at=?2 WHERE id=?1",
             params![job, Timestamp::now().as_str()],
@@ -196,9 +227,21 @@ impl App {
         p: &Principal,
         include_retracted: bool,
     ) -> Result<Vec<ClaimView>> {
-        self.read_claims(p, include_retracted, false)
+        let claims = self.read_claims(p, include_retracted, false)?;
+        self.note_reads(p, &claims.iter().map(|c| c.id.clone()).collect::<Vec<_>>())?;
+        Ok(claims)
     }
-    fn read_claims(
+    /// Support and mentions for Claims about to be returned, inside the projection.
+    fn enrich(&self, p: &Principal, claims: &mut [ClaimView]) -> Result<()> {
+        let mut conn = self.store.reader()?;
+        let tx = conn.transaction()?;
+        for c in claims.iter_mut() {
+            c.support = Some(integrity::provenance::support(&tx, p, &c.id)?);
+            c.mentions = Some(integrity::identity::claim_mentions(&tx, p, &c.id)?);
+        }
+        Ok(())
+    }
+    pub(crate) fn read_claims(
         &self,
         p: &Principal,
         include_retracted: bool,
@@ -206,14 +249,15 @@ impl App {
     ) -> Result<Vec<ClaimView>> {
         let conn = self.store.reader()?;
         // Filter before projection: no source/claim totals, hidden IDs, revision links or job metadata.
+        // Same predicate as integrity::user_claim_predicate for the user projection.
         let sql="WITH visible AS (SELECT c.*,s.recorder,
      COALESCE((SELECT event FROM status_event WHERE target_kind='source' AND target_id=s.id ORDER BY seq DESC LIMIT 1),'restore') AS source_state,
      COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore') AS claim_state,
      COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=c.id AND event IN ('confirm','unconfirm') ORDER BY seq DESC LIMIT 1),'unconfirm')='confirm' AS confirmed,
-     EXISTS(SELECT 1 FROM claim_dependency d JOIN claim sibling ON sibling.id=d.child WHERE sibling.job_id=c.job_id) AS needs_revalidation
-     FROM claim c JOIN source s ON s.id=c.source_id WHERE ((?3 AND ?1<>'user') OR c.job_id=(SELECT job_id FROM extraction_run WHERE source_id=c.source_id ORDER BY seq DESC LIMIT 1)))
-     SELECT id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,confirmed,needs_revalidation,speaker_label,tkind,applies_from,applies_to,standing,index_fields,created_at,claim_state,source_state,recorder,extractor_id,job_id,CASE WHEN COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=visible.revision_of AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')<>'forget' THEN revision_of END FROM visible
-     WHERE source_state<>'forget' AND claim_state<>'forget' AND ((?2 AND ?1<>'user') OR (source_state='restore' AND claim_state='restore')) AND (?1<>'user' OR (NOT needs_revalidation AND ((recorder='user' AND speaker='user' AND basis='verbatim') OR confirmed))) ORDER BY id";
+     v.state AS validity,v.reasons AS validity_reasons,v.deps_unknown AS deps_unknown
+     FROM claim c JOIN source s ON s.id=c.source_id JOIN claim_validity v ON v.claim_id=c.id WHERE ((?3 AND ?1<>'user') OR c.job_id=(SELECT job_id FROM extraction_run WHERE source_id=c.source_id ORDER BY seq DESC LIMIT 1)))
+     SELECT id,source_id,text,lang,category,speaker,basis,anchor_start,anchor_end,anchor_quote,confirmed,validity='needs_revalidation',speaker_label,tkind,applies_from,applies_to,standing,index_fields,created_at,claim_state,source_state,recorder,extractor_id,job_id,CASE WHEN COALESCE((SELECT event FROM status_event WHERE target_kind='claim' AND target_id=visible.revision_of AND event IN ('retract','forget','restore') ORDER BY seq DESC LIMIT 1),'restore')<>'forget' THEN revision_of END,validity,validity_reasons,deps_unknown FROM visible
+     WHERE source_state<>'forget' AND claim_state<>'forget' AND ((?2 AND ?1<>'user') OR (source_state='restore' AND claim_state='restore')) AND (?1<>'user' OR (validity<>'invalid' AND ((recorder='user' AND speaker='user' AND basis='verbatim') OR confirmed))) ORDER BY id";
         Ok(conn
             .prepare(sql)?
             .query_map(params![p.kind().as_str(), include_retracted,history], |r| {
@@ -265,6 +309,23 @@ impl App {
                     } else {
                         Some(r.get(21)?)
                     },
+                    validity: match r.get::<_, String>(25)?.as_str() {
+                        "valid" => Validity::Valid,
+                        "needs_revalidation" => Validity::NeedsRevalidation,
+                        _ => Validity::Invalid,
+                    },
+                    validity_reasons: if p.kind() == PrincipalKind::User {
+                        None
+                    } else {
+                        Some(r.get(26)?)
+                    },
+                    deps_unknown: if p.kind() == PrincipalKind::User {
+                        None
+                    } else {
+                        Some(r.get(27)?)
+                    },
+                    support: None,
+                    mentions: None,
                 })
             })?
             .collect::<std::result::Result<_, _>>()?)
@@ -278,10 +339,14 @@ impl App {
         id: &str,
         include_retracted: bool,
     ) -> Result<ClaimView> {
-        self.read_claims(p, include_retracted, true)?
+        let mut claim = self
+            .read_claims(p, include_retracted, true)?
             .into_iter()
             .find(|c| c.id == id)
-            .ok_or(Error::NotFound)
+            .ok_or(Error::NotFound)?;
+        self.enrich(p, std::slice::from_mut(&mut claim))?;
+        self.note_reads(p, &[claim.id.clone()])?;
+        Ok(claim)
     }
     pub fn set_claim_status(&self, p: &Principal, id: &str, event: &str) -> Result<()> {
         if !["confirm", "unconfirm", "retract", "forget", "restore"].contains(&event) {
@@ -317,6 +382,9 @@ impl App {
             return Ok(());
         }
         tx.execute("INSERT INTO status_event(target_kind,target_id,event,actor,created_at) VALUES('claim',?1,?2,?3,?4)",params![id,event,p.kind().as_str(),Timestamp::now().as_str()])?;
+        if !["confirm", "unconfirm"].contains(&event) {
+            integrity::validity::propagate(&tx, [id.to_owned()])?;
+        }
         tx.commit()?;
         Ok(())
     }
@@ -338,53 +406,64 @@ pub struct ClaimPage {
 }
 impl App {
     pub fn page_claims(&self, p: &Principal, request: crate::ListSources) -> Result<ClaimPage> {
-        use crate::authentication::{hex, unhex};
-        use hmac::Mac;
         if !(1..=100).contains(&request.limit) {
             return Err(invalid("limit", "must be 1..=100"));
         }
-        let after = if let Some(cursor) = request.cursor {
-            if cursor.len() > 1024 {
-                return Err(Error::InvalidCursor);
-            }
-            let (body, sig) = cursor.split_once('.').ok_or(Error::InvalidCursor)?;
-            let body = unhex(body).ok_or(Error::InvalidCursor)?;
-            let sig = unhex(sig).ok_or(Error::InvalidCursor)?;
-            self.cursor_mac(p, &body)
-                .verify_slice(&sig)
-                .map_err(|_| Error::InvalidCursor)?;
-            let pos: (String, bool, String) =
-                serde_json::from_slice(&body).map_err(|_| Error::InvalidCursor)?;
-            if pos.0 != "claims-v1"
-                || pos.1 != request.include_retracted
-                || pos.2.parse::<SourceId>().is_err()
-            {
-                return Err(Error::InvalidCursor);
-            }
-            pos.2
-        } else {
-            String::new()
-        };
-        let visible = self.list_claims_with_options(p, request.include_retracted)?;
+        let domain = format!("claims-v1/{}", request.include_retracted);
+        let after = self.claim_cursor_decode(p, &domain, request.cursor.as_deref())?;
+        let visible = self.read_claims(p, request.include_retracted, false)?;
         let total = visible.len();
         let mut remaining = visible.into_iter().filter(|c| c.id > after);
-        let claims: Vec<_> = remaining.by_ref().take(request.limit as usize).collect();
+        let mut claims: Vec<_> = remaining.by_ref().take(request.limit as usize).collect();
         let next_cursor = if remaining.next().is_some() {
-            let body = serde_json::to_vec(&(
-                "claims-v1",
-                request.include_retracted,
-                &claims.last().expect("positive limit").id,
-            ))
-            .expect("cursor");
-            let sig = self.cursor_mac(p, &body).finalize().into_bytes();
-            Some(format!("{}.{}", hex(&body), hex(&sig)))
+            Some(self.claim_cursor_encode(p, &domain, &claims.last().expect("positive limit").id))
         } else {
             None
         };
+        self.enrich(p, &mut claims)?;
+        self.note_reads(p, &claims.iter().map(|c| c.id.clone()).collect::<Vec<_>>())?;
         Ok(ClaimPage {
             claims,
             total,
             next_cursor,
         })
+    }
+}
+impl App {
+    /// Claim-domain cursors carry only a domain tag and the last visible ULID, are signed with
+    /// the process key and bound to the authenticated credential (D-33, D-40).
+    pub(crate) fn claim_cursor_encode(&self, p: &Principal, domain: &str, id: &str) -> String {
+        use crate::authentication::hex;
+        use hmac::Mac;
+        let body = serde_json::to_vec(&(domain, id)).expect("cursor");
+        let sig = self.cursor_mac(p, &body).finalize().into_bytes();
+        format!("{}.{}", hex(&body), hex(&sig))
+    }
+    pub(crate) fn claim_cursor_decode(
+        &self,
+        p: &Principal,
+        domain: &str,
+        cursor: Option<&str>,
+    ) -> Result<String> {
+        use crate::authentication::unhex;
+        use hmac::Mac;
+        let Some(cursor) = cursor else {
+            return Ok(String::new());
+        };
+        if cursor.len() > 1024 {
+            return Err(Error::InvalidCursor);
+        }
+        let (body, sig) = cursor.split_once('.').ok_or(Error::InvalidCursor)?;
+        let body = unhex(body).ok_or(Error::InvalidCursor)?;
+        let sig = unhex(sig).ok_or(Error::InvalidCursor)?;
+        self.cursor_mac(p, &body)
+            .verify_slice(&sig)
+            .map_err(|_| Error::InvalidCursor)?;
+        let pos: (String, String) =
+            serde_json::from_slice(&body).map_err(|_| Error::InvalidCursor)?;
+        if pos.0 != domain || pos.1.parse::<SourceId>().is_err() {
+            return Err(Error::InvalidCursor);
+        }
+        Ok(pos.1)
     }
 }

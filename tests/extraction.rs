@@ -1,4 +1,4 @@
-use prime_radiant::{App, domain::*, extraction::*, providers::*};
+use prime_radiant::{App, domain::*, extraction::*, integrity::Validity, providers::*};
 use serde_json::{Value, json};
 fn p(k: PrincipalKind) -> Principal {
     Principal::for_local_cli(k, None, None)
@@ -568,15 +568,42 @@ async fn pagination_dependencies_and_stale_publication() {
         .unwrap();
     let new = app.approve_extraction(&user(), &ca, &hash(&raw)).unwrap();
     assert!(app.approve_extraction(&user(), &cb, &hash(&raw)).is_err());
-    assert!(app.list_claims(&user()).unwrap().is_empty());
-    assert!(
-        app.list_claims(&p(PrincipalKind::Agent))
+    // Phase 4 replaces D-38's declaration-presence exclusion with materialized validity.
+    let shown = |who: Principal| -> Vec<(String, Validity)> {
+        let mut v: Vec<_> = app
+            .list_claims(&who)
             .unwrap()
-            .iter()
-            .all(|c| c.needs_revalidation)
+            .into_iter()
+            .map(|c| (c.text, c.validity))
+            .collect();
+        v.sort();
+        v
+    };
+    let both = vec![
+        ("둘째다.".to_string(), Validity::Valid),
+        ("첫째다.".to_string(), Validity::Valid),
+    ];
+    assert_eq!(shown(user()), both);
+    assert_eq!(shown(p(PrincipalKind::Agent)), both);
+    let premise = app
+        .list_claims(&user())
+        .unwrap()
+        .into_iter()
+        .find(|c| c.text == "첫째다.")
+        .unwrap()
+        .id;
+    app.set_claim_status(&user(), &premise, "retract").unwrap();
+    assert!(shown(user()).is_empty());
+    let dependent = app.list_claims(&p(PrincipalKind::Agent)).unwrap();
+    assert_eq!(dependent.len(), 1);
+    assert_eq!(dependent[0].validity, Validity::Invalid);
+    assert_eq!(
+        dependent[0].validity_reasons.as_deref(),
+        Some("premise_invalid")
     );
-    app.set_claim_status(&user(), &new[0], "confirm").unwrap();
-    assert!(app.list_claims(&user()).unwrap().is_empty());
+    app.set_claim_status(&user(), &premise, "restore").unwrap();
+    assert_eq!(shown(user()), both);
+    assert!(new.contains(&premise));
     for id in ids {
         assert!(app.get_claim(&user(), &id).is_err());
     }

@@ -14,7 +14,7 @@ pub struct IntegrityItem {
     pub first_violation: Option<String>,
 }
 impl IntegrityItem {
-    fn new(name: &'static str) -> Self {
+    pub(crate) fn new(name: &'static str) -> Self {
         Self {
             name,
             ok: true,
@@ -22,7 +22,7 @@ impl IntegrityItem {
             first_violation: None,
         }
     }
-    fn fail(&mut self, id: impl Into<String>) {
+    pub(crate) fn fail(&mut self, id: impl Into<String>) {
         self.ok = false;
         self.violations += 1;
         if self.first_violation.is_none() {
@@ -46,6 +46,32 @@ pub const TRIGGERS: &[&str] = &[
     "status_protect_user_source",
     "status_restore_forgotten",
     "status_actor_scope",
+];
+const V3_TRIGGERS: &[&str] = &[
+    "dependency_declarer_scope",
+    "job_target_exists",
+    "job_identity_fixed",
+    "revalidation_request_no_update",
+    "revalidation_request_no_delete",
+    "revalidation_result_no_update",
+    "revalidation_result_no_delete",
+    "citation_no_update",
+    "citation_no_delete",
+    "citation_cycle",
+    "citation_scope",
+    "session_read_no_update",
+    "session_read_no_delete",
+    "judgment_no_update",
+    "judgment_no_delete",
+    "relation_no_update",
+    "relation_no_delete",
+    "relation_user_only",
+    "relation_supersedes_cycle",
+    "entity_no_update",
+    "entity_no_delete",
+    "identity_no_update",
+    "identity_no_delete",
+    "identity_targets",
 ];
 pub fn inspect(conn: &Connection) -> Result<IntegrityReport> {
     inspect_with(conn, MIGRATIONS, false)
@@ -144,7 +170,9 @@ pub(crate) fn inspect_with(
         }
     }
     let mut targets = IntegrityItem::new("status_targets");
-    let target_sql = if version >= 2 {
+    let target_sql = if version >= 3 {
+        "SELECT seq FROM status_event e WHERE NOT EXISTS(SELECT 1 FROM status_owner o WHERE o.target_kind=e.target_kind AND o.target_id=e.target_id) UNION ALL SELECT rowid FROM job j WHERE (kind='extract' AND NOT EXISTS(SELECT 1 FROM source s WHERE s.id=j.target_id)) OR (kind='revalidate' AND NOT EXISTS(SELECT 1 FROM claim c WHERE c.id=j.target_id))"
+    } else if version >= 2 {
         "SELECT seq FROM status_event e WHERE (target_kind='source' AND NOT EXISTS(SELECT 1 FROM source s WHERE s.id=e.target_id)) OR (target_kind='claim' AND NOT EXISTS(SELECT 1 FROM claim c WHERE c.id=e.target_id))"
     } else {
         "SELECT seq FROM status_event e WHERE target_kind<>'source' OR NOT EXISTS(SELECT 1 FROM source s WHERE s.id=e.target_id)"
@@ -174,6 +202,9 @@ pub(crate) fn inspect_with(
             "run_no_update",
             "run_no_delete",
         ]);
+    }
+    if version >= 3 {
+        required.extend(V3_TRIGGERS);
     }
     for name in required {
         let present: bool = conn.query_row(
@@ -207,7 +238,13 @@ pub(crate) fn inspect_with(
                 evidence.fail(id);
             }
         }
-        for row in conn.prepare("SELECT j.id FROM job j WHERE (j.state='done')<>EXISTS(SELECT 1 FROM extraction_run r WHERE r.job_id=j.id) UNION SELECT c.job_id FROM claim c WHERE NOT EXISTS(SELECT 1 FROM extraction_run r WHERE r.job_id=c.job_id AND r.source_id=c.source_id)")?.query_map([],|r|r.get::<_,String>(0))? {publication.fail(row?);}
+        for row in conn.prepare("SELECT j.id FROM job j WHERE j.kind='extract' AND (j.state='done')<>EXISTS(SELECT 1 FROM extraction_run r WHERE r.job_id=j.id) UNION SELECT c.job_id FROM claim c WHERE NOT EXISTS(SELECT 1 FROM extraction_run r WHERE r.job_id=c.job_id AND r.source_id=c.source_id)")?.query_map([],|r|r.get::<_,String>(0))? {publication.fail(row?);}
+    }
+    let mut identity = IntegrityItem::new("identity_targets");
+    if version >= 3 {
+        for row in conn.prepare("SELECT id FROM identity_assertion a WHERE (kind='refers_to' AND (NOT EXISTS(SELECT 1 FROM mention m WHERE m.id=a.subject) OR NOT EXISTS(SELECT 1 FROM entity e WHERE e.id=a.object))) OR (kind IN ('same_as','distinct_from') AND (subject>=object OR NOT EXISTS(SELECT 1 FROM entity e WHERE e.id=a.subject) OR NOT EXISTS(SELECT 1 FROM entity e WHERE e.id=a.object))) OR (kind='alias' AND NOT EXISTS(SELECT 1 FROM entity e WHERE e.id=a.subject))")?.query_map([], |r| r.get::<_, String>(0))? {
+            identity.fail(row?);
+        }
     }
     let items = vec![
         sqlite,
@@ -218,6 +255,7 @@ pub(crate) fn inspect_with(
         triggers,
         evidence,
         publication,
+        identity,
     ];
     Ok(IntegrityReport {
         ok: items.iter().all(|x| x.violations == 0),
