@@ -233,7 +233,7 @@ async fn fidelity_packet_preserves_unicode_evidence_and_has_no_publication_autho
     math_claim["speaker"] = json!("unknown");
     let math_raw = output(vec![math_claim]);
     let mut current = plan();
-    current.prompt_version = Some("extraction-v52".into());
+    current.prompt_version = Some("extraction-v53".into());
     let reader = json!({"candidate_meaning":math,"analysis":{
         "atomicity":{"reason":"One mathematical assertion","status":"pass"},
         "reference":{"reason":"All operands explicit","status":"pass"},
@@ -1777,6 +1777,59 @@ fn v24_review_requires_exact_identity_evidence_and_coherent_dimensions() {
     *scalar_reports.last_mut().unwrap() = swapped.to_string();
     assert!(
         validate_proposal_reviews_bound(&scalar_plan, &scalar_reports, &batch, &source).is_err()
+    );
+    // Actual saved delimiter-only inventory disagreement; raw remains untouched.
+    let trace: Value = serde_json::from_str(
+        &std::fs::read_to_string(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/reports/evidence/phase-3/resumed-haiku/v52-v23-fresh-003-trace.json"
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    let row = &trace["replay_row"];
+    let (_quoted_dir, quoted_app) = fixture();
+    let quoted_id = quoted_app
+        .record_source(
+            &user(),
+            RecordSource::plain(row["corpus_case"]["source"].as_str().unwrap()),
+        )
+        .unwrap()
+        .source_id;
+    let quoted_source = quoted_app.get_source(&user(), quoted_id).unwrap();
+    let quoted_batch = validate(row["raw"].as_str().unwrap(), &quoted_source).unwrap();
+    let frozen: Plan = serde_json::from_value(row["plan"].clone()).unwrap();
+    let quoted_reports: Vec<String> = row["reviews"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| r["raw"].as_str().unwrap().to_owned())
+        .collect();
+    assert!(
+        validate_proposal_reviews_bound(&frozen, &quoted_reports, &quoted_batch, &quoted_source)
+            .is_err()
+    );
+    let mut framed = frozen.clone();
+    framed.prompt_version = Some("extraction-v53".into());
+    let unchanged = quoted_reports.clone();
+    assert!(
+        validate_proposal_reviews_bound(&framed, &quoted_reports, &quoted_batch, &quoted_source)
+            .is_ok()
+    );
+    assert_eq!(quoted_reports, unchanged);
+    let mut wrong_scope = quoted_reports.clone();
+    let mut coverage: Value = serde_json::from_str(wrong_scope.last().unwrap()).unwrap();
+    coverage["inventory"][0]["proposition"] = json!("있을지도 몰라");
+    *wrong_scope.last_mut().unwrap() = coverage.to_string();
+    assert!(
+        validate_proposal_reviews_bound(&framed, &wrong_scope, &quoted_batch, &quoted_source)
+            .is_err()
+    );
+    coverage["inventory"][0]["proposition"] = json!("“지연이 있을지도 몰라”");
+    *wrong_scope.last_mut().unwrap() = coverage.to_string();
+    assert!(
+        validate_proposal_reviews_bound(&framed, &wrong_scope, &quoted_batch, &quoted_source)
+            .is_err()
     );
     let grouped: Vec<Value> =
         serde_json::from_str(include_str!("../prompts/extraction-v49/facets.json")).unwrap();

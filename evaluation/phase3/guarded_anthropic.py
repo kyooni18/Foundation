@@ -289,7 +289,7 @@ class Dispatcher(existing.Dispatcher):
 
 
 def request_mode(version):
-    return 'ordered-json-v2' if version in {'v44','extraction-v44','v45','extraction-v45','v46','extraction-v46','v47','extraction-v47','v48','extraction-v48','v49','extraction-v49','v50','extraction-v50','v51','extraction-v51','v52','extraction-v52','extraction-v49','extraction-v50','extraction-v51','extraction-v52'} else 'canonical-v1'
+    return 'ordered-json-v2' if version in {'v44','extraction-v44','v45','extraction-v45','v46','extraction-v46','v47','extraction-v47','v48','extraction-v48','v49','extraction-v49','v50','extraction-v50','v51','extraction-v51','v52','extraction-v52','v53','extraction-v53','extraction-v49','extraction-v50','extraction-v51','extraction-v52','extraction-v53'} else 'canonical-v1'
 
 def serialize_request(body,mode='canonical-v1'):
     existing.require(mode in {'canonical-v1','ordered-json-v2'},'unknown request serialization')

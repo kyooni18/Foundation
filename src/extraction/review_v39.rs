@@ -280,11 +280,64 @@ pub(super) fn validate(
     }
 }
 
-pub(super) fn inventory_signature(raw: &str, unordered: bool) -> Result<Value> {
+pub(super) fn inventory_signature(
+    raw: &str,
+    source: Option<&str>,
+    unordered: bool,
+) -> Result<Value> {
     let v = super::json::parse(raw).map_err(|_| invalid("schema", "invalid review JSON"))?;
     let mut rows:Vec<Value>=v["inventory"].as_array().expect("validated inventory").iter().map(|i|serde_json::json!({
         "proposition":i["proposition"],"evidence":i["evidence"],"claim_indices":if let Some(index)=i.get("claim_index") {if index.is_null() {serde_json::json!([])} else {serde_json::json!([index])}} else {i["claim_indices"].clone()},"status":i["status"]
     })).collect();
+    if let Some(source) = source {
+        // Only an unmatched framing delimiter in the label may be ignored, and
+        // only when its actual balanced counterpart exists outside that label in
+        // ORIGINAL. This derives identity from exact byte coordinates; it does
+        // not rewrite raw output, remove paired word quotation or equate scope.
+        let mut opens = Vec::new();
+        let mut pairs = Vec::new();
+        for (offset, ch) in source.char_indices() {
+            match ch {
+                '“' => opens.push(offset),
+                '”' => {
+                    if let Some(open) = opens.pop() {
+                        pairs.push((open, offset));
+                    }
+                }
+                _ => {}
+            }
+        }
+        for row in &mut rows {
+            let label = row["proposition"].as_str().expect("validated proposition");
+            let Some(mut start) = source.find(label) else {
+                return Err(invalid("schema", "inventory identity is not exact"));
+            };
+            if source.rfind(label) != Some(start) {
+                return Err(invalid("schema", "inventory identity is ambiguous"));
+            }
+            let mut end = start + label.len();
+            if label.starts_with('“')
+                && !label.contains('”')
+                && pairs
+                    .iter()
+                    .any(|&(open, close)| open == start && close >= end)
+            {
+                start += '“'.len_utf8();
+            }
+            if label.ends_with('”')
+                && !label.contains('“')
+                && pairs
+                    .iter()
+                    .any(|&(open, close)| open < start && close + '”'.len_utf8() == end)
+            {
+                end -= '”'.len_utf8();
+            }
+            if start >= end {
+                return Err(invalid("schema", "empty inventory identity"));
+            }
+            row["proposition"] = serde_json::json!(&source[start..end]);
+        }
+    }
     if unordered {
         rows.sort_by_cached_key(Value::to_string);
     }

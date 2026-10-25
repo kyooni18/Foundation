@@ -34,7 +34,7 @@ def rust_structure(candidate,case):
 
 def prompt(version):
     root=focused.ROOT/'prompts'
-    contract=(root/(version if version in {'extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52'} else 'extraction-v12')/'contract.txt').read_text()
+    contract=(root/(version if version in {'extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52','extraction-v53'} else 'extraction-v12')/'contract.txt').read_text()
     frames=(root/version/'frames.txt').read_text()
     variant=json.loads((root/'extraction-v1/variants.json').read_text())[VARIANT]
     return f'{contract}\n{frames}\n{variant}'
@@ -46,7 +46,7 @@ def output_schema(output_format):
     return json.loads(Path(__file__).with_name('extraction_output_schema_v3.json' if output_format=='grounded-v3' else 'extraction_output_schema_v2.json' if output_format=='grounded-v2' else 'extraction_output_schema_v1.json').read_text())
 
 def body(packet,version,output_format='legacy',output_tokens=None):
-    budget.require(output_tokens is None or (version in {'extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52'} and output_tokens==6000),'unsupported extraction capacity diagnostic')
+    budget.require(output_tokens is None or (version in {'extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52','extraction-v53'} and output_tokens==6000),'unsupported extraction capacity diagnostic')
     source=packet['case']
     content=dict(original_source=source['source'],authored_at=source.get('authored_at'),
         observed_at=None,artifact_available=False,previous_failure_code=None,
@@ -61,14 +61,14 @@ def body(packet,version,output_format='legacy',output_tokens=None):
     system=prompt(version)
     user=focused.canonical(content).decode()
     budget.require(len(system.encode())+len(user.encode())<=256*1024,'oversized context')
-    request = dict(model=api.MODEL,max_tokens=output_tokens or (2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52'} else 6000),system=system,
+    request = dict(model=api.MODEL,max_tokens=output_tokens or (2500 if version in {'extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52','extraction-v53'} else 6000),system=system,
         messages=[dict(role='user',content=user)],
         output_config=dict(effort='low'),service_tier='standard_only')
     schema=output_schema(output_format)
     if schema is not None:
-        budget.require(version in {'extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52'},'structured extraction requires the current explicit profile')
+        budget.require(version in {'extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52','extraction-v53'},'structured extraction requires the current explicit profile')
         if output_format=='grounded-v3':
-            budget.require(version in {'extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52'},'ordered grounded wire requires its explicit profile')
+            budget.require(version in {'extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52','extraction-v53'},'ordered grounded wire requires its explicit profile')
             from faceted_review import exact_inventory_vocabulary
             vocabulary=exact_inventory_vocabulary(source['source'])
             if len(vocabulary)<=512:
@@ -103,7 +103,7 @@ def structural(raw,source):
     return result
 
 def attempt_label(packet,version,replicate='primary',output_format='legacy',output_tokens=None):
-    budget.require(output_tokens is None or (version in {'extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52'} and output_tokens==6000),'unsupported extraction capacity diagnostic')
+    budget.require(output_tokens is None or (version in {'extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52','extraction-v53'} and output_tokens==6000),'unsupported extraction capacity diagnostic')
     output_schema(output_format)
     budget.require(replicate in {'primary','repair'},'unsupported extraction attempt')
     if replicate=='repair':
@@ -198,7 +198,7 @@ def main():
     parser.add_argument('--case',required=True)
     parser.add_argument('--evidence',type=Path,required=True)
     parser.add_argument('--authorization',type=Path,required=True)
-    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52'],
+    parser.add_argument('--version',choices=['extraction-v25','extraction-v26','extraction-v28','extraction-v29','extraction-v30','extraction-v31','extraction-v32','extraction-v33','extraction-v34','extraction-v35','extraction-v36','extraction-v37','extraction-v38','extraction-v39','extraction-v40','extraction-v41','extraction-v42','extraction-v43','extraction-v44','extraction-v45','extraction-v46','extraction-v47','extraction-v48','extraction-v49','extraction-v50','extraction-v51','extraction-v52','extraction-v53'],
                         default='extraction-v28')
     parser.add_argument('--repair-from-trace',type=Path)
     parser.add_argument('--replicate',choices=['primary','repair'],default='primary')
