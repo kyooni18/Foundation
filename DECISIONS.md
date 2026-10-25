@@ -867,3 +867,48 @@ already requests a JSON object. New schema-labelled request IDs and receipt-boun
 replay preserve the distinction. HTTP/connection/timeout failures retain their full
 reservation and redacted error evidence. This is an offline-verified envelope fix;
 no live semantic improvement, profile promotion or Phase 3 completion is claimed.
+
+## Resumed Haiku boundary repair (2026-10-25)
+
+Keep all historical request charges and unknown reservations. Following the human's
+resume instruction, new direct calls require an exclusive nonblocking dispatch slot
+throughout reservation and transport. Old unknown billing no longer counts as live
+concurrency, but still consumes its full reserved monetary capacity. The strict
+cumulative cap is unchanged. This supersedes the obsolete pending-count blocker.
+
+Preserve actual ordered JSON transport and its wire hash for v44+, including schema
+property order. Equal parsed objects do not prove equal generation recipes. Keep
+strict scalar proposition/Claim mappings. v47+ combines the seven related meaning
+features into one shared comparison while retaining independent atomicity and
+coverage, all ten required dimensions, all evidence and any reject/unresolved veto.
+Inventory row order can differ; proposition identity, support and mapping cannot.
+
+An exact-repeat rejection is independently replayable by its actual receipt. Do not
+replace a passing primary, invent a failed report or vote past disagreement. In v48
+the delay primary passed and its repeat rejected; the case remains withheld. Actual
+repair feedback fixed nested 못 but generated new emotion and delay defects, which
+remain recorded rather than silently hand-edited. v49 condenses extraction guidance
+and requires full conditional scope in inventory identity. These profiles remain
+opt-in; completion and default promotion require the measured semantic scope in the
+current audit, independently of green synthetic tests.
+
+Reject the thinking-disabled experiment: one fused control was raw-pass but
+protocol-invalid, and a good verification target was rejected by overly literal
+interpretation. Retain all six paid probe requests and charges; production reasoning
+mode is unchanged. No migration, new dependency or Phase 4 feature is introduced.
+
+### v50 standalone analysis and current acceptance boundary
+
+Require interpretation and reason/status findings for atomicity, reference and time
+before issues/verdict. Validate exact coherence in runtime, approval, evaluators and
+bound repair context. Reuse v49 Source/generation receipts only by actual full body
+and ordered wire hash equality; no saved receipt is a new independent call. Current
+v50 complete gates pass four of six exposed Sources after bounded repairs; preserve
+the two unresolved batches, positive repeat agreements and all initial failures.
+
+Structured reasons exposed conditional-reader invented ownership/time binding and
+a delay affected-target policy conflict between reader and Source evaluator. Keep
+these as unresolved semantic defects despite green protocol tests; do not normalize
+period-different inventories just to turn this known questionable conditional into
+a pass. No production default promotion, completion tag or user approval is made.
+Current accounting and raw evidence are in reports/phase-3-resumed-haiku.md.

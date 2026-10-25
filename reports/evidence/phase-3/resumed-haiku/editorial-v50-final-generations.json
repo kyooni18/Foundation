@@ -1,0 +1,40 @@
+{
+  "authority": "assistant audit, not independent human gold; no approval",
+  "rows": [
+    {
+      "case": "r1-nested_quote",
+      "candidate_version": "extraction-v50-schema-v3-output-6000",
+      "texts": [
+        "원문 화자에게 교수님이 리뷰어 2가 우리 방법은 새롭지 않다고 했다고 전해주었다.",
+        "원문 화자는 리뷰어 2가 우리 방법은 새롭지 않다고 했다는 평가에 동의하지 못한다."
+      ],
+      "finding": "Both Claims leave 우리 perspective implicit; reject regardless of gate. The explicit 못 modality is preserved."
+    },
+    {
+      "case": "v23-fresh-004",
+      "candidate_version": "extraction-v50-schema-v3-output-6000",
+      "texts": [
+        "Mori 서비스의 worker_count는 4다.",
+        "The worker_count of the Mori service (4) alone does not establish parallel execution."
+      ],
+      "finding": "Two assertions, actual Mori worker_count antecedent in English, no extra source-absence claim. No additional defect found."
+    },
+    {
+      "case": "r1-habitual_temporal",
+      "candidate_version": "extraction-v50-schema-v3-output-6000",
+      "texts": [
+        "원문 작성 시점에 원문 화자는 요즘 매일 아침 6시에 일어나는 중이다."
+      ],
+      "finding": "Original writing/utterance-relative current daily6 ongoing habit, no permanent disposition. No additional defect found."
+    },
+    {
+      "case": "v23-fresh-003",
+      "candidate_version": "extraction-v50-schema-v3-output-6000-repair",
+      "texts": [
+        "진우는 특정되지 않은 대상에 지연이 있을지도 모른다고 말했다.",
+        "진우는 특정되지 않은 대상에 지연이 있는지 확인하지 못했다고 말했다."
+      ],
+      "finding": "Actual bounded repair explicitly marks unidentified affected target separately in both quoted acts; checking object and conjecture preserved. No additional defect found."
+    }
+  ]
+}

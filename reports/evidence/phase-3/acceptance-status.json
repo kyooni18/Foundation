@@ -1,77 +1,252 @@
 {
   "status": "not accepted; no completion tag",
-  "current_opt_in_prompt": "extraction-v41 diagnostic, rejected for promotion",
+  "current_opt_in_prompt": "extraction-v50; unpromoted",
   "current_validation_version": "source-checks-v6",
-  "implementation_commit": "33b7c119962fa6247dea0e605db5484162f41585",
+  "implementation_commit": "852d4d2",
+  "starting_commit": "9511d09",
   "current_ledger": {
     "ceiling_nanos": 5999999990,
-    "cumulative_upper_nanos": 5305449850,
+    "cumulative_upper_nanos": 5849116750,
     "prior_nanos": 4782653350,
     "provider_billed_usd": null,
-    "recorded_upper_nanos": 522796500,
-    "remaining_nanos": 694550140,
-    "requests": 297,
-    "unsettled": 4,
+    "recorded_upper_nanos": 1066463400,
+    "remaining_nanos": 150883240,
+    "requests": 573,
     "unknown_reservations": [
       {
         "id": "focused-haiku-repair-v39-v23-fresh-003-extraction-v38-primary",
-        "reservation_nanos": 5301800,
-        "response_saved": false
+        "reservation_nanos": 5301800
       },
       {
         "id": "focused-haiku-repair-v41-r1-hypothetical-extraction-v41-atomicity-schema-v2-primary",
-        "reservation_nanos": 5499200,
-        "response_saved": false
+        "reservation_nanos": 5499200
       },
       {
         "id": "focused-haiku-repair-v41-r1-nested_quote-atomicity-schema-v2-primary",
-        "reservation_nanos": 5752000,
-        "response_saved": false
+        "reservation_nanos": 5752000
       },
       {
         "id": "focused-haiku-repair-v41-v23-fresh-003-atomicity-schema-v2-primary",
-        "reservation_nanos": 5514600,
-        "response_saved": false
+        "reservation_nanos": 5514600
       }
     ]
   },
-  "completed_offline_commands": [
-    "cargo fmt --check",
-    "cargo test --offline --all-targets",
-    "cargo clippy --offline --all-targets -- -D warnings",
-    "python3 -m unittest discover -s evaluation/phase3 -p 'test_*.py'"
+  "cohort": {
+    "sources": 6,
+    "claims": 10,
+    "complete_gate_eligible": 4,
+    "withheld": 2,
+    "held_out": false,
+    "independent_human_gold": false,
+    "rows": [
+      {
+        "case": "r1-ambiguous_ref",
+        "claims": 2,
+        "complete_reviews": true,
+        "editorial_withhold": false,
+        "independent_gold": false,
+        "production_approval": false,
+        "prompt": "extraction-v50",
+        "revalidation": {
+          "error": null,
+          "experimental_gate_eligible": true,
+          "plan_hash_valid": true,
+          "review_error": null,
+          "valid": true,
+          "version": "source-checks-v6"
+        },
+        "trace": "v50-r1-ambiguous_ref-trace.json",
+        "trace_sha256": "8ee009945ffca556c22edc1b28b5c5a2ea9db6cdb7382e8062696374e63d6fc2"
+      },
+      {
+        "case": "v23-fresh-003",
+        "claims": 2,
+        "complete_reviews": false,
+        "editorial_withhold": false,
+        "independent_gold": false,
+        "production_approval": false,
+        "prompt": "extraction-v50",
+        "revalidation": {
+          "error": null,
+          "experimental_gate_eligible": false,
+          "plan_hash_valid": true,
+          "review_error": "unresolved",
+          "valid": true,
+          "version": "source-checks-v6"
+        },
+        "trace": "v50-final-v23-fresh-003-trace.json",
+        "trace_sha256": "eb3cc7943d45451c0f779a18a6a693c58a53589d0ddfbd64b06be43a7d65b399"
+      },
+      {
+        "case": "r1-hypothetical",
+        "claims": 1,
+        "complete_reviews": true,
+        "editorial_withhold": true,
+        "independent_gold": false,
+        "production_approval": false,
+        "prompt": "extraction-v50",
+        "revalidation": {
+          "error": null,
+          "experimental_gate_eligible": false,
+          "plan_hash_valid": true,
+          "review_error": "unresolved",
+          "valid": true,
+          "version": "source-checks-v6"
+        },
+        "trace": "v50-r1-hypothetical-trace.json",
+        "trace_sha256": "f4c4f2d08b6ebecdb82b86901bba03aadca260e1f7ed6262c85edda861eca387"
+      },
+      {
+        "case": "r1-nested_quote",
+        "claims": 2,
+        "complete_reviews": true,
+        "editorial_withhold": false,
+        "independent_gold": false,
+        "production_approval": false,
+        "prompt": "extraction-v50",
+        "revalidation": {
+          "error": null,
+          "experimental_gate_eligible": true,
+          "plan_hash_valid": true,
+          "review_error": null,
+          "valid": true,
+          "version": "source-checks-v6"
+        },
+        "trace": "v50-nested-repair-r1-nested_quote-trace.json",
+        "trace_sha256": "88bc6164f65a8f29776d750d5e7fbf13c1928a897009aece6ec5a4efa2bc9b18"
+      },
+      {
+        "case": "v23-fresh-004",
+        "claims": 2,
+        "complete_reviews": true,
+        "editorial_withhold": false,
+        "independent_gold": false,
+        "production_approval": false,
+        "prompt": "extraction-v50",
+        "revalidation": {
+          "error": null,
+          "experimental_gate_eligible": true,
+          "plan_hash_valid": true,
+          "review_error": null,
+          "valid": true,
+          "version": "source-checks-v6"
+        },
+        "trace": "v50-final-v23-fresh-004-trace.json",
+        "trace_sha256": "fa485aa522061b12a785808a8a102dc184f85ccf087a5fef293c4c229793fc7d"
+      },
+      {
+        "case": "r1-habitual_temporal",
+        "claims": 1,
+        "complete_reviews": true,
+        "editorial_withhold": false,
+        "independent_gold": false,
+        "production_approval": false,
+        "prompt": "extraction-v50",
+        "revalidation": {
+          "error": null,
+          "experimental_gate_eligible": true,
+          "plan_hash_valid": true,
+          "review_error": null,
+          "valid": true,
+          "version": "source-checks-v6"
+        },
+        "trace": "v50-final-r1-habitual_temporal-trace.json",
+        "trace_sha256": "ec409ec12f616fedf242d1a9b2ffb6fcbe236c8d350170fa70229073deda17aa"
+      }
+    ]
+  },
+  "negative_controls": {
+    "v48": {
+      "calls": 8,
+      "coherent_rejects": 8,
+      "known_candidates": 4
+    },
+    "v49": {
+      "calls": 8,
+      "coherent_rejects": 8,
+      "known_candidates": 4
+    }
+  },
+  "positive_repeats": [
+    {
+      "identical_wire": true,
+      "primary": "focused-haiku-repair-v49-r1-ambiguous_ref-extraction-v49-schema-v3-output-6000-schema-v3-primary",
+      "protocol_valid": true,
+      "repeat": "focused-haiku-repair-v50-r1-ambiguous_ref-extraction-v49-schema-v3-output-6000-repeat-schema-v3-primary",
+      "verdict": "pass"
+    },
+    {
+      "identical_wire": true,
+      "primary": "focused-haiku-repair-v50-v23-fresh-004-extraction-v50-schema-v3-output-6000-schema-v3-primary",
+      "protocol_valid": true,
+      "repeat": "focused-haiku-repair-v50-v23-fresh-004-extraction-v50-schema-v3-output-6000-repeat-schema-v3-primary",
+      "verdict": "pass"
+    }
   ],
-  "offline_top_level_passed": 48,
-  "python_tests_passed": 40,
-  "completion_tag_created": false,
-  "current_continuation_report": "reports/phase-3-funded-semantic-validation.md",
-  "current_audit": "reports/evidence/phase-3/six-dollar-continuation/completion-audit.json",
-  "historical_status_snapshot": "reports/evidence/phase-3/six-dollar-continuation/acceptance-status-before-funded-update.json",
-  "further_model_calls": "Blocked by existing pending<4 rule: four unknown requests retain full reservations. Monetary headroom remains; no credit increase requested.",
-  "provider_access": "Funded real calls completed; do not classify unknown timeouts as exhausted credits",
-  "all_paid_children_joined": true,
-  "remaining_acceptance": [
-    "Repair standalone argument/time omissions without inventing Source grammar facts",
-    "Constrain extraction response envelope without editing malformed raw responses",
-    "Establish coherent current-profile positive, negative and repeat evidence",
-    "Resolve unknown transport outcomes before new paid dispatch under the existing pending-request gate"
+  "remaining_failures": [
+    "conditional reader invents entity ownership and utterance binding despite structured reasons",
+    "delay reader and Source entailment disagree about the same unspecified affected-target argument"
   ],
-  "five_unassessed_cases": [
+  "required_checks": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--all-targets"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "evaluation/phase3",
+        "-p",
+        "test_*.py"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "unassessed_original_five": [
     "new-003",
     "new-007",
     "new-018",
     "new-025",
     "new-042"
   ],
-  "independent_whole_corpus_gold": false,
+  "historical_request_rows_unchanged": 297,
+  "resumed_attempts": 276,
+  "resumed_conservative_upper_nanos": 543666900,
   "production_approvals": 0,
-  "ending_implementation_commit": "214f48781e31cc2cfd112e8839597ba1317f20e1",
-  "final_verification": "reports/evidence/phase-3/six-dollar-continuation/final-checkpoint.json",
-  "latest_offline_repair": {
-    "implementation_commit": "1a2f525a7320ce53905c77e07f78e33524ad79f3",
-    "output_format": "contract-v1 (explicit selection)",
-    "evidence": "reports/evidence/phase-3/extraction-wire-contract/dry-run.json",
-    "paid_calls": 0,
-    "live_model_behavior_verified": false
-  }
+  "claims_published": 0,
+  "production_default_promoted": false,
+  "phase3_tag": false,
+  "full_report": "reports/phase-3-resumed-haiku.md",
+  "current_audit": "reports/evidence/phase-3/resumed-haiku/current-audit.json",
+  "historical_status": "prior versions retained in Git and dated evidence; no historical model result replaced",
+  "standalone_protocol": "v50 interpretation and coherent three-feature analysis"
 }

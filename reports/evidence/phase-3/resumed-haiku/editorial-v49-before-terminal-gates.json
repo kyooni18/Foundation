@@ -1,0 +1,18 @@
+{
+  "authority": "assistant editorial audit, not independent human gold or user approval",
+  "case_findings": [
+    {
+      "case": "r1-ambiguous_ref",
+      "finding": "Degree 진짜, repeated lateness 또, unknown Source-relative person and original utterance time preserved. No irritation cause/target or document-absence assertion found."
+    },
+    {
+      "case": "v23-fresh-003",
+      "finding": "Two independent speech acts retained with same named speaker and possible-delay checking object. Bare 지연 lacks explicit affected entity identity; standalone scope remains a concern regardless of model pass."
+    },
+    {
+      "case": "r1-hypothetical",
+      "finding": "One conditional intention, no unguarded consequent. 이번 실험 and 아키텍처 remain insufficiently Source-bound in the text, and original-utterance-relative intention time is absent; withhold pending correction rather than count reviewer agreement alone."
+    }
+  ],
+  "claims_published": 0
+}

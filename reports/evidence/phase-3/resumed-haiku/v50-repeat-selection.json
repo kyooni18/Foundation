@@ -1,0 +1,9 @@
+{
+  "maximum_calls": 2,
+  "cases": [
+    "r1-ambiguous_ref",
+    "v23-fresh-004"
+  ],
+  "stage": "complete-Claim entailment",
+  "policy": "One exact-request repeat per already eligible priority boundary. Any disagreement remains unresolved; no voting, candidate substitution or further repeat."
+}

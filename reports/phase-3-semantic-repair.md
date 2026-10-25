@@ -1,3 +1,31 @@
+# Current Haiku 5.5 checkpoint — Phase 3 remains incomplete (2026-10-25)
+
+Four of all six priority Source batches have complete v50 diagnostic gates; delay
+and conditional-plan batches remain unresolved. The emotion and mixed-language
+fidelity repeats both pass. Four known bad controls plus repeats reject coherently
+in v48 and v49 (16 judgments on four controls). This is exposed development evidence,
+not independent human gold. No production approval, default promotion or completion
+tag has been made.
+
+The new standalone analysis exposes a real reference-binding false acceptance and
+a reader/Source dispute about unknown affected targets. These remain substantive
+semantic blockers. All required checks pass: 48 Rust, 40 Python, fmt and Clippy.
+
+Cumulative conservative amount is **$5.84911675**, under the unchanged **$5.99999999**
+ceiling; **$0.15088324** remains. This resumed sequence added **$0.54366690** over its
+before snapshot. All 297 older ledger rows remain unchanged; the same four old
+unknown reservations remain charged. The obsolete pending-count blocker is replaced
+by exclusive live dispatch; no new transport remains unsettled.
+
+Starting commit `9511d09`, ending implementation `852d4d2`; evidence/report commits
+follow. See [the complete current report](phase-3-resumed-haiku.md) and
+`reports/evidence/phase-3/resumed-haiku/current-audit.json` for the six-case comparison,
+actual repeat identities, reproducible replay, accounting and remaining risks.
+Earlier sections below are historical and superseded where they describe blockers,
+spending totals or current profiles.
+
+---
+
 ## Latest offline progress: extraction wire contract
 
 `7bd9475` / `1a2f525` add an explicit, separately identified structured extraction

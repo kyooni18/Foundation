@@ -1,0 +1,73 @@
+{
+  "authority": "assistant audit; no independent gold or approval",
+  "rows": [
+    {
+      "case": "r1-ambiguous_ref",
+      "same_generated_candidate": true,
+      "prior_gate": {
+        "error": null,
+        "experimental_gate_eligible": true,
+        "plan_hash_valid": true,
+        "review_error": null,
+        "valid": true,
+        "version": "source-checks-v6"
+      },
+      "new_gate": {
+        "error": null,
+        "experimental_gate_eligible": true,
+        "plan_hash_valid": true,
+        "review_error": null,
+        "valid": true,
+        "version": "source-checks-v6"
+      },
+      "remaining_editorial_objection": false
+    },
+    {
+      "case": "v23-fresh-003",
+      "same_generated_candidate": true,
+      "prior_gate": {
+        "error": null,
+        "experimental_gate_eligible": false,
+        "plan_hash_valid": true,
+        "review_error": "unresolved",
+        "valid": true,
+        "version": "source-checks-v6"
+      },
+      "new_gate": {
+        "error": null,
+        "experimental_gate_eligible": false,
+        "plan_hash_valid": true,
+        "review_error": "unresolved",
+        "valid": true,
+        "version": "source-checks-v6"
+      },
+      "remaining_editorial_objection": true
+    },
+    {
+      "case": "r1-hypothetical",
+      "same_generated_candidate": true,
+      "prior_gate": {
+        "error": null,
+        "experimental_gate_eligible": false,
+        "plan_hash_valid": true,
+        "review_error": "unresolved",
+        "valid": true,
+        "version": "source-checks-v6"
+      },
+      "new_gate": {
+        "error": null,
+        "experimental_gate_eligible": false,
+        "plan_hash_valid": true,
+        "review_error": "unresolved",
+        "valid": true,
+        "version": "source-checks-v6"
+      },
+      "remaining_editorial_objection": true
+    }
+  ],
+  "known_false_acceptance": {
+    "case": "r1-hypothetical",
+    "mechanism": "Reader invents ownership and utterance binding for bare deictic terms despite explicit instructions. Required reasons expose the invention but do not make semantic analysis truthful.",
+    "decision": "withhold and do not promote; no majority voting or extra primary chosen to erase this pass"
+  }
+}

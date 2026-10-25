@@ -1,0 +1,13 @@
+{
+  "cases": [
+    "r1-ambiguous_ref",
+    "v23-fresh-003",
+    "r1-hypothetical"
+  ],
+  "prompt": "extraction-v49",
+  "format": "grounded-v3",
+  "output_tokens": 6000,
+  "maximum_generations": 3,
+  "prior_model_feedback": false,
+  "reason": "Test condensed extractor on only the three still unresolved boundaries. Source-only generation avoids carrying the rejected interpretations into a fresh instruction comparison. Retain every earlier failed repair; no raw edits, automatic retries, or majority voting."
+}

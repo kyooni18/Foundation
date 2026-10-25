@@ -1,0 +1,20 @@
+{
+  "prompt": "extraction-v50",
+  "reader": "meaning then atomicity/reference/temporal reasons and status",
+  "source_recipe": "exact v49 bytes, proven for all17savedSourcecalls",
+  "extraction_recipe": "exact v49 bytes with condensed frames",
+  "priority_existing_candidates": [
+    "r1-ambiguous_ref",
+    "v23-fresh-003",
+    "r1-hypothetical"
+  ],
+  "remaining_primary_generations": [
+    "r1-nested_quote",
+    "v23-fresh-004",
+    "r1-habitual_temporal"
+  ],
+  "maximum_new_primary_generations": 3,
+  "maximum_bounded_repairs_per_source": 1,
+  "policy": "One current-profile six-Source cohort. Reuse old generation/review only by full byte recipe equality; stop first failed reader/stage. A repair is permitted only from its actual failed trace. No profile churn or majority voting. Retain editorial objections even if model gate passes.",
+  "no_default_promotion": true
+}

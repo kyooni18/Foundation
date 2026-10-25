@@ -1,3 +1,14 @@
+# Superseding resumed checkpoint (2026-10-25)
+
+The old pending-count block below is historical. Resumed calls serialize under an
+exclusive lock, retain all old unknown holds and preserve the same strict cumulative
+cap. Current v50 scope: 4/6 complete eligible diagnostic batches; delay and conditional
+remain unresolved. All required checks pass. Cumulative conservative amount
+$5.84911675, headroom $0.15088324; no new unsettled transport. Phase 3 is still
+incomplete. See [current full report](phase-3-resumed-haiku.md) and its current audit.
+
+---
+
 # Phase 3 funded semantic validation
 
 ## Decision
