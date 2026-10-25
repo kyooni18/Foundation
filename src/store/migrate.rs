@@ -84,13 +84,21 @@ mod rollback {
             let mut migrations = MIGRATIONS.to_vec();
             migrations.push(Migration { name: "probe", sql });
             assert!(apply(&mut conn, &path, &migrations).is_err());
-            let version: usize = conn.pragma_query_value(None, "user_version", |r| r.get(0)).unwrap();
+            let version: usize = conn
+                .pragma_query_value(None, "user_version", |r| r.get(0))
+                .unwrap();
             assert_eq!(version, MIGRATIONS.len());
             let probe: bool = conn
-                .query_row("SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE name='probe')", [], |r| r.get(0))
+                .query_row(
+                    "SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE name='probe')",
+                    [],
+                    |r| r.get(0),
+                )
                 .unwrap();
             assert!(!probe);
-            let enforced: bool = conn.pragma_query_value(None, "foreign_keys", |r| r.get(0)).unwrap();
+            let enforced: bool = conn
+                .pragma_query_value(None, "foreign_keys", |r| r.get(0))
+                .unwrap();
             assert!(enforced);
         }
     }
